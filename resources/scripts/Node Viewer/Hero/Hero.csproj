@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <ProjectType>local</ProjectType>
+    <ProjectVersion>7.10.377</ProjectVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F9243E26-31F3-4B6D-9BA1-81EB2ADD25D2}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <AssemblyName>Hero</AssemblyName>
+    <OutputType>Library</OutputType>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>Hero</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Reference Include="System.Xml" />
+    <Reference Include="System" />
+    <Reference Include="ICSharpCode.SharpZipLib" />
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Global.cs" />
+    <Compile Include="Hero\Hasher_SWTOR.cs" />
+    <Compile Include="Hero\Hasher_Warhammer.cs" />
+    <Compile Include="Hero\Types\HeroAnyValue.cs" />
+    <Compile Include="Hero\Types\HeroDate.cs" />
+    <Compile Include="Hero\Types\HeroVarId.cs" />
+    <Compile Include="Hero\OmegaStream.cs" />
+    <Compile Include="Hero\PackedStream.cs" />
+    <Compile Include="Hero\PackedStream_2.cs" />
+    <Compile Include="Hero\Types\HeroTimeinterval.cs" />
+    <Compile Include="Hero\Types\HeroString.cs" />
+    <Compile Include="Hero\GOMFolder.cs" />
+    <Compile Include="Hero\GOM.cs" />
+    <Compile Include="Hero\Definition\HeroDefinition.cs" />
+    <Compile Include="Hero\Definition\HeroClassDef.cs" />
+    <Compile Include="Hero\Types\HeroID.cs" />
+    <Compile Include="Hero\Types\HeroInt.cs" />
+    <Compile Include="Hero\DefinitionId.cs" />
+    <Compile Include="Hero\Types\HeroVoid.cs" />
+    <Compile Include="Hero\Types\HeroRawdata.cs" />
+    <Compile Include="Hero\Types\HeroNodeRef.cs" />
+    <Compile Include="Hero\Types\HeroGuid.cs" />
+    <Compile Include="Hero\Definition\HeroFieldDef.cs" />
+    <Compile Include="Hero\Variable.cs" />
+    <Compile Include="Hero\VariableList.cs" />
+    <Compile Include="Hero\Types\HeroBool.cs" />
+    <Compile Include="Hero\Types\HeroClass.cs" />
+    <Compile Include="Hero\HeroTypes.cs" />
+    <Compile Include="Hero\Definition\HeroAssociationDef.cs" />
+    <Compile Include="Hero\Types\HeroScriptRef.cs" />
+    <Compile Include="Hero\Types\HeroFloat.cs" />
+    <Compile Include="Hero\SerializingException.cs" />
+    <Compile Include="Hero\Definition\HeroNodeDef.cs" />
+    <Compile Include="Hero\Definition\HeroEnumDef.cs" />
+    <Compile Include="Hero\SerializeStateBase.cs" />
+    <Compile Include="Hero\DeserializeClass.cs" />
+    <Compile Include="Hero\SerializeClass.cs" />
+    <Compile Include="Hero\DeserializeList.cs" />
+    <Compile Include="Hero\SerializeList.cs" />
+    <Compile Include="Hero\DeserializeLookupList.cs" />
+    <Compile Include="Hero\SerializeLookupList.cs" />
+    <Compile Include="Hero\Types\HeroLookupList.cs" />
+    <Compile Include="Hero\Repository.cs" />
+    <Compile Include="Hero\Types\HeroAssociation.cs" />
+    <Compile Include="Hero\Types\HeroGuiControl.cs" />
+    <Compile Include="Hero\Types\HeroEnum.cs" />
+    <Compile Include="Hero\Frame.cs" />
+    <Compile Include="Hero\Types\HeroVector3.cs" />
+    <Compile Include="Hero\Types\HeroTimer.cs" />
+    <Compile Include="Hero\Types\HeroList.cs" />
+    <Compile Include="Hero\HeroType.cs" />
+    <Compile Include="Hero\IDSpaces.cs" />
+    <Compile Include="Hero\IDSpace.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Assemblies\ICSharpCode.SharpZipLib.dll" />
+  </ItemGroup>
+</Project>

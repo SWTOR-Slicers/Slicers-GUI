@@ -1,0 +1,6 @@
+C:\Projects\SWTORCharacterManager\Hero\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Projects\SWTORCharacterManager\Hero\bin\Debug\Hero.dll
+C:\Projects\SWTORCharacterManager\Hero\bin\Debug\Hero.pdb
+C:\Projects\SWTORCharacterManager\Hero\bin\Debug\ICSharpCode.SharpZipLib.dll
+C:\Projects\SWTORCharacterManager\Hero\obj\x86\Debug\Hero.dll
+C:\Projects\SWTORCharacterManager\Hero\obj\x86\Debug\Hero.pdb

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <link rel="stylesheet" href="index.css">
+    <title>Slicers GUI</title>
+  </head>
+  <body>
+    <div class="main-page">
+      <div class="spacer-top"></div>
+      <div class="container-top element-border">
+        <img src="./resources/img/SlicersLogo.png" alt="" height="140px" width="140px" class="slicer-img">
+        <div class="container-top__main">
+          <div class="folder-paths-container">
+
+            <div class="path-container">
+              <h3 class="path-container__header">Assets Folder:</h3>
+              <div class="to-file-1"></div>
+              <input id="assetTextField" class="path-container__text-field" type="text" name="assets-folder" id="assetsFolder">
+              <div class="to-file-2"></div>
+              <button id="assetPopupBtn" class="path-container__choose-dir-btn">
+                <img src="./resources/img/find_file.png" alt="Find" height="16px">
+              </button>
+            </div>
+
+            <div class="path-container">
+              <h3 class="path-container__header">Output Folder:</h3>
+              <div class="to-file-3"></div>
+              <input id="outputTextField" class="path-container__text-field" type="text" name="assets-folder" id="outputFolder">
+              <div class="to-file-2"></div>
+              <button id="outputPopupBtn" class="path-container__choose-dir-btn">
+                <img src="./resources/img/find_file.png" alt="Find" height="16px">
+              </button>
+            </div>
+
+            <div class="path-container">
+              <h3 class="path-container__header">Data Folder:</h3>
+              <div class="to-file-4"></div>
+              <input id="dataTextField" class="path-container__text-field" type="text" name="assets-folder" id="dataFolder">
+              <div class="to-file-2"></div>
+              <button id="dataPopupBtn" class="path-container__choose-dir-btn">
+                <img src="./resources/img/find_file.png" alt="Find" height="16px">
+              </button>
+            </div>
+
+          </div>
+          <div class="additional-content">
+
+          </div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="container-bottom">
+        <div class="container-bottom__log element-border">
+          <label class="app-label to-file-12">Log</label>
+          <div id="logDisplay" class="log__display">
+          </div>
+        </div>
+        <div class="container-bottom__sub element-border">
+          <label class="app-label to-file-11">Datamining</label>
+        </div>
+        <div class="container-bottom__sub element-border">
+          <label class="app-label to-file-10">Modding</label>
+        </div>
+        <div class="container-bottom__sub element-border">
+          <label class="app-label to-file-9">Extraction</label>
+          <button id="extractionBtn" class="container-bottom__sub__btn">Extract</button>
+          <button id="locateBtn" class="container-bottom__sub__btn">Locate</button>
+          <button id="nodeViewBtn" class="disabled container-bottom__sub__btn">Node View</button>
+          <button id="bnkConverterBtn" class="container-bottom__sub__btn">Bnk Convert</button>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="container-info element-border">
+        <label class="app-label to-file-8">Useful Information</label>
+        <div class="container-info__info to-file-7">
+          <div class="info-link">
+            <h3 class="container-info__header">Github: </h3>
+            <div class="to-file-5"></div>
+            <a class="container-info__link" href="https://github.com/SWTOR-Slicers" target="_blank">https://github.com/SWTOR-Slicers</a>
+          </div>
+          <div class="info-link">
+            <h3 class="container-info__header">Discord: </h3>
+            <div class="to-file-6"></div>
+            <a class="container-info__link" href="https://discord.gg/XfHFjSN" target="_blank">https://discord.gg/XfHFjSN</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- You can also require other files to run in this process -->
+    <script src="./renderer.js"></script>
+  </body>
+</html>

@@ -77,41 +77,42 @@ function initListeners() {
   ipcMain.on("runExec", async (event, data) => {
     switch (data) {
       case "nodeViewer":
-        child.execFile(__dirname + "/resources/scripts/Node Viewer/NodeViewer.exe", (err, data) => {
-          if (err) console.log(err);
-          console.log(data.toString());
-        });
+        //run node viewer
+        // child.execFile(__dirname + "/resources/scripts/Node Viewer/NodeViewer.exe", (err, data) => {
+        //   if (err) console.log(err);
+        //   console.log(data.toString());
+        // });
         break;
     }
   });
 }
 
 async function updateJSON(param, val) {
-  let res = fs.readFileSync(__dirname + "/resources/json/config.json");
+  let res = fs.readFileSync(__dirname + "/resources/config.json");
   let json = JSON.parse(res);
   json[param] = val;
 
-  fs.writeFileSync(__dirname + "/resources/json/config.json", JSON.stringify(json), 'utf-8');
+  fs.writeFileSync(__dirname + "/resources/config.json", JSON.stringify(json), 'utf-8');
   if (param == "assetsFolder") {
     handleXMLUpadate(val);
   }
 }
 function handleXMLUpadate(val) {
-  fs.readFile(__dirname + "/resources/scripts/Node Viewer/NodeViewer.exe.config", "utf-8", function(err, data) {
-    if (err) console.log(err);
+  // fs.readFile(__dirname + "/resources/scripts/Node Viewer/NodeViewer.exe.config", "utf-8", function(err, data) {
+  //   if (err) console.log(err);
     
-    xml2js.parseString(data, function(err, result) {
-      if (err) console.log(err);
+  //   xml2js.parseString(data, function(err, result) {
+  //     if (err) console.log(err);
   
-      var json = result;
-      json.configuration.appSettings[0].add[0]['$'].value = val;
+  //     var json = result;
+  //     json.configuration.appSettings[0].add[0]['$'].value = val;
   
-      var builder = new xml2js.Builder();
-      var xml = builder.buildObject(json);
+  //     var builder = new xml2js.Builder();
+  //     var xml = builder.buildObject(json);
   
-      fs.writeFile(__dirname + "/resources/scripts/Node Viewer/NodeViewer.exe.config", xml, function(err, data) {
-        if (err) console.log(err);
-      });
-    });
-  });
+  //     fs.writeFile(__dirname + "/resources/scripts/Node Viewer/NodeViewer.exe.config", xml, function(err, data) {
+  //       if (err) console.log(err);
+  //     });
+  //   });
+  // });
 }

@@ -28,7 +28,7 @@ contextBridge.exposeInMainWorld(
 );
 
 window.addEventListener('DOMContentLoaded', () => {
-  let res = fs.readFileSync(__dirname + "/resources/json/config.json");
+  let res = fs.readFileSync(__dirname + "/resources/config.json");
   let json = JSON.parse(res);
   
   document.getElementById("assetTextField").value = json.assetsFolder;

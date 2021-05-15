@@ -4,6 +4,7 @@
 // `nodeIntegration` is turned off. Use `preload.js` to
 // selectively enable features needed in the rendering
 // process.
+import * as THREE from './node_modules/three/build/three.module.js';
 const ipc = window.api;
 
 let assetPopupBtn = document.getElementById("assetPopupBtn");

@@ -98,7 +98,7 @@ function initListeners() {
           cache.dataFolder = json.dataFolder;
         }
 
-        child.execFile(__dirname + "/resources/scripts/FileLocator/main.exe", [cache.dataFolder, cache.outputFolder], (err) => {
+        child.execFile(__dirname + "/resources/scripts/FileLocator/main.exe", [cache.dataFolder, cache.outputFolder + "\\resources"], (err) => {
           if (err) console.log(err);
           mainWindow.webContents.send("locCompl", "");
         });

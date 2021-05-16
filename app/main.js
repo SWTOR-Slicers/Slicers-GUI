@@ -6,6 +6,11 @@ const path = require('path');
 const child = require('child_process');
 const { inherits } = require('util');
 let mainWindow;
+const cache = {
+  assetsFolder:"",
+  outputFolder:"",
+  dataFolder:""
+}
 
 function createWindow () {
   // Create the browser window.
@@ -83,6 +88,21 @@ function initListeners() {
         //   console.log(data.toString());
         // });
         break;
+      case "locate":
+        if (cache.dataFolder = "" || cache.assetsFolder == "") {
+          let res = fs.readFileSync(__dirname + "/resources/config.json");
+          let json = JSON.parse(res);
+          
+          cache.assetsFolder = json.assetsFolder;
+          cache.outputFolder = json.outputFolder;
+          cache.dataFolder = json.dataFolder;
+        }
+
+        child.execFile(__dirname + "/resources/scripts/FileLocator/main.exe", [cache.dataFolder, cache.outputFolder], (err) => {
+          if (err) console.log(err);
+          mainWindow.webContents.send("locCompl", "");
+        });
+        break;
     }
   });
 }
@@ -91,6 +111,7 @@ async function updateJSON(param, val) {
   let res = fs.readFileSync(__dirname + "/resources/config.json");
   let json = JSON.parse(res);
   json[param] = val;
+  cache[param] = val;
 
   fs.writeFileSync(__dirname + "/resources/config.json", JSON.stringify(json), 'utf-8');
   if (param == "assetsFolder") {

@@ -18,7 +18,7 @@ contextBridge.exposeInMainWorld(
           }
       },
       receive: (channel, func) => {
-          let validChannels = ["assetsFolderReply", "outputFolderReply", "dataFolderReply", "extrCompl", "locCompl", "gr2ViewClosed", "nodeViewClosed", "modViewClosed", "worViewClosed", "utilFileChngClosed", "utilBnkClosed", "utilGPClosed"];
+          let validChannels = ["assetsFolderReply", "outputFolderReply", "dataFolderReply", "extrCompl", "locCompl", "genHashCompl", "gr2ViewClosed", "nodeViewClosed", "modViewClosed", "worViewClosed", "utilFileChngClosed", "utilBnkClosed", "utilGPClosed"];
           if (validChannels.includes(channel)) {
               // Deliberately strip event as it includes `sender` 
               ipcRenderer.on(channel, (event, ...args) => func(...args));

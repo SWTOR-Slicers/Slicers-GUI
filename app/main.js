@@ -1,10 +1,9 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, dialog, ipcMain, ipcRenderer} = require('electron');
+const {app, BrowserWindow, dialog, ipcMain, screen} = require('electron');
 const fs = require('fs');
 const xml2js = require("xml2js");
 const path = require('path');
 const child = require('child_process');
-const { inherits } = require('util');
 let mainWindow;
 const cache = {
   assetsFolder:"",
@@ -13,51 +12,45 @@ const cache = {
 }
 
 function createWindow () {
-  // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1000, //716 for production
     height: 700, //539 for production
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, '/preload.js')
     },
     icon: __dirname + "/resources/img/SlicersLogo.png"
   });
-  //mainWindow.removeMenu();
+
+  mainWindow.removeMenu();
+  mainWindow.webContents.openDevTools();
+
   mainWindow.setResizable(false);
 
   // and load the index.html of the app.
   mainWindow.loadFile('index.html');
+
+  mainWindow.on('close', () => {
+    app.quit();
+  })
 }
 
 // This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   createWindow();
   
   app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
   init();
 });
-
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
 });
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
-
 function init() {
   initListeners();
 }
-
 function initListeners() {
   ipcMain.on("showDialog", async (event, data) => {
     dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] }).then(async (dir) => {
@@ -81,6 +74,18 @@ function initListeners() {
   });
   ipcMain.on("runExec", async (event, data) => {
     switch (data) {
+      case "extraction":
+        mainWindow.webContents.send("extrCompl", "");
+        break;
+        case "locate":
+          locate();
+          break;
+      case "genHash":
+        
+        break;
+      case "gr2Viewer":
+        initGR2Viewer();
+        break;
       case "nodeViewer":
         //run node viewer
         // child.execFile(__dirname + "/resources/scripts/Node Viewer/NodeViewer.exe", (err, data) => {
@@ -88,22 +93,46 @@ function initListeners() {
         //   console.log(data.toString());
         // });
         break;
-      case "locate":
-        if (cache.dataFolder = "" || cache.assetsFolder == "") {
-          let res = fs.readFileSync(__dirname + "/resources/config.json");
-          let json = JSON.parse(res);
-          
-          cache.assetsFolder = json.assetsFolder;
-          cache.outputFolder = json.outputFolder;
-          cache.dataFolder = json.dataFolder;
-        }
-
-        child.execFile(__dirname + "/resources/scripts/FileLocator/main.exe", [cache.dataFolder, cache.outputFolder + "\\resources"], (err) => {
-          if (err) console.log(err);
-          mainWindow.webContents.send("locCompl", "");
-        });
-        break;
     }
+  });
+}
+
+function initGR2Viewer() {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  
+  let win = new BrowserWindow({
+    width: width,
+    height: height,
+    icon: __dirname + "/resources/img/SlicersLogo.png",
+  });
+
+  win.removeMenu();
+  win.webContents.openDevTools();
+
+  win.loadURL(`${__dirname}/src/html/GR2Viewer.html`);
+
+  win.on('close', () => {
+    if (mainWindow) {
+      if (mainWindow.webContents) {
+        mainWindow.webContents.send("gr2ViewClosed", "");
+      }
+    }
+  });
+}
+
+function locate() {
+  if (cache.dataFolder = "" || cache.assetsFolder == "") {
+    let res = fs.readFileSync(__dirname + "/resources/config.json");
+    let json = JSON.parse(res);
+    
+    cache.assetsFolder = json.assetsFolder;
+    cache.outputFolder = json.outputFolder;
+    cache.dataFolder = json.dataFolder;
+  }
+
+  child.execFile(__dirname + "/resources/scripts/FileLocator/main.exe", [cache.dataFolder, cache.outputFolder + "\\resources"], (err) => {
+    if (err) console.log(err);
+    mainWindow.webContents.send("locCompl", "");
   });
 }
 

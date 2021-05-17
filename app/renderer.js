@@ -4,7 +4,6 @@
 // `nodeIntegration` is turned off. Use `preload.js` to
 // selectively enable features needed in the rendering
 // process.
-import * as THREE from './node_modules/three/build/three.module.js';
 const ipc = window.api;
 const logDisplay = document.getElementById("logDisplay");
 
@@ -19,6 +18,7 @@ let dataTextField = document.getElementById("dataTextField");
 //extraction
 let extrBtn = document.getElementById("extractionBtn");
 let lctBtn = document.getElementById("locateBtn");
+let genHashBtn = document.getElementById("genHashBtn");
 
 //viewers
 let gr2ViewBtn = document.getElementById("gr2ViewBtn");
@@ -74,6 +74,13 @@ function setupListeners() {
         ipc.send('runExec', 'locate');
         log(`Extraction: Locator started, please stand by.`);
     });
+    genHashBtn.addEventListener("click", (e) => {
+        ipc.receive('genHashCompl', (data) => {
+            log(`Extraction: Generate Hash finished.`);
+        });
+        ipc.send('runExec', 'genHash');
+        log(`Extraction: Generate Hash started, please stand by.`);
+    })
 
     //viewers
     gr2ViewBtn.addEventListener("click", (e) => {

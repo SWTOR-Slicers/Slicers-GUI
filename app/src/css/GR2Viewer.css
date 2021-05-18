@@ -53,6 +53,45 @@ html, body {
     border-bottom: 1px solid #000;
 }
 
+.h2-container {
+    color: white;
+    margin: 5px 5px;
+    width: calc(100% - 10px);
+    border-bottom: 1px solid #000;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.file-browser-header {
+    color: white;
+    margin: 0px;
+    font-family: 'Eurofont';
+}
+.file-browser-header__buttons-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.file-browser-header__button {
+    margin-bottom: 4px;
+    margin-right: 4px;
+    padding: 5px;
+    height: 14px;
+    width: 14px;
+    border: 1px solid #000;
+    box-shadow: 0 0 4px rgb(0 0 0 / 50%);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.file-browser-header__button:hover {
+    cursor: pointer;
+    background-color: rgb(71, 71, 71);
+}
+
 .file-tree-container {
     height: 100%;
     width: 20%;
@@ -82,13 +121,24 @@ html, body {
     display: flex;
     flex-direction: row;
     align-items: center;
+    width: calc(100% - 5px);
+}
+.tree-elem-hover:hover {
+    cursor: pointer;
+    background-color: rgb(71, 71, 71);
+}
+.tree-elem-text {
+    padding-left: 5px;
+}
+.tree-elem-text__disabled {
+    color: rgb(199, 199, 199);
 }
 .fa-ban {
     color: red;
 }
 .fa-folder {
     color: tan;
-    transform: scaleY(1.1);
+    transform: scaleY(1.07);
 }
 .fa-file {
     color: white;

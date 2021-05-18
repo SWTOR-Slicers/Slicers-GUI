@@ -7,8 +7,16 @@ const homedir = os.homedir();
 const desktop = `${homedir}\\Desktop`;
 
 let treeList = document.getElementById("treeList");
+let backArrowBtn = document.getElementById("backArrowBtn");
+let fowardArrowBtn = document.getElementById("fowardArrowBtn");
+let moveUpArrowBtn = document.getElementById("moveUpArrowBtn");
+let refreshBtn = document.getElementById("refreshBtn");
 
 
-let defaultTree = new FolderTree(desktop, null)
+let fileTree = new FolderTree(desktop, null)
 
-defaultTree.render(treeList);
+fileTree.render(treeList);
+
+refreshBtn.addEventListener("click", () => {
+    fileTree.render(treeList);
+});

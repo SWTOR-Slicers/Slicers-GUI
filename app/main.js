@@ -103,6 +103,9 @@ function initGR2Viewer() {
   let win = new BrowserWindow({
     width: width,
     height: height,
+    webPreferences: {
+      preload: path.join(__dirname, '/src/js/GR2 Viewer/preload.js')
+    },
     icon: __dirname + "/resources/img/SlicersLogo.png",
   });
 

@@ -6,12 +6,9 @@ const {
 } = require("electron");
 const fs = require('fs');
 
-// Expose protected methods that allow the renderer process to use
-// the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld(
   "api", {
       send: (channel, data) => {
-          // whitelist channels
           let validChannels = ["showDialog", "runExec"];
           if (validChannels.includes(channel)) {
               ipcRenderer.send(channel, data);
@@ -20,7 +17,6 @@ contextBridge.exposeInMainWorld(
       receive: (channel, func) => {
           let validChannels = ["assetsFolderReply", "outputFolderReply", "dataFolderReply", "extrCompl", "locCompl", "genHashCompl", "gr2ViewClosed", "nodeViewClosed", "modViewClosed", "worViewClosed", "utilFileChngClosed", "utilBnkClosed", "utilGPClosed"];
           if (validChannels.includes(channel)) {
-              // Deliberately strip event as it includes `sender` 
               ipcRenderer.on(channel, (event, ...args) => func(...args));
           }
       }

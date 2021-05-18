@@ -1,5 +1,5 @@
 {
-  "name": "electron-quick-start",
+  "name": "slicers-gui",
   "version": "1.0.0",
   "description": "A GUI for SWTOR Slicers",
   "main": "main.js",
@@ -17,6 +17,7 @@
     "electron": "^12.0.5"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.3",
     "electron-node-config": "^1.1.0",
     "three": "^0.128.0",
     "xml2js": "^0.4.23"

@@ -104,7 +104,9 @@ function initGR2Viewer() {
     width: width,
     height: height,
     webPreferences: {
-      preload: path.join(__dirname, '/src/js/GR2 Viewer/preload.js')
+      //preload: path.join(__dirname, '/src/js/GR2 Viewer/preload.js'),
+      nodeIntegration: true,
+      contextIsolation: false
     },
     icon: __dirname + "/resources/img/SlicersLogo.png",
   });

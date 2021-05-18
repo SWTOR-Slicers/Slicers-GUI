@@ -75,6 +75,24 @@ html, body {
     align-items: flex-start;
     justify-content: flex-start;
 }
+.tree-elem {
+    color: white;
+    padding-left: 5px;
+    font-size: 14px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.fa-ban {
+    color: red;
+}
+.fa-folder {
+    color: tan;
+    transform: scaleY(1.1);
+}
+.fa-file {
+    color: white;
+}
 
 .model-view-container {
     height: 100%;

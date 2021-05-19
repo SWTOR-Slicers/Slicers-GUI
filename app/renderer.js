@@ -10,10 +10,15 @@ const logDisplay = document.getElementById("logDisplay");
 //file path choosers
 let assetPopupBtn = document.getElementById("assetPopupBtn");
 let assetTextField = document.getElementById("assetTextField");
+let oldAssetValue;
+
 let outputPopupBtn = document.getElementById("outputPopupBtn");
 let outputTextField = document.getElementById("outputTextField");
+let oldOutputValue;
+
 let dataPopupBtn = document.getElementById("dataPopupBtn");
 let dataTextField = document.getElementById("dataTextField");
+let oldDataValue;
 
 //extraction
 let extrBtn = document.getElementById("extractionBtn");
@@ -33,9 +38,27 @@ let getPatchBtn = document.getElementById("getPatchBtn");
 
 //functions
 function initialize() {
+    setConfigData();
+
     setupListeners();
 
     log("Boot up complete");
+}
+
+function setConfigData() {
+    ipc.receive('sendConfigJSON', (data) => {
+        let json = data;
+
+        assetTextField.value = json.assetsFolder;
+        oldAssetValue = json.assetsFolder;
+
+        outputTextField.value = json.outputFolder;
+        oldOutputValue = json.outputFolder;
+        
+        dataTextField.value = json.dataFolder;
+        oldDataValue = json.dataFolder;
+    })
+    ipc.send('getConfigJSON', "");
 }
 
 function setupListeners() {
@@ -46,17 +69,55 @@ function setupListeners() {
         });
         ipc.send('showDialog', 'assetsFolder');
     });
+    assetTextField.addEventListener("change", (e) => {
+        let newVal = e.currentTarget.value;
+        ipc.receive('isDirAsset', (data) => {
+            if (data) {
+                log(`Assigned new path to assetsFolder field.`)
+                oldAssetValue = newVal;
+            } else {
+                log(`Invalid path. Reseting assetsFolder field to ${oldAssetValue}`);
+            }
+        });
+        ipc.send('updateJSON', ['assetsFolder', newVal]);
+    });
+
     outputPopupBtn.addEventListener('click', () => {
         ipc.receive('outputFolderReply', (data) => {
             processResponse(data, outputTextField, 'outputFolder');
         });
         ipc.send('showDialog', 'outputFolder');
     });
+    outputTextField.addEventListener("change", (e) => {
+        let newVal = e.currentTarget.value;
+        ipc.receive('isDirOut', (data) => {
+            if (data) {
+                log(`Assigned new path to outputFolder field.`)
+                oldOutputValue = newVal;
+            } else {
+                log(`Invalid path. Reseting outputFolder field to ${oldOutputValue}`);
+            }
+        });
+        ipc.send('updateJSON', ['outputFolder', newVal]);
+    });
+
     dataPopupBtn.addEventListener('click', () => {
         ipc.receive('dataFolderReply', (data) => {
             processResponse(data, dataTextField, 'dataFolder');
         });
         ipc.send('showDialog', 'dataFolder');
+    });
+    dataTextField.addEventListener("change", (e) => {
+        let newVal = e.currentTarget.value;
+        ipc.receive('isDirDat', (data) => {
+            if (data) {
+                log(`Assigned new path to dataFolder field.`)
+                oldDataValue = newVal;
+            } else {
+                log(`Invalid path. Reseting dataFolder field to ${oldDataValue}`);
+            }
+        });
+        ipc.send('updateJSON', ['dataFolder', newVal]);
     });
 
     //extraction

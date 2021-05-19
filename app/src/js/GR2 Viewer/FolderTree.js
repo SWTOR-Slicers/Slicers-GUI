@@ -1,7 +1,8 @@
 import { render } from "./Render.js";
 const fs = require('fs');
 const path = require('path');
-const pathElem = document.getElementById("pathField");
+const pathField = document.getElementById("pathField");
+const changeEvent = new Event('change');
 
 class File {
     constructor(path, name, type, canClick) {
@@ -14,7 +15,7 @@ class File {
   
 export class FolderTree {
     constructor(path, name=null) {
-        pathElem.value = path;
+        pathField.value = path;
         this.path = path;
         this.name = (name) ? name : path.substring(path.lastIndexOf("\\") + 1);
         this.contents = {
@@ -24,7 +25,7 @@ export class FolderTree {
     }
 
     reInit(path, name=null) {
-        pathElem.value = path;
+        pathField.value = path;
         this.path = path;
         this.name = (name) ? name : path.substring(path.lastIndexOf("\\") + 1);
         this.contents = {
@@ -85,7 +86,10 @@ export class FolderTree {
                 let pathElem = getChildElements(e.currentTarget)[1];
                 let dirPath = path.resolve(this.path, pathElem.innerHTML);
 
-                this.reInit(dirPath, null)
+                this.reInit(dirPath, null);
+
+                pathField.dispatchEvent(changeEvent);
+                
                 this.render(parent);
             }
 

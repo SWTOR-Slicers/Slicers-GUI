@@ -52,6 +52,12 @@ function init() {
   initListeners();
 }
 function initListeners() {
+  ipcMain.on("getConfigJSON", async (event, data) => {
+    let res = fs.readFileSync(__dirname + "/resources/config.json");
+    let json = JSON.parse(res);
+
+    mainWindow.webContents.send("sendConfigJSON", json);
+  })
   ipcMain.on("showDialog", async (event, data) => {
     dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] }).then(async (dir) => {
       if (!dir.canceled) {
@@ -71,6 +77,23 @@ function initListeners() {
         }
       }
     });
+  });
+  ipcMain.on("updateJSON", async (event, data) => {
+    let exists = fs.existsSync(data[1]);
+    switch (data[0]) {
+      case "assetsFolder":
+        mainWindow.webContents.send("isDirAsset", exists);
+        break;
+      case "outputFolder":
+        mainWindow.webContents.send("isDirOut", exists);
+        break;
+      case "dataFolder":
+        mainWindow.webContents.send("isDirDat", exists);
+        break;
+    }
+    if (exists) {
+      await updateJSON(data[1], data[0]);
+    }
   });
   ipcMain.on("runExec", async (event, data) => {
     switch (data) {

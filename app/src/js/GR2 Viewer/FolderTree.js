@@ -1,6 +1,7 @@
 import { render } from "./Render.js";
 const fs = require('fs');
 const path = require('path');
+const pathElem = document.getElementById("pathField");
 
 class File {
     constructor(path, name, type, canClick) {
@@ -13,6 +14,7 @@ class File {
   
 export class FolderTree {
     constructor(path, name=null) {
+        pathElem.value = path;
         this.path = path;
         this.name = (name) ? name : path.substring(path.lastIndexOf("\\") + 1);
         this.contents = {
@@ -22,6 +24,7 @@ export class FolderTree {
     }
 
     reInit(path, name=null) {
+        pathElem.value = path;
         this.path = path;
         this.name = (name) ? name : path.substring(path.lastIndexOf("\\") + 1);
         this.contents = {

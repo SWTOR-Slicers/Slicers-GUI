@@ -33,7 +33,7 @@ html, body {
 
 .viewer-window {
     font-family: 'Eurofont';
-    background-color: var(--medium-grey);
+    background-color: var(--grey-black);
     height: 100%;
     width: 100%;
     display: flex;
@@ -76,7 +76,7 @@ html, body {
 .file-browser-header__button {
     margin-bottom: 4px;
     margin-right: 4px;
-    padding: 5px;
+    padding: 4px;
     height: 14px;
     width: 14px;
     border: 1px solid #000;
@@ -88,6 +88,42 @@ html, body {
     align-items: center;
 }
 .file-browser-header__button:hover {
+    cursor: pointer;
+    background-color: rgb(71, 71, 71);
+}
+
+.path-input-field-container {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+.paths-field-input {
+    background-color: var(--grey-black);
+    color: white;
+    outline: none;
+    border: 1px solid #000;
+    border-radius: 3px;
+    height: 18px;
+    min-width: 200px;
+    margin-right: 5px;
+}
+.browse-paths__button {
+    padding: 4px;
+    height: 14px;
+    width: 14px;
+    border: 1px solid #000;
+    box-shadow: 0 0 4px rgb(0 0 0 / 50%);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.browse-paths__button:hover {
     cursor: pointer;
     background-color: rgb(71, 71, 71);
 }
@@ -104,7 +140,7 @@ html, body {
     height: calc(100% - 20px);
     width: calc(100% - 20px);
     border-radius: 6px;
-    background-color: var(--grey-black-hover);
+    background-color: var(--medium-grey);
 }
 .file-tree-elements {
     height: auto;
@@ -143,6 +179,9 @@ html, body {
 .fa-file {
     color: white;
 }
+.fa-ellipsis-h {
+    color: white;
+}
 
 .model-view-container {
     height: 100%;
@@ -155,6 +194,7 @@ html, body {
 .model-view-body {
     height: calc(100% - 20px);
     width: calc(100% - 20px);
+    background-color: var(--medium-grey);
     border-radius: 6px;
 }
 
@@ -170,7 +210,7 @@ html, body {
     height: calc(100% - 20px);
     width: calc(100% - 20px);
     border-radius: 6px;
-    background-color: var(--grey-black-hover);
+    background-color: var(--medium-grey);
 }
 .data-view-container__data {
     width: 100%;

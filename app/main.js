@@ -100,9 +100,9 @@ function initListeners() {
       case "extraction":
         mainWindow.webContents.send("extrCompl", "");
         break;
-        case "locate":
-          locate();
-          break;
+      case "locate":
+        locate();
+        break;
       case "genHash":
         
         break;
@@ -127,7 +127,6 @@ function initGR2Viewer() {
     width: width,
     height: height,
     webPreferences: {
-      //preload: path.join(__dirname, '/src/js/GR2 Viewer/preload.js'),
       nodeIntegration: true,
       contextIsolation: false
     },
@@ -146,6 +145,20 @@ function initGR2Viewer() {
       }
     }
   });
+
+  initGR2Listeners(win);
+}
+
+function initGR2Listeners(window) {
+  ipcMain.on("showDialogGR2", async (event, data) => {
+    dialog.showOpenDialog(window, { properties: ['openDirectory'] }).then(async (dir) => {
+        if (!dir.canceled) {
+          event.reply("getDialogResponse", dir.filePaths);
+        } else {
+          event.reply("getDialogResponse", "");
+        }
+    });
+  })
 }
 
 function locate() {

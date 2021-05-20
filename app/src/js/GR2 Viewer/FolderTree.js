@@ -45,20 +45,24 @@ export class FolderTree {
         for (let i = 0; i < files.length; i++) {
             let file = files[i];
             let contentPath = path.resolve(this.path, file);
-            let stat = fs.statSync(contentPath);
+            try {
+                let stat = fs.statSync(contentPath);
   
-            if (stat.isDirectory()) {
-                //its a directory
-                this.contents.directories.push(new File(contentPath, file, "directory", true))
-            } else {
-                //its a file
-                if (path.extname(file) == ".gr2") {
-                    //its a gr2
-                    this.contents.files.push(new File(contentPath, file, "file", true));
+                if (stat.isDirectory()) {
+                    //its a directory
+                    this.contents.directories.push(new File(contentPath, file, "directory", true))
                 } else {
-                    //some other file
-                    this.contents.files.push(new File(contentPath, file, "file", false));
+                    //its a file
+                    if (path.extname(file) == ".gr2") {
+                        //its a gr2
+                        this.contents.files.push(new File(contentPath, file, "file", true));
+                    } else {
+                        //some other file
+                        //this.contents.files.push(new File(contentPath, file, "file", false));
+                    }
                 }
+            } catch (e) {
+                console.log(e);
             }
         }
     }

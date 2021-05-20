@@ -91,6 +91,12 @@ html, body {
     cursor: pointer;
     background-color: rgb(71, 71, 71);
 }
+.fbh__disabled {
+    pointer-events: none;
+    box-shadow: none;
+    border: none;
+    color: rgb(199, 199, 199);
+}
 
 .path-input-field-container {
     width: 100%;
@@ -169,6 +175,7 @@ html, body {
 .tree-elem-text__disabled {
     color: rgb(199, 199, 199);
 }
+
 .fa-ban {
     color: red;
 }

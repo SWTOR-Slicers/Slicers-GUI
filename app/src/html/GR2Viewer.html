@@ -43,7 +43,34 @@
         </div>
         <div class="model-view-container">
             <div class="model-view-body element-border">
-
+                <div id="modelCanvasContainer" class="model-canvas-container"> <!-- style="display: none;" -->
+                    <div class="canvas-wrapper">
+                        <div id="toonScene">
+                            <canvas id="toonSceneCanvas" style="pointer-events: auto;"></canvas>
+                        </div>
+                    </div>
+                    <div class="canvas-overlay">
+                        <div class="canvas-right-side__container">
+                            <div class="canvas-view-controls">
+                                <div id="resetCameraPosition" class="canvas-view-controls__btn">
+                                    <img src="../../resources/img/resetCameraIcon.png" alt="Reset Camera" title="Reset Camera" class="control-btn-img">
+                                </div>
+                                <div id="zoomInButton" class="canvas-view-controls__btn">
+                                    <img src="../../resources/img/zoomInIcon.png" alt="Zoom In" title="Zoom In" class="control-btn-img">
+                                </div>
+                                <div id="zoomOutButton" class="canvas-view-controls__btn">
+                                    <img src="../../resources/img/zoomOutIcon.png" alt="Zoom Out" title="Zoom Out" class="control-btn-img">
+                                </div>
+                                <div id="rotateRightButton" class="canvas-view-controls__btn">
+                                    <img src="../../resources/img/rotateRightIcon.png" alt="Rotate Right" title="Rotate Right" class="control-btn-img">
+                                </div>
+                                <div id="rotateLeftButton" class="canvas-view-controls__btn">
+                                    <img src="../../resources/img/rotateLeftIcon.png" alt="Rotate Left" title="Rotate Left" class="control-btn-img">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="data-view-container">
@@ -51,7 +78,7 @@
                 <div class="data-view-container__data">
                     <h3 class="h2">Model Data</h3>
                     <div class="data-body">
-
+                        
                     </div>
                 </div>
                 <div class="export-data-options-container">

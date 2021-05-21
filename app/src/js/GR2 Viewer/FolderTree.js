@@ -1,4 +1,4 @@
-import { render } from "./Render.js";
+import { showModal } from "./Render.js";
 const fs = require('fs');
 const path = require('path');
 const pathField = document.getElementById("pathField");
@@ -119,7 +119,7 @@ export class FolderTree {
                     let pathElem = getChildElements(e.currentTarget)[1];
                     let gr2Path = path.resolve(this.path, pathElem.innerHTML);
 
-                    render(gr2Path);
+                    showModal(gr2Path);
                 }
 
                 parent.appendChild(div);

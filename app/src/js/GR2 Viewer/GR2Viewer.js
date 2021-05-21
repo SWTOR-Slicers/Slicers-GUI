@@ -1,7 +1,6 @@
 import {FolderTree} from "./FolderTree.js";
 
 const {ipcRenderer} = require('electron');
-const THREE = require('three');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');

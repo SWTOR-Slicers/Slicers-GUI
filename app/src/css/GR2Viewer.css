@@ -26,6 +26,7 @@ html, body {
     margin: 0;
 }
 :root {
+	--color-light: #2fa5d4;
     --grey-black: #1a1a1a;
     --grey-black-hover: #2b2b2b;
     --medium-grey: #333;
@@ -204,6 +205,93 @@ html, body {
     background-color: var(--medium-grey);
     border-radius: 6px;
 }
+
+.model-canvas-container {
+	height: 100%;
+	width: 100%;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	pointer-events: none;
+}
+.canvas-wrapper {
+	height: 100%;
+	width: 100%;
+	border-radius: 15px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	top: 0;
+	left: 0;
+	pointer-events: none;
+}
+.canvas-overlay {
+	display: flex;
+	position: absolute;
+	width: calc(100% - 10px);
+	height: calc(100% - 10px);
+	user-select: none;
+	pointer-events: none;
+	justify-content: flex-end;
+}
+.canvas-right-side__container {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: flex-end;
+}
+.canvas-view-controls {
+	display: grid;
+	grid-template-rows: repeat(7, 20px);
+	row-gap: 8px;
+}
+
+.canvas-view-controls__btn {
+	pointer-events: auto;
+	border-radius: 4px;
+	border: 1px solid var(--color-light);
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: url(../../resources/img/squareBackgrounds.png) no-repeat top left;
+	background-size: contain;
+}
+.canvas-view-controls__btn > img {
+	max-width: 20px;
+	max-height: 20px;
+}
+.control-btn-img {
+	cursor: pointer;
+}
+.ctl-btn {
+	pointer-events: auto;
+	height: 34px;
+	width: 180px;
+	outline: none;
+	padding: 0 5px;
+	margin: 0;
+	color: white;
+	border: 1px solid #000;
+	box-shadow: 1px 1px 2px rgb(0 0 0 / 35%);
+	background-color: #1a1a1a;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: 'Eurofont';
+	font-size: 15px;
+}
+.ctl-btn:hover {
+	cursor: pointer;
+}
+
 
 .data-view-container {
     height: 100%;

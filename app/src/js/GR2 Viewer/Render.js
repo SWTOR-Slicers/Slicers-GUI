@@ -11,6 +11,8 @@ var zoomOutBtn = document.getElementById("zoomOutButton");
 var rotateRightBtn = document.getElementById("rotateRightButton");
 var rotateLeftBtn = document.getElementById("rotateLeftButton");
 
+let dataContainer = document.getElementById("dataContainer");
+
 let parsedGR2s = [];
 let customObjectList = [];
 let camNeedsReset;
@@ -71,7 +73,7 @@ function initConsts() {
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
     renderer.setClearColor(0xffffff, 0);
 
-    resizer = new Resizer(canvas, camera, renderer);
+    resizer = new Resizer(canvas.parentElement, camera, renderer);
 
     controls = new OrbitControls(camera, canvas);
     camNeedsReset = true;
@@ -136,6 +138,10 @@ export async function showModal(path) {
 //load GR2
 function loadGR2(buffer) {
     var curModel = new GR2(buffer);
+
+    dataContainer.innerHTML = "";
+    dataContainer.append(...curModel.render());
+
     curModel.threeGeometries = [];
     for (let i = 0; i < curModel.numMeshes; i++) {
         let mesh = curModel.meshes[i];

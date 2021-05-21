@@ -89,6 +89,7 @@ html, body {
     align-items: center;
 }
 .file-browser-header__button:hover {
+    pointer-events: all;
     cursor: pointer;
     background-color: rgb(71, 71, 71);
 }
@@ -158,6 +159,7 @@ html, body {
     justify-content: flex-start;
 }
 .tree-elem {
+    pointer-events: all;
     color: white;
     padding-left: 5px;
     font-size: 14px;
@@ -174,6 +176,7 @@ html, body {
     padding-left: 5px;
 }
 .tree-elem-text__disabled {
+    pointer-events: none !important;
     color: rgb(199, 199, 199);
 }
 

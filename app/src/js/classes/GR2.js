@@ -1,5 +1,8 @@
 import Vec3 from "./Vec3.js";
 const { Float16Array } = require("@petamoriken/float16");
+function cElem(type) {
+    return document.createElement(type);
+}
 
 class GR2Face {
     constructor(buffer, offset) {
@@ -94,8 +97,20 @@ class GR2Piece {
 }
 class GR2MeshBone {
     constructor(buffer, offset) {
-        this.name = new Uint32Array(buffer, offset, 1);
+        this.nameOffset = new Uint32Array(buffer, offset, 1);
+        this.name = readString(buffer, this.nameOffset);
+
         this.bounds = new Float32Array(buffer, offset + 4, 6);
+    }
+
+    render() {
+        let bone = cElem('div');
+        bone.className = 'mesh-bone';
+
+        let name = dataDiv('Name', this.name);
+        bone.appendChild(name);
+
+        return bone;
     }
 }
 class GR2Mesh {
@@ -139,6 +154,49 @@ class GR2Mesh {
             curMesh.bones.push(mb);
         }
     }
+
+    render() {
+        let mesh = cElem('div');
+        mesh.className = 'mesh';
+
+        let name = dataDiv('Name', this.name);
+        mesh.appendChild(name);
+
+        let nFaces = dataDiv('Faces', this.numFaces / 3);
+        mesh.appendChild(nFaces);
+
+        let nVert = dataDiv('Vertices', this.numVertices);
+        mesh.appendChild(nVert);
+
+        let sVert = dataDiv('Vertex Size', this.vertexSize);
+        mesh.appendChild(sVert);
+
+        let nInd = dataDiv('Indices', this.numFaces);
+        mesh.appendChild(nInd);
+
+        let bones = labelDiv('Bones');
+        mesh.appendChild(bones);
+
+        let meshBonesField = cElem('div');
+        meshBonesField.className = 'section-container';
+
+        let nMesheBones = dataDiv("Number of Bones", this.numUsedBones);
+        meshBonesField.appendChild(nMesheBones);
+
+        for (let i = 0; i < this.bones.length; i++) {
+            let bLabel = labelDiv('Bone');
+            meshesField.appendChild(bLabel);
+
+            let b = this.bones[i];
+            let data = b.render();
+
+            meshesField.appendChild(data);
+        }
+
+        mesh.appendChild(meshBonesField);
+
+        return mesh;
+    }
 }
 class GR2Bone {
     constructor(buffer, offset) {
@@ -149,6 +207,30 @@ class GR2Bone {
         this.boneToParent = new Float32Array(buffer, offset + 8, 16);
         this.rootToBone = new Float32Array(buffer, offset + 72, 16);
         
+    }
+}
+class GR2Attachment {
+    constructor(buffer, offset) {
+        this.nameOffset = new Uint32Array(buffer, offset, 1);
+        this.name = readString(buffer, this.nameOffset);
+
+        this.boneNameOffset = new Uint32Array(buffer, offset + 4, 1);
+        this.boneName = readString(buffer, this.boneNameOffset);
+
+        this.matrix = new Uint32Array(buffer, offset + 8, 16);
+    }
+
+    render() {
+        let att = cElem('div');
+        att.className = 'attachment';
+
+        let name = dataDiv('Name', this.name);
+        att.appendChild(name);
+
+        let bName = dataDiv('Bone Name', this.boneName);
+        att.appendChild(bName);
+
+        return att;
     }
 }
 class GR2 {
@@ -177,6 +259,12 @@ class GR2 {
                 this.meshes.push(res);
             }
 
+            this.attachments = [];
+            for (let i = 0; i < this.numAttachs; i++) {
+                var att = new GR2Attachment(buffer, this.offsetAttachments + i * 72);
+                this.attachments.push(att);
+            }
+
             this.materialNames = [];
             for (let i = 0; i < this.numMaterials; i++) {
                 var matName = readString(buffer, this.offsetMaterialNameOffsets + i * 4);
@@ -188,6 +276,96 @@ class GR2 {
                 var res = new GR2Bone(buffer, this.offsetBoneStructure + (136 * i));
                 this.bones.push(res);
             }
+        }
+    }
+
+    render() {
+        if (this.type == 0 || 1) {
+            let children = [];
+
+            {
+                let meshSection = cElem('div');
+                meshSection.className = 'data-info-section';
+
+                let meshes = labelDiv(`Meshes`);
+                meshSection.appendChild(meshes);
+
+                let meshesField = cElem('div');
+                meshesField.className = 'section-container';
+
+                let nMeshes = dataDiv("Number of Meshes", this.numMeshes);
+                meshesField.appendChild(nMeshes);
+
+                for (let i = 0; i < this.meshes.length; i++) {
+                    let mLabel = labelDiv('Mesh');
+                    meshesField.appendChild(mLabel);
+
+                    let m = this.meshes[i];
+                    let data = m.render();
+
+                    meshesField.appendChild(data);
+                }
+
+                meshSection.appendChild(meshesField);
+
+                children.push(meshSection);
+            }
+
+            {
+                let matSection = cElem('div');
+                matSection.className = 'data-info-section';
+
+                let mats = labelDiv(`Materials`);
+                matSection.appendChild(mats);
+
+                let matsField = cElem('div');
+                matsField.className = 'section-container';
+
+                for (let i = 0; i < this.materialNames.length; i++) {
+                    let matLabel = labelDiv('Material');
+                    matsField.appendChild(matLabel);
+                    
+                    let m = this.materialNames[i];
+                    let data = dataDiv('Name', m);
+
+                    matsField.appendChild(data);
+                }
+
+                matSection.appendChild(matsField);
+
+                children.push(matSection);
+            }
+
+            {
+                let attSection = cElem('div');
+                attSection.className = 'data-info-section';
+
+                let atts = labelDiv(`Attachments`);
+                attSection.appendChild(atts);
+
+                let attsField = cElem('div');
+                attsField.className = 'section-container';
+
+                for (let i = 0; i < this.attachments.length; i++) {
+                    let attLabel = labelDiv('Attachment');
+                    attsField.appendChild(attLabel);
+                    
+                    let m = this.attachments[i];
+                    let data = m.render();
+
+                    attsField.appendChild(data);
+                }
+
+                attSection.appendChild(attsField);
+
+                children.push(attSection);
+            }
+
+            return children;
+        } else {
+            let div = cElem("div")
+            div.innerHTML = "This is a skeleton, which is not supported yet";
+            return [div];
         }
     }
 }
@@ -210,6 +388,29 @@ function readString(buffer, posIn, length = undefined) {
         }
     }
     return outString
+}
+
+function dataDiv(name, value) {
+    let d = cElem("div");
+    d.className = "data-info-field";
+    
+    let dName = cElem('div');
+    dName.className = 'data-info__name';
+    dName.innerHTML = name + ":";
+    d.appendChild(dName);
+    
+    let dValue = cElem('div');
+    dValue.className = 'data-info__value';
+    dValue.innerHTML = value;
+    d.appendChild(dValue);
+
+    return d;
+}
+function labelDiv(iHTML) {
+    let d = cElem("div");
+    d.className = "data-label-field";
+    d.innerHTML = iHTML;
+    return d;
 }
 
 export { GR2 };

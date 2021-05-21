@@ -18,6 +18,7 @@
 ::-webkit-scrollbar-thumb:hover {
     background: #ffce00;
 }
+::-webkit-scrollbar-corner { background: transparent; }
 
 html, body {
     height: 100%;
@@ -30,6 +31,7 @@ html, body {
     --grey-black: #1a1a1a;
     --grey-black-hover: #2b2b2b;
     --medium-grey: #333;
+    --background-yellow-slicers: #ffce00;
 }
 
 .viewer-window {
@@ -312,45 +314,70 @@ html, body {
 }
 .data-view-container__data {
     width: 100%;
-    height: 70%
+    height: 70%;
+    overflow: hidden;
 }
 .data-body {
-
+    font-size: 14px;
+    color: white;
+    width: 100%;
+    height: auto;
+    overflow: scroll;
 }
-
 .data-info-section {
-
+    padding-left: 5px;
+    width: calc(100% - 10px);
 }
-
-.data-label-field {
-
-}
-
 .section-container {
+    padding-left: 15px;
+    width: calc(100% - 20px);
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
 
+    overflow: hidden;
 }
-
+.data-label-field-container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+.data-label-field__icon {
+    width: 13px;
+    height: 13px;
+    margin-bottom: 2px;
+    margin-right: 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.fa-plus-square, .fa-minus-square {
+    color: var(--background-yellow-slicers);
+}
+.data-label-field {
+    font-size: 16px;
+    width: 100%;
+}
+.data-label-field:hover {
+    cursor: pointer;
+    background-color: rgb(71, 71, 71);
+}
 .data-info-field {
-
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 5px;
 }
 .data-info__name {
-    
+    margin-right: 10px;
 }
 .data-info__value {
-    
-}
-
-.mesh {
-
-}
-.mesh-bone {
-    
-}
-.material {
-
-}
-.attachment {
-
+    color: rgb(112, 209, 248);
 }
 
 .export-data-options-container {

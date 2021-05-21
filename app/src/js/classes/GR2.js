@@ -105,7 +105,7 @@ class GR2MeshBone {
 
     render() {
         let bone = cElem('div');
-        bone.className = 'mesh-bone';
+        bone.className = 'section-container';
 
         let name = dataDiv('Name', this.name);
         bone.appendChild(name);
@@ -157,7 +157,7 @@ class GR2Mesh {
 
     render() {
         let mesh = cElem('div');
-        mesh.className = 'mesh';
+        mesh.className = 'section-container';
 
         let name = dataDiv('Name', this.name);
         mesh.appendChild(name);
@@ -222,7 +222,7 @@ class GR2Attachment {
 
     render() {
         let att = cElem('div');
-        att.className = 'attachment';
+        att.className = 'section-container';
 
         let name = dataDiv('Name', this.name);
         att.appendChild(name);
@@ -325,10 +325,15 @@ class GR2 {
                     let matLabel = labelDiv('Material');
                     matsField.appendChild(matLabel);
                     
+                    let mCont = cElem('div');
+                    mCont.className = 'section-container';
+
                     let m = this.materialNames[i];
                     let data = dataDiv('Name', m);
 
-                    matsField.appendChild(data);
+                    mCont.appendChild(data)
+
+                    matsField.appendChild(mCont);
                 }
 
                 matSection.appendChild(matsField);
@@ -408,8 +413,18 @@ function dataDiv(name, value) {
 }
 function labelDiv(iHTML) {
     let d = cElem("div");
-    d.className = "data-label-field";
-    d.innerHTML = iHTML;
+    d.className = "data-label-field-container";
+    
+    let dIconCont = cElem('div');
+    dIconCont.className = 'data-label-field__icon';
+    dIconCont.innerHTML = '<i class="fas fa-plus-square"></i>';
+    d.appendChild(dIconCont);
+    
+    let dName = cElem('div');
+    dName.className = 'data-label-field';
+    dName.innerHTML = iHTML;
+    d.appendChild(dName);
+
     return d;
 }
 

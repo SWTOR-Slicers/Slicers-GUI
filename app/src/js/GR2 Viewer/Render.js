@@ -142,6 +142,8 @@ function loadGR2(buffer) {
     dataContainer.innerHTML = "";
     dataContainer.append(...curModel.render());
 
+    regenListeners();
+
     curModel.threeGeometries = [];
     for (let i = 0; i < curModel.numMeshes; i++) {
         let mesh = curModel.meshes[i];
@@ -264,6 +266,25 @@ function resetCameraPosition() {
     camera.lookAt(0, 0, 0);
     controls.target.set(0, 0, 0);
     controls.update();
+}
+function regenListeners() {
+    let coll = document.getElementsByClassName("data-label-field-container");
+
+    for (let i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", (e) => {
+            e.currentTarget.classList.toggle("active");
+            let content = e.currentTarget.nextElementSibling;
+            let icon = e.currentTarget.children[0];
+
+            if (content.style.display == "flex") {
+                content.style.display = "none";
+                icon.innerHTML = '<i class="fas fa-plus-square"></i>';
+            } else {
+                content.style.display = "flex";
+                icon.innerHTML = '<i class="fas fa-minus-square"></i>';
+            }
+        });
+    }
 }
 //functions
 function clearObjFromScene() {

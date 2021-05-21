@@ -61,9 +61,6 @@ function initConsts() {
     ambLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambLight);
 
-    const axesHelper = new THREE.AxesHelper( 1.0 );
-    scene.add( axesHelper );
-
     renderer = new THREE.WebGLRenderer({
         canvas: canvas,
         antialias: true,

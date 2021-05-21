@@ -157,7 +157,6 @@ function createMaterial(bufferGeometry, shouldRemoveLoad) {
         var threeMesh = new THREE.Mesh(bufferGeometry, shader);
 
         parsedGR2s.push(threeMesh);
-
         scene.add(threeMesh);
     }
     if (shouldRemoveLoad) {

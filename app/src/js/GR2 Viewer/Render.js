@@ -61,6 +61,8 @@ function initConsts() {
     ambLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambLight);
 
+    const axesHelper = new THREE.AxesHelper( 1.0 );
+    scene.add( axesHelper );
 
     renderer = new THREE.WebGLRenderer({
         canvas: canvas,
@@ -163,7 +165,13 @@ function createMaterial(bufferGeometry, shouldRemoveLoad) {
         var threeMesh = new THREE.Mesh(bufferGeometry, shader);
 
         parsedGR2s.push(threeMesh);
+
+        let entry = customObjectList[0];
+        let midModel = (entry.boundingBox[5] - entry.boundingBox[1]) / 2 + entry.boundingBox[1];
+
         scene.add(threeMesh);
+
+        threeMesh.position.set(0.0, -midModel, 0.0);
     }
     if (shouldRemoveLoad) {
         display();
@@ -245,10 +253,13 @@ function addNavListeners() {
     }
 }
 function resetCameraPosition() {
-    let bb = customObjectList[0].boundingBox
-    camera.position.set(0, bb[5] * GOOD_CAM_HEIGHT_MOD - 0.012, 0.09237256547064941);
-    camera.lookAt(0, (bb[5] / 3 * 2) + 0.008, 0);
-    controls.target.set(0, (bb[5] / 3 * 2) + 0.008, 0);
+    let bb = customObjectList[0].boundingBox;
+    
+    let midModel = (bb[5] - bb[1]) / 2 + bb[1];
+
+    camera.position.set(0, (bb[5] * GOOD_CAM_HEIGHT_MOD - 0.012) - midModel, 0.09237256547064941);
+    camera.lookAt(0, 0, 0);
+    controls.target.set(0, 0, 0);
     controls.update();
 }
 //functions

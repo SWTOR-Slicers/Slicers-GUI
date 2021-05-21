@@ -86,7 +86,7 @@ export class FolderTree {
 
             div.appendChild(fileNameDiv);
 
-            div.onclick = (e) => {
+            div.ondblclick = (e) => {
                 let pathElem = getChildElements(e.currentTarget)[1];
                 let dirPath = path.resolve(this.path, pathElem.innerHTML);
 

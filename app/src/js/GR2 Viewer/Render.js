@@ -1,5 +1,6 @@
 const THREE = require('three');
 import { OrbitControls } from "../externals/ModOrbitControls.js";
+import { Resizer } from "../externals/Resizer.js";
 import { BufferGeometryUtils } from "https://unpkg.com/three@0.124.0/examples/jsm/utils/BufferGeometryUtils.js";
 import { WEBGL } from "https://unpkg.com/three@0.124.0/examples/jsm/WebGL.js";
 import { GR2 } from "../classes/GR2.js";
@@ -15,9 +16,9 @@ let customObjectList = [];
 let camNeedsReset;
 let zoomInInterval, zoomOutInterval, rotateLeftInterval, rotateRightInterval;
 let canvas, loader;
-let renderer;
+let renderer, resizer;
 let scene, controls, camera;
-let pointLight;
+let pointLight, ambLight;
 
 const fov = 75;
 const aspect = 1;
@@ -51,13 +52,15 @@ function initConsts() {
     camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.set(initX, initY, initZ);
     camera.up = new THREE.Vector3(0, 1, 0);
-
     scene.add(camera);
 
-    pointLight = new THREE.PointLight(0xffffff, 1.2);
-    pointLight.position.set(-0.5, 1.0, 0.55);
-
+    pointLight = new THREE.PointLight(0xffffff, 1.0);
+    pointLight.position.set(-0.05, 0.30, 0.055);
     scene.add(pointLight);
+
+    ambLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambLight);
+
 
     renderer = new THREE.WebGLRenderer({
         canvas: canvas,
@@ -66,13 +69,13 @@ function initConsts() {
         preserveDrawingBuffer: true
     });
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(480, 480);
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
     renderer.setClearColor(0xffffff, 0);
+
+    resizer = new Resizer(canvas, camera, renderer);
 
     controls = new OrbitControls(camera, canvas);
     camNeedsReset = true;
-
-    //scene.translateY(0.01);
 }
 //main func
 export async function showModal(path) {
@@ -149,8 +152,11 @@ function loadGR2(buffer) {
 }
 //load Materials
 function createMaterial(bufferGeometry, shouldRemoveLoad) {
-    let shader = new THREE.MeshPhongMaterial({
-
+    let shader = new THREE.MeshStandardMaterial({
+        color: "#918276",
+        roughness: 0.0,
+        metalness: 0.0,
+        side: THREE.DoubleSide
     });
 
     if (shader) {
@@ -296,8 +302,8 @@ function assembleThreeJSPieceMesh(mesh) {
         geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
         geom.setAttribute('uv', new THREE.Float32BufferAttribute(UVs, 2));
 
-        geom.setAttribute('aNormal', new THREE.Float32BufferAttribute(shaderNormals, 4));
-        geom.setAttribute('aTangent', new THREE.Float32BufferAttribute(tangents, 4));
+        geom.setAttribute('normal', new THREE.Float32BufferAttribute(shaderNormals, 4));
+        geom.setAttribute('tangent', new THREE.Float32BufferAttribute(tangents, 4));
 
         resArray.push(geom);
     }

@@ -317,6 +317,42 @@ html, body {
 .data-body {
 
 }
+
+.data-info-section {
+
+}
+
+.data-label-field {
+
+}
+
+.section-container {
+
+}
+
+.data-info-field {
+
+}
+.data-info__name {
+    
+}
+.data-info__value {
+    
+}
+
+.mesh {
+
+}
+.mesh-bone {
+    
+}
+.material {
+
+}
+.attachment {
+
+}
+
 .export-data-options-container {
     width: 100%;
     height: 30%

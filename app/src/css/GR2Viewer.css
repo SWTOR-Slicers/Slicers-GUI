@@ -151,6 +151,12 @@ html, body {
     width: calc(100% - 20px);
     border-radius: 6px;
     background-color: var(--medium-grey);
+    overflow: hidden;
+}
+.tree-list-container {
+    width: 100%;
+    height: calc(100% - 53px);
+    overflow: scroll;
 }
 .file-tree-elements {
     height: auto;

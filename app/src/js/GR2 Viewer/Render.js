@@ -5,6 +5,11 @@ import { BufferGeometryUtils } from "https://unpkg.com/three@0.124.0/examples/js
 import { WEBGL } from "https://unpkg.com/three@0.124.0/examples/jsm/WebGL.js";
 import { GR2 } from "../classes/GR2.js";
 
+let modalColor = document.getElementById("modalColor");
+let wireframeContainer = document.getElementById("wireframeContainer");
+let wireFrame = document.getElementById("wireFrame");
+let fovInput = document.getElementById("fovInput");
+
 var resetCamera = document.getElementById("resetCameraPosition");
 var zoomInBtn = document.getElementById("zoomInButton");
 var zoomOutBtn = document.getElementById("zoomOutButton");
@@ -41,6 +46,7 @@ const GOOD_CAM_HEIGHT_MOD = 1.0427657658789222;
 function init() {
     initConsts();
     addNavListeners();
+    addOptionsListeners();
 }
 
 function initConsts() {
@@ -184,6 +190,18 @@ function createMaterial(bufferGeometry, shouldRemoveLoad) {
 }
 
 //utils
+function addOptionsListeners() {
+    modalColor.addEventListener("change", (e) => {
+
+    });
+    wireframeContainer.addEventListener("click", (e) => {
+        wireFrame.checked = !wireFrame.checked;
+        //handle change here
+    });
+    fovInput.addEventListener("change", (e) => {
+
+    });
+}
 function addNavListeners() {
     resetCamera.onclick = () => {
         camNeedsReset = true;

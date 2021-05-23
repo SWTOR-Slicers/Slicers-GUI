@@ -56,6 +56,10 @@ function initListeners() {
     let res = fs.readFileSync(__dirname + "/resources/config.json");
     let json = JSON.parse(res);
 
+    cache.assetsFolder = json.assetsFolder;
+    cache.outputFolder = json.outputFolder;
+    cache.dataFolder = json.dataFolder;
+
     mainWindow.webContents.send("sendConfigJSON", json);
   })
   ipcMain.on("showDialog", async (event, data) => {
@@ -161,20 +165,18 @@ function initGR2Listeners(window) {
   })
 }
 
-function locate() {
-  if (cache.dataFolder = "" || cache.assetsFolder == "") {
-    let res = fs.readFileSync(__dirname + "/resources/config.json");
-    let json = JSON.parse(res);
-    
-    cache.assetsFolder = json.assetsFolder;
-    cache.outputFolder = json.outputFolder;
-    cache.dataFolder = json.dataFolder;
-  }
-
-  child.execFile(__dirname + "/resources/scripts/FileLocator/main.exe", [cache.dataFolder, cache.outputFolder + "\\resources"], (err) => {
-    if (err) console.log(err);
+async function locate() {
+  try {
+    console.log(cache);
+    const temp = cache.dataFolder;
+    const params = [temp, cache.outputFolder + "\\resources"];
+    child.execFileSync(__dirname + "\\resources\\scripts\\FileLocator\\main.exe", params);
+    console.log(cache);
+  } catch (err) {
+    console.log(err);
+  } finally {
     mainWindow.webContents.send("locCompl", "");
-  });
+  }
 }
 
 async function updateJSON(param, val) {

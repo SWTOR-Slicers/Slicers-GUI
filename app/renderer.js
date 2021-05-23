@@ -38,6 +38,7 @@ let getPatchBtn = document.getElementById("getPatchBtn");
 
 //functions
 function initialize() {
+    initSubscribes();
     setConfigData();
 
     setupListeners();
@@ -46,6 +47,76 @@ function initialize() {
 }
 
 function setConfigData() {
+    ipc.send('getConfigJSON', "");
+}
+
+function setupListeners() {
+    //file path choosers
+    assetPopupBtn.addEventListener('click', () => {ipc.send('showDialog', 'assetsFolder');});
+    assetTextField.addEventListener("change", (e) => {
+        let newVal = e.currentTarget.value;
+        ipc.send('updateJSON', ['assetsFolder', newVal]);
+    });
+
+    outputPopupBtn.addEventListener('click', () => {ipc.send('showDialog', 'outputFolder');});
+    outputTextField.addEventListener("change", (e) => {
+        let newVal = e.currentTarget.value;
+        ipc.send('updateJSON', ['outputFolder', newVal]);
+    });
+
+    dataPopupBtn.addEventListener('click', () => {ipc.send('showDialog', 'dataFolder');});
+    dataTextField.addEventListener("change", (e) => {
+        let newVal = e.currentTarget.value;
+        ipc.send('updateJSON', ['dataFolder', newVal]);
+    });
+
+    //extraction
+    extrBtn.addEventListener("click", (e) => {
+        ipc.send('runExec', 'extraction');
+        log(`Extraction: Assets started, please stand by.`);
+    });
+    lctBtn.addEventListener("click", (e) => {
+        ipc.send('runExec', 'locate');
+        log(`Extraction: Locator started, please stand by.`);
+    });
+    genHashBtn.addEventListener("click", (e) => {
+        ipc.send('runExec', 'genHash');
+        log(`Extraction: Generate Hash started, please stand by.`);
+    })
+
+    //viewers
+    gr2ViewBtn.addEventListener("click", (e) => {
+        ipc.send('runExec', 'gr2Viewer');
+        log(`Viewer: GR2 opened.`);
+    });
+    nvBtn.addEventListener("click", (e) => {
+        ipc.send('runExec', 'nodeViewer');
+        log(`Viewer: Node opened.`);
+    });
+    modelViewBtn.addEventListener("click", (e) => {
+        ipc.send('runExec', 'modelViewer');
+        log(`Viewer: Model opened.`);
+    });
+    worldViewBtn.addEventListener("click", (e) => {
+        ipc.send('runExec', 'worldViewer');
+        log(`Viewer: World opened.`);
+    });
+
+    //utilities
+    fileChangerBtn.addEventListener("click", (e) => {
+        ipc.send('runExec', 'convBnk');
+        log(`Utlity: File-Changer opened.`);
+    });
+    bnkConvBtn.addEventListener("click", (e) => {
+        ipc.send('runExec', 'convBnk');
+        log(`Utlity: BNK-Converter opened.`);
+    });
+    getPatchBtn.addEventListener("click", (e) => {
+        ipc.send('runExec', 'getPatch');
+        log(`Utlity: Patch-Getter opened.`);
+    });
+}
+function initSubscribes() {
     ipc.receive('sendConfigJSON', (data) => {
         let json = data;
 
@@ -57,143 +128,69 @@ function setConfigData() {
         
         dataTextField.value = json.dataFolder;
         oldDataValue = json.dataFolder;
-    })
-    ipc.send('getConfigJSON', "");
-}
-
-function setupListeners() {
-    //file path choosers
-    assetPopupBtn.addEventListener('click', () => {
-        ipc.receive('assetsFolderReply', (data) => {
-            processResponse(data, assetTextField, 'assetsFolder');
-        });
-        ipc.send('showDialog', 'assetsFolder');
     });
-    assetTextField.addEventListener("change", (e) => {
-        let newVal = e.currentTarget.value;
-        ipc.receive('isDirAsset', (data) => {
-            if (data) {
-                log(`Assigned new path to assetsFolder field.`)
-                oldAssetValue = newVal;
-            } else {
-                log(`Invalid path. Reseting assetsFolder field to ${oldAssetValue}`);
-            }
-        });
-        ipc.send('updateJSON', ['assetsFolder', newVal]);
+    ipc.receive('assetsFolderReply', (data) => {
+        processResponse(data, assetTextField, 'assetsFolder');
     });
-
-    outputPopupBtn.addEventListener('click', () => {
-        ipc.receive('outputFolderReply', (data) => {
-            processResponse(data, outputTextField, 'outputFolder');
-        });
-        ipc.send('showDialog', 'outputFolder');
+    ipc.receive('isDirAsset', (data) => {
+        if (data) {
+            log(`Assigned new path to assetsFolder field.`)
+            oldAssetValue = assetTextField.value;
+        } else {
+            log(`Invalid path. Reseting assetsFolder field to ${oldAssetValue}`);
+        }
     });
-    outputTextField.addEventListener("change", (e) => {
-        let newVal = e.currentTarget.value;
-        ipc.receive('isDirOut', (data) => {
-            if (data) {
-                log(`Assigned new path to outputFolder field.`)
-                oldOutputValue = newVal;
-            } else {
-                log(`Invalid path. Reseting outputFolder field to ${oldOutputValue}`);
-            }
-        });
-        ipc.send('updateJSON', ['outputFolder', newVal]);
+    ipc.receive('outputFolderReply', (data) => {
+        processResponse(data, outputTextField, 'outputFolder');
     });
-
-    dataPopupBtn.addEventListener('click', () => {
-        ipc.receive('dataFolderReply', (data) => {
-            processResponse(data, dataTextField, 'dataFolder');
-        });
-        ipc.send('showDialog', 'dataFolder');
+    ipc.receive('isDirOut', (data) => {
+        if (data) {
+            log(`Assigned new path to outputFolder field.`)
+            oldOutputValue = outputTextField.value;
+        } else {
+            log(`Invalid path. Reseting outputFolder field to ${oldOutputValue}`);
+        }
     });
-    dataTextField.addEventListener("change", (e) => {
-        let newVal = e.currentTarget.value;
-        ipc.receive('isDirDat', (data) => {
-            if (data) {
-                log(`Assigned new path to dataFolder field.`)
-                oldDataValue = newVal;
-            } else {
-                log(`Invalid path. Reseting dataFolder field to ${oldDataValue}`);
-            }
-        });
-        ipc.send('updateJSON', ['dataFolder', newVal]);
+    ipc.receive('dataFolderReply', (data) => {
+        processResponse(data, dataTextField, 'dataFolder');
     });
-
-    //extraction
-    extrBtn.addEventListener("click", (e) => {
-        ipc.receive('extrCompl', (data) => {
-            log(`Extraction: Assets finished.`);
-        });
-        ipc.send('runExec', 'extraction');
-        log(`Extraction: Assets started, please stand by.`);
+    ipc.receive('isDirDat', (data) => {
+        if (data) {
+            log(`Assigned new path to dataFolder field.`)
+            oldDataValue = dataTextField.value;
+        } else {
+            log(`Invalid path. Reseting dataFolder field to ${oldDataValue}`);
+        }
     });
-    lctBtn.addEventListener("click", (e) => {
-        ipc.receive('locCompl', (data) => {
-            log(`Extraction: Locator finished.`);
-        });
-        ipc.send('runExec', 'locate');
-        log(`Extraction: Locator started, please stand by.`);
+    ipc.receive('extrCompl', (data) => {
+        log(`Extraction: Assets finished.`);
     });
-    genHashBtn.addEventListener("click", (e) => {
-        ipc.receive('genHashCompl', (data) => {
-            log(`Extraction: Generate Hash finished.`);
-        });
-        ipc.send('runExec', 'genHash');
-        log(`Extraction: Generate Hash started, please stand by.`);
-    })
-
-    //viewers
-    gr2ViewBtn.addEventListener("click", (e) => {
-        ipc.receive('gr2ViewClosed', (data) => {
-            log(`Viewer: GR2 closed.`);
-        });
-        ipc.send('runExec', 'gr2Viewer');
-        log(`Viewer: GR2 opened.`);
+    ipc.receive('locCompl', (data) => {
+        log(`Extraction: Locator finished.`);
     });
-    nvBtn.addEventListener("click", (e) => {
-        ipc.receive('nodeViewClosed', (data) => {
-            log(`Viewer: Node closed.`);
-        });
-        ipc.send('runExec', 'nodeViewer');
-        log(`Viewer: Node opened.`);
+    ipc.receive('genHashCompl', (data) => {
+        log(`Extraction: Generate Hash finished.`);
     });
-    modelViewBtn.addEventListener("click", (e) => {
-        ipc.receive('modViewClosed', (data) => {
-            log(`Viewer: Model closed.`);
-        });
-        ipc.send('runExec', 'modelViewer');
-        log(`Viewer: Model opened.`);
+    ipc.receive('gr2ViewClosed', (data) => {
+        log(`Viewer: GR2 closed.`);
     });
-    worldViewBtn.addEventListener("click", (e) => {
-        ipc.receive('worViewClosed', (data) => {
-            log(`Viewer: World closed.`);
-        });
-        ipc.send('runExec', 'worldViewer');
-        log(`Viewer: World opened.`);
+    ipc.receive('nodeViewClosed', (data) => {
+        log(`Viewer: Node closed.`);
     });
-
-    //utilities
-    fileChangerBtn.addEventListener("click", (e) => {
-        ipc.receive('utilFileChngClosed', (data) => {
-            log(`Utility: File-Changer closed.`);
-        });
-        ipc.send('runExec', 'convBnk');
-        log(`Utlity: File-Changer opened.`);
+    ipc.receive('modViewClosed', (data) => {
+        log(`Viewer: Model closed.`);
     });
-    bnkConvBtn.addEventListener("click", (e) => {
-        ipc.receive('utilBnkClosed', (data) => {
-            log(`Utility: BNK-Converter closed.`);
-        });
-        ipc.send('runExec', 'convBnk');
-        log(`Utlity: BNK-Converter opened.`);
+    ipc.receive('worViewClosed', (data) => {
+        log(`Viewer: World closed.`);
     });
-    getPatchBtn.addEventListener("click", (e) => {
-        ipc.receive('utilGPClosed', (data) => {
-            log(`Utility: Patch-Getter closed.`);
-        });
-        ipc.send('runExec', 'getPatch');
-        log(`Utlity: Patch-Getter opened.`);
+    ipc.receive('utilFileChngClosed', (data) => {
+        log(`Utility: File-Changer closed.`);
+    });
+    ipc.receive('utilBnkClosed', (data) => {
+        log(`Utility: BNK-Converter closed.`);
+    });
+    ipc.receive('utilGPClosed', (data) => {
+        log(`Utility: Patch-Getter closed.`);
     });
 }
 

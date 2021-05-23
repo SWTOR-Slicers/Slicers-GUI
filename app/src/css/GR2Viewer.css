@@ -385,7 +385,7 @@ html, body {
     height: 30%
 }
 .data-options-body {
-    width: 100%;
+    width: calc(100% - 10px);
     height: calc(100% - 35px);
     margin-left: 5px;
 }
@@ -408,4 +408,44 @@ html, body {
     width: auto;
     margin-right: 7px;
     padding: 4px auto;
+}
+.data-options-option {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+.option-name {
+    color: white;
+}
+.option-data {
+    margin-left: 7px;
+}
+input[type="color"] {
+    appearance: auto;
+    width: 40px;
+    height: 20px;
+    background-color: var(--grey-black);
+    cursor: default;
+    border: 1px solid #000;
+    outline: none;
+    padding: 1px 2px;
+}
+.data-field-input{
+    width: 40px;
+    background-color: var(--grey-black);
+    color: white;
+    outline: none;
+    border: 1px solid #000;
+    border-radius: 3px;
+    height: 16px;
+}
+#modalColor {
+    margin-left: auto;
+}
+#fovInput {
+    margin-left: 10px;
+}
+.data-field-input:focus{
+    border: 1px solid var(--background-yellow-slicers);
 }

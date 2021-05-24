@@ -22,10 +22,7 @@ function createWindow () {
   });
 
   mainWindow.removeMenu();
-
   mainWindow.setResizable(false);
-
-  // and load the index.html of the app.
   mainWindow.loadFile('index.html');
 
   mainWindow.on('close', () => {
@@ -137,8 +134,6 @@ function initGR2Viewer() {
   });
 
   win.removeMenu();
-  win.webContents.openDevTools();
-
   win.loadURL(`${__dirname}/src/html/GR2Viewer.html`);
 
   win.on('close', () => {
@@ -151,7 +146,6 @@ function initGR2Viewer() {
 
   initGR2Listeners(win);
 }
-
 function initGR2Listeners(window) {
   ipcMain.on("showDialogGR2", async (event, data) => {
     dialog.showOpenDialog(window, { properties: ['openDirectory'] }).then(async (dir) => {
@@ -177,7 +171,6 @@ async function locate() {
     mainWindow.webContents.send("locCompl", "");
   }
 }
-
 async function updateJSON(param, val) {
   let res = fs.readFileSync(__dirname + "/resources/config.json");
   let json = JSON.parse(res);

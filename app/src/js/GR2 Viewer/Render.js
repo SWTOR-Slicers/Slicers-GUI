@@ -4,11 +4,18 @@ import { Resizer } from "../externals/Resizer.js";
 import { BufferGeometryUtils } from "https://unpkg.com/three@0.124.0/examples/jsm/utils/BufferGeometryUtils.js";
 import { WEBGL } from "https://unpkg.com/three@0.124.0/examples/jsm/WebGL.js";
 import { GR2 } from "../classes/GR2.js";
+import { exportObj } from "../export/ExportObj.js";
+import { exportJSON } from "../export/ExportJSON.js";
+import { exportFBX } from "../export/ExportFBX.js";
 
 let modalColor = document.getElementById("modalColor");
 let wireframeContainer = document.getElementById("wireframeContainer");
 let wireFrame = document.getElementById("wireFrame");
 let fovInput = document.getElementById("fovInput");
+
+let exportAsObj = document.getElementById("exportAsObj");
+let exportAsJSON = document.getElementById("exportAsJSON");
+let exportAsFBX = document.getElementById("exportAsFBX")
 
 var resetCamera = document.getElementById("resetCameraPosition");
 var zoomInBtn = document.getElementById("zoomInButton");
@@ -35,6 +42,9 @@ const far = 50;
 let initX = 0;
 let initY = 0;
 let initZ = 0;
+
+let isWire = false;
+let mColor = modalColor.value;
 
 THREE.Cache.enabled = true;
 
@@ -166,7 +176,8 @@ function loadGR2(buffer) {
 //load Materials
 function createMaterial(bufferGeometry, shouldRemoveLoad) {
     let shader = new THREE.MeshStandardMaterial({
-        color: "#918276",
+        color: mColor,
+        wireframe: isWire,
         roughness: 0.0,
         metalness: 0.0,
         side: THREE.DoubleSide
@@ -192,14 +203,35 @@ function createMaterial(bufferGeometry, shouldRemoveLoad) {
 //utils
 function addOptionsListeners() {
     modalColor.addEventListener("change", (e) => {
-
+        if (parsedGR2s[0]) {
+            parsedGR2s[0].material.color.set(e.target.value);
+        }
     });
     wireframeContainer.addEventListener("click", (e) => {
         wireFrame.checked = !wireFrame.checked;
-        //handle change here
+        if (parsedGR2s[0]) {
+            parsedGR2s[0].material.wireframe = wireFrame.checked;
+        }
     });
     fovInput.addEventListener("change", (e) => {
-
+        let val = e.target.value % 360;
+        camera.fov = val;
+        camera.updateProjectionMatrix();
+    });
+    exportAsObj.addEventListener("click", (e) => {
+        if (customObjectList[0]) {
+            exportObj(customObjectList[0]);
+        }
+    });
+    exportAsJSON.addEventListener("click", (e) => {
+        if (customObjectList[0]) {
+            exportJSON(customObjectList[0]);
+        }
+    });
+    exportAsFBX.addEventListener("click", (e) => {
+        if (customObjectList[0]) {
+            exportFBX(customObjectList[0]);
+        }
     });
 }
 function addNavListeners() {
@@ -346,9 +378,13 @@ function assembleThreeJSPieceMesh(mesh) {
 
                 UVs.push(v.u, v.v);
 
-                boneWeights.push(...v.weights);
+                if (v.weights) {
+                    boneWeights.push(...v.weights);
+                }
 
-                boneIndices.push(...v.bones);
+                if (v.bones) {
+                    boneIndices.push(...v.bones);
+                }
             }
         }
 

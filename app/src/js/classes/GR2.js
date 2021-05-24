@@ -233,6 +233,22 @@ class GR2Attachment {
         return att;
     }
 }
+class GR2Material {
+    constructor (buffer, offset) {
+        this.nameOffset = new Uint32Array(buffer, offset, 1);
+        this.name = readString(buffer, this.nameOffset);
+    }
+
+    render() {
+        let mat = cElem('div');
+        mat.className = 'section-container';
+
+        let name = dataDiv('Name', this.name);
+        mat.appendChild(name);
+
+        return mat;
+    }
+}
 class GR2 {
     constructor(buffer) {
         this.type = new Uint32Array(buffer, 20, 1)[0];
@@ -265,10 +281,10 @@ class GR2 {
                 this.attachments.push(att);
             }
 
-            this.materialNames = [];
+            this.materials = [];
             for (let i = 0; i < this.numMaterials; i++) {
-                var matName = readString(buffer, this.offsetMaterialNameOffsets + i * 4);
-                this.materialNames.push(matName);
+                let m = new GR2Material(buffer, this.offsetMaterialNameOffsets + i * 4);
+                this.materials.push(m);
             }
         } else if (this.type == 2) {
             this.bones = [];
@@ -321,19 +337,14 @@ class GR2 {
                 let matsField = cElem('div');
                 matsField.className = 'section-container';
 
-                for (let i = 0; i < this.materialNames.length; i++) {
-                    let matLabel = labelDiv('Material');
-                    matsField.appendChild(matLabel);
-                    
-                    let mCont = cElem('div');
-                    mCont.className = 'section-container';
+                for (let i = 0; i < this.materials.length; i++) {
+                    let mLabel = labelDiv('Material');
+                    matsField.appendChild(mLabel);
 
-                    let m = this.materialNames[i];
-                    let data = dataDiv('Name', m);
+                    let m = this.materials[i];
+                    let data = m.render();
 
-                    mCont.appendChild(data)
-
-                    matsField.appendChild(mCont);
+                    matsField.appendChild(data);
                 }
 
                 matSection.appendChild(matsField);

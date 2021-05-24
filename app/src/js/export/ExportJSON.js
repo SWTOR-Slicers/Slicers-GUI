@@ -1,11 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 
-const outputElem = document.getElementById('outputTextField');
-
 export function exportJSON(gr2) {
+    const configPath = path.normalize(path.join(__dirname, "../..", "/resources/config.json"));
+    let res = fs.readFileSync(configPath);
+    let json = JSON.parse(res);
+    const outputElemPath = json.outputFolder;
+
     const fileName = gr2.meshes[0].name;
-    const folderPath = path.join(outputElem.value, `output`);
+    const folderPath = path.join(outputElemPath, `output`);
     const filePath = path.join(folderPath, `${fileName}.json`);
 
     //create output directory if it does not already exist

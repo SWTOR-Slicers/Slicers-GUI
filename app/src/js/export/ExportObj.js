@@ -1,35 +1,34 @@
 const fs = require('fs');
 const path = require('path');
 
-const outputElem = document.getElementById('outputTextField');
-
 export function exportObj(gr2) {
+    const configPath = path.normalize(path.join(__dirname, "../..", "/resources/config.json"));
+    let res = fs.readFileSync(configPath);
+    let json = JSON.parse(res);
+    const outputElemPath = json.outputFolder;
+
     const fileName = gr2.meshes[0].name;
     const delimeter = `# <------- Next section ------->\n`;
-    const folderPath = path.join(outputElem.value, `output`);
+    const folderPath = path.join(outputElemPath, `output`);
     const filePath = path.join(folderPath, `${fileName}.obj`);
 
-    let info = `
-    # Model by Bioware/EA\n
-    # Conversion written by Tormak, generated with the Slicers GUI\n
-    o ${fileName}\n
-    `;
+    let info = `# Model by Bioware/EA\n# Conversion written by Tormak, generated with the Slicers GUI\no ${fileName}\n`;
 
     let verts = ``;
     let uvs = ``;
     let normals = ``;
     let faces = ``;
 
-    for (mesh of gr2.meshes) {
-        for (v of mesh.vertices) {
-            verts.concat(`v ${v.x} ${v.y} ${v.z}\n`);
+    for (const mesh of gr2.meshes) {
+        for (const v of mesh.vertices) {
+            verts = verts.concat(`v ${v.x.toFixed(6)} ${v.y.toFixed(6)} ${v.z.toFixed(6)}\n`);
             
-            uvs.concat(`vt ${v.u} ${v.v}\n`);
+            uvs = uvs.concat(`vt ${v.u} ${v.v}\n`);
             
-            normals.concat(`vn ${v.normal.x} ${v.normal.y} ${v.normal.z}\n`);
+            normals = normals.concat(`vn ${v.normal.x.toFixed(6)} ${v.normal.y.toFixed(6)} ${v.normal.z.toFixed(6)}\n`);
         }
-        for (f of mesh.faces) {
-            faces.concat(`f ${f.indices[0] + 1}/${f.indices[0] + 1}/${f.indices[0] + 1} ${f.indices[1] + 1}/${f.indices[1] + 1}/${f.indices[1] + 1} ${f.indices[2] + 1}/${f.indices[2] + 1}/${f.indices[2] + 1}\n`);
+        for (const f of mesh.faces) {
+            faces = faces.concat(`f ${f.indices[0] + 1}/${f.indices[0] + 1}/${f.indices[0] + 1} ${f.indices[1] + 1}/${f.indices[1] + 1}/${f.indices[1] + 1} ${f.indices[2] + 1}/${f.indices[2] + 1}/${f.indices[2] + 1}\n`);
         }
     }
 

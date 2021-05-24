@@ -13,8 +13,8 @@ const cache = {
 
 function createWindow () {
   mainWindow = new BrowserWindow({
-    width: 1000, //716 for production
-    height: 700, //539 for production
+    width: 716,
+    height: 539,
     webPreferences: {
       preload: path.join(__dirname, '/preload.js')
     },
@@ -22,7 +22,6 @@ function createWindow () {
   });
 
   mainWindow.removeMenu();
-  mainWindow.webContents.openDevTools();
 
   mainWindow.setResizable(false);
 

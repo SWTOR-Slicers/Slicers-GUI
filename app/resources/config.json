@@ -1,1 +1,22 @@
-{"assetsFolder":"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Star Wars - The Old Republic\\Assets","outputFolder":"D:\\SWTOR Extraction\\Extractions\\6.2.1a","dataFolder":"C:\\Users\\Shane\\Desktop\\testing"}
+{
+    "assetsFolder":"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Star Wars - The Old Republic\\Assets",
+    "outputFolder":"D:\\SWTOR Extraction\\Extractions\\6.2.1a",
+    "dataFolder":"C:\\Users\\Shane\\Desktop\\Imperial LE-34 Miniprobe",
+    "getPatch": {
+        "devmode": {
+            "enabled": true
+        },
+        "version": {
+            "name": "Live"
+        }, 
+        "build": {
+            "name": "XtoY"
+        }, 
+        "saveto": {
+            "name": "D:\\SWTOR Extraction\\Extractions\\patches"
+        }, 
+        "lang": {
+            "name": "main"
+        }
+    }
+}

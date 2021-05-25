@@ -1,12 +1,12 @@
 const THREE = require('three');
-import { OrbitControls } from "../externals/ModOrbitControls.js";
-import { Resizer } from "../externals/Resizer.js";
+import { OrbitControls } from "../../externals/ModOrbitControls.js";
+import { Resizer } from "../../externals/Resizer.js";
 import { BufferGeometryUtils } from "https://unpkg.com/three@0.124.0/examples/jsm/utils/BufferGeometryUtils.js";
 import { WEBGL } from "https://unpkg.com/three@0.124.0/examples/jsm/WebGL.js";
-import { GR2 } from "../classes/GR2.js";
-import { exportObj } from "../export/ExportObj.js";
-import { exportJSON } from "../export/ExportJSON.js";
-import { exportFBX } from "../export/ExportFBX.js";
+import { GR2 } from "../../classes/GR2.js";
+import { exportObj } from "../../export/ExportObj.js";
+import { exportJSON } from "../../export/ExportJSON.js";
+import { exportFBX } from "../../export/ExportFBX.js";
 
 let modalColor = document.getElementById("modalColor");
 let wireframeContainer = document.getElementById("wireframeContainer");

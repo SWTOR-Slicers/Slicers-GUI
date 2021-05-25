@@ -106,18 +106,24 @@ function initListeners() {
       case "genHash":
         
         break;
+      case "getPatch":
+        initGetPatchGUI();
+        break;
       case "gr2Viewer":
         initGR2Viewer();
         break;
       case "nodeViewer":
         //run node viewer
-        // child.execFile(__dirname + "/resources/scripts/Node Viewer/NodeViewer.exe", (err, data) => {
-        //   if (err) console.log(err);
-        //   console.log(data.toString());
-        // });
         break;
     }
   });
+}
+
+function initGetPatchGUI() {
+
+}
+function initGetPatchListeners(window) {
+
 }
 
 function initGR2Viewer() {
@@ -178,26 +184,4 @@ async function updateJSON(param, val) {
   cache[param] = val;
 
   fs.writeFileSync(__dirname + "/resources/config.json", JSON.stringify(json), 'utf-8');
-  if (param == "assetsFolder") {
-    handleXMLUpadate(val);
-  }
-}
-function handleXMLUpadate(val) {
-  // fs.readFile(__dirname + "/resources/scripts/Node Viewer/NodeViewer.exe.config", "utf-8", function(err, data) {
-  //   if (err) console.log(err);
-    
-  //   xml2js.parseString(data, function(err, result) {
-  //     if (err) console.log(err);
-  
-  //     var json = result;
-  //     json.configuration.appSettings[0].add[0]['$'].value = val;
-  
-  //     var builder = new xml2js.Builder();
-  //     var xml = builder.buildObject(json);
-  
-  //     fs.writeFile(__dirname + "/resources/scripts/Node Viewer/NodeViewer.exe.config", xml, function(err, data) {
-  //       if (err) console.log(err);
-  //     });
-  //   });
-  // });
 }

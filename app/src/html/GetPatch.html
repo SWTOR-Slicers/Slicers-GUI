@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <script src="../../node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
+    <link rel="stylesheet" href="../css/universal.css">
+    <link rel="stylesheet" href="../css/GetPatch.css">
+    <title>Patch Downloader</title>
+</head>
+<body>
+    <div class="viewer-window">
+        <div class="viewer-body element-border">
+            <div class="header-container">
+                <h2 class="h2">SWTOR Patch Downloader</h2>
+            </div>
+            <div class="body-container">
+                <div class="patch-settings">
+                    <div class="setting version-setting">
+                        <label for="versionDrop">Version: </label>
+                        <select name="versionDrop" id="versionDrop">
+                            <option value="live">live</option>
+                            <option value="pts">pts</option>
+                            <option value="movies">movies</option>
+                            <option value="liveqatest">liveqatest</option>
+                            <option value="betatest">betates</option>
+                            <option value="cstraining">cstraining</option>
+                            <option value="liveptest">liveptest</option>
+                        </select>
+                    </div>
+                    <div class="setting file-type-setting">
+                        <label for="fileType">File Type: </label>
+                        <select name="fileType" id="fileType">
+                            <option value="main">main</option>
+                            <option value="client">client</option>
+                            <option value="en_us">en_us</option>
+                            <option value="de_de">de_de</option>
+                            <option value="fr_fr">fr_fr</option>
+                        </select>
+                    </div>
+                    <div class="setting patch-varient-setting">
+                        <label for="varient">Varient: </label>
+                        <select name="varient" id="varient">
+                            <option value="-1to0">-1to0</option>
+                            <option value="-0toY">0toY</option>
+                            <option value="-XtoY">XtoY</option>
+                        </select>
+                    </div>
+                    <div class="setting patch-num-setting">
+                        <label for="versionInput">Version (Y): </label>
+                    </div>
+                    <div class="setting patch-output-setting">
+                        <label for="output">Output Path: </label>
+                    </div>
+                </div>
+                
+                <div class="patch-actions">
+                    <div class="actions-side">
+                        <button id="downloadPatch" class="container-bottom__sub__btn action-btn">Download Patch</button>
+                        <button id="upackPatch" class="container-bottom__sub__btn action-btn">Unpack Patch</button>
+                        <button id="downloadManifest" class="container-bottom__sub__btn action-btn">Download Manifest</button>
+                    </div>
+                    <div class="actions-side">
+                        <button id="showDate" class="container-bottom__sub__btn action-btn">See Creation Date</button>
+                        <button id="downloadPkg" class="container-bottom__sub__btn action-btn">Download Solidpkg</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/utilities/patch/GetPatch.js"></script>
+</body>
+</html>

@@ -24,6 +24,7 @@ let oldDataValue;
 let extrBtn = document.getElementById("extractionBtn");
 let lctBtn = document.getElementById("locateBtn");
 let genHashBtn = document.getElementById("genHashBtn");
+let unpack = document.getElementById("unpack");
 
 //viewers
 let gr2ViewBtn = document.getElementById("gr2ViewBtn");
@@ -78,6 +79,10 @@ function setupListeners() {
     lctBtn.addEventListener("click", (e) => {
         ipc.send('runExec', 'locate');
         log(`Extraction: Locator started, please stand by.`);
+    });
+    unpack.addEventListener("click", (e) => {
+        ipc.send('runExec', 'unpack');
+        log(`Extraction: Unpack started.`);
     });
     genHashBtn.addEventListener("click", (e) => {
         ipc.send('runExec', 'genHash');
@@ -170,6 +175,9 @@ function initSubscribes() {
     });
     ipc.receive('locCompl', (data) => {
         log(`Extraction: Locator finished.`);
+    });
+    ipc.receive('unpkCompl', (data) => {
+        log(`Extraction: Unpack finished.`);
     });
     ipc.receive('genHashCompl', (data) => {
         log(`Extraction: Generate Hash finished.`);

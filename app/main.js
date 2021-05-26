@@ -103,6 +103,8 @@ function initListeners() {
       case "locate":
         locate();
         break;
+      case "unpack":
+        break;
       case "genHash":
         
         break;
@@ -120,10 +122,40 @@ function initListeners() {
 }
 
 function initGetPatchGUI() {
+  let win = new BrowserWindow({
+    width: 516,
+    height: 439,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: __dirname + "/resources/img/SlicersLogo.png",
+  });
+  win.webContents.openDevTools();
 
+  win.removeMenu();
+  win.loadURL(`${__dirname}/src/html/GetPatch.html`);
+
+  win.on('close', () => {
+    if (mainWindow) {
+      if (mainWindow.webContents) {
+        mainWindow.webContents.send("utilGPClosed", "");
+      }
+    }
+  });
+
+  initGetPatchListeners(win);
 }
 function initGetPatchListeners(window) {
-
+  ipcMain.on("showDialogPatch", async (event, data) => {
+    dialog.showOpenDialog(window, { properties: ['openDirectory'] }).then(async (dir) => {
+        if (!dir.canceled) {
+          event.reply("getDialogResponsePatch", dir.filePaths);
+        } else {
+          event.reply("getDialogResponsePatch", "");
+        }
+    });
+  });
 }
 
 function initGR2Viewer() {
@@ -156,12 +188,12 @@ function initGR2Listeners(window) {
   ipcMain.on("showDialogGR2", async (event, data) => {
     dialog.showOpenDialog(window, { properties: ['openDirectory'] }).then(async (dir) => {
         if (!dir.canceled) {
-          event.reply("getDialogResponse", dir.filePaths);
+          event.reply("getDialogResponseGR2", dir.filePaths);
         } else {
-          event.reply("getDialogResponse", "");
+          event.reply("getDialogResponseGR2", "");
         }
     });
-  })
+  });
 }
 
 async function locate() {

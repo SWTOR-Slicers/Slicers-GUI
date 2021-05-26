@@ -1,16 +1,22 @@
 import { unpack } from "./Unpack.js";
 
+const fs = require('fs');
+const {ipcRenderer} = require('electron');
+const path = require('path');
+
+const configPath = path.normalize(path.join(__dirname, "../../resources/config.json"));
+const changeEvent = new Event('change');
 const cache = {
-    "devmode": true,
-    "serverType": "Live", 
-    "version": "XtoY", 
-    "output": "D:\\SWTOR Extraction\\Extractions\\patches", 
-    "fileType": "main"
+    "devmode": null,
+    "serverType": "", 
+    "fileType": "", 
+    "varient": "", 
+    "version": "",
+    "output": ""
 }
 
 //action buttons
 let downloadPatch = document.getElementById("downloadPatch");
-let upackPatch = document.getElementById("upackPatch");
 let downloadManifest = document.getElementById("downloadManifest");
 let showDate = document.getElementById("showDate");
 let downloadPkg = document.getElementById("downloadPkg");
@@ -23,21 +29,53 @@ let versionInput = document.getElementById("versionInput");
 let output = document.getElementById("output");
 let pathsBrowseBtn = document.getElementById("pathsBrowseBtn");
 
-function initialize() {
-    loadCache();
-    output.value = cache.output;
+async function initialize() {
+    await loadCache();
+    serverType.options[0].innerHTML = cache["serverType"];
+    fileType.options[0].innerHTML = cache["fileType"];
+    varient.options[0].innerHTML = cache["varient"];
+    versionInput.value = cache["version"];
+    output.value = cache["output"];
     
     initDrops();
+    initListeners();
+    initSubs();
 }
 
-function loadCache() {
+async function loadCache() {
+    let res = fs.readFileSync(configPath);
+    let jsonObj = await JSON.parse(res);
+    let json = jsonObj["getPatch"];
 
+    cache["devmode"] = json["devmode"];
+    cache["serverType"] = json["serverType"];
+    cache["fileType"] = json["fileType"];
+    cache["varient"] = json["varient"];
+    cache["version"] = json["version"];
+    cache["output"] = json["output"];
 }
-
 function updateCache(field, val) {
-
+    let res = fs.readFileSync(configPath);
+    let json = JSON.parse(res);
+    if (json["getPatch"][field] != val) {
+        json["getPatch"][field] = val;
+        cache[field] = val;
+    
+        fs.writeFileSync(configPath, JSON.stringify(json), 'utf-8');
+    }
 }
 
+function initListeners() {
+    pathsBrowseBtn.addEventListener("click", (e) => {
+        ipcRenderer.send("showDialogPatch")
+    })
+}
+function initSubs() {
+    ipcRenderer.on("getDialogResponsePatch", (event, data) => {
+        output.value = data[0];
+        output.dispatchEvent(changeEvent);
+    });
+}
 function initDrops() {
     let customSelects = document.getElementsByClassName("custom-select");
     let custSelLen = customSelects.length;
@@ -70,7 +108,7 @@ function initDrops() {
 
                         let y = this.parentNode.getElementsByClassName("same-as-selected");
                         let yl = y.length;
-                        for (k = 0; k < yl; k++) {
+                        for (let k = 0; k < yl; k++) {
                             y[k].removeAttribute("class");
                         }
 
@@ -79,6 +117,8 @@ function initDrops() {
                         break;
                     }
                 }
+
+                updateCache(select.id, this.innerHTML);
 
                 h.click();
 

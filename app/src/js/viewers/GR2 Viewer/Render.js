@@ -8,6 +8,9 @@ import { exportObj } from "../../export/ExportObj.js";
 import { exportJSON } from "../../export/ExportJSON.js";
 import { exportFBX } from "../../export/ExportFBX.js";
 
+const fs = require('fs');
+const path = require('path');
+
 let modalColor = document.getElementById("modalColor");
 let wireframeContainer = document.getElementById("wireframeContainer");
 let wireFrame = document.getElementById("wireFrame");
@@ -39,6 +42,13 @@ const aspect = 1;
 const near = 0.005;
 const far = 50;
 
+const configPath = path.normalize(path.join(__dirname, "../../resources/config.json"));
+const cache = {
+    "wireframe": null,
+    "fov": "", 
+    "color": ""
+}
+
 let initX = 0;
 let initY = 0;
 let initZ = 0;
@@ -53,12 +63,16 @@ THREE.Cache.enabled = true;
 const GOOD_CAM_HEIGHT_MOD = 1.0427657658789222;
 
 // Initialization
-function init() {
+async function init() {
+    await loadCache();
+    modalColor.value = cache["color"];
+    wireFrame.checked = cache["wireframe"];
+    fovInput.value = cache["fov"];
+
     initConsts();
     addNavListeners();
     addOptionsListeners();
 }
-
 function initConsts() {
     canvas = document.getElementById("toonSceneCanvas");
     loader = new THREE.FileLoader();
@@ -67,7 +81,7 @@ function initConsts() {
     scene = new THREE.Scene();
     scene.background = null;
 
-    camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    camera = new THREE.PerspectiveCamera(cache["fov"], aspect, near, far);
     camera.position.set(initX, initY, initZ);
     camera.up = new THREE.Vector3(0, 1, 0);
     scene.add(camera);
@@ -93,6 +107,26 @@ function initConsts() {
 
     controls = new OrbitControls(camera, canvas);
     camNeedsReset = true;
+}
+
+async function loadCache() {
+    let res = fs.readFileSync(configPath);
+    let jsonObj = await JSON.parse(res);
+    let json = jsonObj["gr2Viewer"];
+
+    cache["wireframe"] = json["wireframe"];
+    cache["fov"] = json["fov"];
+    cache["color"] = json["color"];
+}
+function updateCache(field, val) {
+    let res = fs.readFileSync(configPath);
+    let json = JSON.parse(res);
+    if (json["gr2Viewer"][field] != val) {
+        json["gr2Viewer"][field] = val;
+        cache[field] = val;
+    
+        fs.writeFileSync(configPath, JSON.stringify(json), 'utf-8');
+    }
 }
 //main func
 export async function showModal(path) {
@@ -176,8 +210,8 @@ function loadGR2(buffer) {
 //load Materials
 function createMaterial(bufferGeometry, shouldRemoveLoad) {
     let shader = new THREE.MeshStandardMaterial({
-        color: mColor,
-        wireframe: isWire,
+        color: cache["color"],
+        wireframe: cache["wireframe"],
         roughness: 0.0,
         metalness: 0.0,
         side: THREE.DoubleSide
@@ -203,19 +237,23 @@ function createMaterial(bufferGeometry, shouldRemoveLoad) {
 //utils
 function addOptionsListeners() {
     modalColor.addEventListener("change", (e) => {
+        updateCache("color", e.target.value);
         if (parsedGR2s[0]) {
-            parsedGR2s[0].material.color.set(e.target.value);
+            parsedGR2s[0].material.color.set(cache["color"]);
         }
     });
     wireframeContainer.addEventListener("click", (e) => {
         wireFrame.checked = !wireFrame.checked;
+        updateCache("wireframe", wireFrame.checked);
         if (parsedGR2s[0]) {
-            parsedGR2s[0].material.wireframe = wireFrame.checked;
+            parsedGR2s[0].material.wireframe = cache["wireframe"];
         }
     });
     fovInput.addEventListener("change", (e) => {
         let val = e.target.value % 360;
-        camera.fov = val;
+        updateCache("fov", val);
+
+        camera.fov = cache["fov"];
         camera.updateProjectionMatrix();
     });
     exportAsObj.addEventListener("click", (e) => {

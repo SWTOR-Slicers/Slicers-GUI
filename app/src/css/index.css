@@ -216,7 +216,7 @@ html, body {
     margin-left: 5px;
     margin-top: 5px;
     word-wrap: normal;
-    height: 16px;
+    min-height: 16px;
     font-size: 12px;
     font-family: 'Eurofont';
     color: white;

@@ -14,7 +14,7 @@ contextBridge.exposeInMainWorld(
           }
       },
       receive: (channel, func) => {
-          let validChannels = ["assetsFolderReply", "outputFolderReply", "dataFolderReply", "extrCompl", "locCompl", "genHashCompl", "gr2ViewClosed", "nodeViewClosed", "modViewClosed", "worViewClosed", "utilFileChngClosed", "utilBnkClosed", "utilGPClosed", "isDirAsset", "isDirOut", "isDirDat", "sendConfigJSON"];
+          let validChannels = ["assetsFolderReply", "outputFolderReply", "dataFolderReply", "extrCompl", "locCompl", "unpkCompl", "genHashCompl", "gr2ViewClosed", "nodeViewClosed", "modViewClosed", "worViewClosed", "utilFileChngClosed", "utilBnkClosed", "utilGPClosed", "isDirAsset", "isDirOut", "isDirDat", "sendConfigJSON"];
           if (validChannels.includes(channel)) {
               ipcRenderer.on(channel, (event, ...args) => func(...args));
           }

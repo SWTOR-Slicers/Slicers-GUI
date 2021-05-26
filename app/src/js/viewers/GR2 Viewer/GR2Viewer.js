@@ -12,6 +12,7 @@ const disks = getDrives();
 const homedir = os.homedir();
 const desktop = `${homedir}${path.sep}Desktop`;
 const history = [desktop, null, null, null, null, null, null, null, null, null];
+
 let histIdx = 0;
 let oldValue = desktop;
 
@@ -26,76 +27,84 @@ let refreshBtn = document.getElementById("refreshBtn");
 
 let fileTree;
 
-pathField.onchange = (e) => {
-    let newValue = e.currentTarget.value;
-
-    if (fs.existsSync(newValue) && newValue != oldValue) {
-        if (fileTree.path != newValue) {
-            fileTree.reInit(newValue);
-            fileTree.render(treeList);
-        }
-        if (history[histIdx + 1]) {
-            if (history[histIdx + 1] != newValue) {
-                for (let i = histIdx + 2; i < history.length; i++) {
-                    history[i] = null;
-                }
-            } else {
-                history[histIdx + 1] = newValue;
+function initialize() {
+    pathField.onchange = (e) => {
+        let newValue = e.currentTarget.value;
+    
+        if (fs.existsSync(newValue) && newValue != oldValue) {
+            if (fileTree.path != newValue) {
+                fileTree.reInit(newValue);
+                fileTree.render(treeList);
             }
-            histIdx++;
-        } else {
-            if (histIdx == history.length - 1) {
-                for(let i = 1; i < history.length; i++) {
-                    history[i - 1] = history[i];
+            if (history[histIdx + 1]) {
+                if (history[histIdx + 1] != newValue) {
+                    for (let i = histIdx + 2; i < history.length; i++) {
+                        history[i] = null;
+                    }
+                } else {
+                    history[histIdx + 1] = newValue;
                 }
-                history[histIdx] = newValue;
-            } else {
-                history[histIdx + 1] = newValue;
                 histIdx++;
+            } else {
+                if (histIdx == history.length - 1) {
+                    for(let i = 1; i < history.length; i++) {
+                        history[i - 1] = history[i];
+                    }
+                    history[histIdx] = newValue;
+                } else {
+                    history[histIdx + 1] = newValue;
+                    histIdx++;
+                }
             }
+            
+            oldValue = newValue;
+    
+            checkForArrows();
+        } else {
+            e.target.value = oldValue;
         }
-        
-        oldValue = newValue;
-
-        checkForArrows();
-    } else {
-        e.target.value = oldValue;
     }
+    
+    fileTree = new FolderTree(desktop, null);
+    
+    fileTree.render(treeList);
+
+    initListeners();
+    initSubs();
 }
-
-fileTree = new FolderTree(desktop, null);
-
-fileTree.render(treeList);
-
-browsePathsBtn.onclick = (e) => {
-    ipcRenderer.on("getDialogResponse", (event, data) => {
+function initListeners() {
+    browsePathsBtn.onclick = (e) => {
+        ipcRenderer.send("showDialogGR2");
+    }
+    
+    refreshBtn.addEventListener("click", () => {
+        fileTree.render(treeList);
+    });
+    moveUpArrowBtn.addEventListener('click', (e) => {
+        let newPath = path.join(pathField.value, "..");
+    
+        pathField.value = newPath;
+        pathField.dispatchEvent(changeEvent);
+    });
+    backArrowBtn.addEventListener("click", (e) => {
+        histIdx--;
+        fileTree.reInit(history[histIdx]);
+        checkForArrows();
+        fileTree.render(treeList);
+    });
+    forwardArrowBtn.addEventListener("click", (e) => {
+        histIdx++;
+        fileTree.reInit(history[histIdx]);
+        checkForArrows();
+        fileTree.render(treeList);
+    });
+}
+function initSubs() {
+    ipcRenderer.on("getDialogResponseGR2", (event, data) => {
         pathField.value = data[0];
         pathField.dispatchEvent(changeEvent);
     });
-    ipcRenderer.send("showDialogGR2");
 }
-
-refreshBtn.addEventListener("click", () => {
-    fileTree.render(treeList);
-});
-moveUpArrowBtn.addEventListener('click', (e) => {
-    let newPath = path.join(pathField.value, "..");
-
-    pathField.value = newPath;
-    pathField.dispatchEvent(changeEvent);
-});
-backArrowBtn.addEventListener("click", (e) => {
-    histIdx--;
-    fileTree.reInit(history[histIdx]);
-    checkForArrows();
-    fileTree.render(treeList);
-});
-forwardArrowBtn.addEventListener("click", (e) => {
-    histIdx++;
-    fileTree.reInit(history[histIdx]);
-    checkForArrows();
-    fileTree.render(treeList);
-});
 
 function checkForArrows() {
     if (histIdx == 0) {
@@ -131,3 +140,5 @@ function getDrives() {
     }
     return disksNames;
 }
+
+initialize();

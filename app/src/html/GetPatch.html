@@ -18,41 +18,52 @@
             </div>
             <div class="body-container">
                 <div class="patch-settings">
-                    <div class="setting version-setting">
-                        <label for="versionDrop">Version: </label>
-                        <select name="versionDrop" id="versionDrop">
-                            <option value="live">live</option>
-                            <option value="pts">pts</option>
-                            <option value="movies">movies</option>
-                            <option value="liveqatest">liveqatest</option>
-                            <option value="betatest">betates</option>
-                            <option value="cstraining">cstraining</option>
-                            <option value="liveptest">liveptest</option>
-                        </select>
+                    <div class="setting serverType-setting">
+                        <label class="setting-label" for="serverType">Server Type: </label>
+                        <div class="custom-select">
+                            <select name="serverType" id="serverType">
+                                <option value="live">live</option>
+                                <option value="pts">pts</option>
+                                <option value="movies">movies</option>
+                                <option value="liveqatest">liveqatest</option>
+                                <option value="betatest">betates</option>
+                                <option value="cstraining">cstraining</option>
+                                <option value="liveptest">liveptest</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="setting file-type-setting">
-                        <label for="fileType">File Type: </label>
-                        <select name="fileType" id="fileType">
-                            <option value="main">main</option>
-                            <option value="client">client</option>
-                            <option value="en_us">en_us</option>
-                            <option value="de_de">de_de</option>
-                            <option value="fr_fr">fr_fr</option>
-                        </select>
+                        <label class="setting-label" for="fileType">File Type: </label>
+                        <div class="custom-select">
+                            <select name="fileType" id="fileType">
+                                <option value="main">main</option>
+                                <option value="client">client</option>
+                                <option value="en_us">en_us</option>
+                                <option value="de_de">de_de</option>
+                                <option value="fr_fr">fr_fr</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="setting patch-varient-setting">
-                        <label for="varient">Varient: </label>
-                        <select name="varient" id="varient">
-                            <option value="-1to0">-1to0</option>
-                            <option value="-0toY">0toY</option>
-                            <option value="-XtoY">XtoY</option>
-                        </select>
+                        <label class="setting-label" for="varient">Varient: </label>
+                        <div class="custom-select">
+                            <select name="varient" id="varient">
+                                <option value="-1to0">-1to0</option>
+                                <option value="-0toY">0toY</option>
+                                <option value="-XtoY">XtoY</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="setting patch-num-setting">
-                        <label for="versionInput">Version (Y): </label>
+                        <label class="setting-label" for="versionInput">Version (Y): </label>
+                        <input class="version-input paths-field-input" type="text" name="versionInput" id="versionInput" value="6.3a">
                     </div>
                     <div class="setting patch-output-setting">
-                        <label for="output">Output Path: </label>
+                        <label class="setting-label" for="output">Output Path: </label>
+                        <input class="paths-field-input" type="text" name="output" id="output" value="">
+                        <button id="pathsBrowseBtn" class="browse-paths__button">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
                     </div>
                 </div>
                 

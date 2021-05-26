@@ -26,7 +26,7 @@ let pathsBrowseBtn = document.getElementById("pathsBrowseBtn");
 function initialize() {
     loadCache();
     output.value = cache.output;
-    serverType.
+    
     initDrops();
 }
 

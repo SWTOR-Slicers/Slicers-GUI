@@ -138,6 +138,7 @@ function initSubscribes() {
             oldAssetValue = assetTextField.value;
         } else {
             log(`Invalid path. Reseting assetsFolder field to ${oldAssetValue}`);
+            assetTextField.value = oldAssetValue;
         }
     });
     ipc.receive('outputFolderReply', (data) => {
@@ -149,6 +150,7 @@ function initSubscribes() {
             oldOutputValue = outputTextField.value;
         } else {
             log(`Invalid path. Reseting outputFolder field to ${oldOutputValue}`);
+            outputTextField.value = oldOutputValue;
         }
     });
     ipc.receive('dataFolderReply', (data) => {
@@ -160,6 +162,7 @@ function initSubscribes() {
             oldDataValue = dataTextField.value;
         } else {
             log(`Invalid path. Reseting dataFolder field to ${oldDataValue}`);
+            dataTextField.value = oldDataValue;
         }
     });
     ipc.receive('extrCompl', (data) => {

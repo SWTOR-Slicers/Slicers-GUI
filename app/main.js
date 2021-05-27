@@ -48,6 +48,9 @@ function init() {
   initListeners();
 }
 function initListeners() {
+  ipcMain.on("logToMain", async (event, data) => {
+    mainWindow.webContents.send("displayLog", data);
+  });
   ipcMain.on("getConfigJSON", async (event, data) => {
     let res = fs.readFileSync(__dirname + "/resources/config.json");
     let json = JSON.parse(res);

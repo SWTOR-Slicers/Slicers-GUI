@@ -211,7 +211,6 @@ html, body {
     overflow-y: scroll;
     background-color: #000;
 }
-
 .main-page .log__item {
     margin-left: 5px;
     margin-top: 5px;
@@ -221,4 +220,25 @@ html, body {
     font-family: 'Eurofont';
     color: white;
     width: calc(100% - 10px);
+}
+.log-cursor {
+    display: flex;
+    flex-direction: row;
+}
+.cursor-underscore {
+    margin-left: 5px;
+    animation: blink 1.0s;
+    animation-iteration-count: infinite;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
 }

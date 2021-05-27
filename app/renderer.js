@@ -122,6 +122,9 @@ function setupListeners() {
     });
 }
 function initSubscribes() {
+    ipc.receive('displayLog', (data) => {
+        log(data);
+    })
     ipc.receive('sendConfigJSON', (data) => {
         let json = data;
 
@@ -219,6 +222,8 @@ function log(message) {
 
     let termText = logDisplay.children[logDisplay.children.length - 1];
     logDisplay.insertBefore(div, termText);
+
+    termText.scrollIntoView();
 }
 
 initialize();

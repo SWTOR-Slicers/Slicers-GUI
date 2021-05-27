@@ -1,6 +1,7 @@
 import { log } from "../../universal/Logger.js";
 
 const fs = require('fs');
+const axios = require('axios');
 const xml2js = require('xml2js');
 const parser = new xml2js.Parser({ attrkey: "attributes" });
 
@@ -286,15 +287,18 @@ function checkFields() {
 //download functions
 function dlFiles() { //button_action
     let vTo = cache["version"];
-    let vFrom = "";
     if (vTo.indexOf(".") != -1) {
+        const patch = findByLiveVersion(vTo);
+        const patchID = parseInt(patch[cache["productType"]]);
+        const lastVersion = patchID - 1;
+
         if (cache["enviromentType"] === "live") {
             switch (cache["varient"]) {
                 case "0toY":
-                    download_files0();
+                    download_files0(patchID, 0, `0to${patchID}`, cache["enviromentType"], cache["productType"]);
                     break;
                 case "XtoY":
-                    download_files();
+                    download_files(patchID, lastVersion, `${lastVersion}to${patchID}`, cache["enviromentType"], cache["productType"]);
                     break;
             }
         } else {
@@ -362,44 +366,87 @@ function checkDate() {
 
 }
 
-function download_files() {
+function download_files(to, from, xyStr, envType, prodType) {
+    const saveLoc = cache["output"];
+    if (prodType == "client") {
+        const fileName = `${saveLoc}/retailclient_swtor_${xyStr}.zip`;
+        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+
+        if (!fs.existsSync(fileName)) {
+            const url = ``;
+
+            const dl_status = getRemoteFile(fileName, url);
+
+            if (dl_status == "done") {
+                log(`Dowloaded: ${url}.`);
+            } else {
+                log(`An error occured.`);
+            }
+
+            while (true) {
+
+            }
+
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    } else {
+
+    }
+}
+function download_files0(to, from, xyStr, envType, prodType) {
     
 }
-function download_files0() {
-    
-}
-function download_filesNeg1() {
+function download_filesNeg1(to, from, xyStr, envType, prodType) {
     
 }
 
-function download_files_pts() {
+function download_files_pts(to, from, xyStr, envType, prodType) {
     
 }
-function download_files_pts0() {
+function download_files_pts0(to, from, xyStr, envType, prodType) {
     
 }
-function download_files_ptsNeg1() {
-    
-}
-
-function download_movies() {
-    
-}
-function download_movies0() {
-    
-}
-function download_moviesNeg1() {
+function download_files_ptsNeg1(to, from, xyStr, envType, prodType) {
     
 }
 
-function download_exp_client() {
+function download_movies(to, from, xyStr, envType, prodType) {
     
 }
-function download_exp_client0() {
+function download_movies0(to, from, xyStr, envType, prodType) {
     
 }
-function download_exp_clientNeg1() {
+function download_moviesNeg1(to, from, xyStr, envType, prodType) {
     
+}
+
+function download_exp_client(to, from, xyStr, envType, prodType) {
+    
+}
+function download_exp_client0(to, from, xyStr, envType, prodType) {
+    
+}
+function download_exp_clientNeg1(to, from, xyStr, envType, prodType) {
+    
+}
+//get file using axios library
+async function getRemoteFile(file, url) {
+    try {
+        const writer = Fs.createWriteStream(file)
+
+        const response = await axios({
+            url,
+            method: 'GET',
+            responseType: 'stream'
+        })
+
+        response.data.pipe(writer);
+    } catch (err) {
+        return err;
+    }
+
+    return "done";
 }
 
 function findByLiveVersion(v) {

@@ -329,7 +329,15 @@ function dlFiles() {
     }
 }
 function dlMan() {
-    
+    if (cache["enviromentType"] === "live") {
+        download_manifest(cache["enviromentType"], cache["productType"]);
+    } else if (cache["enviromentType"] === "pts") {
+        download_manifest_pts(cache["enviromentType"], cache["productType"]);
+    } else if (cache["enviromentType"] === "movies") {
+        download_manifest_movies(cache["enviromentType"], cache["productType"]);
+    } else if ((cache["enviromentType"] === "liveqatest") || (cache["enviromentType"] === "liveeptest") || (cache["enviromentType"] === "betatest") || (cache["enviromentType"] === "cstraining")) {
+        download_manifest_exp_client(cache["enviromentType"], cache["productType"]);
+    }
 }
 function dlSolid() {
     
@@ -579,6 +587,124 @@ function download_exp_client(to, xyStr, envType, prodType) {
         }
     } else {
         log(`You already downloaded this zip. To download again delete the existing version.`);
+    }
+}
+
+function download_manifest(envType, prodType) {
+    const saveLoc = cache["output"];
+    if (prodType == "client") {
+        const fileName = `${saveLoc}/retailclient_swtor.patchmanifest`;
+        log(`Download of Manifest ${envType} ${prodType} started!`);
+
+        if (!fs.existsSync(fileName)) {
+            const url = `http://manifest.swtor.com/patch/retailclient_swtor.patchmanifest`;
+
+            const dl_status = getRemoteFile(fileName, url);
+
+            if (dl_status == "done") {
+                log(`Dowloaded: ${url}.`);
+            } else {
+                log(`An error occured.`);
+            }
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    } else {
+        const fileName = `${saveLoc}/assets_swtor_${prodType}.patchmanifest`;
+        log(`Download of Manifest ${envType} ${prodType} started!`);
+
+        if (!fs.existsSync(fileName)) {
+            const url = `http://manifest.swtor.com/patch/assets_swtor_${prodType}.patchmanifest`;
+
+            const dl_status = getRemoteFile(fileName, url);
+
+            if (dl_status == "done") {
+                log(`Dowloaded: ${url}.`);
+            } else {
+                log(`An error occured.`);
+            }
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    }
+}
+function download_manifest_pts(envType, prodType) {
+    const saveLoc = cache["output"];
+    if (prodType == "client") {
+        const fileName = `${saveLoc}/retailclient_publictest.patchmanifest`;
+        log(`Download of Manifest ${envType} ${prodType} started!`);
+
+        if (!fs.existsSync(fileName)) {
+            const url = `http://manifest.swtor.com/patch/retailclient_publictest.patchmanifest`;
+
+            const dl_status = getRemoteFile(fileName, url);
+
+            if (dl_status == "done") {
+                log(`Dowloaded: ${url}.`);
+            } else {
+                log(`An error occured.`);
+            }
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    } else {
+        const fileName = `${saveLoc}/assets_swtor_test_${prodType}.patchmanifest`;
+        log(`Download of Manifest ${envType} ${prodType} started!`);
+
+        if (!fs.existsSync(fileName)) {
+            const url = `http://manifest.swtor.com/patch/assets_swtor_test_${prodType}.patchmanifest`;
+
+            const dl_status = getRemoteFile(fileName, url);
+
+            if (dl_status == "done") {
+                log(`Dowloaded: ${url}.`);
+            } else {
+                log(`An error occured.`);
+            }
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    }
+}
+function download_manifest_movies(envType, prodType) {
+    const saveLoc = cache["output"];
+
+    const fileName = `${saveLoc}/movies_${prodType}.patchmanifest`;
+    log(`Download of Manifest ${envType} ${prodType} started!`);
+
+    if (!fs.existsSync(fileName)) {
+        const url = `http://manifest.swtor.com/patch/movies_${prodType}.patchmanifest`;
+
+        const dl_status = getRemoteFile(fileName, url);
+
+        if (dl_status == "done") {
+            log(`Dowloaded: ${url}.`);
+        } else {
+            log(`An error occured.`);
+        }
+    } else {
+        log(`You already downloaded this manifest. To download again delete the existing version.`);
+    }
+}
+function download_manifest_exp_client(envType, prodType) {
+    const saveLoc = cache["output"];
+    const clientID = envType;
+
+    const fileName = `${saveLoc}/retailclient_${clientID}.patchmanifest`;
+    log(`Download of Manifest ${envType} ${prodType} started!`);
+
+    if (!fs.existsSync(fileName)) {
+        const url = `http://manifest.swtor.com/patch/retailclient_${clientID}.patchmanifest`;
+
+        const dl_status = getRemoteFile(fileName, url);
+
+        if (dl_status == "done") {
+            log(`Dowloaded: ${url}.`);
+        } else {
+            log(`An error occured.`);
+        }
+    } else {
+        log(`You already downloaded this manifest. To download again delete the existing version.`);
     }
 }
 

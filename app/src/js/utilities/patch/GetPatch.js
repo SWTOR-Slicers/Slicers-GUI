@@ -340,7 +340,33 @@ function dlMan() {
     }
 }
 function dlSolid() {
-    
+    let vTo = cache["version"];
+    if (vTo.indexOf(".") != -1) {
+        const patch = findByLiveVersion(vTo);
+        const patchID = parseInt(patch[cache["productType"]]);
+        const lastVersion = patchID - 1;
+
+        if (cache["enviromentType"] === "live") {
+            let xyStr = (cache["varient"] == "0toY") ? `0to${patchID}` : `${lastVersion}to${patchID}`;
+            download_files(patchID, xyStr, cache["enviromentType"], cache["productType"]);
+        } else {
+            log("Version numbers are live enviroment only. Please use version ID");
+        }
+    } else {
+        const patchID = cache["version"];
+        const lastVersion = patchID - 1;
+        let xyStr = (cache["varient"] == "-1to0") ? `-1to0` : (cache["varient"] == "0toY") ? `0to${patchID}` : `${lastVersion}to${patchID}`;
+
+        if (cache["enviromentType"] === "live") {
+            download_solidpkg(patchID, xyStr, cache["enviromentType"], cache["productType"]);
+        } else if (cache["enviromentType"] === "pts") {
+            download_solidpkg_pts(patchID, xyStr, cache["enviromentType"], cache["productType"]);
+        } else if (cache["enviromentType"] === "movies") {
+            download_solidpkg_movies(patchID, xyStr, cache["enviromentType"], cache["productType"]);
+        } else if ((cache["enviromentType"] === "liveqatest") || (cache["enviromentType"] === "liveeptest") || (cache["enviromentType"] === "betatest") || (cache["enviromentType"] === "cstraining")) {
+            download_solidpkg_exp_client(patchID, xyStr, cache["enviromentType"], cache["productType"]);
+        }
+    }
 }
 function checkDate() {
 
@@ -706,6 +732,19 @@ function download_manifest_exp_client(envType, prodType) {
     } else {
         log(`You already downloaded this manifest. To download again delete the existing version.`);
     }
+}
+
+function download_solidpkg(to, xyStr, envType, prodType) {
+    
+}
+function download_solidpkg_pts(to, xyStr, envType, prodType) {
+    
+}
+function download_solidpkg_movies(to, xyStr, envType, prodType) {
+    
+}
+function download_solidpkg_exp_client(to, xyStr, envType, prodType) {
+    
 }
 
 //get file using axios library

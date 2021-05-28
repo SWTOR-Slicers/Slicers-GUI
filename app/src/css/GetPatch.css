@@ -131,12 +131,6 @@ html, body {
 .version-input {
     width: 50px;
 }
-.disabled {
-    pointer-events: none;
-    background-color: #222222;
-    border: 1px solid rgb(51, 51, 51);
-    color: rgb(177, 177, 177);
-}
 
 .browse-paths__button {
     background-color: var(--grey-black);
@@ -205,4 +199,10 @@ html, body {
 }
 .select-items div:hover, .same-as-selected {
     background-color: var(--grey-black-hover);
+}
+.disabled {
+    pointer-events: none;
+    background-color: #222222;
+    border: 1px solid rgb(51, 51, 51);
+    color: rgb(177, 177, 177);
 }

@@ -293,66 +293,24 @@ function dlFiles() { //button_action
         const lastVersion = patchID - 1;
 
         if (cache["enviromentType"] === "live") {
-            switch (cache["varient"]) {
-                case "0toY":
-                    download_files0(patchID, 0, `0to${patchID}`, cache["enviromentType"], cache["productType"]);
-                    break;
-                case "XtoY":
-                    download_files(patchID, lastVersion, `${lastVersion}to${patchID}`, cache["enviromentType"], cache["productType"]);
-                    break;
-            }
+            let xyStr = (cache["varient"] == "0toY") ? `0to${patchID}` : `${lastVersion}to${patchID}`;
+            download_files(patchID, xyStr, cache["enviromentType"], cache["productType"]);
         } else {
             log("Version numbers are live enviroment only. Please use version ID");
         }
     } else {
+        const patchID = cache["version"];
+        const lastVersion = patchID - 1;
+        let xyStr = (cache["varient"] == "-1to0") ? `-1to0` : (cache["varient"] == "0toY") ? `0to${patchID}` : `${lastVersion}to${patchID}`;
+
         if (cache["enviromentType"] === "live") {
-            switch (cache["varient"]) {
-                case "-1to0":
-                    download_filesNeg1();
-                    break;
-                case "0toY":
-                    download_files0();
-                    break;
-                case "XtoY":
-                    download_files();
-                    break;
-            }
+            download_files(patchID, xyStr, cache["enviromentType"], cache["productType"]);
         } else if (cache["enviromentType"] === "pts") {
-            switch (cache["varient"]) {
-                case "-1to0":
-                    download_files_ptsNeg1();
-                    break;
-                case "0toY":
-                    download_files_pts0();
-                    break;
-                case "XtoY":
-                    download_files_pts();
-                    break;
-            }
+            download_files_pts(patchID, xyStr, cache["enviromentType"], cache["productType"]);
         } else if (cache["enviromentType"] === "movies") {
-            switch (cache["varient"]) {
-                case "-1to0":
-                    download_moviesNeg1();
-                    break;
-                case "0toY":
-                    download_movies0();
-                    break;
-                case "XtoY":
-                    download_movies();
-                    break;
-            }
+            download_movies(patchID, xyStr, cache["enviromentType"], cache["productType"]);
         } else if ((cache["enviromentType"] === "liveqatest") || (cache["enviromentType"] === "liveeptest") || (cache["enviromentType"] === "betatest") || (cache["enviromentType"] === "cstraining")) {
-            switch (cache["varient"]) {
-                case "-1to0":
-                    download_exp_clientNeg1();
-                    break;
-                case "0toY":
-                    download_exp_client0();
-                    break;
-                case "XtoY":
-                    download_exp_client();
-                    break;
-            }
+            download_exp_client(patchID, xyStr, cache["enviromentType"], cache["productType"]);
         }
     }
 }
@@ -366,70 +324,96 @@ function checkDate() {
 
 }
 
-function download_files(to, from, xyStr, envType, prodType) {
+function download_files(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
     if (prodType == "client") {
         const fileName = `${saveLoc}/retailclient_swtor_${xyStr}.zip`;
         log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
 
         if (!fs.existsSync(fileName)) {
-            const url = ``;
+            const url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}/retailclient_swtor_${xyStr}.zip`;
 
             const dl_status = getRemoteFile(fileName, url);
 
             if (dl_status == "done") {
                 log(`Dowloaded: ${url}.`);
+
+                let zpv = 0;
+                while (true) {
+                    zpv = parseInt(zpv) + 1;
+                    if (zpv < 10) zpv = "0" + zpv;
+                    
+                    const fileName2 = `${saveLoc}/retailclient_swtor_${xyStr}.z${zpv}`;
+                    
+                    if (!fs.existsSync(fileName2)) {
+                        const url2 = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}/retailclient_swtor_${xyStr}.z${zpv}`;
+
+                        const dl_status2 = getRemoteFile(fileName2, url2);
+
+                        if (dl_status2 == "done") {
+                            log(`Dowloaded: ${url2}.`);
+                        } else {
+                            log(`An error occured.`);
+                            break;
+                        }
+                    }
+                }
             } else {
                 log(`An error occured.`);
             }
-
-            while (true) {
-
-            }
-
         } else {
             log(`You already downloaded this zip. To download again delete the existing version.`);
         }
     } else {
+        const fileName = `${saveLoc}/assets_swtor_${prodType}_${xyStr}.zip`;
+        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
 
+        if (!fs.existsSync(fileName)) {
+            const url = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}/assets_swtor_${prodType}_${xyStr}.zip`;
+
+            const dl_status = getRemoteFile(fileName, url);
+
+            if (dl_status == "done") {
+                log(`Dowloaded: ${url}.`);
+
+                let zpv = 0;
+                while (true) {
+                    zpv = parseInt(zpv) + 1;
+                    if (zpv < 10) zpv = "0" + zpv;
+                    
+                    const fileName2 = `${saveLoc}/assets_swtor_${prodType}_${xyStr}.z${zpv}`;
+                    
+                    if (!fs.existsSync(fileName2)) {
+                        const url2 = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}/assets_swtor_${prodType}_${xyStr}.z${zpv}`;
+
+                        const dl_status2 = getRemoteFile(fileName2, url2);
+
+                        if (dl_status2 == "done") {
+                            log(`Dowloaded: ${url2}.`);
+                        } else {
+                            log(`An error occured.`);
+                            break;
+                        }
+                    }
+                }
+            } else {
+                log(`An error occured.`);
+            }
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
     }
 }
-function download_files0(to, from, xyStr, envType, prodType) {
+function download_files_pts(to, xyStr, envType, prodType) {
     
 }
-function download_filesNeg1(to, from, xyStr, envType, prodType) {
+function download_movies(to, xyStr, envType, prodType) {
     
 }
-
-function download_files_pts(to, from, xyStr, envType, prodType) {
-    
-}
-function download_files_pts0(to, from, xyStr, envType, prodType) {
-    
-}
-function download_files_ptsNeg1(to, from, xyStr, envType, prodType) {
+function download_exp_client(to, xyStr, envType, prodType) {
     
 }
 
-function download_movies(to, from, xyStr, envType, prodType) {
-    
-}
-function download_movies0(to, from, xyStr, envType, prodType) {
-    
-}
-function download_moviesNeg1(to, from, xyStr, envType, prodType) {
-    
-}
-
-function download_exp_client(to, from, xyStr, envType, prodType) {
-    
-}
-function download_exp_client0(to, from, xyStr, envType, prodType) {
-    
-}
-function download_exp_clientNeg1(to, from, xyStr, envType, prodType) {
-    
-}
 //get file using axios library
 async function getRemoteFile(file, url) {
     try {

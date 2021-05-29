@@ -1,4 +1,5 @@
 import { log } from "../../universal/Logger.js";
+import * as ssn from 'ssn';
 
 const fs = require('fs');
 const axios = require('axios');
@@ -371,6 +372,9 @@ function dlSolid() {
 function checkDate() {
 
 }
+function checkForUpdates() {
+
+}
 
 function download_files(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
@@ -735,15 +739,133 @@ function download_manifest_exp_client(envType, prodType) {
 }
 
 function download_solidpkg(to, xyStr, envType, prodType) {
-    
+    const saveLoc = cache["output"];
+    if (prodType == "client") {
+        const fileName = `${saveLoc}/retailclient_swtor_${xyStr}.solidpkg`;
+        log(`Download of Solidpkg ${envType} ${prodType} started!`);
+
+        if (!fs.existsSync(fileName)) {
+            const url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}.solidpkg`;
+
+            const dl_status = getRemoteFile(fileName, url);
+
+            if (dl_status == "done") {
+                log(`Dowloaded: ${url}.`);
+            } else {
+                log(`An error occured.`);
+            }
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    } else {
+        const fileName = `${saveLoc}/assets_swtor_${prodType}_${xyStr}.solidpkg`;
+        log(`Download of Solidpkg ${envType} ${prodType} started!`);
+
+        if (!fs.existsSync(fileName)) {
+            const url = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}.solidpkg`;
+
+            const dl_status = getRemoteFile(fileName, url);
+
+            if (dl_status == "done") {
+                log(`Dowloaded: ${url}.`);
+            } else {
+                log(`An error occured.`);
+            }
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    }
 }
 function download_solidpkg_pts(to, xyStr, envType, prodType) {
-    
+    const saveLoc = cache["output"];
+    if (prodType == "client") {
+        const fileName = `${saveLoc}/retailclient_publictest_${xyStr}.solidpkg`;
+        log(`Download of Solidpkg ${envType} ${prodType} started!`);
+
+        if (!fs.existsSync(fileName)) {
+            const url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}.solidpkg`;
+
+            const dl_status = getRemoteFile(fileName, url);
+
+            if (dl_status == "done") {
+                log(`Dowloaded: ${url}.`);
+            } else {
+                log(`An error occured.`);
+            }
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    } else {
+        const fileName = `${saveLoc}/assets_swtor_test_${prodType}_${xyStr}.solidpkg`;
+        log(`Download of Solidpkg ${envType} ${prodType} started!`);
+
+        if (!fs.existsSync(fileName)) {
+            const url = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}.solidpkg`;
+
+            const dl_status = getRemoteFile(fileName, url);
+
+            if (dl_status == "done") {
+                log(`Dowloaded: ${url}.`);
+            } else {
+                log(`An error occured.`);
+            }
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    }
 }
 function download_solidpkg_movies(to, xyStr, envType, prodType) {
-    
+    const saveLoc = cache["output"];
+
+    const fileName = `${saveLoc}/movies_${prodType}_${xyStr}.solidpkg`;
+    log(`Download of Solidpkg ${envType} ${prodType} started!`);
+
+    if (!fs.existsSync(fileName)) {
+        const url = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}.solidpkg`;
+
+        const dl_status = getRemoteFile(fileName, url);
+
+        if (dl_status == "done") {
+            log(`Dowloaded: ${url}.`);
+        } else {
+            log(`An error occured.`);
+        }
+    } else {
+        log(`You already downloaded this manifest. To download again delete the existing version.`);
+    }
 }
 function download_solidpkg_exp_client(to, xyStr, envType, prodType) {
+    const saveLoc = cache["output"];
+    const clientID = envType;
+
+    const fileName = `${saveLoc}/retailclient_${clientID}_${xyStr}.solidpkg`;
+    log(`Download of Solidpkg ${envType} ${prodType} started!`);
+
+    if (!fs.existsSync(fileName)) {
+        const url = `http://cdn-patch.swtor.com/patch/${clientID}/retailclient_${clientID}/retailclient_${clientID}_${xyStr}.solidpkg`;
+
+        const dl_status = getRemoteFile(fileName, url);
+
+        if (dl_status == "done") {
+            log(`Dowloaded: ${url}.`);
+        } else {
+            log(`An error occured.`);
+        }
+    } else {
+        log(`You already downloaded this manifest. To download again delete the existing version.`);
+    }
+}
+
+function checkDate_files(to, xyStr, envType, prodType) {
+    
+}
+function checkDate_files_pts(to, xyStr, envType, prodType) {
+    
+}
+function checkDate_movies(to, xyStr, envType, prodType) {
+    
+}
+function checkDate_exp_client(to, xyStr, envType, prodType) {
     
 }
 

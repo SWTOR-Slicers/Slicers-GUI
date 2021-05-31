@@ -162,6 +162,11 @@ function initGetPatchListeners(window) {
   ipcMain.on("downloadPatchFile", async (event, data) => {
     const file = data[0];
     const url = data[1];
+    const preMsg = data[2];
+    const postMsg = data[3];
+
+    mainWindow.webContents.send("displayLog", preMsg);
+
     try {
       const writer = fs.createWriteStream(file);
 
@@ -173,10 +178,10 @@ function initGetPatchListeners(window) {
 
       response.data.pipe(writer);
     } catch (err) {
-      return err;
+      event.reply("fileDownloadResolve", [`There was an error downloading the file. Please try again.`]);
     }
 
-    return "done";
+    event.reply("fileDownloadResolve", [postMsg]);
   });
 }
 

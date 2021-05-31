@@ -153,6 +153,10 @@ function initSubs() {
         output.value = data[0];
         output.dispatchEvent(changeEvent);
     });
+    ipcRenderer.on("fileDownloadResolve", (event, data) => {
+        const msg = data[0];
+        log(msg);
+    });
 }
 //initializes custom dropdown menus
 function initDrops() {

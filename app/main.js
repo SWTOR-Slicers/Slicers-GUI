@@ -1,7 +1,7 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow, dialog, ipcMain, screen} = require('electron');
 const fs = require('fs');
-const xml2js = require("xml2js");
+const axios = require('axios');
 const path = require('path');
 const child = require('child_process');
 let mainWindow;
@@ -158,6 +158,25 @@ function initGetPatchListeners(window) {
           event.reply("getDialogResponsePatch", "");
         }
     });
+  });
+  ipcMain.on("downloadPatchFile", async (event, data) => {
+    const file = data[0];
+    const url = data[1];
+    try {
+      const writer = fs.createWriteStream(file);
+
+      const response = await axios({
+        url: url,
+        method: 'GET',
+        responseType: 'stream'
+      });
+
+      response.data.pipe(writer);
+    } catch (err) {
+      return err;
+    }
+
+    return "done";
   });
 }
 

@@ -1,5 +1,5 @@
 import { log } from "../../universal/Logger.js";
-import * as ssn from 'ssn';
+const ssn = require('ssn');
 
 const fs = require('fs');
 const axios = require('axios');
@@ -37,20 +37,19 @@ const cache = new Proxy(cacheInit, {
 })
 
 //action buttons
-let downloadPatch = document.getElementById("downloadPatch");
-let downloadManifest = document.getElementById("downloadManifest");
-let showDate = document.getElementById("showDate");
-let downloadPkg = document.getElementById("downloadPkg");
+const downloadPatch = document.getElementById("downloadPatch");
+const updatePatches = document.getElementById("updatePatches");
+const downloadManifest = document.getElementById("downloadManifest");
+const showDate = document.getElementById("showDate");
+const downloadPkg = document.getElementById("downloadPkg");
 
 //settings inputs
-let enviromentType = document.getElementById("enviromentType");
-let productType = document.getElementById("productType");
-let varient = document.getElementById("varient");
-let versionInput = document.getElementById("versionInput");
-let output = document.getElementById("output");
-let pathsBrowseBtn = document.getElementById("pathsBrowseBtn");
-
-// need to add code to dynamically enable and disable dropdown buttons, and version field based on other selections
+const enviromentType = document.getElementById("enviromentType");
+const productType = document.getElementById("productType");
+const varient = document.getElementById("varient");
+const versionInput = document.getElementById("versionInput");
+const output = document.getElementById("output");
+const pathsBrowseBtn = document.getElementById("pathsBrowseBtn");
 
 async function initialize() {
     await getPatches();
@@ -122,6 +121,9 @@ function initListeners() {
     downloadPatch.addEventListener("click", (e) => {
         dlFiles();
     });
+    updatePatches.addEventListener("click", (e) => {
+        checkForUpdates();
+    });
     downloadManifest.addEventListener("click", (e) => {
         dlMan();
     });
@@ -131,7 +133,19 @@ function initListeners() {
     showDate.addEventListener("click", (e) => {
         checkDate();
     });
-    //add listener for version input and output fields
+
+    //listener for version input and output fields
+    output.addEventListener("change", (e) => {
+        if (fs.existsSync(output.value)) {
+            updateCache("output", output.value);
+        } else {
+            log(`That path is invalid, please input a valid path.`);
+            output.value = cache["output"];
+        }
+    });
+    versionInput.addEventListener("change", (e) => {
+        updateCache("version", versionInput.value);
+    });
 }
 //initializes main process subscriptions
 function initSubs() {
@@ -376,7 +390,7 @@ function checkForUpdates() {
 
 }
 
-function download_files(to, xyStr, envType, prodType) {
+async function download_files(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
     if (prodType == "client") {
         const fileName = `${saveLoc}/retailclient_swtor_${xyStr}.zip`;
@@ -385,7 +399,7 @@ function download_files(to, xyStr, envType, prodType) {
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}/retailclient_swtor_${xyStr}.zip`;
 
-            const dl_status = getRemoteFile(fileName, url);
+            const dl_status = await getRemoteFile(fileName, url);
 
             if (dl_status == "done") {
                 log(`Dowloaded: ${url}.`);
@@ -400,7 +414,7 @@ function download_files(to, xyStr, envType, prodType) {
                     if (!fs.existsSync(fileName2)) {
                         const url2 = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}/retailclient_swtor_${xyStr}.z${zpv}`;
 
-                        const dl_status2 = getRemoteFile(fileName2, url2);
+                        const dl_status2 = await getRemoteFile(fileName2, url2);
 
                         if (dl_status2 == "done") {
                             log(`Dowloaded: ${url2}.`);
@@ -868,26 +882,13 @@ function checkDate_movies(to, xyStr, envType, prodType) {
 function checkDate_exp_client(to, xyStr, envType, prodType) {
     
 }
+//utility methods
 
 //get file using axios library
 async function getRemoteFile(file, url) {
-    try {
-        const writer = Fs.createWriteStream(file)
-
-        const response = await axios({
-            url,
-            method: 'GET',
-            responseType: 'stream'
-        })
-
-        response.data.pipe(writer);
-    } catch (err) {
-        return err;
-    }
-
-    return "done";
+    ipcRenderer.send("downloadPatchFile", [file, url]);
 }
-
+//search through patches list looking for patch with matching version number (v)
 function findByLiveVersion(v) {
     return patches.find((p) => { return p.version == v; });
 }

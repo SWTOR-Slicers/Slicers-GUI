@@ -2,7 +2,7 @@ import { log } from "../../universal/Logger.js";
 const ssn = require('ssn');
 
 const fs = require('fs');
-const axios = require('axios');
+const http = require('http');
 const xml2js = require('xml2js');
 const parser = new xml2js.Parser({ attrkey: "attributes" });
 
@@ -42,6 +42,7 @@ const updatePatches = document.getElementById("updatePatches");
 const downloadManifest = document.getElementById("downloadManifest");
 const showDate = document.getElementById("showDate");
 const downloadPkg = document.getElementById("downloadPkg");
+const progressBar = document.getElementById("progressBar");
 
 //settings inputs
 const enviromentType = document.getElementById("enviromentType");
@@ -367,7 +368,7 @@ function dlSolid() {
 
         if (cache["enviromentType"] === "live") {
             let xyStr = (cache["varient"] == "0toY") ? `0to${patchID}` : `${lastVersion}to${patchID}`;
-            download_files(patchID, xyStr, cache["enviromentType"], cache["productType"]);
+            download_solidpkg(patchID, xyStr, cache["enviromentType"], cache["productType"]);
         } else {
             log("Version numbers are live enviroment only. Please use version ID");
         }
@@ -403,9 +404,168 @@ async function download_files(to, xyStr, envType, prodType) {
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}/retailclient_swtor_${xyStr}.zip`;
 
-            const dl_status = await getRemoteFile(fileName, url);
+            const dl_status = await getRemoteFile(fileName, url).then(async (res) => {
+                if (res == "done") {
+                    log(`Dowloaded: ${url}.`);
 
-            if (dl_status == "done") {
+                    let zpv = 0;
+                    while (true) {
+                        zpv = parseInt(zpv) + 1;
+                        if (zpv < 10) zpv = "0" + zpv;
+                        
+                        const fileName2 = `${saveLoc}/retailclient_swtor_${xyStr}.z${zpv}`;
+                        
+                        if (!fs.existsSync(fileName2)) {
+                            const url2 = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}/retailclient_swtor_${xyStr}.z${zpv}`;
+
+                            const dl_status2 = await getRemoteFile(fileName2, url2);
+
+                            if (dl_status2 == "done") {
+                                log(`Dowloaded: ${url2}.`);
+                            } else {
+                                log(`Download finished.`);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }).catch((err) => {
+                console.log(err);
+            });
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    } else {
+        const fileName = `${saveLoc}/assets_swtor_${prodType}_${xyStr}.zip`;
+        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+
+        if (!fs.existsSync(fileName)) {
+            const url = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}/assets_swtor_${prodType}_${xyStr}.zip`;
+
+            const dl_status = await getRemoteFile(fileName, url).then(async (res) => {
+                if (res == "done") {
+                    log(`Dowloaded: ${url}.`);
+
+                    let zpv = 0;
+                    while (true) {
+                        zpv = parseInt(zpv) + 1;
+                        if (zpv < 10) zpv = "0" + zpv;
+                        
+                        const fileName2 = `${saveLoc}/assets_swtor_${prodType}_${xyStr}.z${zpv}`;
+                        
+                        if (!fs.existsSync(fileName2)) {
+                            const url2 = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}/assets_swtor_${prodType}_${xyStr}.z${zpv}`;
+
+                            const dl_status2 = await getRemoteFile(fileName2, url2);
+
+                            if (dl_status2 == "done") {
+                                log(`Dowloaded: ${url2}.`);
+                            } else {
+                                log(`An error occured.`);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }).catch((err) => {
+                console.log(err);
+            });
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    }
+}
+async function download_files_pts(to, xyStr, envType, prodType) {
+    const saveLoc = cache["output"];
+    if (prodType == "client") {
+        const fileName = `${saveLoc}/retailclient_publictest_${xyStr}.zip`;
+        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+
+        if (!fs.existsSync(fileName)) {
+            const url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}/retailclient_publictest_${xyStr}.zip`;
+
+            const dl_status = getRemoteFile(fileName, url).then(async (res) => {
+                if (res == "done") {
+                    log(`Dowloaded: ${url}.`);
+
+                    let zpv = 0;
+                    while (true) {
+                        zpv = parseInt(zpv) + 1;
+                        if (zpv < 10) zpv = "0" + zpv;
+                        
+                        const fileName2 = `${saveLoc}/retailclient_publictest_${xyStr}.z${zpv}`;
+                        
+                        if (!fs.existsSync(fileName2)) {
+                            const url2 = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}/retailclient_publictest_${xyStr}.z${zpv}`;
+
+                            const dl_status2 = await getRemoteFile(fileName2, url2);
+
+                            if (dl_status2 == "done") {
+                                log(`Dowloaded: ${url2}.`);
+                            } else {
+                                log(`An error occured.`);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }).catch((err) => {
+                console.log(err);
+            });
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    } else {
+        const fileName = `${saveLoc}/assets_swtor_test_${prodType}_${xyStr}.zip`;
+        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+
+        if (!fs.existsSync(fileName)) {
+            const url = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}/assets_swtor_test_${prodType}_${xyStr}.zip`;
+
+            const dl_status = await getRemoteFile(fileName, url).then(async (res) => {
+                if (res == "done") {
+                    log(`Dowloaded: ${url}.`);
+
+                    let zpv = 0;
+                    while (true) {
+                        zpv = parseInt(zpv) + 1;
+                        if (zpv < 10) zpv = "0" + zpv;
+                        
+                        const fileName2 = `${saveLoc}/assets_swtor_test_${prodType}_${xyStr}.z${zpv}`;
+                        
+                        if (!fs.existsSync(fileName2)) {
+                            const url2 = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}/assets_swtor_test_${prodType}_${xyStr}.z${zpv}`;
+
+                            const dl_status2 = getRemoteFile(fileName2, url2);
+
+                            if (dl_status2 == "done") {
+                                log(`Dowloaded: ${url2}.`);
+                            } else {
+                                log(`An error occured.`);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }).catch((err) => {
+                console.log(err);
+            });
+        } else {
+            log(`You already downloaded this zip. To download again delete the existing version.`);
+        }
+    }
+}
+async function download_movies(to, xyStr, envType, prodType) {
+    const saveLoc = cache["output"];
+
+    const fileName = `${saveLoc}/movies_${prodType}_${xyStr}.zip`;
+    log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+
+    if (!fs.existsSync(fileName)) {
+        const url = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}/movies_${prodType}_${xyStr}.zip`;
+
+        const dl_status = await getRemoteFile(fileName, url).then(async (res) => {
+            if (res == "done") {
                 log(`Dowloaded: ${url}.`);
 
                 let zpv = 0;
@@ -413,10 +573,10 @@ async function download_files(to, xyStr, envType, prodType) {
                     zpv = parseInt(zpv) + 1;
                     if (zpv < 10) zpv = "0" + zpv;
                     
-                    const fileName2 = `${saveLoc}/retailclient_swtor_${xyStr}.z${zpv}`;
+                    const fileName2 = `${saveLoc}/movies_${prodType}_${xyStr}.z${zpv}`;
                     
                     if (!fs.existsSync(fileName2)) {
-                        const url2 = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}/retailclient_swtor_${xyStr}.z${zpv}`;
+                        const url2 = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}/movies_${prodType}_${xyStr}.z${zpv}`;
 
                         const dl_status2 = await getRemoteFile(fileName2, url2);
 
@@ -428,174 +588,15 @@ async function download_files(to, xyStr, envType, prodType) {
                         }
                     }
                 }
-            } else {
-                log(`An error occured.`);
             }
-        } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
-        }
-    } else {
-        const fileName = `${saveLoc}/assets_swtor_${prodType}_${xyStr}.zip`;
-        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
-
-        if (!fs.existsSync(fileName)) {
-            const url = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}/assets_swtor_${prodType}_${xyStr}.zip`;
-
-            const dl_status = getRemoteFile(fileName, url);
-
-            if (dl_status == "done") {
-                log(`Dowloaded: ${url}.`);
-
-                let zpv = 0;
-                while (true) {
-                    zpv = parseInt(zpv) + 1;
-                    if (zpv < 10) zpv = "0" + zpv;
-                    
-                    const fileName2 = `${saveLoc}/assets_swtor_${prodType}_${xyStr}.z${zpv}`;
-                    
-                    if (!fs.existsSync(fileName2)) {
-                        const url2 = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}/assets_swtor_${prodType}_${xyStr}.z${zpv}`;
-
-                        const dl_status2 = getRemoteFile(fileName2, url2);
-
-                        if (dl_status2 == "done") {
-                            log(`Dowloaded: ${url2}.`);
-                        } else {
-                            log(`An error occured.`);
-                            break;
-                        }
-                    }
-                }
-            } else {
-                log(`An error occured.`);
-            }
-        } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
-        }
-    }
-}
-function download_files_pts(to, xyStr, envType, prodType) {
-    const saveLoc = cache["output"];
-    if (prodType == "client") {
-        const fileName = `${saveLoc}/retailclient_publictest_${xyStr}.zip`;
-        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
-
-        if (!fs.existsSync(fileName)) {
-            const url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}/retailclient_publictest_${xyStr}.zip`;
-
-            const dl_status = getRemoteFile(fileName, url);
-
-            if (dl_status == "done") {
-                log(`Dowloaded: ${url}.`);
-
-                let zpv = 0;
-                while (true) {
-                    zpv = parseInt(zpv) + 1;
-                    if (zpv < 10) zpv = "0" + zpv;
-                    
-                    const fileName2 = `${saveLoc}/retailclient_publictest_${xyStr}.z${zpv}`;
-                    
-                    if (!fs.existsSync(fileName2)) {
-                        const url2 = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}/retailclient_publictest_${xyStr}.z${zpv}`;
-
-                        const dl_status2 = getRemoteFile(fileName2, url2);
-
-                        if (dl_status2 == "done") {
-                            log(`Dowloaded: ${url2}.`);
-                        } else {
-                            log(`An error occured.`);
-                            break;
-                        }
-                    }
-                }
-            } else {
-                log(`An error occured.`);
-            }
-        } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
-        }
-    } else {
-        const fileName = `${saveLoc}/assets_swtor_test_${prodType}_${xyStr}.zip`;
-        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
-
-        if (!fs.existsSync(fileName)) {
-            const url = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}/assets_swtor_test_${prodType}_${xyStr}.zip`;
-
-            const dl_status = getRemoteFile(fileName, url);
-
-            if (dl_status == "done") {
-                log(`Dowloaded: ${url}.`);
-
-                let zpv = 0;
-                while (true) {
-                    zpv = parseInt(zpv) + 1;
-                    if (zpv < 10) zpv = "0" + zpv;
-                    
-                    const fileName2 = `${saveLoc}/assets_swtor_test_${prodType}_${xyStr}.z${zpv}`;
-                    
-                    if (!fs.existsSync(fileName2)) {
-                        const url2 = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}/assets_swtor_test_${prodType}_${xyStr}.z${zpv}`;
-
-                        const dl_status2 = getRemoteFile(fileName2, url2);
-
-                        if (dl_status2 == "done") {
-                            log(`Dowloaded: ${url2}.`);
-                        } else {
-                            log(`An error occured.`);
-                            break;
-                        }
-                    }
-                }
-            } else {
-                log(`An error occured.`);
-            }
-        } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
-        }
-    }
-}
-function download_movies(to, xyStr, envType, prodType) {
-    const saveLoc = cache["output"];
-
-    const fileName = `${saveLoc}/movies_${prodType}_${xyStr}.zip`;
-    log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
-
-    if (!fs.existsSync(fileName)) {
-        const url = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}/movies_${prodType}_${xyStr}.zip`;
-
-        const dl_status = getRemoteFile(fileName, url);
-
-        if (dl_status == "done") {
-            log(`Dowloaded: ${url}.`);
-
-            let zpv = 0;
-            while (true) {
-                zpv = parseInt(zpv) + 1;
-                if (zpv < 10) zpv = "0" + zpv;
-                
-                const fileName2 = `${saveLoc}/movies_${prodType}_${xyStr}.z${zpv}`;
-                
-                if (!fs.existsSync(fileName2)) {
-                    const url2 = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}/movies_${prodType}_${xyStr}.z${zpv}`;
-
-                    const dl_status2 = getRemoteFile(fileName2, url2);
-
-                    if (dl_status2 == "done") {
-                        log(`Dowloaded: ${url2}.`);
-                    } else {
-                        log(`An error occured.`);
-                        break;
-                    }
-                }
-            }
-        } else {
-            log(`An error occured.`);
-        }
+        }).catch((err) => {
+            console.log(err);
+        });
     } else {
         log(`You already downloaded this zip. To download again delete the existing version.`);
     }
 }
-function download_exp_client(to, xyStr, envType, prodType) {
+async function download_exp_client(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
     const clientID = envType;
 
@@ -605,40 +606,40 @@ function download_exp_client(to, xyStr, envType, prodType) {
     if (!fs.existsSync(fileName)) {
         const url = `http://cdn-patch.swtor.com/patch/${clientID}/retailclient_${clientID}/retailclient_${clientID}_${xyStr}/retailclient_${clientID}_${xyStr}.zip`;
 
-        const dl_status = getRemoteFile(fileName, url);
+        const dl_status = await getRemoteFile(fileName, url).then(async (res) => {
+            if (res == "done") {
+                log(`Dowloaded: ${url}.`);
 
-        if (dl_status == "done") {
-            log(`Dowloaded: ${url}.`);
+                let zpv = 0;
+                while (true) {
+                    zpv = parseInt(zpv) + 1;
+                    if (zpv < 10) zpv = "0" + zpv;
+                    
+                    const fileName2 = `${saveLoc}/retailclient_${clientID}_${xyStr}.z${zpv}`;
+                    
+                    if (!fs.existsSync(fileName2)) {
+                        const url2 = `http://cdn-patch.swtor.com/patch/${clientID}/retailclient_${clientID}/retailclient_${clientID}_${xyStr}/retailclient_${clientID}_${xyStr}.z${zpv}`;
 
-            let zpv = 0;
-            while (true) {
-                zpv = parseInt(zpv) + 1;
-                if (zpv < 10) zpv = "0" + zpv;
-                
-                const fileName2 = `${saveLoc}/retailclient_${clientID}_${xyStr}.z${zpv}`;
-                
-                if (!fs.existsSync(fileName2)) {
-                    const url2 = `http://cdn-patch.swtor.com/patch/${clientID}/retailclient_${clientID}/retailclient_${clientID}_${xyStr}/retailclient_${clientID}_${xyStr}.z${zpv}`;
+                        const dl_status2 = getRemoteFile(fileName2, url2);
 
-                    const dl_status2 = getRemoteFile(fileName2, url2);
-
-                    if (dl_status2 == "done") {
-                        log(`Dowloaded: ${url2}.`);
-                    } else {
-                        log(`An error occured.`);
-                        break;
+                        if (dl_status2 == "done") {
+                            log(`Dowloaded: ${url2}.`);
+                        } else {
+                            log(`An error occured.`);
+                            break;
+                        }
                     }
                 }
             }
-        } else {
-            log(`An error occured.`);
-        }
+        }).catch((err) => {
+            console.log(err);
+        });
     } else {
         log(`You already downloaded this zip. To download again delete the existing version.`);
     }
 }
 
-function download_manifest(envType, prodType) {
+async function download_manifest(envType, prodType) {
     const saveLoc = cache["output"];
     if (prodType == "client") {
         const fileName = `${saveLoc}/retailclient_swtor.patchmanifest`;
@@ -647,13 +648,14 @@ function download_manifest(envType, prodType) {
         if (!fs.existsSync(fileName)) {
             const url = `http://manifest.swtor.com/patch/retailclient_swtor.patchmanifest`;
 
-            const dl_status = getRemoteFile(fileName, url);
-
-            if (dl_status == "done") {
-                log(`Dowloaded: ${url}.`);
-            } else {
-                log(`An error occured.`);
-            }
+            const dl_status = await getRemoteFile(fileName, url).then((res) => {
+                if (res == "done") {
+                    log(`Dowloaded: ${url}.`);
+                    log(`Download complete`);
+                }
+            }).catch((err) => {
+                console.log(err);
+            });
         } else {
             log(`You already downloaded this zip. To download again delete the existing version.`);
         }
@@ -664,19 +666,20 @@ function download_manifest(envType, prodType) {
         if (!fs.existsSync(fileName)) {
             const url = `http://manifest.swtor.com/patch/assets_swtor_${prodType}.patchmanifest`;
 
-            const dl_status = getRemoteFile(fileName, url);
-
-            if (dl_status == "done") {
-                log(`Dowloaded: ${url}.`);
-            } else {
-                log(`An error occured.`);
-            }
+            const dl_status = await getRemoteFile(fileName, url).then((res) => {
+                if (res == "done") {
+                    log(`Dowloaded: ${url}.`);
+                    log(`Download complete`);
+                }
+            }).catch((err) => {
+                console.log(err);
+            });
         } else {
             log(`You already downloaded this zip. To download again delete the existing version.`);
         }
     }
 }
-function download_manifest_pts(envType, prodType) {
+async function download_manifest_pts(envType, prodType) {
     const saveLoc = cache["output"];
     if (prodType == "client") {
         const fileName = `${saveLoc}/retailclient_publictest.patchmanifest`;
@@ -685,13 +688,14 @@ function download_manifest_pts(envType, prodType) {
         if (!fs.existsSync(fileName)) {
             const url = `http://manifest.swtor.com/patch/retailclient_publictest.patchmanifest`;
 
-            const dl_status = getRemoteFile(fileName, url);
-
-            if (dl_status == "done") {
-                log(`Dowloaded: ${url}.`);
-            } else {
-                log(`An error occured.`);
-            }
+            const dl_status = await getRemoteFile(fileName, url).then((res) => {
+                if (res == "done") {
+                    log(`Dowloaded: ${url}.`);
+                    log(`Download complete`);
+                }
+            }).catch((err) => {
+                console.log(err);
+            });
         } else {
             log(`You already downloaded this zip. To download again delete the existing version.`);
         }
@@ -702,19 +706,20 @@ function download_manifest_pts(envType, prodType) {
         if (!fs.existsSync(fileName)) {
             const url = `http://manifest.swtor.com/patch/assets_swtor_test_${prodType}.patchmanifest`;
 
-            const dl_status = getRemoteFile(fileName, url);
-
-            if (dl_status == "done") {
-                log(`Dowloaded: ${url}.`);
-            } else {
-                log(`An error occured.`);
-            }
+            const dl_status = await getRemoteFile(fileName, url).then((res) => {
+                if (res == "done") {
+                    log(`Dowloaded: ${url}.`);
+                    log(`Download complete`);
+                }
+            }).catch((err) => {
+                console.log(err);
+            });
         } else {
             log(`You already downloaded this zip. To download again delete the existing version.`);
         }
     }
 }
-function download_manifest_movies(envType, prodType) {
+async function download_manifest_movies(envType, prodType) {
     const saveLoc = cache["output"];
 
     const fileName = `${saveLoc}/movies_${prodType}.patchmanifest`;
@@ -723,18 +728,19 @@ function download_manifest_movies(envType, prodType) {
     if (!fs.existsSync(fileName)) {
         const url = `http://manifest.swtor.com/patch/movies_${prodType}.patchmanifest`;
 
-        const dl_status = getRemoteFile(fileName, url);
-
-        if (dl_status == "done") {
-            log(`Dowloaded: ${url}.`);
-        } else {
-            log(`An error occured.`);
-        }
+        const dl_status = await getRemoteFile(fileName, url).then((res) => {
+            if (res == "done") {
+                log(`Dowloaded: ${url}.`);
+                log(`Download complete`);
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
     } else {
         log(`You already downloaded this manifest. To download again delete the existing version.`);
     }
 }
-function download_manifest_exp_client(envType, prodType) {
+async function download_manifest_exp_client(envType, prodType) {
     const saveLoc = cache["output"];
     const clientID = envType;
 
@@ -744,19 +750,20 @@ function download_manifest_exp_client(envType, prodType) {
     if (!fs.existsSync(fileName)) {
         const url = `http://manifest.swtor.com/patch/retailclient_${clientID}.patchmanifest`;
 
-        const dl_status = getRemoteFile(fileName, url);
-
-        if (dl_status == "done") {
-            log(`Dowloaded: ${url}.`);
-        } else {
-            log(`An error occured.`);
-        }
+        const dl_status = await getRemoteFile(fileName, url).then((res) => {
+            if (res == "done") {
+                log(`Dowloaded: ${url}.`);
+                log(`Download complete`);
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
     } else {
         log(`You already downloaded this manifest. To download again delete the existing version.`);
     }
 }
 
-function download_solidpkg(to, xyStr, envType, prodType) {
+async function download_solidpkg(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
     if (prodType == "client") {
         const fileName = `${saveLoc}/retailclient_swtor_${xyStr}.solidpkg`;
@@ -765,13 +772,14 @@ function download_solidpkg(to, xyStr, envType, prodType) {
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}.solidpkg`;
 
-            const dl_status = getRemoteFile(fileName, url);
-
-            if (dl_status == "done") {
-                log(`Dowloaded: ${url}.`);
-            } else {
-                log(`An error occured.`);
-            }
+            const dl_status = await getRemoteFile(fileName, url).then((res) => {
+                if (res == "done") {
+                    log(`Dowloaded: ${url}.`);
+                    log(`Download complete`);
+                }
+            }).catch((err) => {
+                console.log(err);
+            });
         } else {
             log(`You already downloaded this zip. To download again delete the existing version.`);
         }
@@ -782,19 +790,20 @@ function download_solidpkg(to, xyStr, envType, prodType) {
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}.solidpkg`;
 
-            const dl_status = getRemoteFile(fileName, url);
-
-            if (dl_status == "done") {
-                log(`Dowloaded: ${url}.`);
-            } else {
-                log(`An error occured.`);
-            }
+            const dl_status = await getRemoteFile(fileName, url).then((res) => {
+                if (res == "done") {
+                    log(`Dowloaded: ${url}.`);
+                    log(`Download complete`);
+                }
+            }).catch((err) => {
+                console.log(err);
+            });
         } else {
             log(`You already downloaded this zip. To download again delete the existing version.`);
         }
     }
 }
-function download_solidpkg_pts(to, xyStr, envType, prodType) {
+async function download_solidpkg_pts(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
     if (prodType == "client") {
         const fileName = `${saveLoc}/retailclient_publictest_${xyStr}.solidpkg`;
@@ -803,13 +812,14 @@ function download_solidpkg_pts(to, xyStr, envType, prodType) {
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}.solidpkg`;
 
-            const dl_status = getRemoteFile(fileName, url);
-
-            if (dl_status == "done") {
-                log(`Dowloaded: ${url}.`);
-            } else {
-                log(`An error occured.`);
-            }
+            const dl_status = await getRemoteFile(fileName, url).then((res) => {
+                if (res == "done") {
+                    log(`Dowloaded: ${url}.`);
+                    log(`Download complete`);
+                }
+            }).catch((err) => {
+                console.log(err);
+            });
         } else {
             log(`You already downloaded this zip. To download again delete the existing version.`);
         }
@@ -820,19 +830,20 @@ function download_solidpkg_pts(to, xyStr, envType, prodType) {
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}.solidpkg`;
 
-            const dl_status = getRemoteFile(fileName, url);
-
-            if (dl_status == "done") {
-                log(`Dowloaded: ${url}.`);
-            } else {
-                log(`An error occured.`);
-            }
+            const dl_status = await getRemoteFile(fileName, url).then((res) => {
+                if (res == "done") {
+                    log(`Dowloaded: ${url}.`);
+                    log(`Download complete`);
+                }
+            }).catch((err) => {
+                console.log(err);
+            });
         } else {
             log(`You already downloaded this zip. To download again delete the existing version.`);
         }
     }
 }
-function download_solidpkg_movies(to, xyStr, envType, prodType) {
+async function download_solidpkg_movies(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
 
     const fileName = `${saveLoc}/movies_${prodType}_${xyStr}.solidpkg`;
@@ -841,18 +852,19 @@ function download_solidpkg_movies(to, xyStr, envType, prodType) {
     if (!fs.existsSync(fileName)) {
         const url = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}.solidpkg`;
 
-        const dl_status = getRemoteFile(fileName, url);
-
-        if (dl_status == "done") {
-            log(`Dowloaded: ${url}.`);
-        } else {
-            log(`An error occured.`);
-        }
+        const dl_status = await getRemoteFile(fileName, url).then((res) => {
+            if (res == "done") {
+                log(`Dowloaded: ${url}.`);
+                log(`Download complete`);
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
     } else {
         log(`You already downloaded this manifest. To download again delete the existing version.`);
     }
 }
-function download_solidpkg_exp_client(to, xyStr, envType, prodType) {
+async function download_solidpkg_exp_client(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
     const clientID = envType;
 
@@ -862,35 +874,60 @@ function download_solidpkg_exp_client(to, xyStr, envType, prodType) {
     if (!fs.existsSync(fileName)) {
         const url = `http://cdn-patch.swtor.com/patch/${clientID}/retailclient_${clientID}/retailclient_${clientID}_${xyStr}.solidpkg`;
 
-        const dl_status = getRemoteFile(fileName, url);
-
-        if (dl_status == "done") {
-            log(`Dowloaded: ${url}.`);
-        } else {
-            log(`An error occured.`);
-        }
+        const dl_status = await getRemoteFile(fileName, url).then((res) => {
+            if (res == "done") {
+                log(`Dowloaded: ${url}.`);
+                log(`Download complete`);
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
     } else {
         log(`You already downloaded this manifest. To download again delete the existing version.`);
     }
 }
 
-function checkDate_files(to, xyStr, envType, prodType) {
+async function checkDate_files(to, xyStr, envType, prodType) {
     
 }
-function checkDate_files_pts(to, xyStr, envType, prodType) {
+async function checkDate_files_pts(to, xyStr, envType, prodType) {
     
 }
-function checkDate_movies(to, xyStr, envType, prodType) {
+async function checkDate_movies(to, xyStr, envType, prodType) {
     
 }
-function checkDate_exp_client(to, xyStr, envType, prodType) {
+async function checkDate_exp_client(to, xyStr, envType, prodType) {
     
 }
 //utility methods
 
 //get file using axios library
-async function getRemoteFile(file, url) {
-    ipcRenderer.send("downloadPatchFile", [file, url]);
+async function getRemoteFile(dest, url) {
+    return new Promise((resolve, reject) => {
+        const request = http.get(url, function(response) {
+            if (response.statusCode == 200) {
+                const file = fs.createWriteStream(dest);
+                response.pipe(file);
+
+                var len = parseInt(response.headers['content-length'], 10);
+                var downloaded = 0;
+            
+                response.on('data', function(chunk) {
+                    downloaded += chunk.length;
+                    const percentage = (100.0 * downloaded / len).toFixed(2);
+                    //console.log(`Downloading ${percentage}% ${downloaded} bytes`);
+                    progressBar.style.width = `${percentage}%`;
+                });
+
+                file.on('finish', function() {
+                    progressBar.style.width = ``;
+                    resolve("done");
+                });
+            } else {
+                reject("error");
+            }
+        });
+    });
 }
 //search through patches list looking for patch with matching version number (v)
 function findByLiveVersion(v) {

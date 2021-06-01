@@ -200,9 +200,31 @@ html, body {
 .select-items div:hover, .same-as-selected {
     background-color: var(--grey-black-hover);
 }
+.actions-side > button {
+    width: 130px;
+}
+.action-btn-placeholder {
+    display: hidden;
+    background-color: transparent;
+    border: 1px solid transparent;
+    pointer-events: none;
+}
 .disabled {
     pointer-events: none;
     background-color: #222222;
     border: 1px solid rgb(51, 51, 51);
     color: rgb(177, 177, 177);
+}
+.progress-bar-container {
+    height: 23px;
+    width: 128px;
+    pointer-events: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+.progress-bar {
+    height: 100%;
+    background-color: var(--background-yellow-slicers);
 }

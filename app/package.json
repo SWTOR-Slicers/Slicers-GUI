@@ -28,13 +28,12 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.3",
     "@petamoriken/float16": "^2.0.0",
-    "axios": "^0.21.1",
+    "ssn": "git+https://github.com/Tormak9970/ssn.git",
     "electron-node-config": "^1.1.0",
     "electron-squirrel-startup": "^1.0.0",
     "node-disk-info": "^1.3.0",
     "three": "^0.128.0",
-    "xml2js": "^0.4.23",
-    "ssn": "git+https://git.jedipedia.net/swtor/ssn.git"
+    "xml2js": "^0.4.23"
   },
   "build": {
     "extraResources": [

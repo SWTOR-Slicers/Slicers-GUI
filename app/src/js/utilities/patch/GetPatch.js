@@ -1,6 +1,6 @@
 import { log } from "../../universal/Logger.js";
-const ssn = require('ssn');
 
+const ssn = require('ssn');
 const fs = require('fs');
 const http = require('http');
 const xml2js = require('xml2js');
@@ -389,7 +389,33 @@ function dlSolid() {
     }
 }
 function checkDate() {
+    let vTo = cache["version"];
+    if (vTo.indexOf(".") != -1) {
+        const patch = findByLiveVersion(vTo);
+        const patchID = parseInt(patch[cache["productType"]]);
+        const lastVersion = patchID - 1;
 
+        if (cache["enviromentType"] === "live") {
+            let xyStr = (cache["varient"] == "0toY") ? `0to${patchID}` : `${lastVersion}to${patchID}`;
+            checkDate_files(patchID, xyStr, cache["enviromentType"], cache["productType"]);
+        } else {
+            log("Version numbers are live enviroment only. Please use version ID");
+        }
+    } else {
+        const patchID = cache["version"];
+        const lastVersion = patchID - 1;
+        let xyStr = (cache["varient"] == "-1to0") ? `-1to0` : (cache["varient"] == "0toY") ? `0to${patchID}` : `${lastVersion}to${patchID}`;
+
+        if (cache["enviromentType"] === "live") {
+            checkDate_files(patchID, xyStr, cache["enviromentType"], cache["productType"]);
+        } else if (cache["enviromentType"] === "pts") {
+            checkDate_files_pts(patchID, xyStr, cache["enviromentType"], cache["productType"]);
+        } else if (cache["enviromentType"] === "movies") {
+            checkDate_movies(patchID, xyStr, cache["enviromentType"], cache["productType"]);
+        } else if ((cache["enviromentType"] === "liveqatest") || (cache["enviromentType"] === "liveeptest") || (cache["enviromentType"] === "betatest") || (cache["enviromentType"] === "cstraining")) {
+            checkDate_exp_client(patchID, xyStr, cache["enviromentType"], cache["productType"]);
+        }
+    }
 }
 function checkForUpdates() {
 
@@ -888,23 +914,122 @@ async function download_solidpkg_exp_client(to, xyStr, envType, prodType) {
 }
 
 async function checkDate_files(to, xyStr, envType, prodType) {
-    
+    const saveLoc = cache["output"];
+    if (prodType == "client") {
+        const fileName = `${saveLoc}/retailclient_swtor_${xyStr}.zip`;
+
+        if (!fs.existsSync(fileName)) {
+            log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+            const url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}/retailclient_swtor_${xyStr}.zip`;
+
+            const dl_status = await getRemoteFile(fileName, url);
+        }
+
+        const fileBuffer = fs.readFileSync(fileName);
+        const entries = ssn.readSsnFile(fileBuffer.buffer);
+        console.log(entries);
+        const versionFile = entries.find((e) => { return e.name == `retailclient_swtor.version`; });
+        const lastModDate = versionFile.lastMod;
+        log(`Date: ${lastModDate}`);
+    } else {
+        const fileName = `${saveLoc}/assets_swtor_${prodType}_${xyStr}.zip`;
+
+        if (!fs.existsSync(fileName)) {
+            log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+            const url = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}/assets_swtor_${prodType}_${xyStr}.zip`;
+
+            const dl_status = await getRemoteFile(fileName, url);
+
+            const fileBuffer = fs.readFileSync(fileName);
+            const entries = ssn.readSsnFile(fileBuffer.buffer);
+            console.log(entries);
+            const versionFile = entries.find((e) => { return e.name == `assets_swtor_${prodType}.version`; });
+            const lastModDate = versionFile.lastMod;
+            log(`Date: ${lastModDate}`);
+        }
+    }
 }
 async function checkDate_files_pts(to, xyStr, envType, prodType) {
-    
+    const saveLoc = cache["output"];
+    if (prodType == "client") {
+        const fileName = `${saveLoc}/retailclient_publictest_${xyStr}.zip`;
+
+        if (!fs.existsSync(fileName)) {
+            log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+            const url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}/retailclient_publictest_${xyStr}.zip`;
+
+            const dl_status = getRemoteFile(fileName, url);
+
+            const fileBuffer = fs.readFileSync(fileName);
+            const entries = ssn.readSsnFile(fileBuffer.buffer);
+            console.log(entries);
+            const versionFile = entries.find((e) => { return e.name == `retailclient_publictest.version`; });
+            const lastModDate = versionFile.lastMod;
+            log(`Date: ${lastModDate}`);
+        }
+    } else {
+        const fileName = `${saveLoc}/assets_swtor_test_${prodType}_${xyStr}.zip`;
+
+        if (!fs.existsSync(fileName)) {
+            log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+            const url = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}/assets_swtor_test_${prodType}_${xyStr}.zip`;
+
+            const dl_status = await getRemoteFile(fileName, url);
+
+            const fileBuffer = fs.readFileSync(fileName);
+            const entries = ssn.readSsnFile(fileBuffer.buffer);
+            console.log(entries);
+            const versionFile = entries.find((e) => { return e.name == `assets_publictest_${prodType}.version`; });
+            const lastModDate = versionFile.lastMod;
+            log(`Date: ${lastModDate}`);
+        }
+    }
 }
 async function checkDate_movies(to, xyStr, envType, prodType) {
-    
+    const saveLoc = cache["output"];
+
+    const fileName = `${saveLoc}/movies_${prodType}_${xyStr}.zip`;
+
+    if (!fs.existsSync(fileName)) {
+        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+        const url = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}/movies_${prodType}_${xyStr}.zip`;
+
+        const dl_status = await getRemoteFile(fileName, url);
+
+        const fileBuffer = fs.readFileSync(fileName);
+        const entries = ssn.readSsnFile(fileBuffer.buffer);
+        console.log(entries);
+        const versionFile = entries.find((e) => { return e.name == `movies_${prodType}.version`; });
+        const lastModDate = versionFile.lastMod;
+        log(`Date: ${lastModDate}`);
+    }
 }
 async function checkDate_exp_client(to, xyStr, envType, prodType) {
-    
+    const saveLoc = cache["output"];
+    const clientID = envType;
+
+    const fileName = `${saveLoc}/retailclient_${clientID}_${xyStr}.zip`;
+
+    if (!fs.existsSync(fileName)) {
+        log(`Download of ${envType} version ${xyStr} started! (${to})`);
+        const url = `http://cdn-patch.swtor.com/patch/${clientID}/retailclient_${clientID}/retailclient_${clientID}_${xyStr}/retailclient_${clientID}_${xyStr}.zip`;
+
+        const dl_status = await getRemoteFile(fileName, url);
+
+        const fileBuffer = fs.readFileSync(fileName);
+        const entries = ssn.readSsnFile(fileBuffer.buffer);
+        console.log(entries);
+        const versionFile = entries.find((e) => { return e.name == `retailclient_${prodType}.version`; });
+        const lastModDate = versionFile.lastMod;
+        log(`Date: ${lastModDate}`);
+    }
 }
 //utility methods
 
 //get file using axios library
 async function getRemoteFile(dest, url) {
     return new Promise((resolve, reject) => {
-        const request = http.get(url, function(response) {
+        const request = http.get(url, (response) => {
             if (response.statusCode == 200) {
                 const file = fs.createWriteStream(dest);
                 response.pipe(file);
@@ -912,14 +1037,14 @@ async function getRemoteFile(dest, url) {
                 var len = parseInt(response.headers['content-length'], 10);
                 var downloaded = 0;
             
-                response.on('data', function(chunk) {
+                response.on('data', (chunk) => {
                     downloaded += chunk.length;
                     const percentage = (100.0 * downloaded / len).toFixed(2);
                     //console.log(`Downloading ${percentage}% ${downloaded} bytes`);
                     progressBar.style.width = `${percentage}%`;
                 });
 
-                file.on('finish', function() {
+                file.on('finish', () => {
                     progressBar.style.width = ``;
                     resolve("done");
                 });

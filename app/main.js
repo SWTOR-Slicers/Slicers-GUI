@@ -133,7 +133,6 @@ function initGetPatchGUI() {
     },
     icon: __dirname + "/resources/img/SlicersLogo.png",
   });
-  win.webContents.openDevTools();
 
   win.removeMenu();
   win.loadURL(`${__dirname}/src/html/GetPatch.html`);

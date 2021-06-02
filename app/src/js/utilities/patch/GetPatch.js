@@ -4,7 +4,9 @@ const ssn = require('ssn');
 const fs = require('fs');
 const http = require('http');
 const xml2js = require('xml2js');
+const xmlJS = require('xml-js');
 const parser = new xml2js.Parser({ attrkey: "attributes" });
+const defParser = new xml2js.Parser();
 
 const {ipcRenderer} = require('electron');
 const path = require('path');
@@ -417,8 +419,91 @@ function checkDate() {
         }
     }
 }
-function checkForUpdates() {
+async function checkForUpdates() {
+    const products = {
+        'live': {
+            'client': 'retailclient_swtor',
+            'main': 'assets_swtor_main',
+            'en_us': 'assets_swtor_en_us',
+            'de_de': 'assets_swtor_de_de',
+            'fr_fr': 'assets_swtor_fr_fr'
+        },
+        'pts': {
+            'client': 'retailclient_publictest',
+            'main': 'assets_swtor_test_main',
+            'en_us': 'assets_swtor_test_en_us',
+            'de_de': 'assets_swtor_test_de_de',
+            'fr_fr': 'assets_swtor_test_fr_fr'
+        },
+        'movies': {
+            'en_us': 'movies_en_us',
+            'de_de': 'movies_de_de',
+            'fr_fr': 'movies_fr_fr'
+        }
+    };
+    function genURL(prod) {
+        return `http://manifest.swtor.com/patch/${prod}.patchmanifest`;
+    }
+    function genURL2(prod, xyStr) {
+        return `http://cdn-patch.swtor.com/patch/swtor/${prod}/${prod}_${xyStr}/${prod}_${xyStr}.zip`;
+    }
+    const newPatches = [];
 
+    //get SSN Lib product equvilent
+    let product = products['live']['client'];
+    //fetch manifest
+    const res = await fetch(genURL(product));
+    //read but dont download
+    const fileData = await res.arrayBuffer();
+    //process manifest
+    const jsonManifest = await processManifest(fileData, product);
+    console.log(jsonManifest);
+
+    //code to get version and date
+    const res2 = await fetch(genURL2(product, `${parseInt(jsonManifest.current) - 1}to${jsonManifest.current}`));
+    const fileData2 = await res2.arrayBuffer();
+    const versionData = await getRelease(fileData2, product);
+}
+async function processManifest(ssnFile, product) {
+    //Parse .patchmanifest file
+    const fileEntries = ssn.readSsnFile(ssnFile);
+
+    //Verify .patchmanifest file
+    if (fileEntries.length !== 1) {
+        log(`Expected .patchmanifest to contain 1 file but it had "${fileEntries.length}" files.`);
+        return "error";
+    }
+
+    const firstFile = fileEntries[0];
+    if (firstFile.name !== 'manifest.xml') {
+        log(`Expected .patchmanifest to contain a file called manifest.xml but it is called "${firstFile.name}".`);
+        return "error";
+    }
+
+    const stream = ssn.arrayBufferToStream(ssnFile, firstFile.offset);
+
+    //Extract manifest.xml file
+    await ssn.readLocalFileHeader(stream, true);
+    const patchmanifestStream = await ssn.extractFileAsStream(firstFile, stream);
+
+    //Convert ArrayBuffer to string
+    const patchmanifestXml = await ssn.streamToString(patchmanifestStream);
+
+    //convert XML to JSON-converted XML
+    const patchManifestJson = xmlJS.xml2js(patchmanifestXml);
+
+    //verify that XML file contains all required elements and attributes
+    ssn.verifyPatchmanifest(patchManifestJson, product);
+
+    //convert JSON-converted XML to an easier to read JSON
+    const patchManifestSimple = ssn.parsePatchmanifest(patchManifestJson);
+    return patchManifestSimple;
+}
+async function getRelease(ssnFile, product) {
+    const entries = ssn.readSsnFile(ssnFile);
+    console.log(entries);
+
+    return "";
 }
 
 async function download_files(to, xyStr, envType, prodType) {

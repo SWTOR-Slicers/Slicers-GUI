@@ -174,7 +174,8 @@ function initGetPatchGUI() {
   });
 
   win.removeMenu();
-  win.setResizable(false);
+  win.webContents.openDevTools();
+  //win.setResizable(false);
   win.loadURL(`${__dirname}/src/html/GetPatch.html`);
 
   win.on('close', () => {

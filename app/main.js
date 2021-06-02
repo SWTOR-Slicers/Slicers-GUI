@@ -106,6 +106,7 @@ function initListeners() {
         locate();
         break;
       case "unpack":
+        initUnpackerGUI();
         break;
       case "genHash":
         
@@ -123,6 +124,44 @@ function initListeners() {
   });
 }
 
+function initUnpackerGUI() {
+  let win = new BrowserWindow({
+    width: 516,
+    height: 269,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: __dirname + "/resources/img/SlicersLogo.png",
+  });
+  win.webContents.openDevTools();
+
+  win.removeMenu();
+  win.loadURL(`${__dirname}/src/html/Unpacker.html`);
+
+  win.on('close', () => {
+    if (mainWindow) {
+      if (mainWindow.webContents) {
+        mainWindow.webContents.send("unpkCompl", "");
+      }
+    }
+  });
+
+  initUnpackerListeners(win);
+}
+function initUnpackerListeners(window) {
+  ipcMain.on("showDialogUnpacker", async (event, data) => {
+    dialog.showOpenDialog(window, { properties: ['openDirectory'] }).then(async (dir) => {
+        if (!dir.canceled) {
+          event.reply("recieveDialogUnpacker", [data, dir.filePaths]);
+        } else {
+          event.reply("recieveDialogUnpacker", "");
+        }
+    });
+  });
+}
+
+
 function initGetPatchGUI() {
   let win = new BrowserWindow({
     width: 516,
@@ -135,6 +174,7 @@ function initGetPatchGUI() {
   });
 
   win.removeMenu();
+  win.setResizable(false);
   win.loadURL(`${__dirname}/src/html/GetPatch.html`);
 
   win.on('close', () => {

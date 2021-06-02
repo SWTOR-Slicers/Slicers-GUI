@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <script src="../../node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
+    <link rel="stylesheet" href="../css/universal.css">
+    <link rel="stylesheet" href="../css/Unpacker.css">
+    <title>SWTOR Unpacker</title>
+</head>
+<body>
+    <div class="viewer-window">
+        <div class="viewer-body element-border">
+            <div class="header-container">
+                <h2 class="h2">SWTOR Unpacker</h2>
+            </div>
+            <div class="body-container">
+                <div class="patch-settings">
+                    <div class="setting patch-unpack-path-setting">
+                        <label class="setting-label" for="filePathInput">Unpack Path: </label>
+                        <input class="paths-field-input" type="text" name="filePathInput" id="filePathInput" value="">
+                        <button id="filePathBrowserBtn" class="browse-paths__button">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                    <div class="setting patch-output-setting">
+                        <label class="setting-label" for="outputInput">Output Folder: </label>
+                        <input class="paths-field-input" type="text" name="outputInput" id="outputInput" value="">
+                        <button id="outputBrowserBtn" class="browse-paths__button">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="patch-actions">
+                    <button id="unpackFile" class="container-bottom__sub__btn action-btn">Unpack File</button>
+                    <button id="unpackDir" class="container-bottom__sub__btn action-btn">Unpack Directory</button>
+                    <div class="progress-bar-container container-bottom__sub__btn action-btn">
+                        <div id="progressBar" class="progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/extraction/unpack/Unpack.js"></script>
+</body>
+</html>

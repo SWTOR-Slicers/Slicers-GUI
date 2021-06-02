@@ -1026,7 +1026,7 @@ async function checkDate_exp_client(to, xyStr, envType, prodType) {
 }
 //utility methods
 
-//get file using axios library
+//get file using http library
 async function getRemoteFile(dest, url) {
     return new Promise((resolve, reject) => {
         const request = http.get(url, (response) => {

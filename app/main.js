@@ -159,6 +159,15 @@ function initUnpackerListeners(window) {
         }
     });
   });
+  ipcMain.on("showUnpackerDialogFile", async (event, data) => {
+    dialog.showOpenDialog(window, { properties: ['openFile'] }).then(async (file) => {
+        if (!file.canceled) {
+          event.reply("recieveUnpackerDialogFile", [data, file.filePaths]);
+        } else {
+          event.reply("recieveUnpackerDialogFile", "");
+        }
+    });
+  });
 }
 
 

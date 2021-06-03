@@ -2,7 +2,6 @@ import { log } from "../../universal/Logger.js";
 
 const ssn = require('ssn');
 const fs = require('fs');
-
 const {ipcRenderer} = require('electron');
 const path = require('path');
 
@@ -26,11 +25,11 @@ const cache = new Proxy(cacheInit, {
 
 //action buttons
 const unpackFile = document.getElementById("unpackFile");
-const unpackDir = document.getElementById("unpackDir");
 const progressBar = document.getElementById("progressBar");
 
 //settings inputs
 const filePathInput = document.getElementById("filePathInput");
+const folderPathBrowserBtn = document.getElementById('folderPathBrowserBtn');
 const filePathBrowserBtn = document.getElementById("filePathBrowserBtn");
 const outputInput = document.getElementById("outputInput");
 const outputBrowserBtn = document.getElementById("outputBrowserBtn");
@@ -74,17 +73,17 @@ function updateCache(field, val) {
 }
 //init dom listeners
 function initListeners() {
-    filePathBrowserBtn.addEventListener("click", (e) => {
+    folderPathBrowserBtn.addEventListener("click", (e) => {
         ipcRenderer.send("showDialogUnpacker", "unpackPath");
+    });
+    filePathBrowserBtn.addEventListener("click", (e) => {
+        ipcRenderer.send("showUnpackerDialogFile", "unpackPath");
     });
     outputBrowserBtn.addEventListener("click", (e) => {
         ipcRenderer.send("showDialogUnpacker", "output");
     });
     unpackFile.addEventListener("click", (e) => {
-        unpack();
-    });
-    unpackDir.addEventListener("click", (e) => {
-        unpack();
+        unpack(cache["output"], "", cache["unpackPath"]);
     });
 
     //listener for unpack path and output fields
@@ -119,10 +118,39 @@ function initSubs() {
             }
         }
     });
+    ipcRenderer.on("recieveUnpackerDialogFile", (event, data) => {
+        if (data != "") {
+            const field = data[0];
+            if (field == "unpackPath") {
+                filePathInput.value = data[1][0];
+                filePathInput.dispatchEvent(changeEvent);
+            }
+        }
+    });
 }
 
-function unpack(patchDir, tempDir, patchPath) {
-    
+async function unpack(outputDir, tempDir, patchPath) {
+    if (fs.statSync(patchPath).isDirectory()) {
+        const dirContents = fs.readdirSync(patchPath);
+        for (let i = 0; i < dirContents.length; i++) {
+            const patchElem = dirContents[i];
+            await handleFile(outputDir, tempDir, patchElem);
+        }
+    } else {
+        const patchElem = patchPath;
+        await handleFile(outputDir, tempDir, patchElem);
+    }
+}
+
+async function handleFile(outputDir, tempDir, patchFile) {
+    const fileType = path.extname(patchFile);
+    if (fileType === ".solidpkg") {
+        await unpackSolidpkg(outputDir, patchFile)
+    } else if (fileType === ".patchmanifest") {
+
+    } else if (fileType.substr(0, 2) === ".z") {
+
+    }
 }
 
 async function unpackZip() {
@@ -133,8 +161,38 @@ async function unpackManifest() {
     
 }
 
-async function unpackSolidpkg() {
+async function unpackSolidpkg(outputDir, patchFile) {
+    const patchFileName = patchFile.substr(patchFile.lastIndexOf("\\") + 1)
+    const saveFilePath = path.join(outputDir, `${patchFileName}.json`);
+    const ssnFile = fs.readFileSync(patchFile);
+
+    const fileEntries = ssn.readSsnFile(ssnFile.buffer);
+
+    if (fileEntries.length !== 1) {
+        log(`Expected .solidpkg to contain 1 file but it had "${fileEntries.length}" files.`);
+    }
     
+    const firstFile = fileEntries[0];
+    if (firstFile.name !== 'metafile.solid') {
+        log(`Expected .solidpkg to contain a file called metafile.solid but it is called "${firstFile.name}".`);
+    }
+
+    const stream = ssn.arrayBufferToStream(ssnFile, firstFile.offset);
+
+    //Extract metafile.solid file
+    await ssn.readLocalFileHeader(stream, true);
+    const solidFileStream = await ssn.extractFileAsStream(firstFile, stream);
+    const solidFileArrayBuffer = await ssn.streamToArrayBuffer(solidFileStream);
+    const solidContents = ssn.parseBencode(solidFileArrayBuffer);
+    
+    const jsonSolidpkg = {
+        created: new Date(solidContents['creation date'] * 1000),
+        files: solidContents.info.files.map(({ length, path: [name] }) => ({ name, length })),
+        pieceLength: solidContents.info['piece length'],
+        pieces: solidContents.info.pieces,
+    };
+
+    fs.writeFileSync(saveFilePath, JSON.stringify(jsonSolidpkg));
 }
 
 //utility methods

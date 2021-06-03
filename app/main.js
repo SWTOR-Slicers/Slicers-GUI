@@ -9,6 +9,9 @@ const cache = {
   outputFolder:"",
   dataFolder:""
 }
+let gr2WindowOpened = false;
+let getPatchWindowOpened = false;
+let unpackerWindowOpened = false;
 
 function createWindow () {
   mainWindow = new BrowserWindow({
@@ -100,7 +103,7 @@ function initListeners() {
   ipcMain.on("runExec", async (event, data) => {
     switch (data) {
       case "extraction":
-        mainWindow.webContents.send("extrCompl", "");
+        extract();
         break;
       case "locate":
         locate();
@@ -147,7 +150,10 @@ function initUnpackerGUI() {
     }
   });
 
-  initUnpackerListeners(win);
+  if (!unpackerWindowOpened) {
+    initUnpackerListeners(win);
+    unpackerWindowOpened = true;
+  }
 }
 function initUnpackerListeners(window) {
   ipcMain.on("showDialogUnpacker", async (event, data) => {
@@ -195,7 +201,10 @@ function initGetPatchGUI() {
     }
   });
 
-  initGetPatchListeners(win);
+  if (!getPatchWindowOpened) {
+    initGetPatchListeners(win);
+    getPatchWindowOpened = true;
+  }
 }
 function initGetPatchListeners(window) {
   ipcMain.on("showDialogPatch", async (event, data) => {
@@ -233,7 +242,10 @@ function initGR2Viewer() {
     }
   });
 
-  initGR2Listeners(win);
+  if (!gr2WindowOpened) {
+    initGR2Listeners(win);
+    gr2WindowOpened = true;
+  }
 }
 function initGR2Listeners(window) {
   ipcMain.on("showDialogGR2", async (event, data) => {
@@ -247,6 +259,9 @@ function initGR2Listeners(window) {
   });
 }
 
+async function extract() {
+  mainWindow.webContents.send("extrCompl", "");
+}
 async function locate() {
   try {
     console.log(cache);

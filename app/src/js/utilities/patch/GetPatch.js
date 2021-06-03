@@ -420,49 +420,50 @@ function checkDate() {
     }
 }
 async function checkForUpdates() {
-    const products = {
-        'live': {
-            'client': 'retailclient_swtor',
-            'main': 'assets_swtor_main',
-            'en_us': 'assets_swtor_en_us',
-            'de_de': 'assets_swtor_de_de',
-            'fr_fr': 'assets_swtor_fr_fr'
-        },
-        'pts': {
-            'client': 'retailclient_publictest',
-            'main': 'assets_swtor_test_main',
-            'en_us': 'assets_swtor_test_en_us',
-            'de_de': 'assets_swtor_test_de_de',
-            'fr_fr': 'assets_swtor_test_fr_fr'
-        },
-        'movies': {
-            'en_us': 'movies_en_us',
-            'de_de': 'movies_de_de',
-            'fr_fr': 'movies_fr_fr'
-        }
-    };
-    function genURL(prod) {
-        return `http://manifest.swtor.com/patch/${prod}.patchmanifest`;
-    }
-    function genURL2(prod, xyStr) {
-        return `http://cdn-patch.swtor.com/patch/swtor/${prod}/${prod}_${xyStr}/${prod}_${xyStr}.zip`;
-    }
-    const newPatches = [];
+    log(`this function currently does not work.`);
+    // const products = {
+    //     'live': {
+    //         'client': 'retailclient_swtor',
+    //         'main': 'assets_swtor_main',
+    //         'en_us': 'assets_swtor_en_us',
+    //         'de_de': 'assets_swtor_de_de',
+    //         'fr_fr': 'assets_swtor_fr_fr'
+    //     },
+    //     'pts': {
+    //         'client': 'retailclient_publictest',
+    //         'main': 'assets_swtor_test_main',
+    //         'en_us': 'assets_swtor_test_en_us',
+    //         'de_de': 'assets_swtor_test_de_de',
+    //         'fr_fr': 'assets_swtor_test_fr_fr'
+    //     },
+    //     'movies': {
+    //         'en_us': 'movies_en_us',
+    //         'de_de': 'movies_de_de',
+    //         'fr_fr': 'movies_fr_fr'
+    //     }
+    // };
+    // function genURL(prod) {
+    //     return `http://manifest.swtor.com/patch/${prod}.patchmanifest`;
+    // }
+    // function genURL2(prod, xyStr) {
+    //     return `http://cdn-patch.swtor.com/patch/swtor/${prod}/${prod}_${xyStr}/${prod}_${xyStr}.zip`;
+    // }
+    // const newPatches = [];
 
-    //get SSN Lib product equvilent
-    let product = products['live']['client'];
-    //fetch manifest
-    const res = await fetch(genURL(product));
-    //read but dont download
-    const fileData = await res.arrayBuffer();
-    //process manifest
-    const jsonManifest = await processManifest(fileData, product);
-    console.log(jsonManifest);
+    // //get SSN Lib product equvilent
+    // let product = products['live']['client'];
+    // //fetch manifest
+    // const res = await fetch(genURL(product));
+    // //read but dont download
+    // const fileData = await res.arrayBuffer();
+    // //process manifest
+    // const jsonManifest = await processManifest(fileData, product);
+    // console.log(jsonManifest);
 
-    //code to get version and date
-    const res2 = await fetch(genURL2(product, `${parseInt(jsonManifest.current) - 1}to${jsonManifest.current}`));
-    const fileData2 = await res2.arrayBuffer();
-    const versionData = await getRelease(fileData2, product);
+    // //code to get version and date
+    // const res2 = await fetch(genURL2(product, `${parseInt(jsonManifest.current) - 1}to${jsonManifest.current}`));
+    // const fileData2 = await res2.arrayBuffer();
+    // const versionData = await getRelease(fileData2, product);
 }
 async function processManifest(ssnFile, product) {
     //Parse .patchmanifest file
@@ -1009,13 +1010,13 @@ async function checkDate_files(to, xyStr, envType, prodType) {
 
             const dl_status = await getRemoteFile(fileName, url);
         }
-
-        const fileBuffer = fs.readFileSync(fileName);
-        const entries = ssn.readSsnFile(fileBuffer.buffer);
-        console.log(entries);
-        const versionFile = entries.find((e) => { return e.name == `retailclient_swtor.version`; });
-        const lastModDate = versionFile.lastMod;
-        log(`Date: ${lastModDate}`);
+        const solidPkgURL = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}.solidpkg`;
+        const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
+        const solidPkgSsn = ssn.readSsnFile(solidPkgFile);
+        const solidPkg = await getSolidPkg(solidPkgFile, solidPkgSsn);
+        
+        const date = solidPkg.created;
+        log(`Released on: ${date}`);
     } else {
         const fileName = `${saveLoc}/assets_swtor_${prodType}_${xyStr}.zip`;
 
@@ -1024,14 +1025,14 @@ async function checkDate_files(to, xyStr, envType, prodType) {
             const url = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}/assets_swtor_${prodType}_${xyStr}.zip`;
 
             const dl_status = await getRemoteFile(fileName, url);
-
-            const fileBuffer = fs.readFileSync(fileName);
-            const entries = ssn.readSsnFile(fileBuffer.buffer);
-            console.log(entries);
-            const versionFile = entries.find((e) => { return e.name == `assets_swtor_${prodType}.version`; });
-            const lastModDate = versionFile.lastMod;
-            log(`Date: ${lastModDate}`);
         }
+        const solidPkgURL = `http://cdn-patch.swtor.com/patch/swtor/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}.solidpkg`;
+        const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
+        const solidPkgSsn = ssn.readSsnFile(solidPkgFile);
+        const solidPkg = await getSolidPkg(solidPkgFile, solidPkgSsn);
+        
+        const date = solidPkg.created;
+        log(`Released on: ${date}`);
     }
 }
 async function checkDate_files_pts(to, xyStr, envType, prodType) {
@@ -1044,14 +1045,14 @@ async function checkDate_files_pts(to, xyStr, envType, prodType) {
             const url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}/retailclient_publictest_${xyStr}.zip`;
 
             const dl_status = getRemoteFile(fileName, url);
-
-            const fileBuffer = fs.readFileSync(fileName);
-            const entries = ssn.readSsnFile(fileBuffer.buffer);
-            console.log(entries);
-            const versionFile = entries.find((e) => { return e.name == `retailclient_publictest.version`; });
-            const lastModDate = versionFile.lastMod;
-            log(`Date: ${lastModDate}`);
         }
+        const solidPkgURL = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}.solidpkg`;
+        const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
+        const solidPkgSsn = ssn.readSsnFile(solidPkgFile);
+        const solidPkg = await getSolidPkg(solidPkgFile, solidPkgSsn);
+        
+        const date = solidPkg.created;
+        log(`Released on: ${date}`);
     } else {
         const fileName = `${saveLoc}/assets_swtor_test_${prodType}_${xyStr}.zip`;
 
@@ -1060,14 +1061,14 @@ async function checkDate_files_pts(to, xyStr, envType, prodType) {
             const url = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}/assets_swtor_test_${prodType}_${xyStr}.zip`;
 
             const dl_status = await getRemoteFile(fileName, url);
-
-            const fileBuffer = fs.readFileSync(fileName);
-            const entries = ssn.readSsnFile(fileBuffer.buffer);
-            console.log(entries);
-            const versionFile = entries.find((e) => { return e.name == `assets_publictest_${prodType}.version`; });
-            const lastModDate = versionFile.lastMod;
-            log(`Date: ${lastModDate}`);
         }
+        const solidPkgURL = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}.solidpkg`;
+        const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
+        const solidPkgSsn = ssn.readSsnFile(solidPkgFile);
+        const solidPkg = await getSolidPkg(solidPkgFile, solidPkgSsn);
+        
+        const date = solidPkg.created;
+        log(`Released on: ${date}`);
     }
 }
 async function checkDate_movies(to, xyStr, envType, prodType) {
@@ -1080,14 +1081,14 @@ async function checkDate_movies(to, xyStr, envType, prodType) {
         const url = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}/movies_${prodType}_${xyStr}.zip`;
 
         const dl_status = await getRemoteFile(fileName, url);
-
-        const fileBuffer = fs.readFileSync(fileName);
-        const entries = ssn.readSsnFile(fileBuffer.buffer);
-        console.log(entries);
-        const versionFile = entries.find((e) => { return e.name == `movies_${prodType}.version`; });
-        const lastModDate = versionFile.lastMod;
-        log(`Date: ${lastModDate}`);
     }
+    const solidPkgURL = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}.solidpkg`;
+    const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
+    const solidPkgSsn = ssn.readSsnFile(solidPkgFile);
+    const solidPkg = await getSolidPkg(solidPkgFile, solidPkgSsn);
+    
+    const date = solidPkg.created;
+    log(`Released on: ${date}`);
 }
 async function checkDate_exp_client(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
@@ -1100,14 +1101,14 @@ async function checkDate_exp_client(to, xyStr, envType, prodType) {
         const url = `http://cdn-patch.swtor.com/patch/${clientID}/retailclient_${clientID}/retailclient_${clientID}_${xyStr}/retailclient_${clientID}_${xyStr}.zip`;
 
         const dl_status = await getRemoteFile(fileName, url);
-
-        const fileBuffer = fs.readFileSync(fileName);
-        const entries = ssn.readSsnFile(fileBuffer.buffer);
-        console.log(entries);
-        const versionFile = entries.find((e) => { return e.name == `retailclient_${prodType}.version`; });
-        const lastModDate = versionFile.lastMod;
-        log(`Date: ${lastModDate}`);
     }
+    const solidPkgURL = `http://cdn-patch.swtor.com/patch/${clientID}/retailclient_${clientID}/retailclient_${clientID}_${xyStr}.solidpkg`;
+    const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
+    const solidPkgSsn = ssn.readSsnFile(solidPkgFile);
+    const solidPkg = await getSolidPkg(solidPkgFile, solidPkgSsn);
+    
+    const date = solidPkg.created;
+    log(`Released on: ${date}`);
 }
 //utility methods
 
@@ -1138,6 +1139,32 @@ async function getRemoteFile(dest, url) {
             }
         });
     });
+}
+//read solidpkg
+async function getSolidPkg(ssnFile, fileEntries) {
+    if (fileEntries.length !== 1) {
+        log(`Expected .solidpkg to contain 1 file but it had "${fileEntries.length}" files.`);
+    }
+    
+    const firstFile = fileEntries[0];
+    if (firstFile.name !== 'metafile.solid') {
+        log(`Expected .solidpkg to contain a file called metafile.solid but it is called "${firstFile.name}".`);
+    }
+
+    const stream = ssn.arrayBufferToStream(ssnFile, firstFile.offset);
+
+    //Extract metafile.solid file
+    await ssn.readLocalFileHeader(stream, true);
+    const solidFileStream = await ssn.extractFileAsStream(firstFile, stream);
+    const solidFileArrayBuffer = await ssn.streamToArrayBuffer(solidFileStream);
+    const solidContents = ssn.parseBencode(solidFileArrayBuffer);
+    
+    return {
+        created: new Date(solidContents['creation date'] * 1000),
+        files: solidContents.info.files.map(({ length, path: [name] }) => ({ name, length })),
+        pieceLength: solidContents.info['piece length'],
+        pieces: solidContents.info.pieces,
+    };
 }
 //search through patches list looking for patch with matching version number (v)
 function findByLiveVersion(v) {

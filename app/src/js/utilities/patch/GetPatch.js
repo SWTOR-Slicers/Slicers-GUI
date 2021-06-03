@@ -1000,16 +1000,7 @@ async function download_solidpkg_exp_client(to, xyStr, envType, prodType) {
 }
 
 async function checkDate_files(to, xyStr, envType, prodType) {
-    const saveLoc = cache["output"];
     if (prodType == "client") {
-        const fileName = `${saveLoc}/retailclient_swtor_${xyStr}.zip`;
-
-        if (!fs.existsSync(fileName)) {
-            log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
-            const url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}/retailclient_swtor_${xyStr}.zip`;
-
-            const dl_status = await getRemoteFile(fileName, url);
-        }
         const solidPkgURL = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}.solidpkg`;
         const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
         const solidPkgSsn = ssn.readSsnFile(solidPkgFile);
@@ -1018,14 +1009,6 @@ async function checkDate_files(to, xyStr, envType, prodType) {
         const date = solidPkg.created;
         log(`Released on: ${date}`);
     } else {
-        const fileName = `${saveLoc}/assets_swtor_${prodType}_${xyStr}.zip`;
-
-        if (!fs.existsSync(fileName)) {
-            log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
-            const url = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}/assets_swtor_${prodType}_${xyStr}.zip`;
-
-            const dl_status = await getRemoteFile(fileName, url);
-        }
         const solidPkgURL = `http://cdn-patch.swtor.com/patch/swtor/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}.solidpkg`;
         const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
         const solidPkgSsn = ssn.readSsnFile(solidPkgFile);
@@ -1036,16 +1019,7 @@ async function checkDate_files(to, xyStr, envType, prodType) {
     }
 }
 async function checkDate_files_pts(to, xyStr, envType, prodType) {
-    const saveLoc = cache["output"];
     if (prodType == "client") {
-        const fileName = `${saveLoc}/retailclient_publictest_${xyStr}.zip`;
-
-        if (!fs.existsSync(fileName)) {
-            log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
-            const url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}/retailclient_publictest_${xyStr}.zip`;
-
-            const dl_status = getRemoteFile(fileName, url);
-        }
         const solidPkgURL = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}.solidpkg`;
         const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
         const solidPkgSsn = ssn.readSsnFile(solidPkgFile);
@@ -1054,14 +1028,6 @@ async function checkDate_files_pts(to, xyStr, envType, prodType) {
         const date = solidPkg.created;
         log(`Released on: ${date}`);
     } else {
-        const fileName = `${saveLoc}/assets_swtor_test_${prodType}_${xyStr}.zip`;
-
-        if (!fs.existsSync(fileName)) {
-            log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
-            const url = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}/assets_swtor_test_${prodType}_${xyStr}.zip`;
-
-            const dl_status = await getRemoteFile(fileName, url);
-        }
         const solidPkgURL = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}.solidpkg`;
         const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
         const solidPkgSsn = ssn.readSsnFile(solidPkgFile);
@@ -1072,16 +1038,6 @@ async function checkDate_files_pts(to, xyStr, envType, prodType) {
     }
 }
 async function checkDate_movies(to, xyStr, envType, prodType) {
-    const saveLoc = cache["output"];
-
-    const fileName = `${saveLoc}/movies_${prodType}_${xyStr}.zip`;
-
-    if (!fs.existsSync(fileName)) {
-        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
-        const url = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}/movies_${prodType}_${xyStr}.zip`;
-
-        const dl_status = await getRemoteFile(fileName, url);
-    }
     const solidPkgURL = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}.solidpkg`;
     const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
     const solidPkgSsn = ssn.readSsnFile(solidPkgFile);
@@ -1091,17 +1047,7 @@ async function checkDate_movies(to, xyStr, envType, prodType) {
     log(`Released on: ${date}`);
 }
 async function checkDate_exp_client(to, xyStr, envType, prodType) {
-    const saveLoc = cache["output"];
     const clientID = envType;
-
-    const fileName = `${saveLoc}/retailclient_${clientID}_${xyStr}.zip`;
-
-    if (!fs.existsSync(fileName)) {
-        log(`Download of ${envType} version ${xyStr} started! (${to})`);
-        const url = `http://cdn-patch.swtor.com/patch/${clientID}/retailclient_${clientID}/retailclient_${clientID}_${xyStr}/retailclient_${clientID}_${xyStr}.zip`;
-
-        const dl_status = await getRemoteFile(fileName, url);
-    }
     const solidPkgURL = `http://cdn-patch.swtor.com/patch/${clientID}/retailclient_${clientID}/retailclient_${clientID}_${xyStr}.solidpkg`;
     const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
     const solidPkgSsn = ssn.readSsnFile(solidPkgFile);

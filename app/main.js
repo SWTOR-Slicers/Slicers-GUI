@@ -260,11 +260,18 @@ function initGR2Listeners(window) {
 }
 
 async function extract() {
-  mainWindow.webContents.send("extrCompl", "");
+  try {
+    const temp = cache.dataFolder;
+    const params = [temp, cache.outputFolder + "\\resources"];
+    //child.execFileSync(__dirname + "\\resources\\scripts\\Extraction\\main.exe", params);
+  } catch (err) {
+    console.log(err);
+  } finally {
+    mainWindow.webContents.send("extrCompl", "");
+  }
 }
 async function locate() {
   try {
-    console.log(cache);
     const temp = cache.dataFolder;
     const params = [temp, cache.outputFolder + "\\resources"];
     child.execFileSync(__dirname + "\\resources\\scripts\\FileLocator\\main.exe", params);

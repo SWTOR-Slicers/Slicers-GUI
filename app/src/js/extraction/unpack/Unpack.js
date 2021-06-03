@@ -142,7 +142,6 @@ async function unpack(outputDir, tempDir, patchPath) {
         await handleFile(outputDir, tempDir, patchElem);
     }
 }
-
 async function handleFile(outputDir, tempDir, patchFile) {
     const fileType = path.extname(patchFile);
     if (fileType === ".solidpkg") {
@@ -155,7 +154,13 @@ async function handleFile(outputDir, tempDir, patchFile) {
 }
 
 async function unpackZip() {
+    //check if .solidpkg.json is installed
     
+    //if not, check if .solidpkg is installed
+    
+    //if not, fetch .solidpkg, dont download, and parse it for info
+
+    //extract the selected .zip/.zNUM file
 }
 async function unpackManifest(outputDir, patchFile) {
     const patchFileName = patchFile.substr(patchFile.lastIndexOf("\\") + 1)
@@ -192,6 +197,8 @@ async function unpackManifest(outputDir, patchFile) {
     const patchManifestSimple = ssn.parsePatchmanifest(patchManifestJson);
 
     fs.writeFileSync(saveFilePath, JSON.stringify(patchManifestSimple, null, 4));
+
+    log(`Unpacking of ${patchFileName} complete!`);
 }
 async function unpackSolidpkg(outputDir, patchFile) {
     const patchFileName = patchFile.substr(patchFile.lastIndexOf("\\") + 1)
@@ -225,6 +232,8 @@ async function unpackSolidpkg(outputDir, patchFile) {
     };
 
     fs.writeFileSync(saveFilePath, JSON.stringify(jsonSolidpkg, null, 4));
+
+    log(`Unpacking of ${patchFileName} complete!`);
 }
 
 //utility methods

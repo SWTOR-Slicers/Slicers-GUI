@@ -2,6 +2,7 @@ import { log } from "../../universal/Logger.js";
 
 const ssn = require('ssn');
 const fs = require('fs');
+const xmlJs = require('xml-js');
 const {ipcRenderer} = require('electron');
 const path = require('path');
 
@@ -145,9 +146,9 @@ async function unpack(outputDir, tempDir, patchPath) {
 async function handleFile(outputDir, tempDir, patchFile) {
     const fileType = path.extname(patchFile);
     if (fileType === ".solidpkg") {
-        await unpackSolidpkg(outputDir, patchFile)
+        await unpackSolidpkg(outputDir, patchFile);
     } else if (fileType === ".patchmanifest") {
-
+        await unpackManifest(outputDir, patchFile);
     } else if (fileType.substr(0, 2) === ".z") {
 
     }
@@ -156,11 +157,42 @@ async function handleFile(outputDir, tempDir, patchFile) {
 async function unpackZip() {
     
 }
+async function unpackManifest(outputDir, patchFile) {
+    const patchFileName = patchFile.substr(patchFile.lastIndexOf("\\") + 1)
+    const saveFilePath = path.join(outputDir, `${patchFileName}.json`);
+    const ssnFile = fs.readFileSync(patchFile);
 
-async function unpackManifest() {
-    
+    const fileEntries = ssn.readSsnFile(ssnFile.buffer);
+
+    //Verify .patchmanifest file
+    if (fileEntries.length !== 1) {
+        log(`Expected .patchmanifest to contain 1 file but it had "${fileEntries.length}" files.`);
+        return null;
+    }
+
+    const firstFile = fileEntries[0];
+    if (firstFile.name !== 'manifest.xml') {
+        log(`Expected .patchmanifest to contain a file called manifest.xml but it is called "${firstFile.name}".`);
+        return null;
+    }
+
+    const stream = ssn.arrayBufferToStream(ssnFile, firstFile.offset);
+
+    //Extract manifest.xml file
+    await ssn.readLocalFileHeader(stream, true);
+    const patchmanifestStream = await ssn.extractFileAsStream(firstFile, stream);
+
+    //Convert ArrayBuffer to string
+    const patchmanifestXml = await ssn.streamToString(patchmanifestStream);
+
+    //convert XML to JSON-converted XML
+    const patchManifestJson = xmlJs.xml2js(patchmanifestXml);
+
+    //convert JSON-converted XML to an easier to read JSON
+    const patchManifestSimple = ssn.parsePatchmanifest(patchManifestJson);
+
+    fs.writeFileSync(saveFilePath, JSON.stringify(patchManifestSimple, null, 4));
 }
-
 async function unpackSolidpkg(outputDir, patchFile) {
     const patchFileName = patchFile.substr(patchFile.lastIndexOf("\\") + 1)
     const saveFilePath = path.join(outputDir, `${patchFileName}.json`);
@@ -192,7 +224,7 @@ async function unpackSolidpkg(outputDir, patchFile) {
         pieces: solidContents.info.pieces,
     };
 
-    fs.writeFileSync(saveFilePath, JSON.stringify(jsonSolidpkg));
+    fs.writeFileSync(saveFilePath, JSON.stringify(jsonSolidpkg, null, 4));
 }
 
 //utility methods

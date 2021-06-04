@@ -2,6 +2,7 @@ import { log } from "../../universal/Logger.js";
 
 const ssn = require('ssn');
 const fs = require('fs');
+const http = require('http');
 const xmlJs = require('xml-js');
 const {ipcRenderer} = require('electron');
 const path = require('path');
@@ -159,6 +160,7 @@ async function unpackZip(outputDir, patchFile) {
     if (solidPkgURL) {
 
         const solidPkgName = `${fileName}.solidpkg`;
+        let solidPkgEntries;
         let solidPkgData;
 
         //check if .solidpkg.json is installed
@@ -171,32 +173,38 @@ async function unpackZip(outputDir, patchFile) {
             solidPkgData = res.toJSON();
         } else if (fs.existsSync(testName2)) {
             const res = fs.readFileSync(testName1);
-            solidPkgData = ssn.readSsnFile(res.buffer);
+            solidPkgEntries = ssn.readSsnFile(res.buffer);
+            solidPkgData = await getSolidpkgData(solidPkgEntries, res);
         } else {
             const res = await (await fetch(solidPkgURL)).arrayBuffer();
-            solidPkgData = ssn.readSsnFile(res);
+            solidPkgEntries = ssn.readSsnFile(res);
+            solidPkgData = await getSolidpkgData(solidPkgEntries, res);
         }
+
+        const diskFileNames = await getDiskFileNames(patchFile, solidPkgData);
 
         //extract the selected .zip/.zNUM file
         const zFile = fs.readFileSync(patchFile);
         const fileEntries = ssn.readSsnFile(zFile.buffer);
 
-        await extractZFile(outputDir, patchFile, fileEntries, solidPkgData);
+        await extractZFile(outputDir, patchFile, fileEntries, solidPkgData, diskFileNames);
     }
 }
-async function extractZFile(outputDir, file, fileEntries, solidpkgData) {
-    const diskFile = file.substr(file.lastIndexOf("\\") + 1);
+async function extractZFile(outputDir, file, fileEntries, solidpkgData, diskFileNames) {
+    const xyStr = file.substr(file.lastIndexOf('_') + 1, file.lastIndexOf('.'));
+    verifyPatch(file.substr(file.lastIndexOf("\\") + 1), fileEntries, xyStr.substr(0, xyStr.indexOf('t')));
+
     console.log(solidpkgData);
     const tasks = [];
     for (let i = 0; i < fileEntries.length; i++) {
         const file = fileEntries[i];
         tasks.push(
-            extractAdded.bind(null, outputDir, file, diskFile)
+            extractAdded.bind(null, outputDir, file, diskFileNames)
         );
     }
     await ssn.taskManager(tasks, 3);
 }
-async function extractAdded(targetDir, file, diskFile) {
+async function extractAdded(targetDir, file, diskFileNames) {
     try {
         //create file write stream
         const outputName = path.join(targetDir, file.name);
@@ -207,7 +215,7 @@ async function extractAdded(targetDir, file, diskFile) {
         });
 
         //start installation
-        await ssn.launch(diskFile, file.offset, file.compressedSize, file.decryptionKeys, undefined, outputNameTemp);
+        await ssn.launch(diskFileNames[file.diskNumberStart], file.offset, file.compressedSize, file.decryptionKeys, undefined, outputNameTemp);
   
         fs.rename(outputNameTemp, outputName, function(renameError) {
             if (renameError) {
@@ -290,11 +298,45 @@ async function unpackSolidpkg(outputDir, patchFile) {
 
     fs.writeFileSync(saveFilePath, JSON.stringify(jsonSolidpkg, null, 4));
 
-    log(`Unpacking of ${patchFileName} complete!`);
+        log(`Unpacking of ${patchFileName} complete!`);
 }
 
 //utility methods
 
+//get disk file names
+async function getDiskFileNames(patchFileName, solidPkg) {
+    const dirName = path.dirname(patchFileName);
+    const diskFiles = [];
+    const contentsOG = fs.readdirSync(dirName);
+    const contents = contentsOG.filter((c) => { return fs.statSync(path.join(dirName, c)).isFile(); })
+    for (const file of solidPkg.files) {
+        if (contents.includes(file.name)) {
+            diskFiles.push(path.join(dirName, file.name));
+        } else {
+            //fetch file
+            const url = getZFileURLFromFileName(patchFileName, file.name);
+            const dest = path.join(dirName, file.name);
+
+            await getRemoteFile(dest, url);
+
+            diskFiles.push(dest);
+        }
+    }
+
+    return diskFiles;
+}
+//get zFile url from file name
+function getZFileURLFromFileName(patchFileName, fileName) {
+    let url = patchFileName.substr(0, patchFileName.lastIndexOf('.')) + fileName.substr(fileName.length - 4);
+    return url;
+}
+//verify patch
+function verifyPatch(patchFileName, fileEntries, from) {
+    const fileName = patchFileName.substr(0, patchFileName.lastIndexOf('.'));
+    const relivantSub = fileName.substr(0, fileName.lastIndexOf('_'));
+    let product = relivantSub;
+    ssn.verifyPatch(fileEntries, product, from);
+}
 //get solidpkg from file name
 function getSolidPkgURLFromFileName(patchFileName) {
     const fileName = patchFileName.substr(0, patchFileName.lastIndexOf('.'));
@@ -321,7 +363,33 @@ function getSolidPkgURLFromFileName(patchFileName) {
 
     return url;
 }
+async function getSolidpkgData(fileEntries, ssnFile) {
+    if (fileEntries.length !== 1) {
+        log(`Expected .solidpkg to contain 1 file but it had "${fileEntries.length}" files.`);
+    }
+    
+    const firstFile = fileEntries[0];
+    if (firstFile.name !== 'metafile.solid') {
+        log(`Expected .solidpkg to contain a file called metafile.solid but it is called "${firstFile.name}".`);
+    }
 
+    const stream = ssn.arrayBufferToStream(ssnFile, firstFile.offset);
+
+    //Extract metafile.solid file
+    await ssn.readLocalFileHeader(stream, true);
+    const solidFileStream = await ssn.extractFileAsStream(firstFile, stream);
+    const solidFileArrayBuffer = await ssn.streamToArrayBuffer(solidFileStream);
+    const solidContents = ssn.parseBencode(solidFileArrayBuffer);
+    
+    const jsonSolidpkg = {
+        created: new Date(solidContents['creation date'] * 1000),
+        files: solidContents.info.files.map(({ length, path: [name] }) => ({ name, length })),
+        pieceLength: solidContents.info['piece length'],
+        pieces: solidContents.info.pieces,
+    };
+
+    return jsonSolidpkg;
+}
 //get file using http library
 async function getRemoteFile(dest, url) {
     return new Promise((resolve, reject) => {
@@ -336,7 +404,6 @@ async function getRemoteFile(dest, url) {
                 response.on('data', (chunk) => {
                     downloaded += chunk.length;
                     const percentage = (100.0 * downloaded / len).toFixed(2);
-                    //console.log(`Downloading ${percentage}% ${downloaded} bytes`);
                     progressBar.style.width = `${percentage}%`;
                 });
 

@@ -6,7 +6,6 @@ const http = require('http');
 const xml2js = require('xml2js');
 const xmlJS = require('xml-js');
 const parser = new xml2js.Parser({ attrkey: "attributes" });
-const defParser = new xml2js.Parser();
 
 const {ipcRenderer} = require('electron');
 const path = require('path');

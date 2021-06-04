@@ -314,7 +314,7 @@ async function getDiskFileNames(patchFileName, solidPkg) {
             diskFiles.push(path.join(dirName, file.name));
         } else {
             //fetch file
-            const url = getZFileURLFromFileName(patchFileName, file.name);
+            const url = getZFileURLFromFileName(file.name);
             const dest = path.join(dirName, file.name);
 
             await getRemoteFile(dest, url);
@@ -326,8 +326,26 @@ async function getDiskFileNames(patchFileName, solidPkg) {
     return diskFiles;
 }
 //get zFile url from file name
-function getZFileURLFromFileName(patchFileName, fileName) {
-    let url = patchFileName.substr(0, patchFileName.lastIndexOf('.')) + fileName.substr(fileName.length - 4);
+function getZFileURLFromFileName(fileName) {
+    const parts = fileName.substr(0, fileName.lastIndexOf('.')).split('_');
+    const relivantSub = fileName.substr(0, fileName.lastIndexOf('_'));
+    let url = "";
+
+    if (relivantSub === "retailclient_swtor") {
+        url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${parts[2]}/${fileName}`;
+    } else if (relivantSub.contains("assets_swtor")) {
+        url = `http://cdn-patch.swtor.com/patch/assets_swtor_${parts[2]}/assets_swtor_${parts[2]}_${parts[3]}/${fileName}`;
+    } else if (relivantSub === "retailclient_publictest") {
+        url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${parts[2]}/${fileName}`;
+    } else if (relivantSub.contains("assets_swtor_test")) {
+        url = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${parts[3]}/assets_swtor_test_${parts[3]}_${parts[4]}/${fileName}`;
+    } else if (relivantSub.contains("movies")) {
+        url = `http://cdn-patch.swtor.com/patch/movies_${parts[1]}/movies_${parts[1]}_${parts[2]}/${fileName}`;
+    } else if (relivantSub.contains('retailclient')) {
+        const clientID = relivantSub.substr(relivantSub.lastIndexOf('_'));
+        url = `http://cdn-patch.swtor.com/patch/${parts[1]}/retailclient_${parts[1]}/retailclient_${parts[1]}_${parts[2]}/${fileName}`;
+    }
+
     return url;
 }
 //verify patch

@@ -137,9 +137,9 @@ function initUnpackerGUI() {
     },
     icon: __dirname + "/resources/img/SlicersLogo.png",
   });
-  win.webContents.openDevTools();
 
   win.removeMenu();
+  win.setResizable(false);
   win.loadURL(`${__dirname}/src/html/Unpacker.html`);
 
   win.on('close', () => {
@@ -189,7 +189,6 @@ function initGetPatchGUI() {
   });
 
   win.removeMenu();
-  //win.webContents.openDevTools();
   win.setResizable(false);
   win.loadURL(`${__dirname}/src/html/GetPatch.html`);
 

@@ -184,16 +184,16 @@ async function unpackZip(outputDir, patchFile) {
         await extractZFile(outputDir, patchFile, fileEntries, solidPkgData);
     }
 }
-async function extractZFile(outputDir, diskFile, fileEntries, solidpkgData) {
+async function extractZFile(outputDir, file, fileEntries, solidpkgData) {
+    const diskFile = file.substr(file.lastIndexOf("\\") + 1);
     console.log(solidpkgData);
     const tasks = [];
     for (let i = 0; i < fileEntries.length; i++) {
         const file = fileEntries[i];
         tasks.push(
-            extractAdded.bind(outputDir, file, diskFile)
+            extractAdded.bind(null, outputDir, file, diskFile)
         );
     }
-    console.log(tasks);
     await ssn.taskManager(tasks, 3);
 }
 async function extractAdded(targetDir, file, diskFile) {
@@ -202,6 +202,10 @@ async function extractAdded(targetDir, file, diskFile) {
         const outputName = path.join(targetDir, file.name);
         const outputNameTemp = path.join(targetDir, `${file.name}.tmp`);
   
+        fs.mkdirSync(path.dirname(outputName), {
+            recursive: true
+        });
+
         //start installation
         await ssn.launch(diskFile, file.offset, file.compressedSize, file.decryptionKeys, undefined, outputNameTemp);
   
@@ -292,7 +296,8 @@ async function unpackSolidpkg(outputDir, patchFile) {
 //utility methods
 
 //get solidpkg from file name
-function getSolidPkgURLFromFileName(fileName) {
+function getSolidPkgURLFromFileName(patchFileName) {
+    const fileName = patchFileName.substr(0, patchFileName.lastIndexOf('.'));
     const relivantSub = fileName.substr(0, fileName.lastIndexOf('_'));
     let url = "";
 

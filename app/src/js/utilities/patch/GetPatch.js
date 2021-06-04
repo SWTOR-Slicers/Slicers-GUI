@@ -331,7 +331,7 @@ function checkFields() {
 //download functions
 function dlFiles() {
     let vTo = cache["version"];
-    if (vTo.indexOf(".") != -1) {
+    if (vTo.indexOf(".") != -1 && varient == "XtoY") {
         const patch = findByLiveVersion(vTo);
         const patchID = parseInt(patch[cache["productType"]]);
         const lastVersion = patchID - 1;

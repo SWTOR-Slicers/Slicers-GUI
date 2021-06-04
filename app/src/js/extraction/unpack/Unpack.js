@@ -149,18 +149,36 @@ async function handleFile(outputDir, tempDir, patchFile) {
     } else if (fileType === ".patchmanifest") {
         await unpackManifest(outputDir, patchFile);
     } else if (fileType.substr(0, 2) === ".z") {
-
+        await unpackZip(outputDir, tempDir, patchFile);
     }
 }
 
-async function unpackZip() {
-    //check if .solidpkg.json is installed
-    
-    //if not, check if .solidpkg is installed
-    
-    //if not, fetch .solidpkg, dont download, and parse it for info
+async function unpackZip(outputDir, tempDir, patchFile) {
+    const fileName = patchFile.substr(patchFile.lastIndexOf("\\") + 1, patchFile.lastIndexOf("."));
+    const solidPkgURL = getSolidPkgURLFromFileName(fileName);
+    if (solidPkgURL) {
 
-    //extract the selected .zip/.zNUM file
+        const solidPkgName = `${fileName}.solidpkg`;
+        let solidPkgData;
+
+        //check if .solidpkg.json is installed
+        const testName1 = path.join(path.dirname(patchFile), `${solidPkgName}.json`);
+        //if not, check if .solidpkg is installed
+        const testName2 = path.join(path.dirname(patchFile), solidPkgName);
+        //if not, fetch .solidpkg, dont download, and parse it for info
+        if (fs.existsSync(testName1)) {
+            const res = fs.readFileSync(testName1);
+            solidPkgData = res.toJSON();
+        } else if (fs.existsSync(testName2)) {
+            const res = fs.readFileSync(testName1);
+            solidPkgData = ssn.readSsnFile(res.buffer);
+        } else {
+            const res = await (await fetch(solidPkgURL)).arrayBuffer();
+            solidPkgData = ssn.readSsnFile(res);
+        }
+
+        //extract the selected .zip/.zNUM file
+    }
 }
 async function unpackManifest(outputDir, patchFile) {
     const patchFileName = patchFile.substr(patchFile.lastIndexOf("\\") + 1)
@@ -237,6 +255,32 @@ async function unpackSolidpkg(outputDir, patchFile) {
 }
 
 //utility methods
+
+//get solidpkg from file name
+function getSolidPkgURLFromFileName(fileName) {
+    const relivantSub = fileName.substr(0, fileName.lastIndexOf('_'));
+    let url = "";
+
+    if (relivantSub === "retailclient_swtor") {
+        url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/${fileName}.solidpkg`;
+    } else if (relivantSub.contains("assets_swtor")) {
+        url = `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg`;
+    } else if (relivantSub === "retailclient_publictest") {
+        url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/${fileName}.solidpkg`;
+    } else if (relivantSub.contains("assets_swtor_test")) {
+        url = `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg`;
+    } else if (relivantSub.contains("movies")) {
+        url = `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg`;
+    } else if (relivantSub.contains('retailclient')) {
+        const clientID = relivantSub.substr(relivantSub.lastIndexOf('_'));
+        url = `http://cdn-patch.swtor.com/patch/${clientID}/${relivantSub}/${fileName}.solidpkg`;
+    }
+
+    //for the memes
+    //const url = (relivantSub === "retailclient_swtor") ? `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/${fileName}.solidpkg` : (relivantSub.contains("assets_swtor")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub === "retailclient_publictest") ? `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/${fileName}.solidpkg` : (relivantSub.contains("assets_swtor_test")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub.contains("movies")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub.contains('retailclient')) ? `http://cdn-patch.swtor.com/patch/${relivantSub.substr(relivantSub.lastIndexOf('_'))}/${relivantSub}/${fileName}.solidpkg` : null;
+
+    return url;
+}
 
 //get file using http library
 async function getRemoteFile(dest, url) {

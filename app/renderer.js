@@ -36,6 +36,7 @@ let worldViewBtn = document.getElementById("worldViewBtn");
 let fileChangerBtn = document.getElementById("fileChangerBtn");
 let bnkConvBtn = document.getElementById("bnkConverterBtn");
 let getPatchBtn = document.getElementById("getPatchBtn");
+let walkthroughBtn = document.getElementById("walkthroughBtn");
 
 //functions
 function initialize() {
@@ -119,6 +120,10 @@ function setupListeners() {
     getPatchBtn.addEventListener("click", (e) => {
         ipc.send('runExec', 'getPatch');
         log(`Utlity: Patch-Getter opened.`);
+    });
+    walkthroughBtn.addEventListener("click", (e) => {
+        ipc.send('runExec', 'walkthrough');
+        log(`Utlity: Walkthrough opened.`);
     });
 }
 function initSubscribes() {
@@ -205,6 +210,9 @@ function initSubscribes() {
     });
     ipc.receive('utilGPClosed', (data) => {
         log(`Utility: Patch-Getter closed.`);
+    });
+    ipc.receive('walkthroughClosed', (data) => {
+        log(`Utility: Walkthrough closed.`);
     });
 }
 

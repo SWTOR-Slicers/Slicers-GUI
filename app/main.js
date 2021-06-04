@@ -112,7 +112,7 @@ function initListeners() {
         initUnpackerGUI();
         break;
       case "genHash":
-        
+        //generate new hash
         break;
       case "getPatch":
         initGetPatchGUI();
@@ -122,6 +122,9 @@ function initListeners() {
         break;
       case "nodeViewer":
         //run node viewer
+        break;
+      case "walkthrough":
+        //open walkthrough window
         break;
     }
   });

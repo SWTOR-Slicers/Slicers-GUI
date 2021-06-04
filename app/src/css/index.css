@@ -35,12 +35,12 @@ html, body {
     background-color: var(--medium-grey);
     height: 100%;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.main-page .spacer-top {
-    height: 4px;
-    width: 100%;
-}
 .main-page .spacer {
     height: 5px;
     width: 100%;
@@ -49,7 +49,6 @@ html, body {
 .main-page .container-top {
     width: 690px;
     height: 150px;
-    margin-left: 4px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -117,10 +116,13 @@ html, body {
     width: 125px;
 }
 
+.main-page .container-bottom {
+    width: 690px;
+}
+
 .main-page .container-info {
     width: 690px;
     height: 50px;
-    margin-left: 4px;
 }
 .main-page .container-info__info {
     width: 676px;

@@ -99,7 +99,15 @@ async function loadCache() {
     cache["productType"] = json["productType"];
     cache["varient"] = json["varient"];
     cache["version"] = json["version"];
-    cache["output"] = json["output"];
+
+    if (json["output"] == "") {
+        const defaultPath = path.join(json["outputFolder"], 'patches');
+        fs.mkdirSync(defaultPath);
+        updateCache('output', defaultPath);
+        cache["output"] = defaultPath
+    } else {
+        cache["output"] = json["output"];
+    }
 }
 function updateCache(field, val) {
     const shouldUpdate = (field == "output") ? fs.existsSync(val) : true; 

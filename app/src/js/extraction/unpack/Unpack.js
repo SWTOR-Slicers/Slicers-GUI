@@ -50,7 +50,15 @@ async function loadCache() {
     let json = jsonObj["unpacker"];
 
     cache["unpackPath"] = json["unpackPath"];
-    cache["output"] = json["output"];
+
+    if (json["output"] == "") {
+        const defaultPath = path.join(json["outputFolder"], 'unpacked');
+        fs.mkdirSync(defaultPath);
+        updateCache('output', defaultPath);
+        cache["output"] = defaultPath
+    } else {
+        cache["output"] = json["output"];
+    }
 }
 function updateCache(field, val) {
     const shouldUpdate = fs.existsSync(val); 
@@ -74,18 +82,10 @@ function updateCache(field, val) {
 }
 //init dom listeners
 function initListeners() {
-    folderPathBrowserBtn.addEventListener("click", (e) => {
-        ipcRenderer.send("showDialogUnpacker", "unpackPath");
-    });
-    filePathBrowserBtn.addEventListener("click", (e) => {
-        ipcRenderer.send("showUnpackerDialogFile", "unpackPath");
-    });
-    outputBrowserBtn.addEventListener("click", (e) => {
-        ipcRenderer.send("showDialogUnpacker", "output");
-    });
-    unpackFile.addEventListener("click", (e) => {
-        unpack(cache["output"], "", cache["unpackPath"]);
-    });
+    folderPathBrowserBtn.addEventListener("click", (e) => { ipcRenderer.send("showDialogUnpacker", "unpackPath"); });
+    filePathBrowserBtn.addEventListener("click", (e) => { ipcRenderer.send("showUnpackerDialogFile", "unpackPath"); });
+    outputBrowserBtn.addEventListener("click", (e) => { ipcRenderer.send("showDialogUnpacker", "output"); });
+    unpackFile.addEventListener("click", (e) => { unpack(cache["output"], cache["unpackPath"]); });
 
     //listener for unpack path and output fields
     outputInput.addEventListener("change", (e) => {
@@ -130,30 +130,30 @@ function initSubs() {
     });
 }
 
-async function unpack(outputDir, tempDir, patchPath) {
+async function unpack(outputDir, patchPath) {
     if (fs.statSync(patchPath).isDirectory()) {
         const dirContents = fs.readdirSync(patchPath);
         for (let i = 0; i < dirContents.length; i++) {
             const patchElem = dirContents[i];
-            await handleFile(outputDir, tempDir, patchElem);
+            await handleFile(outputDir, patchElem);
         }
     } else {
         const patchElem = patchPath;
-        await handleFile(outputDir, tempDir, patchElem);
+        await handleFile(outputDir, patchElem);
     }
 }
-async function handleFile(outputDir, tempDir, patchFile) {
+async function handleFile(outputDir, patchFile) {
     const fileType = path.extname(patchFile);
     if (fileType === ".solidpkg") {
         await unpackSolidpkg(outputDir, patchFile);
     } else if (fileType === ".patchmanifest") {
         await unpackManifest(outputDir, patchFile);
     } else if (fileType.substr(0, 2) === ".z") {
-        await unpackZip(outputDir, tempDir, patchFile);
+        await unpackZip(outputDir, patchFile);
     }
 }
 
-async function unpackZip(outputDir, tempDir, patchFile) {
+async function unpackZip(outputDir, patchFile) {
     const fileName = patchFile.substr(patchFile.lastIndexOf("\\") + 1, patchFile.lastIndexOf("."));
     const solidPkgURL = getSolidPkgURLFromFileName(fileName);
     if (solidPkgURL) {
@@ -178,6 +178,41 @@ async function unpackZip(outputDir, tempDir, patchFile) {
         }
 
         //extract the selected .zip/.zNUM file
+        const zFile = fs.readFileSync(patchFile);
+        const fileEntries = ssn.readSsnFile(zFile.buffer);
+
+        await extractZFile(outputDir, patchFile, fileEntries, solidPkgData);
+    }
+}
+async function extractZFile(outputDir, diskFile, fileEntries, solidpkgData) {
+    console.log(solidpkgData);
+    const tasks = [];
+    for (let i = 0; i < fileEntries.length; i++) {
+        const file = fileEntries[i];
+        tasks.push(
+            extractAdded.bind(outputDir, file, diskFile)
+        );
+    }
+    console.log(tasks);
+    await ssn.taskManager(tasks, 3);
+}
+async function extractAdded(targetDir, file, diskFile) {
+    try {
+        //create file write stream
+        const outputName = path.join(targetDir, file.name);
+        const outputNameTemp = path.join(targetDir, `${file.name}.tmp`);
+  
+        //start installation
+        await ssn.launch(diskFile, file.offset, file.compressedSize, file.decryptionKeys, undefined, outputNameTemp);
+  
+        fs.rename(outputNameTemp, outputName, function(renameError) {
+            if (renameError) {
+                throw new Error(`Could not rename output file "${outputNameTemp}": ${renameError.message}`);
+            }
+        });
+    } catch (error) {
+        console.error(`Could not extract file "${file.name}"`, error);
+        log(`Could not extract file "${file.name}"`);
     }
 }
 async function unpackManifest(outputDir, patchFile) {

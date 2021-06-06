@@ -20,11 +20,9 @@
     padding: 2px 5px;
     border-radius: 4px;
   
-    /* Position the tooltip text */
     position: absolute;
     z-index: 5;
   
-    /* Fade in tooltip */
     opacity: 0;
     transition: opacity 0.3s;
     white-space: nowrap;

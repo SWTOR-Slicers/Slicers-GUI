@@ -39,6 +39,11 @@ let bnkConvBtn = document.getElementById("bnkConverterBtn");
 let getPatchBtn = document.getElementById("getPatchBtn");
 let walkthroughBtn = document.getElementById("walkthroughBtn");
 
+//log related
+const clearLogBtn = document.getElementById('clearLogBtn');
+const saveLogToFile = document.getElementById('saveLogToFile');
+const expComprLogBtn = document.getElementById('expComprLogBtn');
+
 //functions
 function initialize() {
     initSubscribes();
@@ -49,13 +54,21 @@ function initialize() {
     addTooltip('top', assetTextField, true, (element) => {
         return element.value;
     });
-
     addTooltip('top', outputTextField, true, (element) => {
         return element.value;
     });
-
     addTooltip('top', dataTextField, true, (element) => {
         return element.value;
+    });
+
+    addTooltip('top', clearLogBtn, false, (element) => {
+        return 'Clear Log';
+    });
+    addTooltip('top', saveLogToFile, false, (element) => {
+        return 'Log to File';
+    });
+    addTooltip('top', expComprLogBtn, true, (element) => {
+        return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log');
     });
 
     log("Boot up complete");
@@ -137,6 +150,31 @@ function setupListeners() {
     walkthroughBtn.addEventListener("click", (e) => {
         ipc.send('runExec', 'walkthrough');
         log(`Utlity: Walkthrough opened.`);
+    });
+
+    //log related
+    clearLogBtn.addEventListener('click', (e) => {
+        //clear log
+        const temp = logDisplay.children[logDisplay.children.length - 1];
+        logDisplay.innerHTML = "";
+        logDisplay.appendChild(temp);
+        log('Log sucecssfully cleared!');
+    });
+    saveLogToFile.addEventListener('click', (e) => {
+        //save log
+        //compute log here
+        let logStr = "";
+        for (let i = 0; i < logDisplay.children.length - 1; i++) {
+            const chld = logDisplay.children[i];
+            logStr = logStr.concat('-:- ', chld.innerText, '\n');
+        }
+        logStr = logStr.concat('-:- END OF LOG -:-');
+        ipc.send('logToFile', [outputTextField.value, logStr]);
+    });
+    expComprLogBtn.addEventListener('click', (e) => {
+        //clear log
+        expComprLogBtn.classList.toogle('popped');
+        expComprLogBtn.dispatchEvent(updateTooltipEvent);
     });
 }
 function initSubscribes() {
@@ -232,6 +270,9 @@ function initSubscribes() {
     });
     ipc.receive('walkthroughClosed', (data) => {
         log(`Utility: Walkthrough closed.`);
+    });
+    ipc.receive('loggedToFile', (data) => {
+        log(`Log sucessfully written to file. Location: ` + data[0]);
     });
 }
 

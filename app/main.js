@@ -3,6 +3,7 @@ const {app, BrowserWindow, dialog, ipcMain, screen} = require('electron');
 const fs = require('fs');
 const path = require('path');
 const child = require('child_process');
+const dateTime = require('node-datetime');
 let mainWindow;
 const cache = {
   assetsFolder:"",
@@ -51,6 +52,17 @@ function init() {
   initListeners();
 }
 function initListeners() {
+  ipcMain.on("logToFile", async (event, data) => {
+    var dt = dateTime.create();
+    var formatted = dt.format('Y-m-d H_M_S');
+
+    let logPath = path.join(data[0], 'logs', `${formatted}.txt`);
+    fs.mkdirSync(path.dirname(logPath), {
+      recursive: true
+    });
+    fs.writeFileSync(logPath, data[1]);
+    mainWindow.webContents.send("loggedToFile", [logPath]);
+  });
   ipcMain.on("logToMain", async (event, data) => {
     mainWindow.webContents.send("displayLog", data);
   });

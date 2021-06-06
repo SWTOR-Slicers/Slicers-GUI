@@ -4,6 +4,7 @@
 // `nodeIntegration` is turned off. Use `preload.js` to
 // selectively enable features needed in the rendering
 // process.
+import { addTooltip, updateTooltipEvent } from "./src/js/universal/Tooltips.js";
 const ipc = window.api;
 const logDisplay = document.getElementById("logDisplay");
 
@@ -44,6 +45,10 @@ function initialize() {
     setConfigData();
 
     setupListeners();
+
+    addTooltip('top', assetTextField, true, (element) => {
+        return element.value;
+    });
 
     log("Boot up complete");
 }
@@ -135,12 +140,15 @@ function initSubscribes() {
 
         assetTextField.value = json.assetsFolder;
         oldAssetValue = json.assetsFolder;
+        assetTextField.dispatchEvent(updateTooltipEvent);
 
         outputTextField.value = json.outputFolder;
         oldOutputValue = json.outputFolder;
+        outputTextField.dispatchEvent(updateTooltipEvent);
         
         dataTextField.value = json.dataFolder;
         oldDataValue = json.dataFolder;
+        dataTextField.dispatchEvent(updateTooltipEvent);
     });
     ipc.receive('assetsFolderReply', (data) => {
         processResponse(data, assetTextField, 'assetsFolder');
@@ -149,6 +157,7 @@ function initSubscribes() {
         if (data) {
             log(`Assigned new path to assetsFolder field.`)
             oldAssetValue = assetTextField.value;
+            assetTextField.dispatchEvent(updateTooltipEvent);
         } else {
             log(`Invalid path. Reseting assetsFolder field to ${oldAssetValue}`);
             assetTextField.value = oldAssetValue;
@@ -161,6 +170,7 @@ function initSubscribes() {
         if (data) {
             log(`Assigned new path to outputFolder field.`)
             oldOutputValue = outputTextField.value;
+            outputTextField.dispatchEvent(updateTooltipEvent);
         } else {
             log(`Invalid path. Reseting outputFolder field to ${oldOutputValue}`);
             outputTextField.value = oldOutputValue;
@@ -173,6 +183,7 @@ function initSubscribes() {
         if (data) {
             log(`Assigned new path to dataFolder field.`)
             oldDataValue = dataTextField.value;
+            dataTextField.dispatchEvent(updateTooltipEvent);
         } else {
             log(`Invalid path. Reseting dataFolder field to ${oldDataValue}`);
             dataTextField.value = oldDataValue;
@@ -218,6 +229,7 @@ function initSubscribes() {
 
 async function processResponse(data, elem, param) {
     elem.value = data[0];
+    elem.dispatchEvent(updateTooltipEvent);
     log(`Assigned new path to ${param} field.`)
 }
 

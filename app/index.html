@@ -12,7 +12,7 @@
     <title>Slicers GUI</title>
   </head>
   <body>
-    <div class="main-page">
+    <div class="main-page unselectable">
       <div class="spacer-top"></div>
       <div class="container-top element-border">
         <img src="./resources/img/SlicersLogo.png" alt="" height="140px" width="140px" class="slicer-img">
@@ -69,12 +69,18 @@
               </div>
               <div id="expComprLogBtn" class="log-extra-func">
                 <i class="fas fa-expand-alt"></i>
-                <!-- <i class="fas fa-expand-alt"></i> and <i class="fas fa-compress-alt"></i> -->
               </div>
             </div>
           </div>
-          <div id="logDisplay" class="log__display">
-            <div class="log__item log-cursor">> <div class="cursor-underscore">_</div></div>
+          <div class="log-terminal">
+            <div id="logDisplay" class="log__display">
+              <div class="log__item log-cursor">> <div class="cursor-underscore">_</div></div>
+            </div>
+            <div id="poppedOutCover" class="log__display__2">
+              <div class="log__display__2__sub">
+                <div>Log is popped out.</div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="container-bottom__sub element-border">

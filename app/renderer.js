@@ -43,6 +43,7 @@ let walkthroughBtn = document.getElementById("walkthroughBtn");
 const clearLogBtn = document.getElementById('clearLogBtn');
 const saveLogToFile = document.getElementById('saveLogToFile');
 const expComprLogBtn = document.getElementById('expComprLogBtn');
+const poppedOutCover= document.getElementById('poppedOutCover');
 
 //functions
 function initialize() {
@@ -162,7 +163,6 @@ function setupListeners() {
     });
     saveLogToFile.addEventListener('click', (e) => {
         //save log
-        //compute log here
         let logStr = "";
         for (let i = 0; i < logDisplay.children.length - 1; i++) {
             const chld = logDisplay.children[i];
@@ -173,7 +173,14 @@ function setupListeners() {
     });
     expComprLogBtn.addEventListener('click', (e) => {
         //clear log
-        expComprLogBtn.classList.toogle('popped');
+        expComprLogBtn.classList.toggle('popped');
+        if (expComprLogBtn.classList.contains('popped')) {
+            expComprLogBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
+            poppedOutCover.style.display = 'block';
+        } else {
+            expComprLogBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+            poppedOutCover.style.display = '';
+        }
         expComprLogBtn.dispatchEvent(updateTooltipEvent);
     });
 }

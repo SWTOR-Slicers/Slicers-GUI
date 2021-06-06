@@ -203,12 +203,36 @@ html, body {
 }
 
 /* Log classes */
-.main-page .log__display {
+.main-page .log-terminal {
+    position: relative;
     margin-left: 4px;
     width: 272px;
     height: 238px;
+}
+.main-page .log__display {
+    width: 100%;
+    height: 100%;
     overflow-y: scroll;
     background-color: #000;
+}
+.main-page .log__display__2 {
+    display: none;
+    left: 0;
+    top: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+.main-page .log__display__2__sub {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--medium-grey);
+    color: rgb(143, 142, 142);
+    font-size: 20px;
 }
 .main-page .log__item {
     margin-left: 5px;

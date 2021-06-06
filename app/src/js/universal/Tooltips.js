@@ -19,6 +19,4 @@ export function addTooltip(orientation, element, multiCheck, callback, eventType
     tooltipText.className = `tooltip-text tooltip-${orientation}`;
     tooltipText.innerText = callback(e);
     tooltipContainer.appendChild(tooltipText);
-
-    //parent.replaceChild(tooltipContainer, element)
 }

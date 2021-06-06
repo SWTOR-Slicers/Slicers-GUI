@@ -204,8 +204,8 @@ html, body {
 
 /* Log classes */
 .main-page .log__display {
-    margin-left: 8px;
-    width: 267px;
+    margin-left: 4px;
+    width: 272px;
     height: 238px;
     overflow-y: scroll;
     background-color: #000;
@@ -222,48 +222,58 @@ html, body {
 }
 .main-page .log-extra-container {
     margin-left: 8px;
-    margin-right: 7px;
+    margin-right: 6px;
+    margin-top: 2px;
+    margin-bottom: 2px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
 }
 .main-page .log-extra-funcs {
-    width: 54px;
+    width: 57px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
 }
 .main-page .log-extra-func {
-    width: 11px;
-    height: 11px;
-    padding: 2px;
-}
-.main-page .log-extra-func > svg {
-    width: 11px;
-    height: 11px;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #000;
+    border-radius: 2px;
+    background-color: var(--grey-black);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 .main-page .log-extra-func:hover {
-    cursor: pointer;
+    background-color: var(--grey-black-hover);
 }
 #clearLogBtn {
+    font-size: 12px;
     color: white;
 }
 #clearLogBtn:hover {
     color: red;
+    cursor: pointer;
 }
 #saveLogToFile {
+    font-size: 12px;
     color: white;
 }
 #saveLogToFile:hover {
     color: #ffce00;
+    cursor: pointer;
 }
 #expComprLogBtn {
+    font-size: 13px;
     color: white;
 }
 #expComprLogBtn:hover {
     color: #ffce00;
+    cursor: pointer;
 }
 .log-cursor {
     display: flex;

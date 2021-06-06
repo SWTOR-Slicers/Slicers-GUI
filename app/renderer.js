@@ -50,6 +50,14 @@ function initialize() {
         return element.value;
     });
 
+    addTooltip('top', outputTextField, true, (element) => {
+        return element.value;
+    });
+
+    addTooltip('top', dataTextField, true, (element) => {
+        return element.value;
+    });
+
     log("Boot up complete");
 }
 

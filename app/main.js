@@ -24,7 +24,8 @@ function createWindow () {
   });
 
   mainWindow.removeMenu();
-  mainWindow.setResizable(false);
+  //mainWindow.setResizable(false);
+  mainWindow.webContents.openDevTools();
   mainWindow.loadFile('index.html');
 
   mainWindow.on('close', () => {

@@ -196,10 +196,10 @@ html, body {
     left: -32px; top: -10px;
 }
 .to-file-11 {
-    left: -23px; top: -10px;
+    left: -32px; top: -10px;
 }
 .to-file-12 {
-    left: 8px; top: -10px;
+    top: -10px;
 }
 
 /* Log classes */
@@ -219,6 +219,51 @@ html, body {
     font-family: 'Eurofont';
     color: white;
     width: calc(100% - 10px);
+}
+.main-page .log-extra-container {
+    margin-left: 8px;
+    margin-right: 7px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+.main-page .log-extra-funcs {
+    width: 54px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+.main-page .log-extra-func {
+    width: 11px;
+    height: 11px;
+    padding: 2px;
+}
+.main-page .log-extra-func > svg {
+    width: 11px;
+    height: 11px;
+}
+.main-page .log-extra-func:hover {
+    cursor: pointer;
+}
+#clearLogBtn {
+    color: white;
+}
+#clearLogBtn:hover {
+    color: red;
+}
+#saveLogToFile {
+    color: white;
+}
+#saveLogToFile:hover {
+    color: #ffce00;
+}
+#expComprLogBtn {
+    color: white;
+}
+#expComprLogBtn:hover {
+    color: #ffce00;
 }
 .log-cursor {
     display: flex;

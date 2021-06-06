@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <!-- <script src="./node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script> -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <script src="./node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
     <link rel="stylesheet" href="./src/css/index.css">
     <link rel="stylesheet" href="./src/css/universal.css">
     <link rel="stylesheet" href="./src/css/tooltips.css">
@@ -58,7 +58,25 @@
       <div class="spacer"></div>
       <div class="container-bottom">
         <div class="container-bottom__log element-border">
-          <label class="app-label to-file-12">Log</label>
+          <div class="log-extra-container">
+            <label class="app-label to-file-12">Log</label>
+            <div class="log-extra-funcs">
+              <div id="clearLogBtn" class="log-extra-func">
+                <i class="fas fa-trash"></i>
+              </div>
+              <div id="saveLogToFile" class="log-extra-func">
+                <i class="fas fa-file-download"></i>
+              </div>
+              <div id="expComprLogBtn" class="log-extra-func">
+                <i class="fas fa-expand"></i>
+                <!-- pop-out / bring back btn-->
+                <!-- possible icon combos
+                  <i class="fas fa-expand"></i> and <i class="fas fa-compress"></i>
+                  <i class="fas fa-expand-alt"></i> and <i class="fas fa-compress-alt"></i>
+                 -->
+              </div>
+            </div>
+          </div>
           <div id="logDisplay" class="log__display">
             <div class="log__item log-cursor">> <div class="cursor-underscore">_</div></div>
           </div>

@@ -108,20 +108,32 @@ function initListeners() {
       case "locate":
         locate();
         break;
-      case "unpack":
-        initUnpackerGUI();
-        break;
       case "genHash":
         //generate new hash
         break;
-      case "getPatch":
-        initGetPatchGUI();
+      case "unpack":
+        initUnpackerGUI();
+        break;
+      case "nodeViewer":
+        //run node viewer
         break;
       case "gr2Viewer":
         initGR2Viewer();
         break;
-      case "nodeViewer":
-        //run node viewer
+      case "modelViewer":
+        //open modal viewer window
+        break;
+      case "worldViewer":
+        //open world viewer window
+        break;
+      case "convBnk":
+        //open sound converter window
+        break;
+      case "fileChanger":
+        //open file changer window
+        break;
+      case "getPatch":
+        initGetPatchGUI();
         break;
       case "walkthrough":
         //open walkthrough window

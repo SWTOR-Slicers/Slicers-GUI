@@ -110,7 +110,7 @@ function setupListeners() {
 
     //utilities
     fileChangerBtn.addEventListener("click", (e) => {
-        ipc.send('runExec', 'convBnk');
+        ipc.send('runExec', 'fileChanger');
         log(`Utlity: File-Changer opened.`);
     });
     bnkConvBtn.addEventListener("click", (e) => {

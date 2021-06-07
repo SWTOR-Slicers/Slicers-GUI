@@ -8,7 +8,7 @@ const {
 contextBridge.exposeInMainWorld(
   "api", {
       send: (channel, data) => {
-          let validChannels = ["logToFile", "showDialog", "runExec", "updateJSON", "getConfigJSON", "initLogger", "sendLoggerData", "closeLoggerWindow", "logToPopped"];
+          let validChannels = ["logToPopped", "logToFile", "showDialog", "runExec", "updateJSON", "getConfigJSON", "initLogger", "sendLoggerData", "closeLoggerWindow", "logToPopped"];
           if (validChannels.includes(channel)) {
               ipcRenderer.send(channel, data);
           }

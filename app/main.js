@@ -185,8 +185,7 @@ function initLoggerWindow() {
     width: 716,
     height: 539,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
+      preload: path.join(__dirname, '/src/js/log/logPreloader.js')
     },
     icon: __dirname + "/resources/img/SlicersLogo.png",
   });
@@ -211,12 +210,9 @@ function initLoggerWindow() {
 }
 function initLoggerListeners(window) {
   ipcMain.on('sendLoggerData', (event, data) => {
-    console.log('ran1');
-    console.log(data);
     window.webContents.send('recieveLoggerData', data);
   });
   ipcMain.on('closeLoggerWindow', (event, data) => {
-    console.log('ran2');
     window.close();
   });
   ipcMain.on('logToPopped', (event, data) => {
@@ -225,6 +221,23 @@ function initLoggerListeners(window) {
   });
 }
 
+
+async function extract() {
+  try {
+    const hashPath = "";
+    const temp = cache.assetsFolder;
+    const params = [temp, cache.outputFolder + "\\resources", hashPath];
+    //child.execFileSync(__dirname + "\\resources\\scripts\\Extraction\\main.exe", params);
+  } catch (err) {
+    console.log(err);
+  } finally {
+    mainWindow.webContents.send("extrCompl", "");
+  }
+}
+
+//completed
+
+//unpacker
 function initUnpackerGUI() {
   unpackerWindow = new BrowserWindow({
     width: 516,
@@ -274,8 +287,7 @@ function initUnpackerListeners(window) {
     });
   });
 }
-
-
+//patch downloader
 function initGetPatchGUI() {
   getPatchWindow = new BrowserWindow({
     width: 516,
@@ -316,7 +328,7 @@ function initGetPatchListeners(window) {
     });
   });
 }
-
+//gr2 viewer
 function initGR2Viewer() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   
@@ -359,17 +371,7 @@ function initGR2Listeners(window) {
   });
 }
 
-async function extract() {
-  try {
-    const temp = cache.dataFolder;
-    const params = [temp, cache.outputFolder + "\\resources"];
-    //child.execFileSync(__dirname + "\\resources\\scripts\\Extraction\\main.exe", params);
-  } catch (err) {
-    console.log(err);
-  } finally {
-    mainWindow.webContents.send("extrCompl", "");
-  }
-}
+//utility methods
 async function locate() {
   try {
     const temp = cache.dataFolder;

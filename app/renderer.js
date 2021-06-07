@@ -190,8 +190,7 @@ function setupListeners() {
 function initSubscribes() {
     ipc.receive('displayLog', (data) => {
         log(data);
-        //ipc.send('logToPopped', data);
-    })
+    });
     ipc.receive('sendConfigJSON', (data) => {
         let json = data;
 
@@ -293,10 +292,10 @@ function initSubscribes() {
         log(`Logger Compressed`);
     });
     ipc.receive('sendPoppedLoggerData', (data) => {
-        let logStr = "";
+        let logStr = [];
         for (let i = 0; i < logDisplay.children.length - 1; i++) {
             const chld = logDisplay.children[i];
-            logStr = logStr.concat(chld.innerText, '\n');
+            logStr.push(chld.innerText);
         }
         ipc.send('sendLoggerData', logStr);
     });
@@ -309,6 +308,7 @@ async function processResponse(data, elem, param) {
 }
 
 function log(message) {
+    ipc.send('logToPopped', message);
     let logMsg = message + "\n";
 
     let div = document.createElement("div");

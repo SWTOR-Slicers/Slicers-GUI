@@ -1,0 +1,72 @@
+:root {
+    --grey-black: #1a1a1a;
+    --grey-black-hover: #2b2b2b;
+    --medium-grey: #333;
+}
+
+html, body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    background-color: black;
+    color: white;
+    font-family: 'Eurofont';
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--grey-black);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #ffce00;
+}
+
+.terminal-page {
+    width: 100%;
+    height: 100%;
+}
+
+.terminal-page .log__display {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    background-color: #000;
+}
+.terminal-page .log__item {
+    margin-left: 5px;
+    margin-top: 5px;
+    word-wrap: normal;
+    min-height: 16px;
+    font-size: 12px;
+    font-family: 'Eurofont';
+    color: white;
+    width: calc(100% - 10px);
+}
+.log-cursor {
+    display: flex;
+    flex-direction: row;
+}
+.cursor-underscore {
+    margin-left: 5px;
+    animation: blink 1.0s;
+    animation-iteration-count: infinite;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}

@@ -173,13 +173,16 @@ function setupListeners() {
     });
     expComprLogBtn.addEventListener('click', (e) => {
         //clear log
-        expComprLogBtn.classList.toggle('popped');
-        if (expComprLogBtn.classList.contains('popped')) {
+        if (!expComprLogBtn.classList.contains('popped')) {
+            expComprLogBtn.classList.add('popped');
             expComprLogBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
             poppedOutCover.style.display = 'block';
+            ipc.send('runExec', 'logger');
         } else {
+            expComprLogBtn.classList.remove('popped');
             expComprLogBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
             poppedOutCover.style.display = '';
+            ipc.send('closeLoggerWindow', "");
         }
         expComprLogBtn.dispatchEvent(updateTooltipEvent);
     });
@@ -187,6 +190,7 @@ function setupListeners() {
 function initSubscribes() {
     ipc.receive('displayLog', (data) => {
         log(data);
+        ipc.send('logToPopped', data);
     })
     ipc.receive('sendConfigJSON', (data) => {
         let json = data;
@@ -280,6 +284,16 @@ function initSubscribes() {
     });
     ipc.receive('loggedToFile', (data) => {
         log(`Log sucessfully written to file. Location: ` + data[0]);
+    });
+    ipc.receive('loggerWindowClosed', (data) => {
+        expComprLogBtn.classList.remove('popped');
+        expComprLogBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+        poppedOutCover.style.display = '';
+        expComprLogBtn.dispatchEvent(updateTooltipEvent);
+        log(`Logger Compressed`);
+    });
+    ipc.receive('getPoppedLoggerData', (data) => {
+        ipc.send('sendLoggerData', logDisplay);
     });
 }
 

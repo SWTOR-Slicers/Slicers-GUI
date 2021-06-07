@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <script src="../../node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
+    <link rel="stylesheet" href="../css/universal.css">
+    <link rel="stylesheet" href="../css/Logger.css">
+    <title>Slicers GUI Logger</title>
+</head>
+<body>
+    <div class="terminal-page">
+        <div id="logDisplay" class="log__display">
+            <div class="log__item log-cursor">> <div class="cursor-underscore">_</div></div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/log/logRenderer.js"></script>
+</body>
+</html>

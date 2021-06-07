@@ -14,6 +14,8 @@ let gr2WindowOpened = false;
 let getPatchWindowOpened = false;
 let unpackerWindowOpened = false;
 
+let loggerWindowOpened = false;
+
 function createWindow () {
   mainWindow = new BrowserWindow({
     width: 716,
@@ -150,8 +152,60 @@ function initListeners() {
       case "walkthrough":
         //open walkthrough window
         break;
+      case "logger":
+        initLoggerWindow();
+        break;
     }
   });
+}
+
+function initLoggerWindow() {
+  let win = new BrowserWindow({
+    width: 716,
+    height: 539,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: __dirname + "/resources/img/SlicersLogo.png",
+  });
+  
+  win.removeMenu();
+  win.webContents.openDevTools();
+  win.loadURL(`${__dirname}/src/html/Logger.html`);
+
+  win.on('close', () => {
+    removeLoggerListeners();
+    if (mainWindow) {
+      if (mainWindow.webContents) {
+        mainWindow.webContents.send("loggerWindowClosed", "");
+      }
+    }
+  });
+
+  if (!loggerWindowOpened) {
+    initLoggerListeners(win);
+    loggerWindowOpened = true;
+  }
+}
+function initLoggerListeners(window) {
+  ipcMain.on('sendLoggerData', (event, data) => {
+    console.log('ran1');
+    window.webContents.send('recieveLoggerData', data);
+  });
+  ipcMain.on('closeLoggerWindow', (event, data) => {
+    console.log('ran2');
+    window.close();
+  });
+  ipcMain.on('logToPopped', (event, data) => {
+    console.log('ran3');
+    window.webContents.send('displayLogData', data);
+  });
+}
+function removeLoggerListeners() {
+  ipcMain.removeListener('sendLoggerData');
+  ipcMain.removeListener('closeLoggerWindow');
+  ipcMain.removeListener('logToPopped');
 }
 
 function initUnpackerGUI() {

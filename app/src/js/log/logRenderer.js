@@ -3,11 +3,17 @@ const logDisplay = document.getElementById("logDisplay");
 
 function initialize() {
     initSubs();
+
+    ipcRenderer.send('getPoppedLoggerData', "");
 }
 
 function initSubs() {
     ipcRenderer.on('recieveLoggerData', (data) => {
-        logDisplay.parentElement.innerHTML = data;
+        console.log(data);
+        const msgs = data.split('\n');
+        for (const msg of msgs) {
+            log(msg);
+        }
     });
     ipcRenderer.on('displayLogData', (data) => {
         log(data);

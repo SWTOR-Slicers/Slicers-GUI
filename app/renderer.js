@@ -177,7 +177,7 @@ function setupListeners() {
             expComprLogBtn.classList.add('popped');
             expComprLogBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
             poppedOutCover.style.display = 'block';
-            ipc.send('runExec', 'logger');
+            ipc.send('initLogger');
         } else {
             expComprLogBtn.classList.remove('popped');
             expComprLogBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
@@ -190,7 +190,7 @@ function setupListeners() {
 function initSubscribes() {
     ipc.receive('displayLog', (data) => {
         log(data);
-        ipc.send('logToPopped', data);
+        //ipc.send('logToPopped', data);
     })
     ipc.receive('sendConfigJSON', (data) => {
         let json = data;
@@ -292,8 +292,13 @@ function initSubscribes() {
         expComprLogBtn.dispatchEvent(updateTooltipEvent);
         log(`Logger Compressed`);
     });
-    ipc.receive('getPoppedLoggerData', (data) => {
-        ipc.send('sendLoggerData', logDisplay);
+    ipc.receive('sendPoppedLoggerData', (data) => {
+        let logStr = "";
+        for (let i = 0; i < logDisplay.children.length - 1; i++) {
+            const chld = logDisplay.children[i];
+            logStr = logStr.concat(chld.innerText, '\n');
+        }
+        ipc.send('sendLoggerData', logStr);
     });
 }
 

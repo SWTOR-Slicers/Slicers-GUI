@@ -5,16 +5,16 @@ const path = require('path');
 const child = require('child_process');
 const dateTime = require('node-datetime');
 let mainWindow;
+let loggerWindow;
+let unpackerWindow;
+let gr2Window;
+let getPatchWindow;
+let appQuiting = false;
 const cache = {
   assetsFolder:"",
   outputFolder:"",
   dataFolder:""
 }
-let gr2WindowOpened = false;
-let getPatchWindowOpened = false;
-let unpackerWindowOpened = false;
-
-let loggerWindowOpened = false;
 
 function createWindow () {
   mainWindow = new BrowserWindow({
@@ -26,11 +26,13 @@ function createWindow () {
     icon: __dirname + "/resources/img/SlicersLogo.png"
   });
 
+  mainWindow.webContents.openDevTools();
+  //mainWindow.setResizable(false);
   mainWindow.removeMenu();
-  mainWindow.setResizable(false);
   mainWindow.loadFile('index.html');
 
   mainWindow.on('close', () => {
+    appQuiting = true;
     app.quit();
   })
 }
@@ -53,20 +55,6 @@ function init() {
   initListeners();
 }
 function initListeners() {
-  ipcMain.on("logToFile", async (event, data) => {
-    var dt = dateTime.create();
-    var formatted = dt.format('Y-m-d H_M_S');
-
-    let logPath = path.join(data[0], 'logs', `${formatted}.txt`);
-    fs.mkdirSync(path.dirname(logPath), {
-      recursive: true
-    });
-    fs.writeFileSync(logPath, data[1]);
-    mainWindow.webContents.send("loggedToFile", [logPath]);
-  });
-  ipcMain.on("logToMain", async (event, data) => {
-    mainWindow.webContents.send("displayLog", data);
-  });
   ipcMain.on("getConfigJSON", async (event, data) => {
     let res = fs.readFileSync(__dirname + "/resources/config.json");
     let json = JSON.parse(res);
@@ -126,13 +114,21 @@ function initListeners() {
         //generate new hash
         break;
       case "unpack":
-        initUnpackerGUI();
+        if (unpackerWindow) {
+          unpackerWindow.show();
+        } else {
+          initUnpackerGUI();
+        }
         break;
       case "nodeViewer":
         //run node viewer
         break;
       case "gr2Viewer":
-        initGR2Viewer();
+        if (gr2Window) {
+          gr2Window.show();
+        } else {
+          initGR2Viewer();
+        }
         break;
       case "modelViewer":
         //open modal viewer window
@@ -147,20 +143,45 @@ function initListeners() {
         //open file changer window
         break;
       case "getPatch":
-        initGetPatchGUI();
+        if (getPatchWindow) {
+          getPatchWindow.show();
+        } else {
+          initGetPatchGUI();
+        }
         break;
       case "walkthrough":
         //open walkthrough window
         break;
-      case "logger":
-        initLoggerWindow();
-        break;
     }
+  });
+  ipcMain.on("logToFile", async (event, data) => {
+    var dt = dateTime.create();
+    var formatted = dt.format('Y-m-d H_M_S');
+
+    let logPath = path.join(data[0], 'logs', `${formatted}.txt`);
+    fs.mkdirSync(path.dirname(logPath), {
+      recursive: true
+    });
+    fs.writeFileSync(logPath, data[1]);
+    mainWindow.webContents.send("loggedToFile", [logPath]);
+  });
+  ipcMain.on("logToMain", async (event, data) => {
+    mainWindow.webContents.send("displayLog", data);
+  });
+  ipcMain.on('initLogger', (event, data) => {
+    if (loggerWindow) {
+      loggerWindow.show();
+    } else {
+      initLoggerWindow();
+    }
+  });
+  ipcMain.on('getPoppedLoggerData', (event, data) => {
+    mainWindow.webContents.send('sendPoppedLoggerData', "");
   });
 }
 
 function initLoggerWindow() {
-  let win = new BrowserWindow({
+  loggerWindow = new BrowserWindow({
     width: 716,
     height: 539,
     webPreferences: {
@@ -170,12 +191,15 @@ function initLoggerWindow() {
     icon: __dirname + "/resources/img/SlicersLogo.png",
   });
   
-  win.removeMenu();
-  win.webContents.openDevTools();
-  win.loadURL(`${__dirname}/src/html/Logger.html`);
+  loggerWindow.removeMenu();
+  loggerWindow.webContents.openDevTools();
+  loggerWindow.loadURL(`${__dirname}/src/html/Logger.html`);
 
-  win.on('close', () => {
-    removeLoggerListeners();
+  loggerWindow.on('close', (e) => {
+    if (!appQuiting) {
+      e.preventDefault();
+      loggerWindow.hide();
+    }
     if (mainWindow) {
       if (mainWindow.webContents) {
         mainWindow.webContents.send("loggerWindowClosed", "");
@@ -183,14 +207,12 @@ function initLoggerWindow() {
     }
   });
 
-  if (!loggerWindowOpened) {
-    initLoggerListeners(win);
-    loggerWindowOpened = true;
-  }
+  initLoggerListeners(loggerWindow);
 }
 function initLoggerListeners(window) {
   ipcMain.on('sendLoggerData', (event, data) => {
     console.log('ran1');
+    console.log(data);
     window.webContents.send('recieveLoggerData', data);
   });
   ipcMain.on('closeLoggerWindow', (event, data) => {
@@ -202,14 +224,9 @@ function initLoggerListeners(window) {
     window.webContents.send('displayLogData', data);
   });
 }
-function removeLoggerListeners() {
-  ipcMain.removeListener('sendLoggerData');
-  ipcMain.removeListener('closeLoggerWindow');
-  ipcMain.removeListener('logToPopped');
-}
 
 function initUnpackerGUI() {
-  let win = new BrowserWindow({
+  unpackerWindow = new BrowserWindow({
     width: 516,
     height: 269,
     webPreferences: {
@@ -219,11 +236,15 @@ function initUnpackerGUI() {
     icon: __dirname + "/resources/img/SlicersLogo.png",
   });
 
-  win.removeMenu();
-  win.setResizable(false);
-  win.loadURL(`${__dirname}/src/html/Unpacker.html`);
+  unpackerWindow.removeMenu();
+  unpackerWindow.setResizable(false);
+  unpackerWindow.loadURL(`${__dirname}/src/html/Unpacker.html`);
 
-  win.on('close', () => {
+  unpackerWindow.on('close', (e) => {
+    if (!appQuiting) {
+      e.preventDefault();
+      unpackerWindow.hide();
+    }
     if (mainWindow) {
       if (mainWindow.webContents) {
         mainWindow.webContents.send("unpkCompl", "");
@@ -231,10 +252,7 @@ function initUnpackerGUI() {
     }
   });
 
-  if (!unpackerWindowOpened) {
-    initUnpackerListeners(win);
-    unpackerWindowOpened = true;
-  }
+  initUnpackerListeners(unpackerWindow);
 }
 function initUnpackerListeners(window) {
   ipcMain.on("showDialogUnpacker", async (event, data) => {
@@ -259,7 +277,7 @@ function initUnpackerListeners(window) {
 
 
 function initGetPatchGUI() {
-  let win = new BrowserWindow({
+  getPatchWindow = new BrowserWindow({
     width: 516,
     height: 439,
     webPreferences: {
@@ -269,11 +287,15 @@ function initGetPatchGUI() {
     icon: __dirname + "/resources/img/SlicersLogo.png",
   });
 
-  win.removeMenu();
-  win.setResizable(false);
-  win.loadURL(`${__dirname}/src/html/GetPatch.html`);
+  getPatchWindow.removeMenu();
+  getPatchWindow.setResizable(false);
+  getPatchWindow.loadURL(`${__dirname}/src/html/GetPatch.html`);
 
-  win.on('close', () => {
+  getPatchWindow.on('close', (e) => {
+    if (!appQuiting) {
+      e.preventDefault();
+      getPatchWindow.hide();
+    }
     if (mainWindow) {
       if (mainWindow.webContents) {
         mainWindow.webContents.send("utilGPClosed", "");
@@ -281,10 +303,7 @@ function initGetPatchGUI() {
     }
   });
 
-  if (!getPatchWindowOpened) {
-    initGetPatchListeners(win);
-    getPatchWindowOpened = true;
-  }
+  initGetPatchListeners(getPatchWindow);
 }
 function initGetPatchListeners(window) {
   ipcMain.on("showDialogPatch", async (event, data) => {
@@ -301,7 +320,7 @@ function initGetPatchListeners(window) {
 function initGR2Viewer() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   
-  let win = new BrowserWindow({
+  gr2Window = new BrowserWindow({
     width: width,
     height: height,
     webPreferences: {
@@ -311,10 +330,14 @@ function initGR2Viewer() {
     icon: __dirname + "/resources/img/SlicersLogo.png",
   });
 
-  win.removeMenu();
+  gr2Window.removeMenu();
   win.loadURL(`${__dirname}/src/html/GR2Viewer.html`);
 
-  win.on('close', () => {
+  gr2Window.on('close', (e) => {
+    if (!appQuiting) {
+      e.preventDefault();
+      gr2Window.hide();
+    }
     if (mainWindow) {
       if (mainWindow.webContents) {
         mainWindow.webContents.send("gr2ViewClosed", "");
@@ -322,10 +345,7 @@ function initGR2Viewer() {
     }
   });
 
-  if (!gr2WindowOpened) {
-    initGR2Listeners(win);
-    gr2WindowOpened = true;
-  }
+  initGR2Listeners(gr2Window);
 }
 function initGR2Listeners(window) {
   ipcMain.on("showDialogGR2", async (event, data) => {

@@ -8,13 +8,13 @@ const {
 contextBridge.exposeInMainWorld(
   "api", {
       send: (channel, data) => {
-          let validChannels = ["logToFile", "showDialog", "runExec", "updateJSON", "getConfigJSON", "sendLoggerData", "closeLoggerWindow", "logToPopped"];
+          let validChannels = ["logToFile", "showDialog", "runExec", "updateJSON", "getConfigJSON", "initLogger", "sendLoggerData", "closeLoggerWindow", "logToPopped"];
           if (validChannels.includes(channel)) {
               ipcRenderer.send(channel, data);
           }
       },
       receive: (channel, func) => {
-          let validChannels = ["displayLog", "assetsFolderReply", "outputFolderReply", "dataFolderReply", "extrCompl", "locCompl", "unpkCompl", "genHashCompl", "gr2ViewClosed", "nodeViewClosed", "modViewClosed", "worViewClosed", "utilFileChngClosed", "utilBnkClosed", "utilGPClosed", "walkthroughClosed", "isDirAsset", "isDirOut", "isDirDat", "loggedToFile", "sendConfigJSON", "loggerWindowClosed"];
+          let validChannels = ["displayLog", "assetsFolderReply", "outputFolderReply", "dataFolderReply", "extrCompl", "locCompl", "unpkCompl", "genHashCompl", "gr2ViewClosed", "nodeViewClosed", "modViewClosed", "worViewClosed", "utilFileChngClosed", "utilBnkClosed", "utilGPClosed", "walkthroughClosed", "isDirAsset", "isDirOut", "isDirDat", "loggedToFile", "sendConfigJSON", "loggerWindowClosed", "sendPoppedLoggerData"];
           if (validChannels.includes(channel)) {
               ipcRenderer.on(channel, (event, ...args) => func(...args));
           }

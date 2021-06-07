@@ -26,8 +26,7 @@ function createWindow () {
     icon: __dirname + "/resources/img/SlicersLogo.png"
   });
 
-  mainWindow.webContents.openDevTools();
-  //mainWindow.setResizable(false);
+  mainWindow.setResizable(false);
   mainWindow.removeMenu();
   mainWindow.loadFile('index.html');
 
@@ -180,6 +179,23 @@ function initListeners() {
   });
 }
 
+
+async function extract() {
+  try {
+    const hashPath = "";
+    const temp = cache.assetsFolder;
+    const params = [temp, cache.outputFolder + "\\resources", hashPath];
+    //child.execFileSync(__dirname + "\\resources\\scripts\\Extraction\\main.exe", params);
+  } catch (err) {
+    console.log(err);
+  } finally {
+    mainWindow.webContents.send("extrCompl", "");
+  }
+}
+
+//completed
+
+//logger
 function initLoggerWindow() {
   loggerWindow = new BrowserWindow({
     width: 716,
@@ -191,7 +207,6 @@ function initLoggerWindow() {
   });
   
   loggerWindow.removeMenu();
-  loggerWindow.webContents.openDevTools();
   loggerWindow.loadURL(`${__dirname}/src/html/Logger.html`);
 
   loggerWindow.on('close', (e) => {
@@ -220,23 +235,6 @@ function initLoggerListeners(window) {
     window.webContents.send('displayLogData', data);
   });
 }
-
-
-async function extract() {
-  try {
-    const hashPath = "";
-    const temp = cache.assetsFolder;
-    const params = [temp, cache.outputFolder + "\\resources", hashPath];
-    //child.execFileSync(__dirname + "\\resources\\scripts\\Extraction\\main.exe", params);
-  } catch (err) {
-    console.log(err);
-  } finally {
-    mainWindow.webContents.send("extrCompl", "");
-  }
-}
-
-//completed
-
 //unpacker
 function initUnpackerGUI() {
   unpackerWindow = new BrowserWindow({

@@ -179,7 +179,6 @@ function initListeners() {
   });
 }
 
-
 async function extract() {
   try {
     const hashPath = "";
@@ -341,7 +340,7 @@ function initGR2Viewer() {
   });
 
   gr2Window.removeMenu();
-  win.loadURL(`${__dirname}/src/html/GR2Viewer.html`);
+  gr2Window.loadURL(`${__dirname}/src/html/GR2Viewer.html`);
 
   gr2Window.on('close', (e) => {
     if (!appQuiting) {

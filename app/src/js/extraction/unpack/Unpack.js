@@ -1,4 +1,5 @@
 import { log } from "../../universal/Logger.js";
+import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 
 const ssn = require('ssn');
 const fs = require('fs');
@@ -40,6 +41,16 @@ async function initialize() {
     await loadCache();
     filePathInput.value = cache["unpackPath"];
     outputInput.value = cache["output"];
+
+    addTooltip('top', filePathInput, true, (element) => {
+        return element.value;
+    });
+    addTooltip('top', outputInput, true, (element) => {
+        return element.value;
+    });
+    addTooltip('top', progressBar, false, (element) => {
+        return 'Progress Bar';
+    });
     
     initListeners();
     initSubs();
@@ -71,6 +82,13 @@ function updateCache(field, val) {
             cache[field] = val;
         
             fs.writeFileSync(configPath, JSON.stringify(json), 'utf-8');
+
+            if (field == "output") {
+                outputInput.dispatchEvent(updateTooltipEvent);
+            }
+            if (field == "unpackPath") {
+                filePathInput.dispatchEvent(updateTooltipEvent);
+            }
         }
     } else {
         if (field == "output") {

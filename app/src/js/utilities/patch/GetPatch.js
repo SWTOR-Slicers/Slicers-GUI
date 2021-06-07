@@ -1,4 +1,5 @@
 import { log } from "../../universal/Logger.js";
+import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 
 const ssn = require('ssn');
 const fs = require('fs');
@@ -61,6 +62,10 @@ async function initialize() {
     varient.options[0].innerHTML = cache["varient"];
     versionInput.value = cache["version"];
     output.value = cache["output"];
+
+    addTooltip('top', output, true, (element) => {
+        return element.value;
+    });
     
     initDrops();
     initListeners();
@@ -118,6 +123,10 @@ function updateCache(field, val) {
             cache[field] = val;
         
             fs.writeFileSync(configPath, JSON.stringify(json), 'utf-8');
+        }
+
+        if (field == "output") {
+            output.dispatchEvent(updateTooltipEvent);
         }
     } else {
         output.value = cache["output"];

@@ -1,4 +1,5 @@
 import {FolderTree} from "./FolderTree.js";
+import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 
 const {ipcRenderer} = require('electron');
 const os = require('os');
@@ -60,6 +61,8 @@ function initialize() {
             oldValue = newValue;
     
             checkForArrows();
+
+            e.currentTarget.dispatchEvent(updateTooltipEvent);
         } else {
             e.target.value = oldValue;
         }
@@ -68,6 +71,10 @@ function initialize() {
     fileTree = new FolderTree(desktop, null);
     
     fileTree.render(treeList);
+
+    addTooltip('top', pathField, true, (element) => {
+        return element.value;
+    });
 
     initListeners();
     initSubs();

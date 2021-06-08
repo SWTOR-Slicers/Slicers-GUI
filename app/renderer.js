@@ -7,11 +7,15 @@
 import { addTooltip, updateTooltipEvent } from "./src/js/universal/Tooltips.js";
 const ipc = window.api;
 const logDisplay = document.getElementById("logDisplay");
+const cache = {
+    "extractionPreset": ""
+};
 
 //file path choosers
 let assetPopupBtn = document.getElementById("assetPopupBtn");
 let assetTextField = document.getElementById("assetTextField");
 let oldAssetValue;
+let extractionPreset = document.getElementById('extractionPreset');
 
 let outputPopupBtn = document.getElementById("outputPopupBtn");
 let outputTextField = document.getElementById("outputTextField");
@@ -51,6 +55,7 @@ function initialize() {
     setConfigData();
 
     setupListeners();
+    initDrops();
 
     addTooltip('top', assetTextField, true, (element) => {
         return element.value;
@@ -73,6 +78,101 @@ function initialize() {
     });
 
     log("Boot up complete");
+}
+
+function updateCache(field, value) {
+    if (field == "extractionPreset") {
+        ipc.send('updateExtractionPreset', value);
+    }
+}
+
+//initializes custom dropdown menus
+function initDrops() {
+    let customSelects = document.getElementsByClassName("custom-select");
+    let custSelLen = customSelects.length;
+
+    for (let i = 0; i < custSelLen; i++) {
+        let select = customSelects[i].getElementsByTagName("select")[0];
+        let selLen = select.length;
+        
+        let a = document.createElement("DIV");
+        a.setAttribute("class", "select-selected");
+        a.innerHTML = select.options[select.selectedIndex].innerHTML;
+        customSelects[i].appendChild(a);
+        
+        let b = document.createElement("DIV");
+        b.setAttribute("class", "select-items select-hide");
+
+        for (let j = 1; j < selLen; j++) {
+            let c = document.createElement("DIV");
+            c.id = select.options[j].innerHTML;
+            c.innerHTML = select.options[j].innerHTML;
+
+            if (c.id == a.innerHTML) {
+                c.classList.add("same-as-selected");
+            }
+
+            c.addEventListener("click", function(e) {
+                let s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+                let sl = s.length;
+                let h = this.parentNode.previousSibling;
+
+                for (let i = 0; i < sl; i++) {
+                    if (s.options[i].innerHTML == this.innerHTML) {
+                        s.selectedIndex = i;
+                        h.innerHTML = this.innerHTML;
+
+                        let y = this.parentNode.getElementsByClassName("same-as-selected");
+                        let yl = y.length;
+                        for (let k = 0; k < yl; k++) {
+                            y[k].removeAttribute("class");
+                        }
+
+                        this.setAttribute("class", "same-as-selected");
+
+                        break;
+                    }
+                }
+
+                updateCache(select.id, this.innerHTML);
+
+                h.click();
+
+            });
+
+            b.appendChild(c);
+
+        }
+
+        customSelects[i].appendChild(b);
+
+        a.addEventListener("click", function(e) {
+            e.stopPropagation();
+            closeAllSelect(this);
+            this.nextSibling.classList.toggle("select-hide");
+            this.classList.toggle("select-arrow-active");
+        });
+    }
+    function closeAllSelect(elmnt) {
+        var x, y, i, xl, yl, arrNo = [];
+        x = document.getElementsByClassName("select-items");
+        y = document.getElementsByClassName("select-selected");
+        xl = x.length;
+        yl = y.length;
+        for (i = 0; i < yl; i++) {
+            if (elmnt == y[i]) {
+            arrNo.push(i)
+            } else {
+            y[i].classList.remove("select-arrow-active");
+            }
+        }
+        for (i = 0; i < xl; i++) {
+            if (arrNo.indexOf(i)) {
+            x[i].classList.add("select-hide");
+            }
+        }
+    }
+    document.addEventListener("click", closeAllSelect);
 }
 
 function setConfigData() {
@@ -205,15 +305,22 @@ function initSubscribes() {
         dataTextField.value = json.dataFolder;
         oldDataValue = json.dataFolder;
         dataTextField.dispatchEvent(updateTooltipEvent);
+
+        extractionPreset.options[0].innerHTML = json.extraction.extractionPreset;
     });
     ipc.receive('assetsFolderReply', (data) => {
         processResponse(data, assetTextField, 'assetsFolder');
     });
     ipc.receive('isDirAsset', (data) => {
-        if (data) {
+        const exists = data[0];
+        if (exists) {
             log(`Assigned new path to assetsFolder field.`)
             oldAssetValue = assetTextField.value;
             assetTextField.dispatchEvent(updateTooltipEvent);
+            if (!data[1]) {
+                document.getElementById('all').click();
+                extractionPreset.parentElement.classList.add('disabled');
+            }
         } else {
             log(`Invalid path. Reseting assetsFolder field to ${oldAssetValue}`);
             assetTextField.value = oldAssetValue;

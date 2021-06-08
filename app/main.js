@@ -13,8 +13,18 @@ let appQuiting = false;
 const cache = {
   assetsFolder:"",
   outputFolder:"",
-  dataFolder:""
+  dataFolder:"",
+  extraction: {
+    extractionPreset: ""
+  }
 }
+const extractionPresetConsts = {
+  "names": [],
+  "dynamic": [],
+  "static": [],
+  "sound": [],
+  "gui": []
+};
 
 function createWindow () {
   mainWindow = new BrowserWindow({
@@ -52,6 +62,15 @@ app.on('window-all-closed', function () {
 
 function init() {
   initListeners();
+
+  //grab resources
+  let res = fs.readFileSync(__dirname + "/resources/extractionPresets.json");
+  let json = JSON.parse(res);
+  extractionPresetConsts.names = json.names;
+  extractionPresetConsts.dynamic = json.dynamic;
+  extractionPresetConsts.static = json.static;
+  extractionPresetConsts.sound = json.sound;
+  extractionPresetConsts.gui = json.gui;
 }
 function initListeners() {
   ipcMain.on("getConfigJSON", async (event, data) => {
@@ -61,6 +80,7 @@ function initListeners() {
     cache.assetsFolder = json.assetsFolder;
     cache.outputFolder = json.outputFolder;
     cache.dataFolder = json.dataFolder;
+    cache.extraction.extractionPreset = json.extraction.extractionPreset;
 
     mainWindow.webContents.send("sendConfigJSON", json);
   })
@@ -88,7 +108,11 @@ function initListeners() {
     let exists = fs.existsSync(data[1]);
     switch (data[0]) {
       case "assetsFolder":
-        mainWindow.webContents.send("isDirAsset", exists);
+        let dropIsEnabled = false;
+        if (exists) {
+          //check if all assets are present
+        }
+        mainWindow.webContents.send("isDirAsset", [exists, dropIsEnabled]);
         break;
       case "outputFolder":
         mainWindow.webContents.send("isDirOut", exists);
@@ -176,6 +200,14 @@ function initListeners() {
   });
   ipcMain.on('getPoppedLoggerData', (event, data) => {
     mainWindow.webContents.send('sendPoppedLoggerData', "");
+  });
+  ipcMain.on('updateExtractionPreset', (event, data) => {
+    let res = fs.readFileSync(__dirname + "/resources/config.json");
+    let json = JSON.parse(res);
+    json.extraction.extractionPreset = data;
+    cache.extraction.extractionPreset = data;
+
+    fs.writeFileSync(__dirname + "/resources/config.json", JSON.stringify(json), 'utf-8');
   });
 }
 

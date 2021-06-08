@@ -36,7 +36,8 @@ function createWindow () {
     icon: __dirname + "/resources/img/SlicersLogo.png"
   });
 
-  mainWindow.setResizable(false);
+  //mainWindow.setResizable(false);
+  mainWindow.webContents.openDevTools();
   mainWindow.removeMenu();
   mainWindow.loadFile('index.html');
 
@@ -82,14 +83,29 @@ function initListeners() {
     cache.dataFolder = json.dataFolder;
     cache.extraction.extractionPreset = json.extraction.extractionPreset;
 
-    mainWindow.webContents.send("sendConfigJSON", json);
+    let dropIsEnabled = false;
+    if (fs.statSync(cache.assetsFolder).isDirectory()) {
+      const contents = fs.readdirSync(cache.assetsFolder);
+      dropIsEnabled = extractionPresetConsts.names.every((elem) => {
+        return contents.includes(elem);;
+      });
+    }
+
+    mainWindow.webContents.send("sendConfigJSON", [json, !dropIsEnabled]);
   })
   ipcMain.on("showDialog", async (event, data) => {
     dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] }).then(async (dir) => {
       if (!dir.canceled) {
         switch (data) {
           case "assetsFolder":
-            mainWindow.webContents.send("assetsFolderReply", dir.filePaths);
+            let dropIsEnabled = false;
+            if (fs.statSync(dir.filePaths[0]).isDirectory()) {
+              const contents = fs.readdirSync(dir.filePaths[0]);
+              dropIsEnabled = extractionPresetConsts.names.every((elem) => {
+                return contents.includes(elem);;
+              });
+            }
+            mainWindow.webContents.send("assetsFolderReply", [dir.filePaths, dropIsEnabled]);
             await updateJSON("assetsFolder", dir.filePaths[0]);
             break;
           case "outputFolder":
@@ -109,8 +125,11 @@ function initListeners() {
     switch (data[0]) {
       case "assetsFolder":
         let dropIsEnabled = false;
-        if (exists) {
-          //check if all assets are present
+        if (exists && fs.statSync(data[1]).isDirectory()) {
+          const contents = fs.readdirSync(data[1]);
+          dropIsEnabled = extractionPresetConsts.names.every((elem) => {
+            return contents.includes(path.join(data[1], elem));
+          });
         }
         mainWindow.webContents.send("isDirAsset", [exists, dropIsEnabled]);
         break;

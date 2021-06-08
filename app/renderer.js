@@ -82,7 +82,10 @@ function initialize() {
 
 function updateCache(field, value) {
     if (field == "extractionPreset") {
-        ipc.send('updateExtractionPreset', value);
+        if (value != cache['extractionPreset']) {
+            ipc.send('updateExtractionPreset', value);
+            cache['extractionPreset'] = value;
+        }
     }
 }
 
@@ -292,7 +295,7 @@ function initSubscribes() {
         log(data);
     });
     ipc.receive('sendConfigJSON', (data) => {
-        let json = data;
+        let json = data[0];
 
         assetTextField.value = json.assetsFolder;
         oldAssetValue = json.assetsFolder;
@@ -307,9 +310,17 @@ function initSubscribes() {
         dataTextField.dispatchEvent(updateTooltipEvent);
 
         extractionPreset.options[0].innerHTML = json.extraction.extractionPreset;
+
+        if (data[1]) {
+            extractionPreset.nextElementSibling.classList.add('disabled');
+        }
     });
     ipc.receive('assetsFolderReply', (data) => {
-        processResponse(data, assetTextField, 'assetsFolder');
+        if (!data[1]) {
+            document.getElementById('All').click();
+            extractionPreset.nextElementSibling.classList.add('disabled');
+        }
+        processResponse(data[0], assetTextField, 'assetsFolder');
     });
     ipc.receive('isDirAsset', (data) => {
         const exists = data[0];
@@ -318,8 +329,8 @@ function initSubscribes() {
             oldAssetValue = assetTextField.value;
             assetTextField.dispatchEvent(updateTooltipEvent);
             if (!data[1]) {
-                document.getElementById('all').click();
-                extractionPreset.parentElement.classList.add('disabled');
+                document.getElementById('All').click();
+                extractionPreset.nextElementSibling.classList.add('disabled');
             }
         } else {
             log(`Invalid path. Reseting assetsFolder field to ${oldAssetValue}`);

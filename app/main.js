@@ -36,8 +36,7 @@ function createWindow () {
     icon: __dirname + "/resources/img/SlicersLogo.png"
   });
 
-  //mainWindow.setResizable(false);
-  mainWindow.webContents.openDevTools();
+  mainWindow.setResizable(false);
   mainWindow.removeMenu();
   mainWindow.loadFile('index.html');
 
@@ -237,10 +236,6 @@ async function extract() {
     const temp = cache.assetsFolder;
     let values;
 
-    if (!fs.existsSync(output)) {
-      fs.mkdirSync(output);
-    }
-
     if (cache.extraction.extractionPreset != 'All') {
       values = [];
       const tors = extractionPresetConsts[cache.extraction.extractionPreset.toLocaleLowerCase()];
@@ -248,11 +243,11 @@ async function extract() {
         values.push(path.join(temp, tor));
       }
     } else {
-      values = temp;
+      values = [temp];
     }
 
-    const params = [values, output, hashPath];
-    //child.execFileSync(__dirname + "\\resources\\scripts\\Extraction\\main.exe", params);
+    const params = [JSON.stringify(values), output, hashPath];
+    child.execFileSync(__dirname + "\\resources\\scripts\\Extraction\\main.exe", params);
   } catch (err) {
     console.log(err);
   } finally {

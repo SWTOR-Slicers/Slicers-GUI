@@ -232,9 +232,26 @@ function initListeners() {
 
 async function extract() {
   try {
-    const hashPath = "";
+    const output = path.join(cache.outputFolder, 'resources');
+    const hashPath = path.join(__dirname, 'resources/hash/hashes_filename.txt');
     const temp = cache.assetsFolder;
-    const params = [temp, cache.outputFolder + "\\resources", hashPath];
+    let values;
+
+    if (!fs.existsSync(output)) {
+      fs.mkdirSync(output);
+    }
+
+    if (cache.extraction.extractionPreset != 'All') {
+      values = [];
+      const tors = extractionPresetConsts[cache.extraction.extractionPreset.toLocaleLowerCase()];
+      for (const tor of tors) {
+        values.push(path.join(temp, tor));
+      }
+    } else {
+      values = temp;
+    }
+
+    const params = [values, output, hashPath];
     //child.execFileSync(__dirname + "\\resources\\scripts\\Extraction\\main.exe", params);
   } catch (err) {
     console.log(err);

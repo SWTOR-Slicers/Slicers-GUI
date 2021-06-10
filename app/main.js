@@ -33,7 +33,7 @@ function createWindow () {
     webPreferences: {
       preload: path.join(__dirname, '/preload.js')
     },
-    icon: __dirname + "/resources/img/SlicersLogo.png"
+    icon: path.join(__dirname, "resources/img/SlicersLogo.ico")
   });
 
   mainWindow.setResizable(false);
@@ -265,7 +265,7 @@ function initLoggerWindow() {
     webPreferences: {
       preload: path.join(__dirname, '/src/js/log/logPreloader.js')
     },
-    icon: __dirname + "/resources/img/SlicersLogo.png",
+    icon: path.join(__dirname, "resources/img/SlicersLogo.ico"),
   });
   
   loggerWindow.removeMenu();
@@ -306,7 +306,7 @@ function initUnpackerGUI() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: __dirname + "/resources/img/SlicersLogo.png",
+    icon: path.join(__dirname, "resources/img/SlicersLogo.ico"),
   });
 
   unpackerWindow.removeMenu();
@@ -356,7 +356,7 @@ function initGetPatchGUI() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: __dirname + "/resources/img/SlicersLogo.png",
+    icon: path.join(__dirname, "resources/img/SlicersLogo.ico"),
   });
 
   getPatchWindow.removeMenu();
@@ -399,7 +399,7 @@ function initGR2Viewer() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: __dirname + "/resources/img/SlicersLogo.png",
+    icon: path.join(__dirname, "resources/img/SlicersLogo.ico"),
   });
 
   gr2Window.removeMenu();

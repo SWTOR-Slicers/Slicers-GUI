@@ -49,7 +49,8 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "slicers_gui"
+            "name": "slicers_gui",
+            "icon": "resources/img/SlicersLogo.ico"
           }
         },
         {

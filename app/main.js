@@ -4,6 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const child = require('child_process');
 const dateTime = require('node-datetime');
+
+//THIS CHANGES FOR PRODUCTION: process.resourcesPath
+//ALSO NEED TO CHANGE RESOURCE REFRENCES IN OTHER FILES
+const resourcePath = path.join(__dirname, "resources");
+
 let mainWindow;
 let loggerWindow;
 let unpackerWindow;
@@ -33,7 +38,7 @@ function createWindow () {
     webPreferences: {
       preload: path.join(__dirname, '/preload.js')
     },
-    icon: path.join(__dirname, "resources/img/SlicersLogo.ico")
+    icon: path.join(resourcePath, "img/SlicersLogo.ico")
   });
 
   mainWindow.setResizable(false);
@@ -74,7 +79,7 @@ function init() {
 }
 function initListeners() {
   ipcMain.on("getConfigJSON", async (event, data) => {
-    let res = fs.readFileSync(__dirname + "/resources/config.json");
+    let res = fs.readFileSync(path.join(resourcePath, "config.json"));
     let json = JSON.parse(res);
 
     cache.assetsFolder = json.assetsFolder;
@@ -83,11 +88,13 @@ function initListeners() {
     cache.extraction.extractionPreset = json.extraction.extractionPreset;
 
     let dropIsEnabled = false;
-    if (fs.statSync(cache.assetsFolder).isDirectory()) {
-      const contents = fs.readdirSync(cache.assetsFolder);
-      dropIsEnabled = extractionPresetConsts.names.every((elem) => {
-        return contents.includes(elem);;
-      });
+    if (cache.assetsFolder != "") {
+      if (fs.statSync(cache.assetsFolder).isDirectory()) {
+        const contents = fs.readdirSync(cache.assetsFolder);
+        dropIsEnabled = extractionPresetConsts.names.every((elem) => {
+          return contents.includes(elem);;
+        });
+      }
     }
 
     mainWindow.webContents.send("sendConfigJSON", [json, !dropIsEnabled]);
@@ -232,7 +239,7 @@ function initListeners() {
 async function extract() {
   try {
     const output = cache.outputFolder;
-    const hashPath = path.join(__dirname, 'resources/hash/hashes_filename.txt');
+    const hashPath = path.join(resourcePath, 'hash/hashes_filename.txt');
     const temp = cache.assetsFolder;
     let values;
 
@@ -247,7 +254,7 @@ async function extract() {
     }
 
     const params = [JSON.stringify(values), output, hashPath];
-    child.execFileSync(__dirname + "\\resources\\scripts\\Extraction\\main.exe", params);
+    child.execFileSync(path.join(resourcePath, "scripts\\Extraction\\main.exe"), params);
   } catch (err) {
     console.log(err);
   } finally {
@@ -265,7 +272,7 @@ function initLoggerWindow() {
     webPreferences: {
       preload: path.join(__dirname, '/src/js/log/logPreloader.js')
     },
-    icon: path.join(__dirname, "resources/img/SlicersLogo.ico"),
+    icon: path.join(resourcePath, "img/SlicersLogo.ico"),
   });
   
   loggerWindow.removeMenu();
@@ -306,7 +313,7 @@ function initUnpackerGUI() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: path.join(__dirname, "resources/img/SlicersLogo.ico"),
+    icon: path.join(resourcePath, "img/SlicersLogo.ico"),
   });
 
   unpackerWindow.removeMenu();
@@ -356,7 +363,7 @@ function initGetPatchGUI() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: path.join(__dirname, "resources/img/SlicersLogo.ico"),
+    icon: path.join(resourcePath, "img/SlicersLogo.ico"),
   });
 
   getPatchWindow.removeMenu();
@@ -399,7 +406,7 @@ function initGR2Viewer() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: path.join(__dirname, "resources/img/SlicersLogo.ico"),
+    icon: path.join(resourcePath, "img/SlicersLogo.ico"),
   });
 
   gr2Window.removeMenu();
@@ -435,8 +442,8 @@ function initGR2Listeners(window) {
 async function locate() {
   try {
     const temp = cache.dataFolder;
-    const params = [temp, cache.outputFolder + "\\resources"];
-    child.execFileSync(__dirname + "\\resources\\scripts\\FileLocator\\main.exe", params);
+    const params = [temp, path.join(cache.outputFolder, "resources")];
+    child.execFileSync(path.join(resourcePath, "scripts\\FileLocator\\main.exe"), params);
     console.log(cache);
   } catch (err) {
     console.log(err);
@@ -445,7 +452,7 @@ async function locate() {
   }
 }
 async function updateJSON(param, val) {
-  let res = fs.readFileSync(__dirname + "/resources/config.json");
+  let res = fs.readFileSync(path.join(resourcePath, "config.json"));
   let json = JSON.parse(res);
   json[param] = val;
   cache[param] = val;

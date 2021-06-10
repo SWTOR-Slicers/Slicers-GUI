@@ -1,3 +1,4 @@
+import {resourcePath} from "../../universal/ResourcePath.js"
 import { log } from "../../universal/Logger.js";
 import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 
@@ -11,7 +12,7 @@ const parser = new xml2js.Parser({ attrkey: "attributes" });
 const {ipcRenderer} = require('electron');
 const path = require('path');
 
-const configPath = path.normalize(path.join(__dirname, "../../resources/config.json"));
+const configPath = path.normalize(path.join(resourcePath, "config.json"));
 const changeEvent = new Event('change');
 const patches = [];
 let backupCache = {
@@ -74,7 +75,7 @@ async function initialize() {
     checkFields();
 }
 async function getPatches() {
-    const patchFilePath = path.normalize(path.join(__dirname, "../../resources/patches.xml"));
+    const patchFilePath = path.normalize(path.join(resourcePath, "patches.xml"));
     const res = fs.readFileSync(patchFilePath);
     const xml = await parser.parseStringPromise(res);
 

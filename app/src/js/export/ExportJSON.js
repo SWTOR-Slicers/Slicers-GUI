@@ -1,8 +1,9 @@
+import {resourcePath} from "../universal/ResourcePath.js"
 const fs = require('fs');
 const path = require('path');
 
 export function exportJSON(gr2) {
-    const configPath = path.normalize(path.join(__dirname, "../..", "/resources/config.json"));
+    const configPath = path.normalize(path.join(resourcePath, "config.json"));
     let res = fs.readFileSync(configPath);
     let json = JSON.parse(res);
     const outputElemPath = json.outputFolder;

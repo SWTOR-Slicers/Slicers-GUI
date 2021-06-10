@@ -1,3 +1,4 @@
+import {resourcePath} from "../../universal/ResourcePath.js"
 import { log } from "../../universal/Logger.js";
 import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 
@@ -8,7 +9,7 @@ const xmlJs = require('xml-js');
 const {ipcRenderer} = require('electron');
 const path = require('path');
 
-const configPath = path.normalize(path.join(__dirname, "../../resources/config.json"));
+const configPath = path.normalize(path.join(resourcePath, "config.json"));
 const changeEvent = new Event('change');
 let backupCache = {
     "unpackPath": "",

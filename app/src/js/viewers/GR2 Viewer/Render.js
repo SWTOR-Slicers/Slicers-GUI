@@ -7,6 +7,7 @@ import { GR2 } from "../../classes/GR2.js";
 import { exportObj } from "../../export/ExportObj.js";
 import { exportJSON } from "../../export/ExportJSON.js";
 import { exportFBX } from "../../export/ExportFBX.js";
+import { resourcePath } from "../../universal/ResourcePath.js";
 
 const fs = require('fs');
 const path = require('path');
@@ -42,7 +43,7 @@ const aspect = 1;
 const near = 0.005;
 const far = 50;
 
-const configPath = path.normalize(path.join(__dirname, "../../resources/config.json"));
+const configPath = path.normalize(path.join(resourcePath, "config.json"));
 const cache = {
     "wireframe": null,
     "fov": "", 

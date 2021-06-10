@@ -12,8 +12,10 @@ if (handleSquirrelEvent()) {
 
 //THIS CHANGES FOR PRODUCTION: process.resourcesPath
 //ALSO NEED TO CHANGE RESOURCE REFRENCES IN OTHER FILES
+//const resourcePath = path.join(process.resourcesPath, "resources");
+
 //possible solution is to build resources into app, then copy to app.getPath
-const resourcePath = path.join(process.resourcesPath, "resources");
+const resourcePath = path.join(__dirname, "resources");
 
 let mainWindow;
 let loggerWindow;
@@ -40,7 +42,7 @@ const extractionPresetConsts = {
 function createWindow () {
   mainWindow = new BrowserWindow({
     width: 716,
-    height: 539,
+    height: 547,
     webPreferences: {
       preload: path.join(__dirname, '/preload.js')
     },

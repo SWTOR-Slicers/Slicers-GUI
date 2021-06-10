@@ -24,6 +24,8 @@ html, body {
     width: 100%;
     padding: 0;
     margin: 0;
+    overflow: hidden;
+    background-color: var(--medium-grey);
 }
 :root {
     --grey-black: #1a1a1a;

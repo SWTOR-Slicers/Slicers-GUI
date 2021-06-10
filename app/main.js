@@ -231,7 +231,7 @@ function initListeners() {
 
 async function extract() {
   try {
-    const output = path.join(cache.outputFolder, 'resources');
+    const output = cache.outputFolder;
     const hashPath = path.join(__dirname, 'resources/hash/hashes_filename.txt');
     const temp = cache.assetsFolder;
     let values;

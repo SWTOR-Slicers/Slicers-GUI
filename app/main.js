@@ -5,9 +5,15 @@ const path = require('path');
 const child = require('child_process');
 const dateTime = require('node-datetime');
 
+//if (require('electron-squirrel-startup')) app.quit();
+if (handleSquirrelEvent()) {
+  return;
+}
+
 //THIS CHANGES FOR PRODUCTION: process.resourcesPath
 //ALSO NEED TO CHANGE RESOURCE REFRENCES IN OTHER FILES
-const resourcePath = path.join(__dirname, "resources");
+//possible solution is to build resources into app, then copy to app.getPath
+const resourcePath = path.join(process.resourcesPath, "resources");
 
 let mainWindow;
 let loggerWindow;
@@ -53,6 +59,7 @@ function createWindow () {
 
 // This method will be called when Electron has finished
 app.whenReady().then(() => {
+  app.setAppUserModelId('com.swtor-slicers.tormak');
   createWindow();
   
   app.on('activate', function () {
@@ -69,7 +76,7 @@ function init() {
   initListeners();
 
   //grab resources
-  let res = fs.readFileSync(__dirname + "/resources/extractionPresets.json");
+  let res = fs.readFileSync(path.join(resourcePath, "extractionPresets.json"));
   let json = JSON.parse(res);
   extractionPresetConsts.names = json.names;
   extractionPresetConsts.dynamic = json.dynamic;
@@ -459,3 +466,65 @@ async function updateJSON(param, val) {
 
   fs.writeFileSync(__dirname + "/resources/config.json", JSON.stringify(json), 'utf-8');
 }
+//handles installation events
+function handleSquirrelEvent() {
+  if (process.argv.length === 1) {
+    return false;
+  }
+
+  const ChildProcess = require('child_process');
+  const path = require('path');
+
+  const appFolder = path.resolve(process.execPath, '..');
+  const rootAtomFolder = path.resolve(appFolder, '..');
+  const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
+  const exeName = path.basename(process.execPath);
+
+  const spawn = function(command, args) {
+    let spawnedProcess, error;
+
+    try {
+      spawnedProcess = ChildProcess.spawn(command, args, {detached: true});
+    } catch (error) {}
+
+    return spawnedProcess;
+  };
+
+  const spawnUpdate = function(args) {
+    return spawn(updateDotExe, args);
+  };
+
+  const squirrelEvent = process.argv[1];
+  switch (squirrelEvent) {
+    case '--squirrel-install':
+    case '--squirrel-updated':
+      // Optionally do things such as:
+      // - Add your .exe to the PATH
+      // - Write to the registry for things like file associations and
+      //   explorer context menus
+
+      // Install desktop and start menu shortcuts
+      spawnUpdate(['--createShortcut', exeName]);
+
+      setTimeout(app.quit, 1000);
+      return true;
+
+    case '--squirrel-uninstall':
+      // Undo anything you did in the --squirrel-install and
+      // --squirrel-updated handlers
+
+      // Remove desktop and start menu shortcuts
+      spawnUpdate(['--removeShortcut', exeName]);
+
+      setTimeout(app.quit, 1000);
+      return true;
+
+    case '--squirrel-obsolete':
+      // This is called on the outgoing version of your app before
+      // we update to the new version - it's the opposite of
+      // --squirrel-updated
+
+      app.quit();
+      return true;
+  }
+};

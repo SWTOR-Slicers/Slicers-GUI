@@ -9,10 +9,9 @@ if (handleSquirrelEvent()) {
   return;
 }
 
-//THIS CHANGES FOR PRODUCTION: process.resourcesPath
-//ALSO NEED TO CHANGE RESOURCE REFRENCES IN OTHER FILES
-//const sourceResourceDir = path.join(process.resourcesPath, "resources");
-const sourceResourceDir = path.join(__dirname, "resources");
+const devBuild = false;
+
+const sourceResourceDir = path.join((devBuild) ? __dirname : process.resourcesPath, "resources");
 
 const ogResPath = path.join(sourceResourceDir, 'resources.json');
 const resourceResp = fs.readFileSync(ogResPath);

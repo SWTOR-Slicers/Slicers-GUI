@@ -2,7 +2,7 @@
   "name": "slicers-gui",
   "productName": "Slicers GUI",
   "appId": "com.swtor-slicers.tormak",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A GUI for SWTOR Slicers",
   "main": "main.js",
   "scripts": {
@@ -57,6 +57,7 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
+            "loadingGif": "src/gif/LoadingAnimation.gif",
             "iconUrl": "https://cdn.jsdelivr.net/gh/SWTOR-Slicers/Slicers-GUI/SlicersLogo.ico",
             "setupIcon": "src/img/SlicersLogo.ico"
           }

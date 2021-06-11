@@ -39,44 +39,7 @@
     "xml-js": "^1.6.11",
     "xml2js": "^0.4.23"
   },
-  "build": {
-    "extraResources": [
-      "**/resources/**"
-    ]
-  },
   "config": {
-    "forge": {
-      "packagerConfig": {
-        "productName": "Slicers GUI",
-        "icon": "src/img/SlicersLogo.ico",
-        "extraResource": [
-          "src/img/SlicersLogo.ico"
-        ]
-      },
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "loadingGif": "src/gif/LoadingAnimation.gif",
-            "iconUrl": "https://cdn.jsdelivr.net/gh/SWTOR-Slicers/Slicers-GUI/SlicersLogo.ico",
-            "setupIcon": "src/img/SlicersLogo.ico"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
-        }
-      ]
-    }
+    "forge": "./config.js"
   }
 }

@@ -11,7 +11,7 @@ if (handleSquirrelEvent()) {
 
 const devBuild = false;
 
-const sourceResourceDir = path.join((devBuild) ? __dirname : process.resourcesPath, "resources");
+const sourceResourceDir = (devBuild) ? path.join(__dirname, "resources") : process.resourcesPath;
 
 const ogResPath = path.join(sourceResourceDir, 'resources.json');
 const resourceResp = fs.readFileSync(ogResPath);

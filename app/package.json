@@ -48,9 +48,9 @@
     "forge": {
       "packagerConfig": {
         "productName": "Slicers GUI",
-        "icon": "resources/img/SlicersLogo.ico",
+        "icon": "src/img/SlicersLogo.ico",
         "extraResource": [
-          "resources/img/SlicersLogo.ico"
+          "src/img/SlicersLogo.ico"
         ]
       },
       "makers": [
@@ -58,7 +58,7 @@
           "name": "@electron-forge/maker-squirrel",
           "config": {
             "iconUrl": "https://cdn.jsdelivr.net/gh/SWTOR-Slicers/Slicers-GUI/SlicersLogo.ico",
-            "setupIcon": "resources/img/SlicersLogo.ico"
+            "setupIcon": "src/img/SlicersLogo.ico"
           }
         },
         {

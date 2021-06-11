@@ -5,7 +5,6 @@ const path = require('path');
 const child = require('child_process');
 const dateTime = require('node-datetime');
 
-//if (require('electron-squirrel-startup')) app.quit();
 if (handleSquirrelEvent()) {
   return;
 }
@@ -46,10 +45,10 @@ function createWindow () {
     webPreferences: {
       preload: path.join(__dirname, '/preload.js')
     },
-    icon: path.join(resourcePath, "img/SlicersLogo.ico")
+    icon: "src/img/SlicersLogo.ico"
   });
 
-  mainWindow.setResizable(false);
+  //mainWindow.setResizable(false);
   mainWindow.removeMenu();
   mainWindow.loadFile('index.html');
 
@@ -281,7 +280,7 @@ function initLoggerWindow() {
     webPreferences: {
       preload: path.join(__dirname, '/src/js/log/logPreloader.js')
     },
-    icon: path.join(resourcePath, "img/SlicersLogo.ico"),
+    icon: "src/img/SlicersLogo.ico",
   });
   
   loggerWindow.removeMenu();
@@ -322,11 +321,11 @@ function initUnpackerGUI() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: path.join(resourcePath, "img/SlicersLogo.ico"),
+    icon: "src/img/SlicersLogo.ico",
   });
 
   unpackerWindow.removeMenu();
-  unpackerWindow.setResizable(false);
+  //unpackerWindow.setResizable(false);
   unpackerWindow.loadURL(`${__dirname}/src/html/Unpacker.html`);
 
   unpackerWindow.on('close', (e) => {
@@ -372,11 +371,11 @@ function initGetPatchGUI() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: path.join(resourcePath, "img/SlicersLogo.ico"),
+    icon: "src/img/SlicersLogo.ico",
   });
 
   getPatchWindow.removeMenu();
-  getPatchWindow.setResizable(false);
+  //getPatchWindow.setResizable(false);
   getPatchWindow.loadURL(`${__dirname}/src/html/GetPatch.html`);
 
   getPatchWindow.on('close', (e) => {
@@ -415,7 +414,7 @@ function initGR2Viewer() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: path.join(resourcePath, "img/SlicersLogo.ico"),
+    icon: "src/img/SlicersLogo.ico",
   });
 
   gr2Window.removeMenu();

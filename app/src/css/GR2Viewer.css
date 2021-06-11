@@ -1,10 +1,3 @@
-@font-face {
-    font-family: Eurofont;
-    src: url("../../resources/fonts/Hayward-SmBd.eot");
-    src: url("../../resources/fonts/Hayward-SmBd.eot?#iefix") format("embedded-opentype"), url("../../resources/fonts/Hayward-SmBd.woff2") format("woff2"), url("../../resources/fonts/Hayward-SmBd.woff") format("woff"), url("../../resources/fonts/Hayward-SmBd.ttf") format("truetype");
-    font-weight: normal;
-}
-
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -271,7 +264,7 @@ html, body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: url(../../resources/img/squareBackgrounds.png) no-repeat top left;
+	background: url(../../src/img/squareBackgrounds.png) no-repeat top left;
 	background-size: contain;
 }
 .canvas-view-controls__btn > img {

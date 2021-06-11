@@ -11,12 +11,13 @@ if (handleSquirrelEvent()) {
 
 //THIS CHANGES FOR PRODUCTION: process.resourcesPath
 //ALSO NEED TO CHANGE RESOURCE REFRENCES IN OTHER FILES
-//const resourcePath = path.join(process.resourcesPath, "resources");
+//const sourceResourceDir = path.join(process.resourcesPath, "resources");
+const sourceResourceDir = path.join(__dirname, "resources");
 
-//possible solution is to build resources into app, then copy to app.getPath
-let resourcePath = path.join(__dirname, "resources");
-
-let isBootUp = false;
+const ogResPath = path.join(sourceResourceDir, 'resources.json');
+const resourceResp = fs.readFileSync(ogResPath);
+const resourceJson = JSON.parse(resourceResp);
+let resourcePath = resourceJson['resourceDirPath'];
 
 let setupWindow;
 let mainWindow;
@@ -75,13 +76,11 @@ app.on('window-all-closed', function () {
 });
 
 function handleBootUp() {
-  isBootUp = true;
-  const res = fs.readFileSync(path.join(resourcePath, 'resources.json'));
-  const resJson = res.toJSON();
+  const res = fs.readFileSync(path.join(sourceResourceDir, 'resources.json'));
+  const resJson = JSON.parse(res);
 
   if (resJson['resourceDirPath'] !== "") {
     if (fs.existsSync(resJson['resourceDirPath'])) {
-      isBootUp = false;
       createWindow();
       init();
     } else {
@@ -104,16 +103,11 @@ function initSetupUI() {
   });
 
   //mainWindow.setResizable(false);
-  setupWindow.webContents.openDevTools();
   setupWindow.removeMenu();
   setupWindow.loadFile('./src/html/Setup.html');
 
   setupWindow.on('close', (e) => {
-    if (isBootUp) {
-      isBootUp = false;
-      appQuiting = true;
-      app.quit();
-    } else {
+    if (mainWindow && !appQuiting)  {
       e.preventDefault();
       setupWindow.hide();
     }
@@ -136,7 +130,7 @@ function initSetupListeners(window) {
     const outVal = data[2];
 
     fs.writeFileSync(path.join(resourcePath, 'resources.json'), JSON.stringify(resVal));
-    updateJSON('assetFolder', astVal);
+    updateJSON('assetsFolder', astVal);
     updateJSON('outputFolder', outVal);
 
     //copy resources to new location
@@ -151,13 +145,20 @@ function initSetupListeners(window) {
   });
 }
 async function copyResourcesRecursive(originalDir, targetDir) {
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, {
+      recursive: true
+    });
+  }
   const dirContents = fs.readdirSync(originalDir);
   for (const entr of dirContents) {
-    const ogPath = path.join(targetDir, entr);
+    const ogPath = path.join(originalDir, entr);
     const tPath = path.join(targetDir, entr);
     if (fs.statSync(ogPath).isFile()) {
       //is a file
-      fs.copyFileSync(ogPath, tPath);
+      if (entr != "resources.json") {
+        fs.copyFileSync(ogPath, tPath);
+      }
     } else {
       //is a dir
       await copyResourcesRecursive(ogPath, tPath);

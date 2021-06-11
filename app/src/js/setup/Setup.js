@@ -78,7 +78,6 @@ function initListeners() {
     
     proceedToGUI.addEventListener('click', (e) => {
         updateResourcePath(resourceDirField.value);
-        console.log(resourcePath);
         ipcRenderer.send('proceedToMain', [resourceDirField.value, assetsDirField.value, outputDirField.value]);
     });
 }

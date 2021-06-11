@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <script src="../../node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
+    <link rel="stylesheet" href="../css/universal.css">
+    <link rel="stylesheet" href="../css/Setup.css">
+    <link rel="stylesheet" href="../css/tooltips.css">
+    <title>GR2 Viewer</title>
+</head>
+<body>
+    <div class="setup-main-border">
+        <div class="setup-main">
+            <div class="setup-header">
+                <h1>Slicers GUI Boot Config</h1>
+            </div>
+            <div class="setup-settings-container">
+                <h3>Config:</h3>
+                <div class="config-options">
+                    <div class="config">
+                        <label class="config-option-label" for="resourceDirField">Resources Folder: </label>
+                        <input style="margin-left: 8px;" class="paths-field-input" type="text" name="resourceDirField" id="resourceDirField" value="">
+                        <button id="resourceDirFieldBtn" class="browse-paths__button">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                    <div class="config">
+                        <label class="config-option-label" for="assetsDirField">Assets Folder: </label>
+                        <input style="margin-left: 34px;" class="paths-field-input" type="text" name="assetsDirField" id="assetsDirField" value="">
+                        <button id="assetsDirFieldBtn" class="browse-paths__button">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                    <div class="config">
+                        <label class="config-option-label" for="outputDirField">Output Folder: </label>
+                        <input style="margin-left: 34px;" class="paths-field-input" type="text" name="outputDirField" id="outputDirField" value="">
+                        <button id="outputDirFieldBtn" class="browse-paths__button">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="setup-proceed-container">
+                <button id="proceedToGUI" class="disabled container-bottom__sub__btn action-btn">Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/setup/Setup.js"></script>
+</body>
+</html>

@@ -14,8 +14,11 @@ if (handleSquirrelEvent()) {
 //const resourcePath = path.join(process.resourcesPath, "resources");
 
 //possible solution is to build resources into app, then copy to app.getPath
-const resourcePath = path.join(__dirname, "resources");
+let resourcePath = path.join(__dirname, "resources");
 
+let isBootUp = false;
+
+let setupWindow;
 let mainWindow;
 let loggerWindow;
 let unpackerWindow;
@@ -41,7 +44,7 @@ const extractionPresetConsts = {
 function createWindow () {
   mainWindow = new BrowserWindow({
     width: 716,
-    height: 547,
+    height: 539,
     webPreferences: {
       preload: path.join(__dirname, '/preload.js')
     },
@@ -61,17 +64,106 @@ function createWindow () {
 // This method will be called when Electron has finished
 app.whenReady().then(() => {
   app.setAppUserModelId('com.swtor-slicers.tormak');
-  createWindow();
+  handleBootUp();
   
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) handleBootUp();
   });
-
-  init();
 });
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
 });
+
+function handleBootUp() {
+  isBootUp = true;
+  const res = fs.readFileSync(path.join(resourcePath, 'resources.json'));
+  const resJson = res.toJSON();
+
+  if (resJson['resourceDirPath'] !== "") {
+    if (fs.existsSync(resJson['resourceDirPath'])) {
+      isBootUp = false;
+      createWindow();
+      init();
+    } else {
+      initSetupUI();
+    }
+  } else {
+    initSetupUI();
+  }
+}
+
+function initSetupUI() {
+  setupWindow = new BrowserWindow({
+    width: 432,
+    height: 376,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: "src/img/SlicersLogo.ico"
+  });
+
+  //mainWindow.setResizable(false);
+  setupWindow.webContents.openDevTools();
+  setupWindow.removeMenu();
+  setupWindow.loadFile('./src/html/Setup.html');
+
+  setupWindow.on('close', (e) => {
+    if (isBootUp) {
+      isBootUp = false;
+      appQuiting = true;
+      app.quit();
+    } else {
+      e.preventDefault();
+      setupWindow.hide();
+    }
+  });
+
+  initSetupListeners(setupWindow);
+}
+function initSetupListeners(window) {
+  ipcMain.on("showBootConfigDialog", async (event, data) => {
+    dialog.showOpenDialog(window, { properties: ['openDirectory'] }).then(async (dir) => {
+      if (!dir.canceled) {
+        event.reply(`${data}Reply`, dir.filePaths);
+      }
+    });
+  });
+  ipcMain.on('proceedToMain', async (event, data) => {
+    //handle setup data
+    const resVal = {"resourceDirPath": data[0]};
+    const astVal = data[1];
+    const outVal = data[2];
+
+    fs.writeFileSync(path.join(resourcePath, 'resources.json'), JSON.stringify(resVal));
+    updateJSON('assetFolder', astVal);
+    updateJSON('outputFolder', outVal);
+
+    //copy resources to new location
+    await copyResourcesRecursive(resourcePath, data[0]);
+
+    //set resource paths
+    resourcePath = data[0];
+
+    //complete boot
+    handleBootUp();
+    window.hide();
+  });
+}
+async function copyResourcesRecursive(originalDir, targetDir) {
+  const dirContents = fs.readdirSync(originalDir);
+  for (const entr of dirContents) {
+    const ogPath = path.join(targetDir, entr);
+    const tPath = path.join(targetDir, entr);
+    if (fs.statSync(ogPath).isFile()) {
+      //is a file
+      fs.copyFileSync(ogPath, tPath);
+    } else {
+      //is a dir
+      await copyResourcesRecursive(ogPath, tPath);
+    }
+  }
+}
 
 function init() {
   initListeners();
@@ -106,7 +198,7 @@ function initListeners() {
     }
 
     mainWindow.webContents.send("sendConfigJSON", [json, !dropIsEnabled]);
-  })
+  });
   ipcMain.on("showDialog", async (event, data) => {
     dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] }).then(async (dir) => {
       if (!dir.canceled) {
@@ -465,7 +557,7 @@ async function updateJSON(param, val) {
   json[param] = val;
   cache[param] = val;
 
-  fs.writeFileSync(__dirname + "/resources/config.json", JSON.stringify(json), 'utf-8');
+  fs.writeFileSync(path.join(resourcePath, "config.json"), JSON.stringify(json), 'utf-8');
 }
 //handles installation events
 function handleSquirrelEvent() {

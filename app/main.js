@@ -9,7 +9,7 @@ if (handleSquirrelEvent()) {
   return;
 }
 
-const devBuild = true;
+const devBuild = false;
 
 const sourceResourceDir = (devBuild) ? path.join(__dirname, "resources") : process.resourcesPath;
 
@@ -87,81 +87,6 @@ function handleBootUp() {
     }
   } else {
     initSetupUI();
-  }
-}
-
-function initSetupUI() {
-  setupWindow = new BrowserWindow({
-    width: 432,
-    height: 376,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
-    },
-    icon: "src/img/SlicersLogo.ico"
-  });
-
-  //mainWindow.setResizable(false);
-  setupWindow.removeMenu();
-  setupWindow.loadFile('./src/html/Setup.html');
-
-  setupWindow.on('close', (e) => {
-    if (mainWindow && !appQuiting)  {
-      e.preventDefault();
-      setupWindow.hide();
-    }
-  });
-
-  initSetupListeners(setupWindow);
-}
-function initSetupListeners(window) {
-  ipcMain.on("showBootConfigDialog", async (event, data) => {
-    dialog.showOpenDialog(window, { properties: ['openDirectory'] }).then(async (dir) => {
-      if (!dir.canceled) {
-        event.reply(`${data}Reply`, dir.filePaths);
-      }
-    });
-  });
-  ipcMain.on('proceedToMain', async (event, data) => {
-    //handle setup data
-    const resVal = {"resourceDirPath": data[0]};
-    const astVal = data[1];
-    const outVal = data[2];
-
-    //set resource paths
-    resourcePath = data[0];
-
-    //copy resources to new location
-    await copyResourcesRecursive(resourcePath, data[0]);
-
-    fs.writeFileSync(path.join(sourceResourceDir, 'resources.json'), JSON.stringify(resVal));
-    updateJSON('assetsFolder', astVal);
-    updateJSON('outputFolder', outVal);
-
-    //complete boot
-    handleBootUp();
-    window.hide();
-  });
-}
-async function copyResourcesRecursive(originalDir, targetDir) {
-  if (!fs.existsSync(targetDir)) {
-    fs.mkdirSync(targetDir, {
-      recursive: true
-    });
-  }
-  const dirContents = fs.readdirSync(originalDir);
-  for (const entr of dirContents) {
-    const ogPath = path.join(originalDir, entr);
-    const tPath = path.join(targetDir, entr);
-    if (fs.statSync(ogPath).isFile()) {
-      //is a file
-      if (entr != "resources.json") {
-        fs.copyFileSync(ogPath, tPath);
-      }
-    } else {
-      //is a dir
-      await copyResourcesRecursive(ogPath, tPath);
-    }
   }
 }
 
@@ -363,6 +288,82 @@ async function extract() {
 }
 
 //completed
+
+//boot config
+function initSetupUI() {
+  setupWindow = new BrowserWindow({
+    width: 432,
+    height: 376,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: "src/img/SlicersLogo.ico"
+  });
+
+  //mainWindow.setResizable(false);
+  setupWindow.removeMenu();
+  setupWindow.loadFile('./src/html/Setup.html');
+
+  setupWindow.on('close', (e) => {
+    if (mainWindow && !appQuiting)  {
+      e.preventDefault();
+      setupWindow.hide();
+    }
+  });
+
+  initSetupListeners(setupWindow);
+}
+function initSetupListeners(window) {
+  ipcMain.on("showBootConfigDialog", async (event, data) => {
+    dialog.showOpenDialog(window, { properties: ['openDirectory'] }).then(async (dir) => {
+      if (!dir.canceled) {
+        event.reply(`${data}Reply`, dir.filePaths);
+      }
+    });
+  });
+  ipcMain.on('proceedToMain', async (event, data) => {
+    //handle setup data
+    const resVal = {"resourceDirPath": data[0]};
+    const astVal = data[1];
+    const outVal = data[2];
+
+    //copy resources to new location
+    await copyResourcesRecursive(sourceResourceDir, data[0]);
+
+    //set resource paths
+    resourcePath = data[0];
+
+    fs.writeFileSync(path.join(sourceResourceDir, 'resources.json'), JSON.stringify(resVal));
+    updateJSON('assetsFolder', astVal);
+    updateJSON('outputFolder', outVal);
+
+    //complete boot
+    handleBootUp();
+    window.hide();
+  });
+}
+async function copyResourcesRecursive(originalDir, targetDir) {
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, {
+      recursive: true
+    });
+  }
+  const dirContents = fs.readdirSync(originalDir);
+  for (const entr of dirContents) {
+    const ogPath = path.join(originalDir, entr);
+    const tPath = path.join(targetDir, entr);
+    if (fs.statSync(ogPath).isFile()) {
+      //is a file
+      if (entr != "resources.json") {
+        fs.copyFileSync(ogPath, tPath);
+      }
+    } else {
+      //is a dir
+      await copyResourcesRecursive(ogPath, tPath);
+    }
+  }
+}
 
 //logger
 function initLoggerWindow() {

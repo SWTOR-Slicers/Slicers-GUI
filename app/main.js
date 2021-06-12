@@ -9,7 +9,7 @@ if (handleSquirrelEvent()) {
   return;
 }
 
-const devBuild = true;
+const devBuild = false;
 
 const sourceResourceDir = (devBuild) ? path.join(__dirname, "resources") : process.resourcesPath;
 

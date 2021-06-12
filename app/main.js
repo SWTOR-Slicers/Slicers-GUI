@@ -128,15 +128,15 @@ function initSetupListeners(window) {
     const astVal = data[1];
     const outVal = data[2];
 
-    fs.writeFileSync(path.join(resourcePath, 'resources.json'), JSON.stringify(resVal));
-    updateJSON('assetsFolder', astVal);
-    updateJSON('outputFolder', outVal);
+    //set resource paths
+    resourcePath = data[0];
 
     //copy resources to new location
     await copyResourcesRecursive(resourcePath, data[0]);
 
-    //set resource paths
-    resourcePath = data[0];
+    fs.writeFileSync(path.join(sourceResourceDir, 'resources.json'), JSON.stringify(resVal));
+    updateJSON('assetsFolder', astVal);
+    updateJSON('outputFolder', outVal);
 
     //complete boot
     handleBootUp();

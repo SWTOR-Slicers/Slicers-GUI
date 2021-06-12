@@ -106,7 +106,7 @@ async function loadCache() {
     cache["version"] = json["version"];
 
     if (json["output"] == "") {
-        const defaultPath = path.join(json["outputFolder"], 'patches');
+        const defaultPath = path.join(jsonObj["outputFolder"], 'patches');
         fs.mkdirSync(defaultPath);
         updateCache('output', defaultPath);
         cache["output"] = defaultPath

@@ -232,9 +232,11 @@ function initListeners() {
     var formatted = dt.format('Y-m-d H_M_S');
 
     let logPath = path.join(data[0], 'logs', `${formatted}.txt`);
-    fs.mkdirSync(path.dirname(logPath), {
-      recursive: true
-    });
+    if (!fs.existsSync(path.dirname(logPath))) {
+      fs.mkdirSync(path.dirname(logPath), {
+        recursive: true
+      });
+    }
     fs.writeFileSync(logPath, data[1]);
     mainWindow.webContents.send("loggedToFile", [logPath]);
   });

@@ -66,7 +66,9 @@ async function loadCache() {
 
     if (json["output"] == "") {
         const defaultPath = path.join(json["outputFolder"], 'unpacked');
-        fs.mkdirSync(defaultPath);
+        if (!fs.existsSync(defaultPath)) {
+            fs.mkdirSync(defaultPath);
+        }
         updateCache('output', defaultPath);
         cache["output"] = defaultPath
     } else {
@@ -229,9 +231,11 @@ async function extractAdded(targetDir, file, diskFileNames) {
         const outputName = path.join(targetDir, file.name);
         const outputNameTemp = path.join(targetDir, `${file.name}.tmp`);
   
-        fs.mkdirSync(path.dirname(outputName), {
-            recursive: true
-        });
+        if (!fs.existsSync(path.dirname(outputName))) {
+            fs.mkdirSync(path.dirname(outputName), {
+                recursive: true
+            });
+        }
 
         //start installation
         await ssn.launch(diskFileNames[file.diskNumberStart], file.offset, file.compressedSize, file.decryptionKeys, undefined, outputNameTemp);

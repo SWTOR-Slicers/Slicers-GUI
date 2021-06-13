@@ -261,32 +261,6 @@ function initListeners() {
   });
 }
 
-async function extract() {
-  try {
-    const output = cache.outputFolder;
-    const hashPath = path.join(resourcePath, 'hash/hashes_filename.txt');
-    const temp = cache.assetsFolder;
-    let values;
-
-    if (cache.extraction.extractionPreset != 'All') {
-      values = [];
-      const tors = extractionPresetConsts[cache.extraction.extractionPreset.toLocaleLowerCase()];
-      for (const tor of tors) {
-        values.push(path.join(temp, tor));
-      }
-    } else {
-      values = [temp];
-    }
-
-    const params = [JSON.stringify(values), output, hashPath];
-    child.execFileSync(path.join(resourcePath, "scripts\\Extraction\\main.exe"), params);
-  } catch (err) {
-    console.log(err);
-  } finally {
-    mainWindow.webContents.send("extrCompl", "");
-  }
-}
-
 //completed
 
 //boot config
@@ -541,6 +515,32 @@ function initGR2Listeners(window) {
 }
 
 //utility methods
+async function extract() {
+  try {
+    const output = cache.outputFolder;
+    const hashPath = path.join(resourcePath, 'hash/hashes_filename.txt');
+    const temp = cache.assetsFolder;
+    let values;
+
+    if (cache.extraction.extractionPreset != 'All') {
+      values = [];
+      const tors = extractionPresetConsts[cache.extraction.extractionPreset.toLocaleLowerCase()];
+      for (const tor of tors) {
+        values.push(path.join(temp, tor));
+      }
+    } else {
+      values = [temp];
+    }
+
+    const params = [JSON.stringify(values), output, hashPath];
+    //possibly change this to be async. Only if I can figure out how to make a progress bar. maybe in log?
+    child.execFileSync(path.join(resourcePath, "scripts\\Extraction\\main.exe"), params);
+  } catch (err) {
+    console.log(err);
+  } finally {
+    mainWindow.webContents.send("extrCompl", "");
+  }
+}
 async function locate() {
   try {
     const temp = cache.dataFolder;

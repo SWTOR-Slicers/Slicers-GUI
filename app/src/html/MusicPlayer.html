@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <script src="../../node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
+    <link rel="stylesheet" href="../css/universal.css">
+    <link rel="stylesheet" href="../css/MusicPlayer.css">
+    <title>Music Player</title>
+</head>
+<body>
+    <div class="music-container-background unselectable">
+        <div class="music-player-container play">
+            <div class="player-info">
+                <h4 id="title">Placeholder</h4>
+                <div class="progress-bar-container">
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+    
+            <audio src="" id="currentSoundFile"></audio>
+    
+            <div class="record-container">
+                <img src="../img/SlicersLogo.png" alt="record">
+            </div>
+    
+            <div class="sound-nav">
+                <button id="prev" class="sound-nav-btn">
+                    <i class="fas fa-backward"></i>
+                </button>
+                <button id="play" class="sound-nav-btn sound-nav-btn-large">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button id="next" class="sound-nav-btn">
+                    <i class="fas fa-forward"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/utilities/bnk/MusicPlayer.js"></script>
+</body>
+</html>

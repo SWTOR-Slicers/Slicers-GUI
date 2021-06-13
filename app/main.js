@@ -469,6 +469,7 @@ function initGetPatchGUI() {
 
   getPatchWindow.removeMenu();
   //getPatchWindow.setResizable(false);
+  getPatchWindow.webContents.openDevTools();
   getPatchWindow.loadURL(`${__dirname}/src/html/GetPatch.html`);
 
   getPatchWindow.on('close', (e) => {

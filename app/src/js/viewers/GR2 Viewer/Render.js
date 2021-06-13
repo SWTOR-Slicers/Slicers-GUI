@@ -130,7 +130,7 @@ function updateCache(field, val) {
     }
 }
 //main func
-export async function showModal(path) {
+export async function showModel(path) {
 
     clearObjFromScene();
     parsedGR2s = [];
@@ -239,15 +239,15 @@ function createMaterial(bufferGeometry, shouldRemoveLoad) {
 function addOptionsListeners() {
     modalColor.addEventListener("change", (e) => {
         updateCache("color", e.target.value);
-        if (parsedGR2s[0]) {
-            parsedGR2s[0].material.color.set(cache["color"]);
+        for (const gr2 of parsedGR2s) {
+            gr2.material.color.set(cache["color"]);
         }
     });
     wireframeContainer.addEventListener("click", (e) => {
         wireFrame.checked = !wireFrame.checked;
         updateCache("wireframe", wireFrame.checked);
-        if (parsedGR2s[0]) {
-            parsedGR2s[0].material.wireframe = cache["wireframe"];
+        for (const gr2 of parsedGR2s) {
+            gr2.material.wireframe = cache["wireframe"];
         }
     });
     fovInput.addEventListener("change", (e) => {

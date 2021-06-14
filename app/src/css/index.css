@@ -28,7 +28,7 @@ html, body {
 .main-page {
 	font-family: 'Eurofont';
     background-color: var(--medium-grey);
-    height: 100%;
+    height: calc(100% - 30px);
     width: 100%;
     display: flex;
     flex-direction: column;

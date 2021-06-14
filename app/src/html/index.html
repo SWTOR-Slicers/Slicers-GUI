@@ -12,10 +12,11 @@
     <title>Slicers GUI</title>
   </head>
   <body>
+    <window-title class="window-title"></window-title>
     <div class="main-page unselectable">
       <div class="spacer-top"></div>
       <div class="container-top element-border">
-        <img src="./src/img/SlicersLogo.png" alt="" height="140px" width="140px" class="slicer-img">
+        <img src="../img/SlicersLogo.png" alt="" height="140px" width="140px" class="slicer-img">
         <div class="container-top__main">
           <div class="folder-paths-container">
 
@@ -25,7 +26,7 @@
               <input id="assetTextField" class="path-container__text-field" type="text" name="assets-folder" id="assetsFolder">
               <div class="to-file-2"></div>
               <button id="assetPopupBtn" class="path-container__choose-dir-btn">
-                <img src="./src/img/find_file.png" alt="Find" height="16px">
+                <img src="../img/find_file.png" alt="Find" height="16px">
               </button>
             </div>
 
@@ -35,7 +36,7 @@
               <input id="outputTextField" class="path-container__text-field" type="text" name="assets-folder" id="outputFolder">
               <div class="to-file-2"></div>
               <button id="outputPopupBtn" class="path-container__choose-dir-btn">
-                <img src="./src/img/find_file.png" alt="Find" height="16px">
+                <img src="../img/find_file.png" alt="Find" height="16px">
               </button>
             </div>
 
@@ -45,7 +46,7 @@
               <input id="dataTextField" class="path-container__text-field" type="text" name="assets-folder" id="dataFolder">
               <div class="to-file-2"></div>
               <button id="dataPopupBtn" class="path-container__choose-dir-btn">
-                <img src="./src/img/find_file.png" alt="Find" height="16px">
+                <img src="../img/find_file.png" alt="Find" height="16px">
               </button>
             </div>
 
@@ -131,6 +132,8 @@
         </div>
       </div>
     </div>
+    
+    <script type="module" src="../api/components/WindowTitleBar.js"></script>
     <script type="module" src="../../renderer.js"></script>
   </body>
 </html>

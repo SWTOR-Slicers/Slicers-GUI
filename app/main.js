@@ -45,8 +45,10 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     width: 716,
     height: 539,
+    frame: false,
     webPreferences: {
-      preload: path.join(__dirname, '/preload.js')
+      nodeIntegration: true,
+      contextIsolation: false
     },
     icon: "src/img/SlicersLogo.ico"
   });
@@ -84,6 +86,9 @@ function getWindowFromArg(arg) {
   switch (arg) {
     case "Slicers GUI Boot Config":
       win = setupWindow;
+      break;
+    case "Slicers GUI":
+      win = mainWindow;
       break;
   }
 
@@ -384,7 +389,7 @@ function initLoggerWindow() {
   });
   
   loggerWindow.removeMenu();
-  loggerWindow.loadURL(`${__dirname}/src/html/Logger.html`);
+  loggerWindow.loadURL(`./src/html/Logger.html`);
 
   loggerWindow.on('close', (e) => {
     if (!appQuiting) {
@@ -426,7 +431,7 @@ function initUnpackerGUI() {
 
   unpackerWindow.removeMenu();
   //unpackerWindow.setResizable(false);
-  unpackerWindow.loadURL(`${__dirname}/src/html/Unpacker.html`);
+  unpackerWindow.loadURL(`./src/html/Unpacker.html`);
 
   unpackerWindow.on('close', (e) => {
     if (!appQuiting) {
@@ -477,7 +482,7 @@ function initGetPatchGUI() {
   getPatchWindow.removeMenu();
   //getPatchWindow.setResizable(false);
   getPatchWindow.webContents.openDevTools();
-  getPatchWindow.loadURL(`${__dirname}/src/html/GetPatch.html`);
+  getPatchWindow.loadURL(`./src/html/GetPatch.html`);
 
   getPatchWindow.on('close', (e) => {
     if (!appQuiting) {
@@ -519,7 +524,7 @@ function initGR2Viewer() {
   });
 
   gr2Window.removeMenu();
-  gr2Window.loadURL(`${__dirname}/src/html/GR2Viewer.html`);
+  gr2Window.loadURL(`./src/html/GR2Viewer.html`);
 
   gr2Window.on('close', (e) => {
     if (!appQuiting) {

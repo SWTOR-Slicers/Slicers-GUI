@@ -5,7 +5,8 @@
 // selectively enable features needed in the rendering
 // process.
 import { addTooltip, updateTooltipEvent } from "./src/js/universal/Tooltips.js";
-const ipc = window.api;
+const {ipcRenderer} = require('electron');
+const ipc = ipcRenderer;
 const logDisplay = document.getElementById("logDisplay");
 const cache = {
     "extractionPreset": ""
@@ -83,7 +84,7 @@ function initialize() {
 function updateCache(field, value) {
     if (field == "extractionPreset") {
         if (value != cache['extractionPreset']) {
-            ipc.send('updateExtractionPreset', value);
+            ipcRenderer.send('updateExtractionPreset', value);
             cache['extractionPreset'] = value;
         }
     }
@@ -179,80 +180,80 @@ function initDrops() {
 }
 
 function setConfigData() {
-    ipc.send('getConfigJSON', "");
+    ipcRenderer.send('getConfigJSON', "");
 }
 
 function setupListeners() {
     //file path choosers
-    assetPopupBtn.addEventListener('click', () => {ipc.send('showDialog', 'assetsFolder');});
+    assetPopupBtn.addEventListener('click', () => {ipcRenderer.send('showDialog', 'assetsFolder');});
     assetTextField.addEventListener("change", (e) => {
         let newVal = e.currentTarget.value;
-        ipc.send('updateJSON', ['assetsFolder', newVal]);
+        ipcRenderer.send('updateJSON', ['assetsFolder', newVal]);
     });
 
-    outputPopupBtn.addEventListener('click', () => {ipc.send('showDialog', 'outputFolder');});
+    outputPopupBtn.addEventListener('click', () => {ipcRenderer.send('showDialog', 'outputFolder');});
     outputTextField.addEventListener("change", (e) => {
         let newVal = e.currentTarget.value;
-        ipc.send('updateJSON', ['outputFolder', newVal]);
+        ipcRenderer.send('updateJSON', ['outputFolder', newVal]);
     });
 
-    dataPopupBtn.addEventListener('click', () => {ipc.send('showDialog', 'dataFolder');});
+    dataPopupBtn.addEventListener('click', () => {ipcRenderer.send('showDialog', 'dataFolder');});
     dataTextField.addEventListener("change", (e) => {
         let newVal = e.currentTarget.value;
-        ipc.send('updateJSON', ['dataFolder', newVal]);
+        ipcRenderer.send('updateJSON', ['dataFolder', newVal]);
     });
 
     //extraction
     extrBtn.addEventListener("click", (e) => {
-        ipc.send('runExec', 'extraction');
+        ipcRenderer.send('runExec', 'extraction');
         log(`Extraction: Assets started, please stand by.`);
     });
     lctBtn.addEventListener("click", (e) => {
-        ipc.send('runExec', 'locate');
+        ipcRenderer.send('runExec', 'locate');
         log(`Extraction: Locator started, please stand by.`);
     });
     unpack.addEventListener("click", (e) => {
-        ipc.send('runExec', 'unpack');
+        ipcRenderer.send('runExec', 'unpack');
         log(`Extraction: Unpack started.`);
     });
     genHashBtn.addEventListener("click", (e) => {
-        ipc.send('runExec', 'genHash');
+        ipcRenderer.send('runExec', 'genHash');
         log(`Extraction: Generate Hash started, please stand by.`);
     })
 
     //viewers
     gr2ViewBtn.addEventListener("click", (e) => {
-        ipc.send('runExec', 'gr2Viewer');
+        ipcRenderer.send('runExec', 'gr2Viewer');
         log(`Viewer: GR2 opened.`);
     });
     nvBtn.addEventListener("click", (e) => {
-        ipc.send('runExec', 'nodeViewer');
+        ipcRenderer.send('runExec', 'nodeViewer');
         log(`Viewer: Node opened.`);
     });
     modelViewBtn.addEventListener("click", (e) => {
-        ipc.send('runExec', 'modelViewer');
+        ipcRenderer.send('runExec', 'modelViewer');
         log(`Viewer: Model opened.`);
     });
     worldViewBtn.addEventListener("click", (e) => {
-        ipc.send('runExec', 'worldViewer');
+        ipcRenderer.send('runExec', 'worldViewer');
         log(`Viewer: World opened.`);
     });
 
     //utilities
     fileChangerBtn.addEventListener("click", (e) => {
-        ipc.send('runExec', 'fileChanger');
+        ipcRenderer.send('runExec', 'fileChanger');
         log(`Utlity: File-Changer opened.`);
     });
     bnkConvBtn.addEventListener("click", (e) => {
-        ipc.send('runExec', 'convBnk');
+        ipcRenderer.send('runExec', 'convBnk');
         log(`Utlity: BNK-Converter opened.`);
     });
     getPatchBtn.addEventListener("click", (e) => {
-        ipc.send('runExec', 'getPatch');
+        ipcRenderer.send('runExec', 'getPatch');
         log(`Utlity: Patch-Getter opened.`);
     });
     walkthroughBtn.addEventListener("click", (e) => {
-        ipc.send('runExec', 'walkthrough');
+        ipcRenderer.send('runExec', 'walkthrough');
         log(`Utlity: Walkthrough opened.`);
     });
 
@@ -272,7 +273,7 @@ function setupListeners() {
             logStr = logStr.concat('-:- ', chld.innerText, '\n');
         }
         logStr = logStr.concat('-:- END OF LOG -:-');
-        ipc.send('logToFile', [outputTextField.value, logStr]);
+        ipcRenderer.send('logToFile', [outputTextField.value, logStr]);
     });
     expComprLogBtn.addEventListener('click', (e) => {
         //clear log
@@ -280,21 +281,21 @@ function setupListeners() {
             expComprLogBtn.classList.add('popped');
             expComprLogBtn.innerHTML = '<i class="fas fa-compress-alt"></i>';
             poppedOutCover.style.display = 'block';
-            ipc.send('initLogger');
+            ipcRenderer.send('initLogger');
         } else {
             expComprLogBtn.classList.remove('popped');
             expComprLogBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
             poppedOutCover.style.display = '';
-            ipc.send('closeLoggerWindow', "");
+            ipcRenderer.send('closeLoggerWindow', "");
         }
         expComprLogBtn.dispatchEvent(updateTooltipEvent);
     });
 }
 function initSubscribes() {
-    ipc.receive('displayLog', (data) => {
+    ipcRenderer.on('displayLog', (event, data) => {
         log(data);
     });
-    ipc.receive('sendConfigJSON', (data) => {
+    ipcRenderer.on('sendConfigJSON', (event, data) => {
         let json = data[0];
 
         assetTextField.value = json.assetsFolder;
@@ -315,14 +316,14 @@ function initSubscribes() {
             extractionPreset.nextElementSibling.classList.add('disabled');
         }
     });
-    ipc.receive('assetsFolderReply', (data) => {
+    ipcRenderer.on('assetsFolderReply', (event, data) => {
         if (!data[1]) {
             document.getElementById('All').click();
             extractionPreset.nextElementSibling.classList.add('disabled');
         }
         processResponse(data[0], assetTextField, 'assetsFolder');
     });
-    ipc.receive('isDirAsset', (data) => {
+    ipcRenderer.on('isDirAsset', (event, data) => {
         const exists = data[0];
         if (exists) {
             log(`Assigned new path to assetsFolder field.`)
@@ -337,10 +338,10 @@ function initSubscribes() {
             assetTextField.value = oldAssetValue;
         }
     });
-    ipc.receive('outputFolderReply', (data) => {
+    ipcRenderer.on('outputFolderReply', (event, data) => {
         processResponse(data, outputTextField, 'outputFolder');
     });
-    ipc.receive('isDirOut', (data) => {
+    ipcRenderer.on('isDirOut', (event, data) => {
         if (data) {
             log(`Assigned new path to outputFolder field.`)
             oldOutputValue = outputTextField.value;
@@ -350,10 +351,10 @@ function initSubscribes() {
             outputTextField.value = oldOutputValue;
         }
     });
-    ipc.receive('dataFolderReply', (data) => {
+    ipcRenderer.on('dataFolderReply', (event, data) => {
         processResponse(data, dataTextField, 'dataFolder');
     });
-    ipc.receive('isDirDat', (data) => {
+    ipcRenderer.on('isDirDat', (event, data) => {
         if (data) {
             log(`Assigned new path to dataFolder field.`)
             oldDataValue = dataTextField.value;
@@ -363,59 +364,59 @@ function initSubscribes() {
             dataTextField.value = oldDataValue;
         }
     });
-    ipc.receive('extrCompl', (data) => {
+    ipcRenderer.on('extrCompl', (event, data) => {
         log(`Extraction: Assets finished.`);
     });
-    ipc.receive('locCompl', (data) => {
+    ipcRenderer.on('locCompl', (event, data) => {
         log(`Extraction: Locator finished.`);
     });
-    ipc.receive('unpkCompl', (data) => {
+    ipcRenderer.on('unpkCompl', (event, data) => {
         log(`Extraction: Unpack finished.`);
     });
-    ipc.receive('genHashCompl', (data) => {
+    ipcRenderer.on('genHashCompl', (event, data) => {
         log(`Extraction: Generate Hash finished.`);
     });
-    ipc.receive('gr2ViewClosed', (data) => {
+    ipcRenderer.on('gr2ViewClosed', (event, data) => {
         log(`Viewer: GR2 closed.`);
     });
-    ipc.receive('nodeViewClosed', (data) => {
+    ipcRenderer.on('nodeViewClosed', (event, data) => {
         log(`Viewer: Node closed.`);
     });
-    ipc.receive('modViewClosed', (data) => {
+    ipcRenderer.on('modViewClosed', (event, data) => {
         log(`Viewer: Model closed.`);
     });
-    ipc.receive('worViewClosed', (data) => {
+    ipcRenderer.on('worViewClosed', (event, data) => {
         log(`Viewer: World closed.`);
     });
-    ipc.receive('utilFileChngClosed', (data) => {
+    ipcRenderer.on('utilFileChngClosed', (event, data) => {
         log(`Utility: File-Changer closed.`);
     });
-    ipc.receive('utilBnkClosed', (data) => {
+    ipcRenderer.on('utilBnkClosed', (event, data) => {
         log(`Utility: BNK-Converter closed.`);
     });
-    ipc.receive('utilGPClosed', (data) => {
+    ipcRenderer.on('utilGPClosed', (event, data) => {
         log(`Utility: Patch-Getter closed.`);
     });
-    ipc.receive('walkthroughClosed', (data) => {
+    ipcRenderer.on('walkthroughClosed', (event, data) => {
         log(`Utility: Walkthrough closed.`);
     });
-    ipc.receive('loggedToFile', (data) => {
+    ipcRenderer.on('loggedToFile', (event, data) => {
         log(`Log sucessfully written to file. Location: ` + data[0]);
     });
-    ipc.receive('loggerWindowClosed', (data) => {
+    ipcRenderer.on('loggerWindowClosed', (event, data) => {
         expComprLogBtn.classList.remove('popped');
         expComprLogBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
         poppedOutCover.style.display = '';
         expComprLogBtn.dispatchEvent(updateTooltipEvent);
         log(`Logger Compressed`);
     });
-    ipc.receive('sendPoppedLoggerData', (data) => {
+    ipcRenderer.on('sendPoppedLoggerData', (event, data) => {
         let logStr = [];
         for (let i = 0; i < logDisplay.children.length - 1; i++) {
             const chld = logDisplay.children[i];
             logStr.push(chld.innerText);
         }
-        ipc.send('sendLoggerData', logStr);
+        ipcRenderer.send('sendLoggerData', logStr);
     });
 }
 
@@ -426,7 +427,7 @@ async function processResponse(data, elem, param) {
 }
 
 function log(message) {
-    ipc.send('logToPopped', message);
+    ipcRenderer.send('logToPopped', message);
     let logMsg = message + "\n";
 
     let div = document.createElement("div");

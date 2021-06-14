@@ -377,6 +377,11 @@ html, body {
     border: 1px solid transparent;
     pointer-events: none;
 }
+
+.window-title {
+    width: 100%;
+}
+
 .disabled {
     pointer-events: none;
     background-color: #222222;

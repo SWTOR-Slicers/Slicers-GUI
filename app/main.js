@@ -53,7 +53,7 @@ function createWindow () {
 
   //mainWindow.setResizable(false);
   mainWindow.removeMenu();
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile('./src/html/index.html');
 
   mainWindow.on('close', () => {
     appQuiting = true;
@@ -61,10 +61,40 @@ function createWindow () {
   })
 }
 
+function initGlobalListeners() {
+  ipcMain.on('minimizeWindow', (event, data) => {
+    const win = getWindowFromArg(data);
+    win.minimize();
+  });
+  ipcMain.on('maximizeWindow', (event, data) => {
+    const win = getWindowFromArg(data);
+    win.maximize();
+  });
+  ipcMain.on('restoreWindow', (event, data) => {
+    const win = getWindowFromArg(data);
+    win.restore();
+  });
+  ipcMain.on('closeWindow', (event, data) => {
+    const win = getWindowFromArg(data);
+    win.close();
+  });
+}
+function getWindowFromArg(arg) {
+  let win;
+  switch (arg) {
+    case "Slicers GUI Boot Config":
+      win = setupWindow;
+      break;
+  }
+
+  return win;
+}
+
 // This method will be called when Electron has finished
 app.whenReady().then(() => {
   app.setAppUserModelId('com.swtor-slicers.tormak');
   handleBootUp();
+  initGlobalListeners();
   
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) handleBootUp();
@@ -270,6 +300,7 @@ function initSetupUI() {
   setupWindow = new BrowserWindow({
     width: 432,
     height: 376,
+    frame: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false

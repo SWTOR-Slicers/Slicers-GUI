@@ -19,7 +19,7 @@ class WindowTitle extends HTMLElement {
                 background-color: #1a1a1a;
                 color: white;
                 font-family: 'Eurofont';
-                font-size: 12px;
+                font-size: 14px;
                 font-weight: lighter;
                 -webkit-app-region: drag;
             }
@@ -98,24 +98,37 @@ class WindowTitle extends HTMLElement {
         winMinBtn.onclick = (e) => {
             ipcRenderer.send('minimizeWindow', winName.textContent);
         }
-        const minIcon = document.createElement('i');
-        minIcon.className = 'far fa-window-minimize';
-        winMinBtn.appendChild(minIcon);
+        winMinBtn.innerHTML = `
+            <svg width="11" height="2" viewbox="0 0 11 2">
+                <path d="m11 0v1h-11v-1z" strokeWidth=".26208" style="stroke: ${winMinBtn.classList.contains('title-btn-disabled') ? 'rgb(177, 177, 177)' : 'white'};"/>
+            </svg>
+        `;
 
-        //TODO: find better icons.
         const maxResWinBtn = document.createElement('div');
         maxResWinBtn.className = `title-btn ${this.hasAttribute('maximize') ? (this.getAttribute('maximize') ? 'title-btn-disabled' : '') : ''}`;
         maxResWinBtn.onclick = (e) => {
             if (maxResWinBtn.classList.contains('is-max-mode')) {
                 ipcRenderer.send('restoreWindow', winName.textContent);
-                maxResWinBtn.innerHTML = `<img src="../img/window-maximize${maxResWinBtn.classList.contains('title-btn-disabled') ? '-disabled' : ''}.png" height="18"></img>`;
+                maxResWinBtn.innerHTML = `
+                    <svg width="10" height="10" viewbox="0 0 10 10">
+                        <path d="m10-1.667e-6v10h-10v-10zm-1.001 1.001h-7.998v7.998h7.998z" strokeWidth=".25" style="stroke: ${maxResWinBtn.classList.contains('title-btn-disabled') ? 'rgb(177, 177, 177)' : 'white'};"/>
+                    </svg>
+                `;
             } else {
                 ipcRenderer.send('maximizeWindow', winName.textContent);
-                maxResWinBtn.innerHTML = `<img src="../img/window-restore${maxResWinBtn.classList.contains('title-btn-disabled') ? '-disabled' : ''}.png" height="18"></img>`;
+                maxResWinBtn.innerHTML = `
+                <svg width="11" height="11" viewBox="0 0 11 11">
+                    <path d="m11 8.7978h -2.2021v 2.2022h -8.7979v -8.7978h 2.2021v -2.2022h 8.7979z m-3.2979 -5.5h -6.6012v 6.6011h 6.6012z m2.1968 -2.1968h -6.6012v 1.1011h 5.5v 5.5h 1.1011z" stroke-width=".275" style="fill: ${maxResWinBtn.classList.contains('title-btn-disabled') ? 'rgb(177, 177, 177)' : 'white'};"/>
+                </svg>
+                `;
             }
             maxResWinBtn.classList.toggle('is-max-mode');
         }
-        maxResWinBtn.innerHTML = `<img src="../img/window-maximize${maxResWinBtn.classList.contains('title-btn-disabled') ? '-disabled' : ''}.png" height="18"></img>`;
+        maxResWinBtn.innerHTML = `
+            <svg width="10" height="10" viewbox="0 0 10 10">
+                <path d="m10-1.667e-6v10h-10v-10zm-1.001 1.001h-7.998v7.998h7.998z" strokeWidth=".25" style="stroke: ${maxResWinBtn.classList.contains('title-btn-disabled') ? 'rgb(177, 177, 177)' : 'white'};"/>
+            </svg>
+        `;
 
         const closeMinBtn = document.createElement('div');
         closeMinBtn.className = `title-btn close-win-btn`;

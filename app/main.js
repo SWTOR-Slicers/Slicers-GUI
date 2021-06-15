@@ -44,29 +44,6 @@ const extractionPresetConsts = {
   "gui": []
 };
 
-// TODO: rename createWindow
-function createWindow () {
-  mainWindow = new BrowserWindow({
-    width: 716,
-    height: 539,
-    frame: false,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
-    },
-    icon: "src/img/SlicersLogo.ico"
-  });
-
-  //mainWindow.setResizable(false);
-  mainWindow.removeMenu();
-  mainWindow.loadFile('./src/html/index.html');
-
-  mainWindow.on('close', () => {
-    appQuiting = true;
-    app.quit();
-  })
-}
-
 function initGlobalListeners() {
   ipcMain.on('minimizeWindow', (event, data) => {
     const win = getWindowFromArg(data);
@@ -131,8 +108,8 @@ function handleBootUp() {
 
   if (resJson['resourceDirPath'] !== "") {
     if (fs.existsSync(resJson['resourceDirPath'])) {
-      createWindow();
-      init();
+      initMain();
+      initApp();
     } else {
       initSetupUI();
     }
@@ -141,8 +118,32 @@ function handleBootUp() {
   }
 }
 
-function init() {
-  initListeners();
+//completed
+
+//main window
+function initMain () {
+  mainWindow = new BrowserWindow({
+    width: 716,
+    height: 539,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: "src/img/SlicersLogo.ico"
+  });
+
+  //mainWindow.setResizable(false);
+  mainWindow.removeMenu();
+  mainWindow.loadFile('./src/html/index.html');
+
+  mainWindow.on('close', () => {
+    appQuiting = true;
+    app.quit();
+  })
+}
+function initApp() {
+  initMainListeners();
 
   //grab resources
   let res = fs.readFileSync(path.join(resourcePath, "extractionPresets.json"));
@@ -153,7 +154,7 @@ function init() {
   extractionPresetConsts.sound = json.sound;
   extractionPresetConsts.gui = json.gui;
 }
-function initListeners() {
+function initMainListeners() {
   ipcMain.on("getConfigJSON", async (event, data) => {
     let res = fs.readFileSync(path.join(resourcePath, "config.json"));
     let json = JSON.parse(res);
@@ -313,8 +314,6 @@ function initListeners() {
     fs.writeFileSync(__dirname + "/resources/config.json", JSON.stringify(json), 'utf-8');
   });
 }
-
-//completed
 
 //boot config
 function initSetupUI() {

@@ -65,7 +65,7 @@ async function loadCache() {
     cache["unpackPath"] = json["unpackPath"];
 
     if (json["output"] == "") {
-        const defaultPath = path.join(json["outputFolder"], 'unpacked');
+        const defaultPath = path.join(jsonObj["outputFolder"], 'unpacked');
         if (!fs.existsSync(defaultPath)) {
             fs.mkdirSync(defaultPath);
         }

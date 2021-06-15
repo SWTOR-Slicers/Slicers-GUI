@@ -6,9 +6,10 @@ class WindowTitle extends HTMLElement {
 
         this.attachShadow({mode: 'open'});
 
+        //TODO: refactor this to use a style sheet (not supported yet, so unable to do anything right now)
         const styles = document.createElement('style');
         styles.textContent = `
-            .window-title {
+            .window-header {
                 width: 100%;
                 height: 30px;
                 display: flex;
@@ -80,7 +81,7 @@ class WindowTitle extends HTMLElement {
         hIcon.className = "window-img";
 
         const header = document.createElement('div');
-        header.className = "window-title";
+        header.className = "window-header";
         header.appendChild(hIcon);
 
         const winName = document.createElement('div');
@@ -101,26 +102,27 @@ class WindowTitle extends HTMLElement {
         minIcon.className = 'far fa-window-minimize';
         winMinBtn.appendChild(minIcon);
 
+        //TODO: find better icons.
         const maxResWinBtn = document.createElement('div');
-        maxResWinBtn.className = `title-btn ${(this.hasAttribute('maximize')) ? (this.getAttribute('maximize')) ? 'title-btn-disabled' : '' : ''}`;
+        maxResWinBtn.className = `title-btn ${this.hasAttribute('maximize') ? (this.getAttribute('maximize') ? 'title-btn-disabled' : '') : ''}`;
         maxResWinBtn.onclick = (e) => {
             if (maxResWinBtn.classList.contains('is-max-mode')) {
                 ipcRenderer.send('restoreWindow', winName.textContent);
-                maxResWinBtn.innerHTML = '<i class="far fa-window-maximize"></i>';
+                maxResWinBtn.innerHTML = `<img src="../img/window-maximize${maxResWinBtn.classList.contains('title-btn-disabled') ? '-disabled' : ''}.png" height="18"></img>`;
             } else {
                 ipcRenderer.send('maximizeWindow', winName.textContent);
-                maxResWinBtn.innerHTML = '<i class="far fa-window-restore"></i>';
+                maxResWinBtn.innerHTML = `<img src="../img/window-restore${maxResWinBtn.classList.contains('title-btn-disabled') ? '-disabled' : ''}.png" height="18"></img>`;
             }
             maxResWinBtn.classList.toggle('is-max-mode');
         }
-        maxResWinBtn.innerHTML = '<i class="far fa-window-maximize"></i>';
+        maxResWinBtn.innerHTML = `<img src="../img/window-maximize${maxResWinBtn.classList.contains('title-btn-disabled') ? '-disabled' : ''}.png" height="18"></img>`;
 
         const closeMinBtn = document.createElement('div');
         closeMinBtn.className = `title-btn close-win-btn`;
         closeMinBtn.onclick = (e) => {
             ipcRenderer.send('closeWindow', winName.textContent);
         }
-        closeMinBtn.innerHTML = '<img src="../img/CloseWindow.png" height="20"></img>'; //get a better icon for this
+        closeMinBtn.innerHTML = '<img src="../img/CloseWindow.png" height="20"></img>';
 
         winBtnsWrapper.append(winMinBtn, maxResWinBtn, closeMinBtn);
 

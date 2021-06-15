@@ -30,7 +30,7 @@ html, body {
 
 .terminal-page {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 30px);
 }
 
 .terminal-page .log__display {

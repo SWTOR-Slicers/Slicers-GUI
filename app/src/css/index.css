@@ -377,9 +377,9 @@ html, body {
     border: 1px solid transparent;
     pointer-events: none;
 }
-
-.window-title {
-    width: 100%;
+.fa-ellipsis-h {
+    color: white;
+    font-size: 16px;
 }
 
 .disabled {

@@ -9,9 +9,10 @@
     <link rel="stylesheet" href="../css/universal.css">
     <link rel="stylesheet" href="../css/GR2Viewer.css">
     <link rel="stylesheet" href="../css/tooltips.css">
-    <title>GR2 Viewer</title>
+    <title>SWTOR GR2 Viewer</title>
 </head>
 <body>
+    <window-title class="window-title"></window-title>
     <div class="viewer-window unselectable">
         <div class="file-tree-container">
             <div class="file-tree-body element-border">
@@ -116,6 +117,7 @@
         </div>
     </div>
 
+    <script type="module" src="../api/components/WindowTitleBar.js"></script>
     <script type="module" src="../js/viewers/GR2 Viewer/GR2Viewer.js"></script>
 </body>
 </html>

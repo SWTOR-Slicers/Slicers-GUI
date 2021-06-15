@@ -30,7 +30,7 @@ html, body {
 .viewer-window {
     font-family: 'Eurofont';
     background-color: var(--grey-black);
-    height: 100%;
+    height: calc(100% - 30px);
     width: 100%;
     display: flex;
     flex-direction: row;

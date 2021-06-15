@@ -11,7 +11,12 @@
     --medium-grey: #333;
     --background-yellow-slicers: #ffce00;
 }
+/* for header component */
+.window-title {
+    width: 100%;
+}
 
+/* universal styles (shared between all pages/sub apps) */
 .container-bottom {
     width: 695px;
     height: 275px;

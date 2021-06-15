@@ -1,20 +1,21 @@
-const ipc = window.api;
+const ipcRenderer = window.api;
+const {ipcRendererRenderer} = require('electron');
 const logDisplay = document.getElementById("logDisplay");
 
 function initialize() {
     initSubs();
 
-    ipc.send('getPoppedLoggerData', "");
+    ipcRenderer.send('getPoppedLoggerData', "");
 }
 
 function initSubs() {
-    ipc.receive('recieveLoggerData', (data) => {
+    ipcRenderer.on('recieveLoggerData', (data) => {
         console.log(data);
         for (const msg of data) {
             log(msg);
         }
     });
-    ipc.receive('displayLogData', (data) => {
+    ipcRenderer.on('displayLogData', (data) => {
         log(data);
     });
 }

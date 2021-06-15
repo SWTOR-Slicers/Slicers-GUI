@@ -1,4 +1,7 @@
 // Modules to control application life and create native browser window
+//TODO: make a sources list/window
+//TODO: Icons8 <a target="_blank" href="https://icons8.com">Icons8</a>
+
 const {app, BrowserWindow, dialog, ipcMain, screen} = require('electron');
 const fs = require('fs');
 const path = require('path');
@@ -41,6 +44,7 @@ const extractionPresetConsts = {
   "gui": []
 };
 
+// TODO: rename createWindow
 function createWindow () {
   mainWindow = new BrowserWindow({
     width: 716,
@@ -89,6 +93,18 @@ function getWindowFromArg(arg) {
       break;
     case "Slicers GUI":
       win = mainWindow;
+      break;
+    case "SWTOR Patch Downloader":
+      win = getPatchWindow;
+      break;
+    case "SWTOR Unpacker":
+      win = unpackerWindow;
+      break;
+    case "SWTOR GR2 Viewer":
+      win = gr2Window;
+      break;
+    case "Slicers GUI Logger":
+      win = loggerWindow;
       break;
   }
 
@@ -382,14 +398,16 @@ function initLoggerWindow() {
   loggerWindow = new BrowserWindow({
     width: 716,
     height: 539,
+    frame: false,
     webPreferences: {
-      preload: path.join(__dirname, '/src/js/log/logPreloader.js')
+      nodeIntegration: true,
+      contextIsolation: false
     },
     icon: "src/img/SlicersLogo.ico",
   });
   
   loggerWindow.removeMenu();
-  loggerWindow.loadURL(`./src/html/Logger.html`);
+  loggerWindow.loadURL(`${__dirname}/src/html/Logger.html`);
 
   loggerWindow.on('close', (e) => {
     if (!appQuiting) {
@@ -413,7 +431,6 @@ function initLoggerListeners(window) {
     window.close();
   });
   ipcMain.on('logToPopped', (event, data) => {
-    console.log('ran3');
     window.webContents.send('displayLogData', data);
   });
 }
@@ -422,6 +439,7 @@ function initUnpackerGUI() {
   unpackerWindow = new BrowserWindow({
     width: 516,
     height: 269,
+    frame: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
@@ -431,7 +449,7 @@ function initUnpackerGUI() {
 
   unpackerWindow.removeMenu();
   //unpackerWindow.setResizable(false);
-  unpackerWindow.loadURL(`./src/html/Unpacker.html`);
+  unpackerWindow.loadURL(`${__dirname}/src/html/Unpacker.html`);
 
   unpackerWindow.on('close', (e) => {
     if (!appQuiting) {
@@ -472,6 +490,7 @@ function initGetPatchGUI() {
   getPatchWindow = new BrowserWindow({
     width: 516,
     height: 439,
+    frame: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
@@ -481,8 +500,7 @@ function initGetPatchGUI() {
 
   getPatchWindow.removeMenu();
   //getPatchWindow.setResizable(false);
-  getPatchWindow.webContents.openDevTools();
-  getPatchWindow.loadURL(`./src/html/GetPatch.html`);
+  getPatchWindow.loadURL(`${__dirname}/src/html/GetPatch.html`);
 
   getPatchWindow.on('close', (e) => {
     if (!appQuiting) {
@@ -516,6 +534,7 @@ function initGR2Viewer() {
   gr2Window = new BrowserWindow({
     width: width,
     height: height,
+    frame: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
@@ -524,7 +543,7 @@ function initGR2Viewer() {
   });
 
   gr2Window.removeMenu();
-  gr2Window.loadURL(`./src/html/GR2Viewer.html`);
+  gr2Window.loadURL(`${__dirname}/src/html/GR2Viewer.html`);
 
   gr2Window.on('close', (e) => {
     if (!appQuiting) {
@@ -553,6 +572,7 @@ function initGR2Listeners(window) {
 }
 
 //utility methods
+//TODO: add a form of progress bar to extraction, and make it async
 async function extract() {
   try {
     const output = cache.outputFolder;

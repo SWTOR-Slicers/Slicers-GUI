@@ -1,1 +1,29 @@
-{"assetsFolder":"","outputFolder":"","dataFolder":"","extraction":{"extractionPreset":"All"},"unpacker":{"unpackPath":"","output":""},"gr2Viewer":{"wireframe":true,"color":"#918276","fov":75},"getPatch":{"devmode":false,"enviromentType":"live","productType":"client","varient":"-1to0","version":"6.2","output":""}}
+{
+    "assetsFolder": "",
+    "outputFolder": "",
+    "dataFolder": "",
+    "extraction": {
+        "extractionPreset": "All"
+    },
+    "unpacker": {
+        "unpackPath": "",
+        "output": ""
+    },
+    "gr2Viewer": {
+        "wireframe": true,
+        "color": "#918276",
+        "fov": 75
+    },
+    "getPatch": {
+        "devmode": false,
+        "enviromentType": "live",
+        "productType": "client",
+        "varient": "-1to0",
+        "version": "6.2",
+        "output": ""
+    },
+    "soundConverter": {
+        "soundPath": "",
+        "output": ""
+    }
+}

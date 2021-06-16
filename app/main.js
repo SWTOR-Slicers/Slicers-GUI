@@ -27,6 +27,7 @@ let loggerWindow;
 let unpackerWindow;
 let gr2Window;
 let getPatchWindow;
+let soundConverterWindow;
 let appQuiting = false;
 const cache = {
   assetsFolder:"",
@@ -82,6 +83,9 @@ function getWindowFromArg(arg) {
       break;
     case "Slicers GUI Logger":
       win = loggerWindow;
+      break;
+    case "SWTOR Sound Converter":
+      win = soundConverterWindow;
       break;
   }
 
@@ -262,7 +266,11 @@ function initMainListeners() {
         //open world viewer window
         break;
       case "convBnk":
-        //open sound converter window
+        if (soundConverterWindow) {
+          soundConverterWindow.show();
+        } else {
+          initSoundConvGUI();
+        }
         break;
       case "fileChanger":
         //open file changer window
@@ -314,7 +322,6 @@ function initMainListeners() {
     fs.writeFileSync(__dirname + "/resources/config.json", JSON.stringify(json), 'utf-8');
   });
 }
-
 //boot config
 function initSetupUI() {
   setupWindow = new BrowserWindow({
@@ -391,7 +398,6 @@ async function copyResourcesRecursive(originalDir, targetDir) {
     }
   }
 }
-
 //logger
 function initLoggerWindow() {
   loggerWindow = new BrowserWindow({
@@ -522,6 +528,58 @@ function initGetPatchListeners(window) {
           event.reply("getDialogResponsePatch", dir.filePaths);
         } else {
           event.reply("getDialogResponsePatch", "");
+        }
+    });
+  });
+}
+//unpacker
+function initSoundConvGUI() {
+  soundConverterWindow = new BrowserWindow({
+    width: 516,
+    height: 269,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: "src/img/SlicersLogo.ico",
+  });
+
+  soundConverterWindow.removeMenu();
+  //unpackerWindow.setResizable(false);
+  soundConverterWindow.webContents.openDevTools();
+  soundConverterWindow.loadURL(`${__dirname}/src/html/SoundConverter.html`);
+
+  soundConverterWindow.on('close', (e) => {
+    if (!appQuiting) {
+      e.preventDefault();
+      soundConverterWindow.hide();
+    }
+    if (mainWindow) {
+      if (mainWindow.webContents) {
+        mainWindow.webContents.send("utilBnkClosed", "");
+      }
+    }
+  });
+
+  initSoundConvListeners(soundConverterWindow);
+}
+function initSoundConvListeners(window) {
+  ipcMain.on("showDialogSoundConv", async (event, data) => {
+    dialog.showOpenDialog(window, { properties: ['openDirectory'] }).then(async (dir) => {
+        if (!dir.canceled) {
+          event.reply("recieveSoundConvDialog", [data, dir.filePaths]);
+        } else {
+          event.reply("recieveSoundConvDialog", "");
+        }
+    });
+  });
+  ipcMain.on("showDialogSoundConvFile", async (event, data) => {
+    dialog.showOpenDialog(window, { properties: ['openFile'] }).then(async (file) => {
+        if (!file.canceled) {
+          event.reply("recieveSoundConvDialogFile", [data, file.filePaths]);
+        } else {
+          event.reply("recieveSoundConvDialogFile", "");
         }
     });
   });

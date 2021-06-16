@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../css/universal.css">
+    <link rel="stylesheet" href="../css/SoundConverter.css">
+    <link rel="stylesheet" href="../css/tooltips.css">
+    <title>SWTOR Sound Converter</title>
+</head>
+<body>
+    <window-title class="window-title"></window-title>
+    <div class="viewer-window unselectable">
+        <div class="viewer-body element-border">
+            <div class="header-container">
+                <h2 class="h2">SWTOR Sound Converter</h2>
+            </div>
+            <div class="body-container">
+                <div class="patch-settings">
+                    <div class="setting patch-unpack-path-setting">
+                        <label class="setting-label" for="soundPathInput">Sound Path: </label>
+                        <input style="margin-left: 16px;" class="paths-field-input" type="text" name="soundPathInput" id="soundPathInput" value="">
+                        <button id="folderPathBrowserBtn" class="browse-paths__button">
+                            <i class="fas fa-folder"></i>
+                        </button>
+                        <button id="filePathBrowserBtn" class="browse-paths__button">
+                            <i class="fas fa-file"></i>
+                        </button>
+                    </div>
+                    <div class="setting patch-output-setting">
+                        <label class="setting-label" for="outputFolder">Output Folder: </label>
+                        <input class="paths-field-input" type="text" name="outputFolder" id="outputFolder" value="">
+                        <button id="outputBrowserBtn" class="browse-paths__button">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="patch-actions">
+                    <button id="convertFile" class="container-bottom__sub__btn action-btn">Convert</button>
+                    <div class="progress-bar-container container-bottom__sub__btn action-btn">
+                        <div id="progressBar" class="progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../api/components/WindowTitleBar.js"></script>
+    <script type="module" src="../js/utilities/bnk/SoundConverter.js"></script>
+</body>
+</html>

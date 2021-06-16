@@ -1,3 +1,4 @@
+import { readString } from "../Util.js";
 import Vec3 from "./Vec3.js";
 const { Float16Array } = require("@petamoriken/float16");
 function cElem(type) {
@@ -384,26 +385,6 @@ class GR2 {
             return [div];
         }
     }
-}
-
-function readString(buffer, posIn, length = undefined) {
-    let pos = posIn;
-    let outString = '';
-    if (length === undefined) {
-        let curChar = new Uint8Array(buffer, pos++, 1)[0];
-        while (curChar !== 0) {
-            outString += String.fromCharCode(curChar);
-            curChar = new Uint8Array(buffer, pos++, 1)[0];
-        }
-    } else {
-        for (let i = 0; i < length; i++) {
-            const curChar = new Uint8Array(buffer, pos++, 1)[0];
-            if (curChar === 0)
-                break;
-            outString += String.fromCharCode(curChar)
-        }
-    }
-    return outString
 }
 
 function dataDiv(name, value) {

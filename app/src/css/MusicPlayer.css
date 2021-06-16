@@ -24,11 +24,11 @@ html, body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    z-index: 10;
 }
 .music-player-container {
     padding: 10px 24px;
     padding-right: 10px;
-    margin: 80px 0;
     
     position: relative;
     display: flex;
@@ -37,7 +37,7 @@ html, body {
     box-shadow: 0 20px 20px 0 var(--grey-black);
 
     border-radius: 15px;
-    z-index: 10;
+    z-index: 1;
 }
 
 .record-container {
@@ -71,11 +71,11 @@ html, body {
 }
 
 .sound-nav {
+    z-index: 1;
     margin-left: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;
 }
 .sound-nav-btn {
     color: var(--medium-grey);
@@ -99,6 +99,7 @@ html, body {
     margin: 0;
 }
 .player-info {
+    z-index: 0;
     background-color: var(--grey-black);
     border-radius: 12px 12px 0 0;
     position: absolute;
@@ -106,17 +107,14 @@ html, body {
     left: 16px;
     width: calc(100% - 140px);
     opacity: 0;
-    transform: translateY(0%);
+    transform: translateY(100%);
     transition: transform 0.3s ease-in, opacity 0.3s ease-in;
-    z-index: 0;
     padding: 6px 8px 0px 100px;
 }
-
-.music-player-container.play .player-info {
+.music-container-background.play .player-info {
     opacity: 1;
-    transform: translateY(-100%);
+    transform: translateY(0%);
 }
-
 .progress-bar-container {
     background: #fff;
     border-radius: 5px;

@@ -1,4 +1,3 @@
-
 //DOM variables
 const title = document.getElementById('title');
 const currentSoundFile = document.getElementById('currentSoundFile');
@@ -13,30 +12,20 @@ const progressContainer = document.getElementsByClassName('progress-bar-containe
 const progress = document.getElementsByClassName('progress-bar')[0];
 
 //main container
-const mainContainer = document.getElementsByClassName('music-player-container')[0];
+const mainContainer = document.getElementsByClassName('music-container-background')[0];
 
 let audioNames = [];
 let rootDir = "";
 let songIndex = 0;
-
-export function initSounds(soundsList, soundDir) {
-    audioNames = soundsList;
-    rootDir = soundDir;
-    songIndex = 0;
-
-    loadSong(audioNames[songIndex]);
-}  
 
 export function setSounds(soundsList, soundDir) {
     audioNames = soundsList;
     rootDir = soundDir;
     songIndex = 0;
 
+	initListeners();
     loadSong(audioNames[songIndex]);
-}  
-
-//for testing
-loadSong(audioNames[songIndex]);
+}
 
 // Update song details
 function loadSong(song) {
@@ -161,29 +150,32 @@ function DurTime (e) {
 		
 };
 
-// Event listeners
-play.addEventListener('click', () => {
-    const isPlaying = mainContainer.classList.contains('play');
+function initListeners() {
+	// Event listeners
+	console.log(play)
+	play.addEventListener('click', () => {
+		const isPlaying = mainContainer.classList.contains('play');
 
-    if (isPlaying) {
-        pauseSong();
-    } else {
-        playSong();
-    }
-});
+		if (isPlaying) {
+			pauseSong();
+		} else {
+			playSong();
+		}
+	});
 
-// Change song
-prev.addEventListener('click', prevSong);
-next.addEventListener('click', nextSong);
+	// Change song
+	prev.addEventListener('click', prevSong);
+	next.addEventListener('click', nextSong);
 
-// Time/song update
-currentSoundFile.addEventListener('timeupdate', updateProgress);
+	// Time/song update
+	currentSoundFile.addEventListener('timeupdate', updateProgress);
 
-// Click on progress bar
-progressContainer.addEventListener('click', setProgress);
+	// Click on progress bar
+	progressContainer.addEventListener('click', setProgress);
 
-// Song ends
-currentSoundFile.addEventListener('ended', nextSong);
+	// Song ends
+	currentSoundFile.addEventListener('ended', nextSong);
 
-// Time of song
-currentSoundFile.addEventListener('timeupdate', DurTime);
+	// Time of song
+	currentSoundFile.addEventListener('timeupdate', DurTime);
+}

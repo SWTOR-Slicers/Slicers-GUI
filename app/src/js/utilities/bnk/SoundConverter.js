@@ -3,6 +3,7 @@ import { BNK } from '../../classes/BNK.js';
 import { resourcePath } from "../../universal/ResourcePath.js"
 import { log } from "../../universal/Logger.js";
 import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { setSounds } from './MusicPlayer.js';
 
 const fs = require('fs');
 const http = require('http');
@@ -18,6 +19,7 @@ const cache = {
 
 //action buttons
 const convertFile = document.getElementById("convertFile");
+const loadPreview = document.getElementById('loadPreview');
 const progressBar = document.getElementById("progressBar");
 
 //settings inputs
@@ -97,6 +99,15 @@ function initListeners() {
     filePathBrowserBtn.addEventListener("click", (e) => { ipcRenderer.send("showDialogSoundConvFile", "soundPath"); });
     outputBrowserBtn.addEventListener("click", (e) => { ipcRenderer.send("showDialogSoundConv", "output"); });
     convertFile.addEventListener("click", (e) => { initSoundConv(cache["output"], cache["soundPath"]); });
+    loadPreview.addEventListener('click', (e) => {
+        const contents = fs.readdirSync(outputFolder);
+        const oggs = contents.filter(f => path.extname(f) == "ogg");
+        if (oggs.length > 0) {
+            setSounds(oggs, outputFolder);
+        } else {
+            log('Your output folder has no .ogg files in it.')
+        }
+    });
 
     //listener for unpack path and output fields
     outputFolder.addEventListener("change", (e) => {

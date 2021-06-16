@@ -246,7 +246,7 @@ function setupListeners() {
     });
     bnkConvBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'convBnk');
-        log(`Utlity: BNK-Converter opened.`);
+        log(`Utlity: Sound-Converter opened.`);
     });
     getPatchBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'getPatch');
@@ -392,7 +392,7 @@ function initSubscribes() {
         log(`Utility: File-Changer closed.`);
     });
     ipcRenderer.on('utilBnkClosed', (event, data) => {
-        log(`Utility: BNK-Converter closed.`);
+        log(`Utility: Sound-Converter closed.`);
     });
     ipcRenderer.on('utilGPClosed', (event, data) => {
         log(`Utility: Patch-Getter closed.`);

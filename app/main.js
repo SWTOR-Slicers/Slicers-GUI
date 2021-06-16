@@ -536,7 +536,7 @@ function initGetPatchListeners(window) {
 function initSoundConvGUI() {
   soundConverterWindow = new BrowserWindow({
     width: 516,
-    height: 269,
+    height: 409,
     frame: false,
     webPreferences: {
       nodeIntegration: true,

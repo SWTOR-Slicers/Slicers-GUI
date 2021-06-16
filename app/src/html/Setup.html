@@ -12,6 +12,7 @@
     <title>Slicers GUI Boot Config</title>
 </head>
 <body>
+    <log-alert type="alert" visible="false"></log-alert>
     <window-title class="window-title"></window-title>
     <div class="setup-main-border unselectable">
         <div class="setup-main">
@@ -50,7 +51,8 @@
         </div>
     </div>
 
-    <script type="module" src="../api/components/WindowTitleBar.js"></script>
+    <script type="module" src="../api/components/alert/Alert.js"></script>
+    <script type="module" src="../api/components/titleBar/WindowTitleBar.js"></script>
     <script type="module" src="../js/setup/Setup.js"></script>
 </body>
 </html>

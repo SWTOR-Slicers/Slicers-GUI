@@ -7,20 +7,18 @@
     <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
     <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../css/universal.css">
-    <link rel="stylesheet" href="../css/Logger.css">
-    <title>Slicers GUI Logger</title>
+    <link rel="stylesheet" href="../css/Settings.css">
+    <title>Slicers GUI Settings</title>
 </head>
 <body>
     <log-alert type="alert" visible="false"></log-alert>
     <window-title class="window-title"></window-title>
-    <div class="terminal-page">
-        <div id="logDisplay" class="log__display">
-            <div class="log__item log-cursor">> <div class="cursor-underscore">_</div></div>
-        </div>
+    <div class="settings-page">
+        
     </div>
 
     <script type="module" src="../api/components/alert/Alert.js"></script>
     <script type="module" src="../api/components/titleBar/WindowTitleBar.js"></script>
-    <script type="module" src="../js/main/log/logRenderer.js"></script>
+    <script type="module" src="../js/main/settings/GuiSettings.js"></script>
 </body>
 </html>

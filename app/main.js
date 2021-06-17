@@ -28,6 +28,8 @@ let unpackerWindow;
 let gr2Window;
 let getPatchWindow;
 let soundConverterWindow;
+let settingsWindow;
+
 let appQuiting = false;
 const cache = {
   assetsFolder:"",
@@ -87,8 +89,10 @@ function getWindowFromArg(arg) {
     case "SWTOR Sound Converter":
       win = soundConverterWindow;
       break;
+    case "Slicers GUI Settings":
+      win = settingsWindow;
+      break;
   }
-
   return win;
 }
 
@@ -285,6 +289,13 @@ function initMainListeners() {
       case "walkthrough":
         //open walkthrough window
         break;
+      case "settings":
+        if (settingsWindow) {
+          settingsWindow.show();
+        } else {
+          initSettingsWindow();
+        }
+        break;
     }
   });
   ipcMain.on("logToFile", async (event, data) => {
@@ -397,6 +408,43 @@ async function copyResourcesRecursive(originalDir, targetDir) {
       await copyResourcesRecursive(ogPath, tPath);
     }
   }
+}
+//settings
+function initSettingsWindow() {
+  settingsWindow = new BrowserWindow({
+    width: 716,
+    height: 539,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: "src/img/SlicersLogo.ico",
+  });
+  
+  settingsWindow.removeMenu();
+  settingsWindow.webContents.openDevTools();
+  settingsWindow.loadURL(`${__dirname}/src/html/Settings.html`);
+
+  settingsWindow.on('close', (e) => {
+    if (!appQuiting) {
+      e.preventDefault();
+      settingsWindow.hide();
+    }
+    if (mainWindow) {
+      if (mainWindow.webContents) {
+        mainWindow.webContents.send("settingsWindowClosed", "");
+      }
+    }
+  });
+
+  initSettingsListeners(settingsWindow);
+}
+function initSettingsListeners(window) {
+  ipcMain.on('settingsSaved', (event, data) => {
+    const settingsArr = data[0];
+    console.log(settingsArr);
+  });
 }
 //logger
 function initLoggerWindow() {
@@ -546,7 +594,6 @@ function initSoundConvGUI() {
   });
 
   soundConverterWindow.removeMenu();
-  //unpackerWindow.setResizable(false);
   soundConverterWindow.webContents.openDevTools();
   soundConverterWindow.loadURL(`${__dirname}/src/html/SoundConverter.html`);
 
@@ -633,7 +680,7 @@ function initGR2Listeners(window) {
 async function extract() {
   try {
     const output = cache.outputFolder;
-    const hashPath = path.join(resourcePath, 'hash/hashes_filename.txt');
+    const hashPath = path.join(resourcePath, 'hash\\hashes_filename.txt');
     const temp = cache.assetsFolder;
     let values;
 
@@ -648,7 +695,7 @@ async function extract() {
     }
 
     const params = [JSON.stringify(values), output, hashPath];
-    //possibly change this to be async. Only if I can figure out how to make a progress bar. maybe in log?
+    //TODO: possibly change this to be async. Only if I can figure out how to make a progress bar. maybe in log?
     child.execFileSync(path.join(resourcePath, "scripts\\Extraction\\main.exe"), params);
   } catch (err) {
     console.log(err);
@@ -661,7 +708,6 @@ async function locate() {
     const temp = cache.dataFolder;
     const params = [temp, path.join(cache.outputFolder, "resources")];
     child.execFileSync(path.join(resourcePath, "scripts\\FileLocator\\main.exe"), params);
-    console.log(cache);
   } catch (err) {
     console.log(err);
   } finally {

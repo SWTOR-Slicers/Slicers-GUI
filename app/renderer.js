@@ -50,6 +50,9 @@ const saveLogToFile = document.getElementById('saveLogToFile');
 const expComprLogBtn = document.getElementById('expComprLogBtn');
 const poppedOutCover= document.getElementById('poppedOutCover');
 
+//settings btn
+const settingsBtn = document.getElementById('settingsBtn');
+
 //functions
 function initialize() {
     initSubscribes();
@@ -57,6 +60,16 @@ function initialize() {
 
     setupListeners();
     initDrops();
+
+    addTooltip('top', assetTextField.previousElementSibling.previousElementSibling, false, (element) => {
+        return 'Game assets (.tor)';
+    });
+    addTooltip('top', outputTextField.previousElementSibling.previousElementSibling, false, (element) => {
+        return 'GUI Output Folder';
+    });
+    addTooltip('top', dataTextField.previousElementSibling.previousElementSibling, false, (element) => {
+        return 'Data folder for use w/ locator';
+    });
 
     addTooltip('top', assetTextField, true, (element) => {
         return element.value;
@@ -76,6 +89,10 @@ function initialize() {
     });
     addTooltip('top', expComprLogBtn, true, (element) => {
         return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log');
+    });
+
+    addTooltip('top', settingsBtn, false, (element) => {
+        return 'Settings'
     });
 
     log("Boot up complete");
@@ -290,6 +307,12 @@ function setupListeners() {
         }
         expComprLogBtn.dispatchEvent(updateTooltipEvent);
     });
+
+    //settings
+    settingsBtn.addEventListener('click', (e) => {
+        ipcRenderer.send('runExec', 'settings');
+        log('Settings opened.', 'info');
+    })
 }
 function initSubscribes() {
     ipcRenderer.on('displayLog', (event, data) => {
@@ -417,6 +440,9 @@ function initSubscribes() {
             logStr.push(chld.innerText);
         }
         ipcRenderer.send('sendLoggerData', logStr);
+    });
+    ipcRenderer.on('settingsWindowClosed', (event, data) => {
+        log('Settings closed.', 'info');
     });
 }
 

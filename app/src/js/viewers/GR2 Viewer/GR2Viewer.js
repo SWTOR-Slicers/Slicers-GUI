@@ -1,5 +1,6 @@
 import {FolderTree} from "./FolderTree.js";
 import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { log } from "../../universal/Logger.js";
 
 const {ipcRenderer} = require('electron');
 const os = require('os');
@@ -11,7 +12,9 @@ const changeEvent = new Event('change');
 const disks = getDrives();
 
 const homedir = os.homedir();
-const desktop = `${homedir}${path.sep}Desktop`;
+const desktop = path.join(homedir, 'Desktop');
+const downloads = path.join(homedir, 'Downloads');
+const documents = path.join(homedir, 'Documents');
 const history = [desktop, null, null, null, null, null, null, null, null, null];
 
 let histIdx = 0;
@@ -20,6 +23,7 @@ let oldValue = desktop;
 let treeList = document.getElementById("treeList");
 let pathField = document.getElementById("pathField");
 let browsePathsBtn = document.getElementById("browsePathsBtn");
+let quickNavCont = document.getElementsByClassName('quick-nav-contents')[0];
 
 let backArrowBtn = document.getElementById("backArrowBtn");
 let forwardArrowBtn = document.getElementById("forwardArrowBtn");
@@ -76,8 +80,54 @@ function initialize() {
         return element.value;
     });
 
+    addQuickNav();
     initListeners();
     initSubs();
+}
+function addQuickNav() {
+    //add desktop
+    addNavElem('Desktop', 'fas fa-home', desktop);
+    //add downloads
+    addNavElem('Downloads', 'fas fa-arrow-alt-circle-down', downloads);
+    //add documents
+    addNavElem('Documents', 'fas fa-file', documents);
+    //add all drives
+    try {
+        const drives = nodeDiskInfo.getDiskInfoSync();
+        
+        for (const drive of drives) {
+            addNavElem(`${drive.mounted.substring(0, 1)} Drive`, drive.mounted, path.join(drive.mounted, path.sep), true);
+        }
+    } catch (e) {
+        console.error(e);
+        log('The drives failed to be loaded in the quick nav.', 'alert');
+    }
+}
+function addNavElem(title, iClass, pathToSet, isDrive=false) {
+    const elem = document.createElement('div');
+    elem.className = 'quick-nav-elem';
+
+    const elemIcon = document.createElement('div');
+    if (isDrive) {
+        elemIcon.className = 'quick-nav-icon-text';
+        elemIcon.innerHTML = iClass;
+    } else {
+        elemIcon.className = 'quick-nav-icon';
+        elemIcon.innerHTML = `<i class="${iClass}"></i>`;
+    }
+    elem.appendChild(elemIcon);
+
+    const elemTitle = document.createElement('div');
+    elemTitle.className = 'quick-nav-label';
+    elemTitle.innerHTML = title;
+    elem.appendChild(elemTitle);
+
+    elem.addEventListener('click', (e) => {
+        pathField.value = pathToSet;
+        pathField.dispatchEvent(changeEvent);
+    })
+
+    quickNavCont.appendChild(elem);
 }
 function initListeners() {
     browsePathsBtn.onclick = (e) => {

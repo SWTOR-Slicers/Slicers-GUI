@@ -24,6 +24,7 @@ html, body {
     --grey-black: #1a1a1a;
     --grey-black-hover: #2b2b2b;
     --medium-grey: #333;
+    --medium-grey-bright: rgb(97, 97, 97);
     --background-yellow-slicers: #ffce00;
 }
 
@@ -181,14 +182,14 @@ html, body {
     color: rgb(199, 199, 199);
 }
 
-.fa-ban {
+.tree-list-container .fa-ban {
     color: red;
 }
-.fa-folder {
+.tree-list-container .fa-folder {
     color: tan;
     transform: scaleY(1.07);
 }
-.fa-file {
+.tree-list-container .fa-file {
     color: white;
 }
 .fa-ellipsis-h {
@@ -355,7 +356,7 @@ html, body {
     justify-content: center;
 }
 .fa-plus-square, .fa-minus-square {
-    color: var(--background-yellow-slicers);
+    color: var(--grey-black);
 }
 .data-label-field {
     font-size: 16px;
@@ -496,4 +497,63 @@ input:checked + .slider:before {
 }
 .data-field-input:focus{
     border: 1px solid var(--background-yellow-slicers);
+}
+
+.file-tree-container, .data-view-container {
+    min-width: 260px;
+}
+
+.quick-nav-container {
+    margin: 20px 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.quick-nav-contents {
+    width: calc(100% - 50px);
+    background-color: var(--grey-black);
+}
+.quick-nav-elem {
+    width: calc(100% - 14px);
+    padding: 3px 7px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+
+    font-size: 14px;
+    color: white;
+}
+.quick-nav-elem:hover {
+    background-color: var(--grey-black-hover);
+    cursor: pointer;
+}
+.quick-nav-icon {
+    height: 14px;
+    width: 14px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: 0px 7px;
+    font-size: 12px;
+    color: var(--medium-grey-bright);
+}
+.quick-nav-icon-text {
+    height: 14px;
+    width: 14px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: 0px 7px;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--medium-grey-bright);
+}
+.quick-nav-label {
+
 }

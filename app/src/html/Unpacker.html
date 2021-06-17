@@ -12,6 +12,7 @@
     <title>SWTOR Unpacker</title>
 </head>
 <body>
+    <log-alert type="alert" visible="false"></log-alert>
     <window-title class="window-title"></window-title>
     <div class="viewer-window unselectable">
         <div class="viewer-body element-border">
@@ -49,6 +50,7 @@
         </div>
     </div>
 
+    <script type="module" src="../api/components/alert/Alert.js"></script>
     <script type="module" src="../api/components/titleBar/WindowTitleBar.js"></script>
     <script type="module" src="../js/extraction/unpack/Unpack.js"></script>
 </body>

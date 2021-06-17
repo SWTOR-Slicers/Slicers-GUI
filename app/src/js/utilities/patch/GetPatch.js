@@ -161,7 +161,7 @@ function initListeners() {
         if (fs.existsSync(output.value)) {
             updateCache("output", output.value);
         } else {
-            log(`That path is invalid, please input a valid path.`);
+            log(`That path is invalid, please input a valid path.`, 'alert');
             output.value = cache["output"];
         }
     });
@@ -174,10 +174,6 @@ function initSubs() {
     ipcRenderer.on("getDialogResponsePatch", (event, data) => {
         output.value = data[0];
         output.dispatchEvent(changeEvent);
-    });
-    ipcRenderer.on("fileDownloadResolve", (event, data) => {
-        const msg = data[0];
-        log(msg);
     });
 }
 //initializes custom dropdown menus
@@ -351,7 +347,7 @@ function dlFiles() {
             let xyStr = (cache["varient"] == "0toY") ? `0to${patchID}` : `${lastVersion}to${patchID}`;
             download_files(patchID, xyStr, cache["enviromentType"], cache["productType"]);
         } else {
-            log("Version numbers are live enviroment only. Please use version ID");
+            log("Version numbers are live enviroment only. Please use version ID", 'alert');
         }
     } else {
         const patchID = cache["version"];
@@ -391,7 +387,7 @@ function dlSolid() {
             let xyStr = (cache["varient"] == "0toY") ? `0to${patchID}` : `${lastVersion}to${patchID}`;
             download_solidpkg(patchID, xyStr, cache["enviromentType"], cache["productType"]);
         } else {
-            log("Version numbers are live enviroment only. Please use version ID");
+            log("Version numbers are live enviroment only. Please use version ID", 'alert');
         }
     } else {
         const patchID = cache["version"];
@@ -420,7 +416,7 @@ function checkDate() {
             let xyStr = (cache["varient"] == "0toY") ? `0to${patchID}` : `${lastVersion}to${patchID}`;
             checkDate_files(patchID, xyStr, cache["enviromentType"], cache["productType"]);
         } else {
-            log("Version numbers are live enviroment only. Please use version ID");
+            log("Version numbers are live enviroment only. Please use version ID", 'alert');
         }
     } else {
         const patchID = cache["version"];
@@ -439,7 +435,7 @@ function checkDate() {
     }
 }
 async function checkForUpdates() {
-    log(`this function currently does not work.`);
+    log(`this function currently does not work.`, 'alert');
     // const products = {
     //     'live': {
     //         'client': 'retailclient_swtor',
@@ -490,13 +486,13 @@ async function processManifest(ssnFile, product) {
 
     //Verify .patchmanifest file
     if (fileEntries.length !== 1) {
-        log(`Expected .patchmanifest to contain 1 file but it had "${fileEntries.length}" files.`);
+        log(`Expected .patchmanifest to contain 1 file but it had "${fileEntries.length}" files.`, 'alert');
         return "error";
     }
 
     const firstFile = fileEntries[0];
     if (firstFile.name !== 'manifest.xml') {
-        log(`Expected .patchmanifest to contain a file called manifest.xml but it is called "${firstFile.name}".`);
+        log(`Expected .patchmanifest to contain a file called manifest.xml but it is called "${firstFile.name}".`, 'alert');
         return "error";
     }
 
@@ -530,14 +526,14 @@ async function download_files(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
     if (prodType == "client") {
         const fileName = `${saveLoc}/retailclient_swtor_${xyStr}.zip`;
-        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`, 'info');
 
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}/retailclient_swtor_${xyStr}.zip`;
 
             const dl_status = await getRemoteFile(fileName, url).then(async (res) => {
                 if (res == "done") {
-                    log(`Dowloaded: ${url}.`);
+                    log(`Dowloaded: ${url}.`, 'info');
 
                     let zpv = 0;
                     while (true) {
@@ -552,9 +548,9 @@ async function download_files(to, xyStr, envType, prodType) {
                             const dl_status2 = await getRemoteFile(fileName2, url2);
 
                             if (dl_status2 == "done") {
-                                log(`Dowloaded: ${url2}.`);
+                                log(`Dowloaded: ${url2}.`, 'info');
                             } else {
-                                log(`Download finished.`);
+                                log(`Download finished.`, 'info');
                                 break;
                             }
                         }
@@ -564,18 +560,18 @@ async function download_files(to, xyStr, envType, prodType) {
                 console.log(err);
             });
         } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
+            log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
         }
     } else {
         const fileName = `${saveLoc}/assets_swtor_${prodType}_${xyStr}.zip`;
-        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`, 'info');
 
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}/assets_swtor_${prodType}_${xyStr}.zip`;
 
             const dl_status = await getRemoteFile(fileName, url).then(async (res) => {
                 if (res == "done") {
-                    log(`Dowloaded: ${url}.`);
+                    log(`Dowloaded: ${url}.`, 'info');
 
                     let zpv = 0;
                     while (true) {
@@ -590,9 +586,9 @@ async function download_files(to, xyStr, envType, prodType) {
                             const dl_status2 = await getRemoteFile(fileName2, url2);
 
                             if (dl_status2 == "done") {
-                                log(`Dowloaded: ${url2}.`);
+                                log(`Dowloaded: ${url2}.`, 'info');
                             } else {
-                                log(`An error occured.`);
+                                log(`Download complete.`, 'info');
                                 break;
                             }
                         }
@@ -602,7 +598,7 @@ async function download_files(to, xyStr, envType, prodType) {
                 console.log(err);
             });
         } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
+            log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
         }
     }
 }
@@ -610,14 +606,14 @@ async function download_files_pts(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
     if (prodType == "client") {
         const fileName = `${saveLoc}/retailclient_publictest_${xyStr}.zip`;
-        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`, 'info');
 
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}/retailclient_publictest_${xyStr}.zip`;
 
             const dl_status = getRemoteFile(fileName, url).then(async (res) => {
                 if (res == "done") {
-                    log(`Dowloaded: ${url}.`);
+                    log(`Dowloaded: ${url}.`, 'info');
 
                     let zpv = 0;
                     while (true) {
@@ -632,9 +628,9 @@ async function download_files_pts(to, xyStr, envType, prodType) {
                             const dl_status2 = await getRemoteFile(fileName2, url2);
 
                             if (dl_status2 == "done") {
-                                log(`Dowloaded: ${url2}.`);
+                                log(`Dowloaded: ${url2}.`, 'info');
                             } else {
-                                log(`An error occured.`);
+                                log(`Download complete.`, 'info');
                                 break;
                             }
                         }
@@ -644,18 +640,18 @@ async function download_files_pts(to, xyStr, envType, prodType) {
                 console.log(err);
             });
         } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
+            log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
         }
     } else {
         const fileName = `${saveLoc}/assets_swtor_test_${prodType}_${xyStr}.zip`;
-        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+        log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`, 'info');
 
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}/assets_swtor_test_${prodType}_${xyStr}.zip`;
 
             const dl_status = await getRemoteFile(fileName, url).then(async (res) => {
                 if (res == "done") {
-                    log(`Dowloaded: ${url}.`);
+                    log(`Dowloaded: ${url}.`, 'info');
 
                     let zpv = 0;
                     while (true) {
@@ -670,9 +666,9 @@ async function download_files_pts(to, xyStr, envType, prodType) {
                             const dl_status2 = getRemoteFile(fileName2, url2);
 
                             if (dl_status2 == "done") {
-                                log(`Dowloaded: ${url2}.`);
+                                log(`Dowloaded: ${url2}.`, 'info');
                             } else {
-                                log(`An error occured.`);
+                                log(`Download complete.`, 'info');
                                 break;
                             }
                         }
@@ -682,7 +678,7 @@ async function download_files_pts(to, xyStr, envType, prodType) {
                 console.log(err);
             });
         } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
+            log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
         }
     }
 }
@@ -690,14 +686,14 @@ async function download_movies(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
 
     const fileName = `${saveLoc}/movies_${prodType}_${xyStr}.zip`;
-    log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`);
+    log(`Download of ${envType} ${prodType} version ${xyStr} started! (${to})`, 'info');
 
     if (!fs.existsSync(fileName)) {
         const url = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}/movies_${prodType}_${xyStr}.zip`;
 
         const dl_status = await getRemoteFile(fileName, url).then(async (res) => {
             if (res == "done") {
-                log(`Dowloaded: ${url}.`);
+                log(`Dowloaded: ${url}.`, 'info');
 
                 let zpv = 0;
                 while (true) {
@@ -712,9 +708,9 @@ async function download_movies(to, xyStr, envType, prodType) {
                         const dl_status2 = await getRemoteFile(fileName2, url2);
 
                         if (dl_status2 == "done") {
-                            log(`Dowloaded: ${url2}.`);
+                            log(`Dowloaded: ${url2}.`, 'info');
                         } else {
-                            log(`An error occured.`);
+                            log(`Download complete.`, 'info');
                             break;
                         }
                     }
@@ -724,7 +720,7 @@ async function download_movies(to, xyStr, envType, prodType) {
             console.log(err);
         });
     } else {
-        log(`You already downloaded this zip. To download again delete the existing version.`);
+        log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
     }
 }
 async function download_exp_client(to, xyStr, envType, prodType) {
@@ -739,7 +735,7 @@ async function download_exp_client(to, xyStr, envType, prodType) {
 
         const dl_status = await getRemoteFile(fileName, url).then(async (res) => {
             if (res == "done") {
-                log(`Dowloaded: ${url}.`);
+                log(`Dowloaded: ${url}.`, 'info');
 
                 let zpv = 0;
                 while (true) {
@@ -754,9 +750,9 @@ async function download_exp_client(to, xyStr, envType, prodType) {
                         const dl_status2 = getRemoteFile(fileName2, url2);
 
                         if (dl_status2 == "done") {
-                            log(`Dowloaded: ${url2}.`);
+                            log(`Dowloaded: ${url2}.`, 'info');
                         } else {
-                            log(`An error occured.`);
+                            log(`Download complete.`, 'info');
                             break;
                         }
                     }
@@ -766,7 +762,7 @@ async function download_exp_client(to, xyStr, envType, prodType) {
             console.log(err);
         });
     } else {
-        log(`You already downloaded this zip. To download again delete the existing version.`);
+        log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
     }
 }
 
@@ -774,39 +770,39 @@ async function download_manifest(envType, prodType) {
     const saveLoc = cache["output"];
     if (prodType == "client") {
         const fileName = `${saveLoc}/retailclient_swtor.patchmanifest`;
-        log(`Download of Manifest ${envType} ${prodType} started!`);
+        log(`Download of Manifest ${envType} ${prodType} started!`, 'info');
 
         if (!fs.existsSync(fileName)) {
             const url = `http://manifest.swtor.com/patch/retailclient_swtor.patchmanifest`;
 
             const dl_status = await getRemoteFile(fileName, url).then((res) => {
                 if (res == "done") {
-                    log(`Dowloaded: ${url}.`);
-                    log(`Download complete`);
+                    log(`Dowloaded: ${url}.`, 'info');
+                    log(`Download complete.`, 'info');
                 }
             }).catch((err) => {
                 console.log(err);
             });
         } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
+            log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
         }
     } else {
         const fileName = `${saveLoc}/assets_swtor_${prodType}.patchmanifest`;
-        log(`Download of Manifest ${envType} ${prodType} started!`);
+        log(`Download of Manifest ${envType} ${prodType} started!`, 'info');
 
         if (!fs.existsSync(fileName)) {
             const url = `http://manifest.swtor.com/patch/assets_swtor_${prodType}.patchmanifest`;
 
             const dl_status = await getRemoteFile(fileName, url).then((res) => {
                 if (res == "done") {
-                    log(`Dowloaded: ${url}.`);
-                    log(`Download complete`);
+                    log(`Dowloaded: ${url}.`, 'info');
+                    log(`Download complete`, 'info');
                 }
             }).catch((err) => {
                 console.log(err);
             });
         } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
+            log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
         }
     }
 }
@@ -814,39 +810,39 @@ async function download_manifest_pts(envType, prodType) {
     const saveLoc = cache["output"];
     if (prodType == "client") {
         const fileName = `${saveLoc}/retailclient_publictest.patchmanifest`;
-        log(`Download of Manifest ${envType} ${prodType} started!`);
+        log(`Download of Manifest ${envType} ${prodType} started!`, 'info');
 
         if (!fs.existsSync(fileName)) {
             const url = `http://manifest.swtor.com/patch/retailclient_publictest.patchmanifest`;
 
             const dl_status = await getRemoteFile(fileName, url).then((res) => {
                 if (res == "done") {
-                    log(`Dowloaded: ${url}.`);
-                    log(`Download complete`);
+                    log(`Dowloaded: ${url}.`, 'info');
+                    log(`Download complete`, 'info');
                 }
             }).catch((err) => {
                 console.log(err);
             });
         } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
+            log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
         }
     } else {
         const fileName = `${saveLoc}/assets_swtor_test_${prodType}.patchmanifest`;
-        log(`Download of Manifest ${envType} ${prodType} started!`);
+        log(`Download of Manifest ${envType} ${prodType} started!`, 'info');
 
         if (!fs.existsSync(fileName)) {
             const url = `http://manifest.swtor.com/patch/assets_swtor_test_${prodType}.patchmanifest`;
 
             const dl_status = await getRemoteFile(fileName, url).then((res) => {
                 if (res == "done") {
-                    log(`Dowloaded: ${url}.`);
-                    log(`Download complete`);
+                    log(`Dowloaded: ${url}.`, 'info');
+                    log(`Download complete`, 'info');
                 }
             }).catch((err) => {
                 console.log(err);
             });
         } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
+            log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
         }
     }
 }
@@ -854,15 +850,15 @@ async function download_manifest_movies(envType, prodType) {
     const saveLoc = cache["output"];
 
     const fileName = `${saveLoc}/movies_${prodType}.patchmanifest`;
-    log(`Download of Manifest ${envType} ${prodType} started!`);
+    log(`Download of Manifest ${envType} ${prodType} started!`, 'info');
 
     if (!fs.existsSync(fileName)) {
         const url = `http://manifest.swtor.com/patch/movies_${prodType}.patchmanifest`;
 
         const dl_status = await getRemoteFile(fileName, url).then((res) => {
             if (res == "done") {
-                log(`Dowloaded: ${url}.`);
-                log(`Download complete`);
+                log(`Dowloaded: ${url}.`, 'info');
+                log(`Download complete`, 'info');
             }
         }).catch((err) => {
             console.log(err);
@@ -876,15 +872,15 @@ async function download_manifest_exp_client(envType, prodType) {
     const clientID = envType;
 
     const fileName = `${saveLoc}/retailclient_${clientID}.patchmanifest`;
-    log(`Download of Manifest ${envType} ${prodType} started!`);
+    log(`Download of Manifest ${envType} ${prodType} started!`, 'info');
 
     if (!fs.existsSync(fileName)) {
         const url = `http://manifest.swtor.com/patch/retailclient_${clientID}.patchmanifest`;
 
         const dl_status = await getRemoteFile(fileName, url).then((res) => {
             if (res == "done") {
-                log(`Dowloaded: ${url}.`);
-                log(`Download complete`);
+                log(`Dowloaded: ${url}.`, 'info');
+                log(`Download complete`, 'info');
             }
         }).catch((err) => {
             console.log(err);
@@ -898,39 +894,39 @@ async function download_solidpkg(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
     if (prodType == "client") {
         const fileName = `${saveLoc}/retailclient_swtor_${xyStr}.solidpkg`;
-        log(`Download of Solidpkg ${envType} ${prodType} started!`);
+        log(`Download of Solidpkg ${envType} ${prodType} started!`, 'info');
 
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${xyStr}.solidpkg`;
 
             const dl_status = await getRemoteFile(fileName, url).then((res) => {
                 if (res == "done") {
-                    log(`Dowloaded: ${url}.`);
-                    log(`Download complete`);
+                    log(`Dowloaded: ${url}.`, 'info');
+                    log(`Download complete`, 'info');
                 }
             }).catch((err) => {
                 console.log(err);
             });
         } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
+            log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
         }
     } else {
         const fileName = `${saveLoc}/assets_swtor_${prodType}_${xyStr}.solidpkg`;
-        log(`Download of Solidpkg ${envType} ${prodType} started!`);
+        log(`Download of Solidpkg ${envType} ${prodType} started!`, 'info');
 
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}.solidpkg`;
 
             const dl_status = await getRemoteFile(fileName, url).then((res) => {
                 if (res == "done") {
-                    log(`Dowloaded: ${url}.`);
-                    log(`Download complete`);
+                    log(`Dowloaded: ${url}.`, 'info');
+                    log(`Download complete`, 'info');
                 }
             }).catch((err) => {
                 console.log(err);
             });
         } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
+            log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
         }
     }
 }
@@ -938,39 +934,39 @@ async function download_solidpkg_pts(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
     if (prodType == "client") {
         const fileName = `${saveLoc}/retailclient_publictest_${xyStr}.solidpkg`;
-        log(`Download of Solidpkg ${envType} ${prodType} started!`);
+        log(`Download of Solidpkg ${envType} ${prodType} started!`, 'info');
 
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${xyStr}.solidpkg`;
 
             const dl_status = await getRemoteFile(fileName, url).then((res) => {
                 if (res == "done") {
-                    log(`Dowloaded: ${url}.`);
-                    log(`Download complete`);
+                    log(`Dowloaded: ${url}.`, 'info');
+                    log(`Download complete`, 'info');
                 }
             }).catch((err) => {
                 console.log(err);
             });
         } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
+            log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
         }
     } else {
         const fileName = `${saveLoc}/assets_swtor_test_${prodType}_${xyStr}.solidpkg`;
-        log(`Download of Solidpkg ${envType} ${prodType} started!`);
+        log(`Download of Solidpkg ${envType} ${prodType} started!`, 'info');
 
         if (!fs.existsSync(fileName)) {
             const url = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}.solidpkg`;
 
             const dl_status = await getRemoteFile(fileName, url).then((res) => {
                 if (res == "done") {
-                    log(`Dowloaded: ${url}.`);
-                    log(`Download complete`);
+                    log(`Dowloaded: ${url}.`, 'info');
+                    log(`Download complete`, 'info');
                 }
             }).catch((err) => {
                 console.log(err);
             });
         } else {
-            log(`You already downloaded this zip. To download again delete the existing version.`);
+            log(`You already downloaded this zip. To download again delete the existing version.`, 'alert');
         }
     }
 }
@@ -978,15 +974,15 @@ async function download_solidpkg_movies(to, xyStr, envType, prodType) {
     const saveLoc = cache["output"];
 
     const fileName = `${saveLoc}/movies_${prodType}_${xyStr}.solidpkg`;
-    log(`Download of Solidpkg ${envType} ${prodType} started!`);
+    log(`Download of Solidpkg ${envType} ${prodType} started!`, 'info');
 
     if (!fs.existsSync(fileName)) {
         const url = `http://cdn-patch.swtor.com/patch/movies_${prodType}/movies_${prodType}_${xyStr}.solidpkg`;
 
         const dl_status = await getRemoteFile(fileName, url).then((res) => {
             if (res == "done") {
-                log(`Dowloaded: ${url}.`);
-                log(`Download complete`);
+                log(`Dowloaded: ${url}.`, 'info');
+                log(`Download complete`, 'info');
             }
         }).catch((err) => {
             console.log(err);
@@ -1000,15 +996,15 @@ async function download_solidpkg_exp_client(to, xyStr, envType, prodType) {
     const clientID = envType;
 
     const fileName = `${saveLoc}/retailclient_${clientID}_${xyStr}.solidpkg`;
-    log(`Download of Solidpkg ${envType} ${prodType} started!`);
+    log(`Download of Solidpkg ${envType} ${prodType} started!`, 'info');
 
     if (!fs.existsSync(fileName)) {
         const url = `http://cdn-patch.swtor.com/patch/${clientID}/retailclient_${clientID}/retailclient_${clientID}_${xyStr}.solidpkg`;
 
         const dl_status = await getRemoteFile(fileName, url).then((res) => {
             if (res == "done") {
-                log(`Dowloaded: ${url}.`);
-                log(`Download complete`);
+                log(`Dowloaded: ${url}.`, 'info');
+                log(`Download complete`, 'info');
             }
         }).catch((err) => {
             console.log(err);
@@ -1026,7 +1022,7 @@ async function checkDate_files(to, xyStr, envType, prodType) {
         const solidPkg = await getSolidPkg(solidPkgFile, solidPkgSsn);
         
         const date = solidPkg.created;
-        log(`Released on: ${date}`);
+        log(`Released on: ${date}`, 'info');
     } else {
         const solidPkgURL = `http://cdn-patch.swtor.com/patch/swtor/assets_swtor_${prodType}/assets_swtor_${prodType}_${xyStr}.solidpkg`;
         const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
@@ -1034,7 +1030,7 @@ async function checkDate_files(to, xyStr, envType, prodType) {
         const solidPkg = await getSolidPkg(solidPkgFile, solidPkgSsn);
         
         const date = solidPkg.created;
-        log(`Released on: ${date}`);
+        log(`Released on: ${date}`, 'info');
     }
 }
 async function checkDate_files_pts(to, xyStr, envType, prodType) {
@@ -1045,7 +1041,7 @@ async function checkDate_files_pts(to, xyStr, envType, prodType) {
         const solidPkg = await getSolidPkg(solidPkgFile, solidPkgSsn);
         
         const date = solidPkg.created;
-        log(`Released on: ${date}`);
+        log(`Released on: ${date}`, 'info');
     } else {
         const solidPkgURL = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${prodType}/assets_swtor_test_${prodType}_${xyStr}.solidpkg`;
         const solidPkgFile = await (await fetch(solidPkgURL)).arrayBuffer();
@@ -1053,7 +1049,7 @@ async function checkDate_files_pts(to, xyStr, envType, prodType) {
         const solidPkg = await getSolidPkg(solidPkgFile, solidPkgSsn);
         
         const date = solidPkg.created;
-        log(`Released on: ${date}`);
+        log(`Released on: ${date}`, 'info');
     }
 }
 async function checkDate_movies(to, xyStr, envType, prodType) {
@@ -1063,7 +1059,7 @@ async function checkDate_movies(to, xyStr, envType, prodType) {
     const solidPkg = await getSolidPkg(solidPkgFile, solidPkgSsn);
     
     const date = solidPkg.created;
-    log(`Released on: ${date}`);
+    log(`Released on: ${date}`, 'info');
 }
 async function checkDate_exp_client(to, xyStr, envType, prodType) {
     const clientID = envType;
@@ -1073,7 +1069,7 @@ async function checkDate_exp_client(to, xyStr, envType, prodType) {
     const solidPkg = await getSolidPkg(solidPkgFile, solidPkgSsn);
     
     const date = solidPkg.created;
-    log(`Released on: ${date}`);
+    log(`Released on: ${date}`, 'info');
 }
 //utility methods
 
@@ -1108,12 +1104,14 @@ async function getRemoteFile(dest, url) {
 //read solidpkg
 async function getSolidPkg(ssnFile, fileEntries) {
     if (fileEntries.length !== 1) {
-        log(`Expected .solidpkg to contain 1 file but it had "${fileEntries.length}" files.`);
+        log(`Expected .solidpkg to contain 1 file but it had "${fileEntries.length}" files.`, 'error');
+        break;
     }
     
     const firstFile = fileEntries[0];
     if (firstFile.name !== 'metafile.solid') {
-        log(`Expected .solidpkg to contain a file called metafile.solid but it is called "${firstFile.name}".`);
+        log(`Expected .solidpkg to contain a file called metafile.solid but it is called "${firstFile.name}".`, 'error');
+        break;
     }
 
     const stream = ssn.arrayBufferToStream(ssnFile, firstFile.offset);

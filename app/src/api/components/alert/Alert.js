@@ -7,8 +7,9 @@ class LogAlert extends HTMLElement {
         const styles = document.createElement('style');
         styles.textContent = `
             .alert-background {
+                z-index: 1000;
                 position: fixed;
-                top: 5px;
+                top: 35px;
                 right: 0;
                 padding: 5px;
                 border-radius: 4px;
@@ -39,6 +40,8 @@ class LogAlert extends HTMLElement {
             .msg-header {
                 margin-left: 6px;
                 font-size: 16px;
+                color: white;
+                font-family: 'Eurofont';
             }
 
             .fa-info {

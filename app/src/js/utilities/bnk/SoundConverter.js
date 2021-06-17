@@ -105,7 +105,7 @@ function initListeners() {
         if (oggs.length > 0) {
             setSounds(oggs, outputFolder);
         } else {
-            log('Your output folder has no .ogg files in it.')
+            log('Your output folder has no .ogg files in it.', 'alert');
         }
     });
 
@@ -114,7 +114,7 @@ function initListeners() {
         if (fs.existsSync(outputFolder.value)) {
             updateCache("output", outputFolder.value);
         } else {
-            log(`That path is invalid, please input a valid path.`);
+            log(`That path is invalid, please input a valid path.`, 'alert');
             outputFolder.value = cache["output"];
         }
     });
@@ -122,7 +122,7 @@ function initListeners() {
         if (fs.existsSync(soundPathInput.value)) {
             updateCache("soundPath", soundPathInput.value);
         } else {
-            log(`That path is invalid, please input a valid path.`);
+            log(`That path is invalid, please input a valid path.`, 'alert');
             soundPathInput.value = cache["soundPath"];
         }
     });

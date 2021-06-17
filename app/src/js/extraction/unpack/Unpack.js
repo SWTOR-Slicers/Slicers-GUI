@@ -113,16 +113,18 @@ function initListeners() {
     outputInput.addEventListener("change", (e) => {
         if (fs.existsSync(outputInput.value)) {
             updateCache("output", outputInput.value);
+            log(`Assigned new value to output folder: ${outputInput.value}`, 'info');
         } else {
-            log(`That path is invalid, please input a valid path.`);
+            log(`That path is invalid, please input a valid path.`, 'alert');
             outputInput.value = cache["output"];
         }
     });
     filePathInput.addEventListener("change", (e) => {
         if (fs.existsSync(filePathInput.value)) {
             updateCache("unpackPath", filePathInput.value);
+            log(`Assigned new value to unpack path: ${filePathInput.value}`, 'info');
         } else {
-            log(`That path is invalid, please input a valid path.`);
+            log(`That path is invalid, please input a valid path.`, 'alert');
             filePathInput.value = cache["unpackPath"];
         }
     });
@@ -247,7 +249,7 @@ async function extractAdded(targetDir, file, diskFileNames) {
         });
     } catch (error) {
         console.error(`Could not extract file "${file.name}"`, error);
-        log(`Could not extract file "${file.name}"`);
+        log(`Could not extract file "${file.name}"`, 'alert');
     }
 }
 async function unpackManifest(outputDir, patchFile) {
@@ -259,13 +261,13 @@ async function unpackManifest(outputDir, patchFile) {
 
     //Verify .patchmanifest file
     if (fileEntries.length !== 1) {
-        log(`Expected .patchmanifest to contain 1 file but it had "${fileEntries.length}" files.`);
+        log(`Expected .patchmanifest to contain 1 file but it had "${fileEntries.length}" files.`, 'alert');
         return null;
     }
 
     const firstFile = fileEntries[0];
     if (firstFile.name !== 'manifest.xml') {
-        log(`Expected .patchmanifest to contain a file called manifest.xml but it is called "${firstFile.name}".`);
+        log(`Expected .patchmanifest to contain a file called manifest.xml but it is called "${firstFile.name}".`, 'alert');
         return null;
     }
 
@@ -286,7 +288,7 @@ async function unpackManifest(outputDir, patchFile) {
 
     fs.writeFileSync(saveFilePath, JSON.stringify(patchManifestSimple, null, 4));
 
-    log(`Unpacking of ${patchFileName} complete!`);
+    log(`Unpacking of ${patchFileName} complete!`, 'info');
 }
 async function unpackSolidpkg(outputDir, patchFile) {
     const patchFileName = patchFile.substr(patchFile.lastIndexOf("\\") + 1)
@@ -296,12 +298,12 @@ async function unpackSolidpkg(outputDir, patchFile) {
     const fileEntries = ssn.readSsnFile(ssnFile.buffer);
 
     if (fileEntries.length !== 1) {
-        log(`Expected .solidpkg to contain 1 file but it had "${fileEntries.length}" files.`);
+        log(`Expected .solidpkg to contain 1 file but it had "${fileEntries.length}" files.`, 'alert');
     }
     
     const firstFile = fileEntries[0];
     if (firstFile.name !== 'metafile.solid') {
-        log(`Expected .solidpkg to contain a file called metafile.solid but it is called "${firstFile.name}".`);
+        log(`Expected .solidpkg to contain a file called metafile.solid but it is called "${firstFile.name}".`, 'alert');
     }
 
     const stream = ssn.arrayBufferToStream(ssnFile, firstFile.offset);
@@ -321,7 +323,7 @@ async function unpackSolidpkg(outputDir, patchFile) {
 
     fs.writeFileSync(saveFilePath, JSON.stringify(jsonSolidpkg, null, 4));
 
-        log(`Unpacking of ${patchFileName} complete!`);
+        log(`Unpacking of ${patchFileName} complete!`, 'info');
 }
 
 //utility methods
@@ -406,12 +408,12 @@ function getSolidPkgURLFromFileName(patchFileName) {
 }
 async function getSolidpkgData(fileEntries, ssnFile) {
     if (fileEntries.length !== 1) {
-        log(`Expected .solidpkg to contain 1 file but it had "${fileEntries.length}" files.`);
+        log(`Expected .solidpkg to contain 1 file but it had "${fileEntries.length}" files.`, 'alert');
     }
     
     const firstFile = fileEntries[0];
     if (firstFile.name !== 'metafile.solid') {
-        log(`Expected .solidpkg to contain a file called metafile.solid but it is called "${firstFile.name}".`);
+        log(`Expected .solidpkg to contain a file called metafile.solid but it is called "${firstFile.name}".`, 'alert');
     }
 
     const stream = ssn.arrayBufferToStream(ssnFile, firstFile.offset);

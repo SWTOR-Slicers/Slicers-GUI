@@ -206,55 +206,55 @@ function setupListeners() {
     //extraction
     extrBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'extraction');
-        log(`Extraction: Assets started, please stand by.`);
+        log(`Extraction: Assets started, please stand by.`, 'info');
     });
     lctBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'locate');
-        log(`Extraction: Locator started, please stand by.`);
+        log(`Extraction: Locator started, please stand by.`, 'info');
     });
     unpack.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'unpack');
-        log(`Extraction: Unpack started.`);
+        log(`Extraction: Unpack started.`, 'info');
     });
     genHashBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'genHash');
-        log(`Extraction: Generate Hash started, please stand by.`);
+        log(`Extraction: Generate Hash started, please stand by.`, 'info');
     })
 
     //viewers
     gr2ViewBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'gr2Viewer');
-        log(`Viewer: GR2 opened.`);
+        log(`Viewer: GR2 opened.`, 'info');
     });
     nvBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'nodeViewer');
-        log(`Viewer: Node opened.`);
+        log(`Viewer: Node opened.`, 'info');
     });
     modelViewBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'modelViewer');
-        log(`Viewer: Model opened.`);
+        log(`Viewer: Model opened.`, 'info');
     });
     worldViewBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'worldViewer');
-        log(`Viewer: World opened.`);
+        log(`Viewer: World opened.`, 'info');
     });
 
     //utilities
     fileChangerBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'fileChanger');
-        log(`Utlity: File-Changer opened.`);
+        log(`Utlity: File-Changer opened.`, 'info');
     });
     bnkConvBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'convBnk');
-        log(`Utlity: Sound-Converter opened.`);
+        log(`Utlity: Sound-Converter opened.`, 'info');
     });
     getPatchBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'getPatch');
-        log(`Utlity: Patch-Getter opened.`);
+        log(`Utlity: Patch-Getter opened.`, 'info');
     });
     walkthroughBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'walkthrough');
-        log(`Utlity: Walkthrough opened.`);
+        log(`Utlity: Walkthrough opened.`, 'info');
     });
 
     //log related
@@ -263,7 +263,7 @@ function setupListeners() {
         const temp = logDisplay.children[logDisplay.children.length - 1];
         logDisplay.innerHTML = "";
         logDisplay.appendChild(temp);
-        log('Log sucecssfully cleared!');
+        log('Log sucecssfully cleared!', 'info');
     });
     saveLogToFile.addEventListener('click', (e) => {
         //save log
@@ -326,7 +326,7 @@ function initSubscribes() {
     ipcRenderer.on('isDirAsset', (event, data) => {
         const exists = data[0];
         if (exists) {
-            log(`Assigned new path to assetsFolder field.`)
+            log(`Assigned new path to assetsFolder field.`, 'info')
             oldAssetValue = assetTextField.value;
             assetTextField.dispatchEvent(updateTooltipEvent);
             if (!data[1]) {
@@ -334,7 +334,7 @@ function initSubscribes() {
                 extractionPreset.nextElementSibling.classList.add('disabled');
             }
         } else {
-            log(`Invalid path. Reseting assetsFolder field to ${oldAssetValue}`);
+            log(`Invalid path. Reseting assetsFolder field to ${oldAssetValue}`, 'alert');
             assetTextField.value = oldAssetValue;
         }
     });
@@ -343,11 +343,11 @@ function initSubscribes() {
     });
     ipcRenderer.on('isDirOut', (event, data) => {
         if (data) {
-            log(`Assigned new path to outputFolder field.`)
+            log(`Assigned new path to outputFolder field.`, 'info')
             oldOutputValue = outputTextField.value;
             outputTextField.dispatchEvent(updateTooltipEvent);
         } else {
-            log(`Invalid path. Reseting outputFolder field to ${oldOutputValue}`);
+            log(`Invalid path. Reseting outputFolder field to ${oldOutputValue}`, 'alert');
             outputTextField.value = oldOutputValue;
         }
     });
@@ -356,59 +356,59 @@ function initSubscribes() {
     });
     ipcRenderer.on('isDirDat', (event, data) => {
         if (data) {
-            log(`Assigned new path to dataFolder field.`)
+            log(`Assigned new path to dataFolder field.`, 'info')
             oldDataValue = dataTextField.value;
             dataTextField.dispatchEvent(updateTooltipEvent);
         } else {
-            log(`Invalid path. Reseting dataFolder field to ${oldDataValue}`);
+            log(`Invalid path. Reseting dataFolder field to ${oldDataValue}`, 'alert');
             dataTextField.value = oldDataValue;
         }
     });
     ipcRenderer.on('extrCompl', (event, data) => {
-        log(`Extraction: Assets finished.`);
+        log(`Extraction: Assets finished.`, 'info');
     });
     ipcRenderer.on('locCompl', (event, data) => {
-        log(`Extraction: Locator finished.`);
+        log(`Extraction: Locator finished.`, 'info');
     });
     ipcRenderer.on('unpkCompl', (event, data) => {
-        log(`Extraction: Unpack finished.`);
+        log(`Extraction: Unpack finished.`, 'info');
     });
     ipcRenderer.on('genHashCompl', (event, data) => {
-        log(`Extraction: Generate Hash finished.`);
+        log(`Extraction: Generate Hash finished.`, 'info');
     });
     ipcRenderer.on('gr2ViewClosed', (event, data) => {
-        log(`Viewer: GR2 closed.`);
+        log(`Viewer: GR2 closed.`, 'info');
     });
     ipcRenderer.on('nodeViewClosed', (event, data) => {
-        log(`Viewer: Node closed.`);
+        log(`Viewer: Node closed.`, 'info');
     });
     ipcRenderer.on('modViewClosed', (event, data) => {
-        log(`Viewer: Model closed.`);
+        log(`Viewer: Model closed.`, 'info');
     });
     ipcRenderer.on('worViewClosed', (event, data) => {
-        log(`Viewer: World closed.`);
+        log(`Viewer: World closed.`, 'info');
     });
     ipcRenderer.on('utilFileChngClosed', (event, data) => {
-        log(`Utility: File-Changer closed.`);
+        log(`Utility: File-Changer closed.`, 'info');
     });
     ipcRenderer.on('utilBnkClosed', (event, data) => {
-        log(`Utility: Sound-Converter closed.`);
+        log(`Utility: Sound-Converter closed.`, 'info');
     });
     ipcRenderer.on('utilGPClosed', (event, data) => {
-        log(`Utility: Patch-Getter closed.`);
+        log(`Utility: Patch-Getter closed.`, 'info');
     });
     ipcRenderer.on('walkthroughClosed', (event, data) => {
-        log(`Utility: Walkthrough closed.`);
+        log(`Utility: Walkthrough closed.`, 'info');
     });
     ipcRenderer.on('loggedToFile', (event, data) => {
-        log(`Log sucessfully written to file. Location: ` + data[0]);
+        log(`Log sucessfully written to file. Location: ` + data[0], 'info');
     });
     ipcRenderer.on('loggerWindowClosed', (event, data) => {
         expComprLogBtn.classList.remove('popped');
         expComprLogBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
         poppedOutCover.style.display = '';
         expComprLogBtn.dispatchEvent(updateTooltipEvent);
-        log(`Logger Compressed`);
+        log(`Logger Compressed`, 'info');
     });
     ipcRenderer.on('sendPoppedLoggerData', (event, data) => {
         let logStr = [];
@@ -423,10 +423,10 @@ function initSubscribes() {
 async function processResponse(data, elem, param) {
     elem.value = data[0];
     elem.dispatchEvent(updateTooltipEvent);
-    log(`Assigned new path to ${param} field.`)
+    log(`Assigned new path to ${param} field.`, 'info')
 }
 
-function log(message) {
+function log(message, type=null) {
     ipcRenderer.send('logToPopped', message);
     let logMsg = message + "\n";
 
@@ -437,6 +437,12 @@ function log(message) {
     let termText = logDisplay.children[logDisplay.children.length - 1];
     logDisplay.insertBefore(div, termText);
 
+    if (type) {
+        const alertElem = document.getElementsByTagName('log-alert')[0];
+        alertElem.setAttribute('type', type);
+        alertElem.setAttribute('visible', "true");
+    }
+    
     termText.scrollIntoView();
 }
 

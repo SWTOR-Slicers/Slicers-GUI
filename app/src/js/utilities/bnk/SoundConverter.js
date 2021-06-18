@@ -4,6 +4,7 @@ import { resourcePath } from "../../universal/ResourcePath.js"
 import { log } from "../../universal/Logger.js";
 import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { setSounds } from './MusicPlayer.js';
+import { ww2ogg } from '../../Util.js';
 
 const fs = require('fs');
 const http = require('http');
@@ -158,56 +159,36 @@ async function initSoundConv(outputDir, soundPath) {
         for (let i = 0; i < dirContents.length; i++) {
             const soundFile = dirContents[i];
             await downloadSoundFile(outputDir, soundFile);
+            
+            const percentage = (100.0 * i / dirContents.length).toFixed(2);
+            progressBar.style.width = `${percentage}%`;
         }
+        progressBar.style.width = `0%`;
     } else {
         const soundFile = soundPath;
         await downloadSoundFile(outputDir, soundFile);
     }
 }
-//get file using http library
-async function getRemoteFile(dest, url) {
-    return new Promise((resolve, reject) => {
-        const request = http.get(url, (response) => {
-            if (response.statusCode == 200) {
-                const file = fs.createWriteStream(dest);
-                response.pipe(file);
 
-                var len = parseInt(response.headers['content-length'], 10);
-                var downloaded = 0;
-            
-                response.on('data', (chunk) => {
-                    downloaded += chunk.length;
-                    const percentage = (100.0 * downloaded / len).toFixed(2);
-                    progressBar.style.width = `${percentage}%`;
-                });
-
-                file.on('finish', () => {
-                    progressBar.style.width = ``;
-                    resolve("done");
-                });
-            } else {
-                reject("error");
-            }
-        });
-    });
-}
-
-async function downloadSoundFile(filePath) {
+async function downloadSoundFile(outputPath, filePath) {
     const fileData = fs.readFileSync(filePath).buffer;
 
     if (path.extname(filePath) == ".bnk") {
         const bnk = new BNK(fileData);
 
-        for (const file of bnk.sections.DIDX.files) {
-            const oggBuffer = new WEM(fileData, file.offset, file.size).oggBuffer;
-            console.log(oggBuffer);
-            // const blob = new Blob([oggBuffer]);
-            // const dName = file.id + '.ogg';
-            
-            // fs.writeFileSync(path.join(outputPath, dName), Buffer.from(await blob.arrayBuffer()));
+        if (bnk.sections.DIDX) {
+            for (let i = 0; i < bnk.sections.DIDX.files.length; i++) {
+                const file = bnk.sections.DIDX.files[i];
+                const oggBuffer = ww2ogg(file.dv);
+                console.log(oggBuffer);
+                const blob = new Blob([oggBuffer]);
+                const dName = file.id + '.ogg';
+                
+                fs.writeFileSync(path.join(outputPath, dName), Buffer.from(await blob.arrayBuffer()));
+            }
         }
     } else if (path.extname(filePath) == ".wem") {
-        const oggBuffer = new WEM(fileData, file.offset, file.size).oggBuffer;
+        const oggBuffer = new WEM(fileData).oggBuffer;
         const blob = new Blob([oggBuffer]);
         const dName = path.basename().substring(0, path.basename().lastIndexOf('.')) + '.ogg';
         

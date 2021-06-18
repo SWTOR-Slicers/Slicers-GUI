@@ -1,3 +1,5 @@
+import { codebooks } from "./classes/Cookbooks.js";
+
 export function ww2ogg(dv) {
     var pos = 0;
     var reader = new BitReader(dv);

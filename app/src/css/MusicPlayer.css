@@ -117,6 +117,7 @@ html, body {
     transform: translateY(-100%);
 }
 .music-container-background .progress-bar-container {
+    pointer-events: all;
     background: #fff;
     border-radius: 5px;
     cursor: pointer;
@@ -124,7 +125,11 @@ html, body {
     height: 4px;
     width: 100%;
 }
+.music-container-background .progress-bar-container:hover {
+    cursor: pointer;
+}
 .music-container-background .progress-bar {
+    pointer-events: all;
     background-color: var(--background-yellow-slicers);
     border-radius: 5px;
     height: 100%;

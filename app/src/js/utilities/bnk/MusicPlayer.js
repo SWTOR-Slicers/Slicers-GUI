@@ -7,13 +7,14 @@ const prev = document.getElementById('prev');
 const play = document.getElementById('play');
 const next = document.getElementById('next');
 
-//progress bar variables
-const progressContainer = document.getElementsByClassName('progress-bar-container')[0];
-const progress = document.getElementsByClassName('progress-bar')[0];
-
 //main container
 const mainContainer = document.getElementsByClassName('music-container-background')[0];
 
+//progress bar variables
+const progressContainer = mainContainer.getElementsByClassName('progress-bar-container')[0];
+const progress = mainContainer.getElementsByClassName('progress-bar')[0];
+
+let isListened = false;
 let audioNames = [];
 let rootDir = "";
 let songIndex = 0;
@@ -23,7 +24,9 @@ export function setSounds(soundsList, soundDir) {
     rootDir = soundDir;
     songIndex = 0;
 
-	initListeners();
+	if (!isListened) {
+		initListeners();
+	}
     loadSong(audioNames[songIndex]);
 }
 
@@ -101,23 +104,22 @@ function DurTime (e) {
 	// define seconds currentTime
 	function getSec (x) {
 		if(Math.floor(x) >= 60){
-			
 			for (var i = 1; i<=60; i++){
 				if(Math.floor(x)>=(60*i) && Math.floor(x)<(60*(i+1))) {
 					sec = Math.floor(x) - (60*i);
 					sec = sec <10 ? '0'+sec:sec;
 				}
 			}
-		}else{
+		} else {
 		 	sec = Math.floor(x);
 		 	sec = sec <10 ? '0'+sec:sec;
-		 }
+		}
 	} 
 
 	getSec (currentTime,sec);
 
 	// change currentTime DOM
-	currTime.innerHTML = min +':'+ sec;
+	// currTime.innerHTML = min +':'+ sec;
 
 	// define minutes duration
 	let min_d = (isNaN(duration) === true)? '0':
@@ -127,18 +129,17 @@ function DurTime (e) {
 
 	function getSecD (x) {
 		if(Math.floor(x) >= 60){
-			
 			for (var i = 1; i<=60; i++){
 				if(Math.floor(x)>=(60*i) && Math.floor(x)<(60*(i+1))) {
 					sec_d = Math.floor(x) - (60*i);
 					sec_d = sec_d <10 ? '0'+sec_d:sec_d;
 				}
 			}
-		}else{
+		} else {
 		 	sec_d = (isNaN(duration) === true)? '0':
 		 	Math.floor(x);
 		 	sec_d = sec_d <10 ? '0'+sec_d:sec_d;
-		 }
+		}
 	} 
 
 	// define seconds duration
@@ -146,13 +147,12 @@ function DurTime (e) {
 	getSecD (duration);
 
 	// change duration DOM
-	durTime.innerHTML = min_d +':'+ sec_d;
+	// durTime.innerHTML = min_d +':'+ sec_d;
 		
 };
 
 function initListeners() {
 	// Event listeners
-	console.log(play)
 	play.addEventListener('click', () => {
 		const isPlaying = mainContainer.classList.contains('play');
 
@@ -177,5 +177,5 @@ function initListeners() {
 	currentSoundFile.addEventListener('ended', nextSong);
 
 	// Time of song
-	currentSoundFile.addEventListener('timeupdate', DurTime);
+	// currentSoundFile.addEventListener('timeupdate', DurTime);
 }

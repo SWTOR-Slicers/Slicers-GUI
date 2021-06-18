@@ -7,7 +7,6 @@ import { setSounds } from './MusicPlayer.js';
 import { ww2ogg } from '../../Util.js';
 
 const fs = require('fs');
-const http = require('http');
 const {ipcRenderer} = require('electron');
 const path = require('path');
 
@@ -101,10 +100,10 @@ function initListeners() {
     outputBrowserBtn.addEventListener("click", (e) => { ipcRenderer.send("showDialogSoundConv", "output"); });
     convertFile.addEventListener("click", (e) => { initSoundConv(cache["output"], cache["soundPath"]); });
     loadPreview.addEventListener('click', (e) => {
-        const contents = fs.readdirSync(outputFolder);
-        const oggs = contents.filter(f => path.extname(f) == "ogg");
+        const contents = fs.readdirSync(outputFolder.value);
+        const oggs = contents.filter(f => path.extname(f) == ".ogg");
         if (oggs.length > 0) {
-            setSounds(oggs, outputFolder);
+            setSounds(oggs, outputFolder.value);
         } else {
             log('Your output folder has no .ogg files in it.', 'alert');
         }

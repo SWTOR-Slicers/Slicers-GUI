@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../css/universal.css">
     <link rel="stylesheet" href="../css/SoundConverter.css">
     <link rel="stylesheet" href="../css/tooltips.css">
+    <link rel="stylesheet" href="../css/MusicPlayer.css">
     <title>SWTOR Sound Converter</title>
 </head>
 <body>
@@ -41,7 +42,34 @@
                 </div>
                 
                 <div class="music-previewer-container">
-                    <iframe src="./MusicPlayer.html" frameborder="0"></iframe>
+                    <div class="music-container-background unselectable">
+                        <div class="player-info">
+                            <h4 id="title">Placeholder</h4>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </div>
+                        <div class="music-player-container">
+                    
+                            <audio src="" id="currentSoundFile"></audio>
+                    
+                            <div class="record-container">
+                                <img src="../img/SlicersLogo.png" alt="record">
+                            </div>
+                    
+                            <div class="sound-nav">
+                                <button id="prev" class="sound-nav-btn">
+                                    <i class="fas fa-backward"></i>
+                                </button>
+                                <button id="play" class="sound-nav-btn sound-nav-btn-large">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button id="next" class="sound-nav-btn">
+                                    <i class="fas fa-forward"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="patch-actions">
@@ -54,6 +82,8 @@
             </div>
         </div>
     </div>
+    
+    <script type="module" src="../js/utilities/bnk/MusicPlayer.js"></script>
 
     <script type="module" src="../api/components/alert/Alert.js"></script>
     <script type="module" src="../api/components/titleBar/WindowTitleBar.js"></script>

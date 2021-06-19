@@ -346,7 +346,6 @@ function initSetupUI() {
     icon: "src/img/SlicersLogo.ico"
   });
 
-  //mainWindow.setResizable(false);
   setupWindow.removeMenu();
   setupWindow.loadFile('./src/html/Setup.html');
 
@@ -443,7 +442,13 @@ function initSettingsWindow() {
 function initSettingsListeners(window) {
   ipcMain.on('settingsSaved', (event, data) => {
     const settingsArr = data[0];
+    const changedFields = data[1];
+    
     console.log(settingsArr);
+    console.log(changedFields);
+  });
+  ipcMain.on('settingsCanceled', (event, data) => {
+    window.close();
   });
 }
 //logger
@@ -501,7 +506,6 @@ function initUnpackerGUI() {
   });
 
   unpackerWindow.removeMenu();
-  //unpackerWindow.setResizable(false);
   unpackerWindow.loadURL(`${__dirname}/src/html/Unpacker.html`);
 
   unpackerWindow.on('close', (e) => {
@@ -552,7 +556,6 @@ function initGetPatchGUI() {
   });
 
   getPatchWindow.removeMenu();
-  //getPatchWindow.setResizable(false);
   getPatchWindow.loadURL(`${__dirname}/src/html/GetPatch.html`);
 
   getPatchWindow.on('close', (e) => {

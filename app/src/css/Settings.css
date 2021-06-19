@@ -92,3 +92,20 @@ html, body {
 .setting {
     margin-left: 10px;
 }
+
+.music-select-cont {
+    margin-left: 20px;
+}
+
+.settings-btns-container {
+    width: calc(100% - 20px);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 10px 0px;
+}
+
+.settings-btn {
+    margin-right: 10px;
+}

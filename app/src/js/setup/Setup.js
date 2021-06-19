@@ -1,4 +1,4 @@
-import { resourcePath, updateResourcePath } from "../universal/ResourcePath.js";
+import { resourcePath, updateResourcePath } from "../../api/config/resourcePath/ResourcePath.js";
 import { addTooltip, updateTooltipEvent } from "../universal/Tooltips.js";
 
 const fs = require('fs');

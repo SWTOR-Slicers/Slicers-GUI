@@ -1,0 +1,50 @@
+.alert-background {
+    z-index: 1000;
+    position: fixed;
+    top: 35px;
+    right: 0;
+    padding: 5px;
+    border-radius: 4px;
+    height: 26px;
+    width: 200px;
+    background-color: black;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    transform: translateX(100%);
+    transition: transform 0.5s ease-in;
+}
+.visible {
+    transform: translateX(0%);
+}
+
+.alert-background .icon-container {
+    margin: 0px 5px;
+    width: 22px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.alert-background .msg-header {
+    margin-left: 6px;
+    font-size: 16px;
+    color: white;
+    font-family: 'Eurofont';
+}
+
+.alert-background .fa-info {
+    font-size: 18px;
+    color: #1388e8;
+}
+.alert-background .fa-exclamation-triangle {
+    font-size: 18px;
+    color: yellow;
+}
+.alert-background .fa-minus-circle {
+    font-size: 18px;
+    color: red;
+}

@@ -1,4 +1,4 @@
-import {resourcePath} from "../../universal/ResourcePath.js"
+import {resourcePath} from "../../../api/config/resourcePath/ResourcePath.js";
 import { log } from "../../universal/Logger.js";
 import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 
@@ -1105,13 +1105,13 @@ async function getRemoteFile(dest, url) {
 async function getSolidPkg(ssnFile, fileEntries) {
     if (fileEntries.length !== 1) {
         log(`Expected .solidpkg to contain 1 file but it had "${fileEntries.length}" files.`, 'error');
-        break;
+        return;
     }
     
     const firstFile = fileEntries[0];
     if (firstFile.name !== 'metafile.solid') {
         log(`Expected .solidpkg to contain a file called metafile.solid but it is called "${firstFile.name}".`, 'error');
-        break;
+        return;
     }
 
     const stream = ssn.arrayBufferToStream(ssnFile, firstFile.offset);

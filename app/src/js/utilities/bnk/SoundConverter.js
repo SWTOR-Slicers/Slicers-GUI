@@ -1,6 +1,6 @@
 import { WEM } from '../../classes/WEM.js';
 import { BNK } from '../../classes/BNK.js';
-import { resourcePath } from "../../universal/ResourcePath.js"
+import { resourcePath } from "../../../api/config/resourcePath/ResourcePath.js";
 import { log } from "../../universal/Logger.js";
 import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { setSounds } from './MusicPlayer.js';

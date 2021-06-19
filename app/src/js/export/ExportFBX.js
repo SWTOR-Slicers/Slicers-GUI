@@ -1,4 +1,4 @@
-import {resourcePath} from "../universal/ResourcePath.js"
+import {resourcePath} from "../../api/config/resourcePath/ResourcePath.js";
 const fs = require('fs');
 const path = require('path');
 

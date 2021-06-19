@@ -22,40 +22,79 @@
                 <div class="settings-container">
                     <div class="setting-elem">
                         <div class="setting-info">
-                            <div class="setting-label">Test Option: </div>
+                            <div class="setting-label">Alert Notifications: </div>
                             <div class="setting">
-                                <thumb-slider id="test"></thumb-slider>
-                            </div>
-                        </div>
-                        <div class="setting-desc">
-                            <p>
-                                Lorem ipsum, dolor sit amet consectetur adipisicing elit. Facere inventore veniam, dolorem sit repellat consequatur quas quidem illo perspiciatis aperiam deserunt voluptas neque nisi labore.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="setting-elem">
-                        <div class="setting-info">
-                            <div class="setting-label">Test Option 2: </div>
-                            <div class="setting">
-                                <select name="testOp2" id="testOp2" is="drop-down">
-                                    <option value="0">Test 1</option>
-                                    <option value="1">Test 1</option>
-                                    <option value="2">Test 2</option>
-                                    <option value="3">Test 3</option>
-                                    <option value="4">Test 4</option>
-                                    <option value="5">Test 5</option>
-                                    <option value="6">Test 6</option>
-                                    <option value="7">Test 7</option>
+                                <select name="alertNotif" id="alertNotif" is="drop-down">
+                                    <option value="0">All</option>
+                                    <option value="all">All</option>
+                                    <option value="alert">Alert</option>
+                                    <option value="none">None</option>
                                 </select>
                             </div>
                         </div>
                         <div class="setting-desc">
                             <p>
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Excepturi, dolores eveniet! Tempore cupiditate consequuntur dolorum obcaecati, veniam esse alias voluptatibus.
+                                Determines which log types create alert notifications. Setting applies to all app windows.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="setting-elem">
+                        <div class="setting-info">
+                            <div class="setting-label">Display Tooltips: </div>
+                            <div class="setting">
+                                <thumb-slider id="useLabelTooltips" checked></thumb-slider>
+                            </div>
+                        </div>
+                        <div class="setting-desc">
+                            <p>
+                                Enables/disables the tooltips that are on most of the input field labels and buttons. (These do not include the tooltips that show the full path of file/folder input fields)
+                                <br/>
+                                <b style="color: rgb(255, 102, 0); font-weight: normal;">IMPORTANT NOTE: In order for this setting to take effect, you need to reboot the app.</b>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="setting-elem">
+                        <div class="setting-info">
+                            <div class="setting-label">Path Tooltips: </div>
+                            <div class="setting">
+                                <thumb-slider id="usePathTooltips" checked></thumb-slider>
+                            </div>
+                        </div>
+                        <div class="setting-desc">
+                            <p>
+                                Enables/disables the tooltips that are on most of the input fields. (These do not include the tooltips on field labels and buttons)
+                                <br/>
+                                <b style="color: rgb(255, 102, 0); font-weight: normal;">IMPORTANT NOTE: In order for this setting to take effect, you need to reboot the app.</b>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="setting-elem">
+                        <div class="setting-info">
+                            <div class="setting-label">Ambient Background Music: </div>
+                            <div class="setting">
+                                <thumb-slider id="ambientMusicEnabled"></thumb-slider>
+                            </div>
+                            <div class="music-select-cont" id="ambientMusicSelectContainer">
+                                <select name="ambientMusicSelect" id="ambientMusicSelect" is="drop-down">
+                                    <option value="0">Theme</option>
+                                    <option value="theme">Theme</option>
+                                    <option value="alderaan">Alderaan</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="setting-desc">
+                            <p>
+                                Enables/disables ambient music that is played in the background of the app. If enabled you also have the option to set your own music file(s).
+                                
                             </p>
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="settings-btns-container">
+                <button class="disabled settings-btn container-bottom__sub__btn" id="saveAll"> Save Changes</button>
+                <button class="disabled settings-btn container-bottom__sub__btn" id="cancelAll">Cancel</button>
             </div>
         </div>
     </div>

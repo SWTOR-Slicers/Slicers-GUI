@@ -7,7 +7,7 @@ import { GR2 } from "../../classes/GR2.js";
 import { exportObj } from "../../export/ExportObj.js";
 import { exportJSON } from "../../export/ExportJSON.js";
 import { exportFBX } from "../../export/ExportFBX.js";
-import { resourcePath } from "../../universal/ResourcePath.js";
+import { resourcePath } from "../../../api/config/resourcePath/ResourcePath.js";
 
 const fs = require('fs');
 const path = require('path');

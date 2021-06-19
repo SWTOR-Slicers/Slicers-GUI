@@ -88,6 +88,10 @@
 .browse-paths__button:focus {
     outline: 1px solid #ffce00;
 }
+.element-border {
+    border: 1px solid #000;
+    box-shadow: 0 0 4px rgb(0 0 0 / 50%);
+}
 
 .disabled {
     pointer-events: none;

@@ -13,10 +13,31 @@
 <body>
     <log-alert type="alert" visible="false"></log-alert>
     <window-title class="window-title"></window-title>
-    <div class="settings-page">
-        
+    <div class="settings-page-background">
+        <div class="settings-page">
+            <div class="settings-header">
+                <h1>Slicers GUI Settings</h1>
+            </div>
+            <div class="settings-cont-outer">
+                <div class="settings-container">
+                    <div class="setting-elem">
+                        <div class="setting-info">
+                            <div class="setting-label">Test Option: </div>
+                            <div class="setting">
+                                <thumb-slider id="test"></thumb-slider>
+                            </div>
+                        </div>
+                        <div class="setting-desc">
+                            <p>
+                                Lorem ipsum dolor sit, amet consectetur adipisicing elit. Magni quasi debitis accusamus animi voluptatum perspiciatis accusantium hic sit perferendis minus natus quam culpa minima consequatur cum ducimus eligendi architecto quae pariatur nihil, optio repudiandae ea. Fuga voluptate architecto excepturi beatae!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
+    <script type="module" src="../api/components/thumbSlider/ThumbSlider.js"></script>
     <script type="module" src="../api/components/alert/Alert.js"></script>
     <script type="module" src="../api/components/titleBar/WindowTitleBar.js"></script>
     <script type="module" src="../js/main/settings/GuiSettings.js"></script>

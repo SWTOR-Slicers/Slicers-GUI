@@ -348,6 +348,25 @@ export function readString(buffer, posIn, length = undefined) {
 export function assert(statement, msg) {
     console.assert(statement, msg);
 }
+export function addStyleIfNotExists(href) {
+    const existingStyles = document.getElementsByTagName('link');
+    let exists = false;
+    for (let i = 0; i < existingStyles.length; i++) {
+        const l = existingStyles[i];
+        if (l.href == href) {
+            exists = true;
+            break;
+        }
+    }
+
+    if (!exists) {
+        const head = document.getElementsByTagName('head')[0];
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        head.appendChild(link);
+    }
+}
 class BitReader {
     constructor(dv) {
         this.dv = dv;

@@ -10,7 +10,7 @@ class ThumbSlider extends HTMLElement {
         .switch {
             position: relative;
             display: inline-block;
-            width: 34px;
+            width: 36px;
             height: 20px;
         }
         .switch input {
@@ -32,8 +32,8 @@ class ThumbSlider extends HTMLElement {
         .slider:before {
             position: absolute;
             content: "";
-            height: 14px;
-            width: 14px;
+            height: 15px;
+            width: 15px;
             left: 3px;
             bottom: 3px;
             background-color: rgb(97, 97, 97);
@@ -47,9 +47,9 @@ class ThumbSlider extends HTMLElement {
             box-shadow: 0 0 1px var(--background-yellow-slicers);
         }
         input:checked + .slider:before {
-            -webkit-transform: translateX(14px);
-            -ms-transform: translateX(14px);
-            transform: translateX(14px);
+            -webkit-transform: translateX(15px);
+            -ms-transform: translateX(15px);
+            transform: translateX(15px);
         }
         `;
 

@@ -594,7 +594,6 @@ function initSoundConvGUI() {
   });
 
   soundConverterWindow.removeMenu();
-  soundConverterWindow.webContents.openDevTools();
   soundConverterWindow.loadURL(`${__dirname}/src/html/SoundConverter.html`);
 
   soundConverterWindow.on('close', (e) => {

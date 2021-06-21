@@ -1,6 +1,9 @@
 import { resourcePath } from "../../../api/config/resourcePath/ResourcePath.js";
 import { settingsJSON, updateSettings } from "../../../api/config/settings/Settings.js";
+
+const fs = require("fs");
 const { ipcRenderer } = require("electron");
+const changeEvent = new Event('change');
 
 //DOM elements
 
@@ -23,9 +26,14 @@ const musicPathInput = document.getElementById('musicPathInput');
 const musicFolderUpload = document.getElementById('musicFolderUpload');
 const musicFileUpload = document.getElementById('musicFileUpload');
 
+//change btns
 const saveAll = document.getElementById('saveAll');
 const cancelAll = document.getElementById('cancelAll');
 
+//cancel modal
+const cancelModalBackground = document.getElementById('cancelModalBackground');
+const confirmCancel = document.getElementById('confirmCancel');
+const cancelCancel = document.getElementById('cancelCancel');
 
 const cache = {
     "alerts": "",
@@ -85,14 +93,14 @@ function updateCache(field, value, parent=null) {
 
 function init() {
     loadCache();
+    initSubs();
     initListeners();
 }
 function initListeners() {
     //change buttons
     saveAll.addEventListener('click', (e) => { updateSettings(cache); ipcRenderer.send('settingsSaved', [changedFields]); changedFields = []; });
     cancelAll.addEventListener('click', (e) => {
-        //TODO: make a modal pop up to confirm
-        //if confirmed, send 'settingsCanceled' with ipcRenderer
+        cancelModalBackground.style.display = '';
     });
 
     //alerts
@@ -115,9 +123,37 @@ function initListeners() {
     });
     ambientMusicSelect.clickCallback = (e) => { updateCache('selected', e.currentTarget.innerHTML, 'ambientMusic'); }
     playWhenMin.addEventListener('click', (e) => { updateCache('playMinimized', playWhenMin.checked); });
+
+    musicPathInput.addEventListener('change', (e) => {
+        if (fs.existsSync(e.currentTarget.value)) {
+            updateCache('path', e.currentTarget.value, 'ambientMusic');
+        } else {
+            e.currentTarget.value = cache['ambientMusic']['path'];
+        }
+    });
+    musicFileUpload.addEventListener('click', (e) => { ipcRenderer.send('openMusicFileDialog'); });
+    musicFolderUpload.addEventListener('click', (e) => { ipcRenderer.send('openMusicFolderDialog'); });
+
+
+    //cancel modal
+    confirmCancel.addEventListener('click', (e) => { ipcRenderer.send('settingsCanceled'); });
+    cancelCancel.addEventListener('click', (e) => { cancelModalBackground.style.display = 'none'; });
 }
 function initSubs() {
-
+    ipcRenderer.on('musicFileResponse', (event, data) => {
+        const path = data[0];
+        if (path != '') {
+            musicPathInput.value = path;
+            musicPathInput.dispatchEvent(changeEvent);
+        }
+    });
+    ipcRenderer.on('musicFolderResponse', (event, data) => {
+        const path = data[0];
+        if (path != '') {
+            musicPathInput.value = path;
+            musicPathInput.dispatchEvent(changeEvent);
+        }
+    });
 }
 
 

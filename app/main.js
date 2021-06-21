@@ -451,6 +451,16 @@ function initSettingsListeners(window) {
   ipcMain.on('settingsCanceled', (event, data) => {
     window.close();
   });
+  ipcMain.on("openMusicFolderDialog", async (event, data) => {
+    dialog.showOpenDialog(window, { properties: ['openDirectory'] }).then(async (dir) => {
+      event.reply("musicFolderResponse", (dir.canceled) ? "" : dir.filePaths);
+    });
+  });
+  ipcMain.on("openMusicFileDialog", async (event, data) => {
+    dialog.showOpenDialog(window, { properties: ['openFile'] }).then(async (file) => {
+      event.reply("musicFileResponse", (file.canceled) ? "" : file.filePaths);
+    });
+  });
 }
 //logger
 function initLoggerWindow() {

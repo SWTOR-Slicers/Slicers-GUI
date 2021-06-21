@@ -97,6 +97,15 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="setting-info" style="margin-top: 7px; display: none;" id="customMusicCont">
+                            <input class="paths-field-input" type="text" name="musicPathInput" id="musicPathInput" value="" placeholder="Input music path...">
+                            <button id="musicFolderUpload" class="browse-paths__button" style="margin-right: 7px;">
+                                <i class="fas fa-folder"></i>
+                            </button>
+                            <button id="musicFileUpload" class="browse-paths__button">
+                                <i class="fas fa-file"></i>
+                            </button>
+                        </div>
                         <div class="setting-desc">
                             <p>
                                 Enables/disables ambient music that is played in the background of the app. If enabled you also have the option to set your own music file(s).
@@ -124,6 +133,21 @@
             <div class="settings-btns-container">
                 <button class="disabled settings-btn container-bottom__sub__btn" id="saveAll"> Save Changes</button>
                 <button class="disabled settings-btn container-bottom__sub__btn" id="cancelAll">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <div class="cancel-confirm-modal-background">
+        <div class="cancel-confirm-modal">
+            <div class="cancel-confirm-modal-body">
+                <div class="confirm-msg">
+                    <p>
+                        Are you sure you want to cancel? All changes will be lost.
+                    </p>
+                </div>
+                <div class="confirm-btns">
+                    <button class="settings-btn container-bottom__sub__btn" id="confirmCancel">Confirm</button>
+                    <button class="settings-btn container-bottom__sub__btn" id="cancelCancel">Cancel</button>
+                </div>
             </div>
         </div>
     </div>

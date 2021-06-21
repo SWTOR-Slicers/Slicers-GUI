@@ -18,6 +18,11 @@ const ambientMusicSelect = document.getElementById('ambientMusicSelect');
 const audioDisCont = document.getElementById('audioDisCont');
 const playWhenMin = document.getElementById('playWhenMin');
 
+const customMusicCont = document.getElementById('customMusicCont');
+const musicPathInput = document.getElementById('musicPathInput');
+const musicFolderUpload = document.getElementById('musicFolderUpload');
+const musicFileUpload = document.getElementById('musicFileUpload');
+
 const saveAll = document.getElementById('saveAll');
 const cancelAll = document.getElementById('cancelAll');
 
@@ -49,17 +54,33 @@ async function loadCache() {
 
     //set audio settings
     ambientMusicEnabled.checked = cache.ambientMusic.enabled;
-    ambientMusicSelect.options[0].innerHTML = cache.ambientMusic
-    playWhenMin
+    ambientMusicSelect.options[0].innerHTML = cache.ambientMusic.selected;
+    if (cache.ambientMusic.selected == "Custom") {
+        musicPathInput.value = cache.ambientMusic.path;
+    }
+    playWhenMin.checked = cache['ambientMusic']['selected'];
 }
-
 function updateCache(field, value, parent=null) {
+    if (field == "selected") {
+        if (value == "Custom") {
+            customMusicCont.style.display = '';
+        } else if (cache['ambientMusic']['selected'] == "Custom") {
+            customMusicCont.style.display = 'none';
+        }
+    }
     if (parent) {
         cache[parent][field] = value;
     } else {
         cache[field] = value;
     }
     if (changedFields.includes(field)) changedFields.splice(changedFields.indexOf(field), 1); else changedFields.push(field);
+    if (changedFields.length > 0) {
+        saveAll.classList.remove('disabled');
+        cancelAll.classList.remove('disabled');
+    } else {
+        saveAll.classList.add('disabled');
+        cancelAll.classList.add('disabled');
+    }
 }
 
 function init() {
@@ -68,20 +89,14 @@ function init() {
 }
 function initListeners() {
     //change buttons
-    saveAll.addEventListener('click', (e) => {
-        updateSettings(cache);
-        ipcRenderer.send('settingsSaved', [changedFields]);
-        changedFields = [];
-    });
+    saveAll.addEventListener('click', (e) => { updateSettings(cache); ipcRenderer.send('settingsSaved', [changedFields]); changedFields = []; });
     cancelAll.addEventListener('click', (e) => {
         //TODO: make a modal pop up to confirm
         //if confirmed, send 'settingsCanceled' with ipcRenderer
     });
 
     //alerts
-    alertNotif.clickCallback = (e) => {
-        updateCache('alerts', e.currentTarget.innerHTML);
-    }
+    alertNotif.clickCallback = (e) => { updateCache('alerts', e.currentTarget.innerHTML); }
 
     //tooltips
     useLabelTooltips.addEventListener('click', (e) => { updateCache('useLabelTooltips', useLabelTooltips.checked); });
@@ -98,12 +113,8 @@ function initListeners() {
             audioDisCont.style.display = 'none';
         }
     });
-    ambientMusicSelect.addEventListener('change', (e) => {
-
-    });
-    playWhenMin.addEventListener('click', (e) => {
-
-    });
+    ambientMusicSelect.clickCallback = (e) => { updateCache('selected', e.currentTarget.innerHTML, 'ambientMusic'); }
+    playWhenMin.addEventListener('click', (e) => { updateCache('playMinimized', playWhenMin.checked); });
 }
 function initSubs() {
 

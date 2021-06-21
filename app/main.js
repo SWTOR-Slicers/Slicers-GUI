@@ -325,12 +325,12 @@ function initMainListeners() {
     mainWindow.webContents.send('sendPoppedLoggerData', "");
   });
   ipcMain.on('updateExtractionPreset', (event, data) => {
-    let res = fs.readFileSync(__dirname + "/resources/config.json");
+    let res = fs.readFileSync(path.join(resourcePath, 'config.json'));
     let json = JSON.parse(res);
     json.extraction.extractionPreset = data;
     cache.extraction.extractionPreset = data;
 
-    fs.writeFileSync(__dirname + "/resources/config.json", JSON.stringify(json), 'utf-8');
+    fs.writeFileSync(path.join(resourcePath, 'config.json'), JSON.stringify(json, null, '\t'), 'utf-8');
   });
 }
 //boot config
@@ -378,7 +378,7 @@ function initSetupListeners(window) {
     //set resource paths
     resourcePath = data[0];
 
-    fs.writeFileSync(path.join(sourceResourceDir, 'resources.json'), JSON.stringify(resVal));
+    fs.writeFileSync(path.join(sourceResourceDir, 'resources.json'), JSON.stringify(resVal, null, '\t'));
     updateJSON('assetsFolder', astVal);
     updateJSON('outputFolder', outVal);
 
@@ -733,7 +733,7 @@ async function updateJSON(param, val) {
   json[param] = val;
   cache[param] = val;
 
-  fs.writeFileSync(path.join(resourcePath, "config.json"), JSON.stringify(json), 'utf-8');
+  fs.writeFileSync(path.join(resourcePath, "config.json"), JSON.stringify(json, null, '\t'), 'utf-8');
 }
 //handles installation events
 function handleSquirrelEvent() {

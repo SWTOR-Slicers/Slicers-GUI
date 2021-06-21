@@ -84,7 +84,7 @@ function updateCache(field, val) {
             json["unpacker"][field] = val;
             cache[field] = val;
         
-            fs.writeFileSync(configPath, JSON.stringify(json), 'utf-8');
+            fs.writeFileSync(configPath, JSON.stringify(json, null, '\t'), 'utf-8');
 
             if (field == "output") {
                 outputInput.dispatchEvent(updateTooltipEvent);
@@ -286,7 +286,7 @@ async function unpackManifest(outputDir, patchFile) {
     //convert JSON-converted XML to an easier to read JSON
     const patchManifestSimple = ssn.parsePatchmanifest(patchManifestJson);
 
-    fs.writeFileSync(saveFilePath, JSON.stringify(patchManifestSimple, null, 4));
+    fs.writeFileSync(saveFilePath, JSON.stringify(patchManifestSimple, null, '\t'));
 
     log(`Unpacking of ${patchFileName} complete!`, 'info');
 }
@@ -321,7 +321,7 @@ async function unpackSolidpkg(outputDir, patchFile) {
         pieces: solidContents.info.pieces,
     };
 
-    fs.writeFileSync(saveFilePath, JSON.stringify(jsonSolidpkg, null, 4));
+    fs.writeFileSync(saveFilePath, JSON.stringify(jsonSolidpkg, null, '\t'));
 
         log(`Unpacking of ${patchFileName} complete!`, 'info');
 }

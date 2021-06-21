@@ -125,7 +125,7 @@ function updateCache(field, val) {
             json["getPatch"][field] = val;
             cache[field] = val;
         
-            fs.writeFileSync(configPath, JSON.stringify(json), 'utf-8');
+            fs.writeFileSync(configPath, JSON.stringify(json, null, '\t'), 'utf-8');
         }
 
         if (field == "output") {

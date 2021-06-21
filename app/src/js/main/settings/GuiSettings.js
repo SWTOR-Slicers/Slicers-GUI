@@ -99,9 +99,7 @@ function init() {
 function initListeners() {
     //change buttons
     saveAll.addEventListener('click', (e) => { updateSettings(cache); ipcRenderer.send('settingsSaved', [changedFields]); changedFields = []; });
-    cancelAll.addEventListener('click', (e) => {
-        cancelModalBackground.style.display = '';
-    });
+    cancelAll.addEventListener('click', (e) => { cancelModalBackground.style.display = ''; });
 
     //alerts
     alertNotif.clickCallback = (e) => { updateCache('alerts', e.currentTarget.innerHTML); }
@@ -136,7 +134,7 @@ function initListeners() {
 
 
     //cancel modal
-    confirmCancel.addEventListener('click', (e) => { ipcRenderer.send('settingsCanceled'); });
+    confirmCancel.addEventListener('click', (e) => { ipcRenderer.send('settingsCanceled'); cancelModalBackground.style.display = 'none'; });
     cancelCancel.addEventListener('click', (e) => { cancelModalBackground.style.display = 'none'; });
 }
 function initSubs() {

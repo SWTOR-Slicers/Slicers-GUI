@@ -11,7 +11,7 @@ let settingsJSON = resJson;
 
 function updateSettings(settingsJson) {
     settingsJSON = settingsJson;
-    fs.writeFileSync(settingsJsonPath, settingsJSON);
+    fs.writeFileSync(settingsJsonPath, JSON.stringify(settingsJSON, null, '\t'));
 }
 
 export { settingsJSON, updateSettings };

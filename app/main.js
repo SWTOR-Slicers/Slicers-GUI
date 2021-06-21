@@ -441,11 +441,12 @@ function initSettingsWindow() {
 }
 function initSettingsListeners(window) {
   ipcMain.on('settingsSaved', (event, data) => {
-    const settingsArr = data[0];
-    const changedFields = data[1];
-    
-    console.log(settingsArr);
+    const changedFields = data[0];
+
     console.log(changedFields);
+
+    //TODO: once its working, apply for all windows
+    mainWindow.webContents.send('updateSettings', changedFields);
   });
   ipcMain.on('settingsCanceled', (event, data) => {
     window.close();

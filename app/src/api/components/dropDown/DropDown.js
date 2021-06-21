@@ -4,6 +4,8 @@ class DropDown extends HTMLSelectElement {
     constructor() {
         super();
 
+        this.clickCallback = (e) => {}
+
         const body = document.getElementsByTagName('body')[0];
 
         addStyleIfNotExists('../api/components/dropDown/DropDown.css');
@@ -36,29 +38,30 @@ class DropDown extends HTMLSelectElement {
                 c.classList.add("same-as-selected");
             }
 
-            c.addEventListener("click", function(e) {
-                let s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+            c.addEventListener("click", (e) => {
+                const elem = e.currentTarget;
+                let s = elem.parentNode.parentNode.getElementsByTagName("select")[0];
                 let sl = s.length;
-                let h = this.parentNode.previousSibling;
+                let h = elem.parentNode.previousSibling;
 
                 for (let i = 0; i < sl; i++) {
-                    if (s.options[i].innerHTML == this.innerHTML) {
+                    if (s.options[i].innerHTML == elem.innerHTML) {
                         s.selectedIndex = i;
-                        h.innerHTML = this.innerHTML;
+                        h.innerHTML = elem.innerHTML;
 
-                        let y = this.parentNode.getElementsByClassName("same-as-selected");
+                        let y = elem.parentNode.getElementsByClassName("same-as-selected");
                         let yl = y.length;
                         for (let k = 0; k < yl; k++) {
                             y[k].removeAttribute("class");
                         }
 
-                        this.setAttribute("class", "same-as-selected");
+                        elem.setAttribute("class", "same-as-selected");
 
                         break;
                     }
                 }
 
-                updateCache(select.id, this.innerHTML);
+                this.clickCallback(e);
 
                 h.click();
 

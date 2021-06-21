@@ -19,6 +19,12 @@
                 <h1>Slicers GUI Settings</h1>
             </div>
             <div class="settings-cont-outer">
+                <div class="settings-sub-cat">
+                    <div class="set-sub-cat-icon-cont">
+                        <i class="fas fa-walking"></i>
+                    </div>
+                    <h3>Accessibility</h3>
+                </div>
                 <div class="settings-container">
                     <div class="setting-elem">
                         <div class="setting-info">
@@ -68,13 +74,21 @@
                             </p>
                         </div>
                     </div>
+                </div>
+                <div class="settings-sub-cat">
+                    <div class="set-sub-cat-icon-cont">
+                        <i class="fas fa-volume-up"></i>
+                    </div>
+                    <h3>Audio</h3>
+                </div>
+                <div class="settings-container">
                     <div class="setting-elem">
                         <div class="setting-info">
                             <div class="setting-label">Ambient Background Music: </div>
                             <div class="setting">
                                 <thumb-slider id="ambientMusicEnabled"></thumb-slider>
                             </div>
-                            <div class="music-select-cont" id="ambientMusicSelectContainer">
+                            <div class="music-select-cont" id="ambientMusicSelectContainer" style="display: none;">
                                 <select name="ambientMusicSelect" id="ambientMusicSelect" is="drop-down">
                                     <option value="0">Theme</option>
                                     <option value="theme">Theme</option>
@@ -88,6 +102,21 @@
                                 Enables/disables ambient music that is played in the background of the app. If enabled you also have the option to set your own music file(s).
                                 
                             </p>
+                        </div>
+                    </div>
+                    <div class="audio-elem-container" id="audioDisCont" style="display: none;">
+                        <div class="setting-elem">
+                            <div class="setting-info">
+                                <div class="setting-label">Play When Minimized: </div>
+                                <div class="setting">
+                                    <thumb-slider id="playWhenMin"></thumb-slider>
+                                </div>
+                            </div>
+                            <div class="setting-desc">
+                                <p>
+                                    Whether or not the ambient music will play when the main app window is minimized.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

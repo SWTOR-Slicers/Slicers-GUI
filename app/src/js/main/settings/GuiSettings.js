@@ -48,6 +48,7 @@ const cache = {
 let changedFields = [];
 
 async function loadCache() {
+    console.log(settingsJSON)
     cache.alerts = settingsJSON.alerts;
     cache.useLabelTooltips = settingsJSON.useLabelTooltips;
     cache.usePathTooltips = settingsJSON.usePathTooltips;
@@ -62,7 +63,16 @@ async function loadCache() {
 
     //set audio settings
     ambientMusicEnabled.checked = cache.ambientMusic.enabled;
+    if (ambientMusicEnabled.checked) {
+        ambientMusicSelectContainer.style.display = '';
+        audioDisCont.style.display = '';
+    } else {
+        ambientMusicSelectContainer.style.display = 'none';
+        audioDisCont.style.display = 'none';
+    }
+
     ambientMusicSelect.options[0].innerHTML = cache.ambientMusic.selected;
+    
     if (cache.ambientMusic.selected == "Custom") {
         musicPathInput.value = cache.ambientMusic.path;
     }
@@ -77,11 +87,17 @@ function updateCache(field, value, parent=null) {
         }
     }
     if (parent) {
+        const data = [parent, field];
         cache[parent][field] = value;
+        if (changedFields.filter(e => e.toString() === data.toString()).length == 1) {
+            changedFields.splice(changedFields.indexOf(data), 1);
+        } else {
+            changedFields.push(data);
+        }
     } else {
         cache[field] = value;
+        if (changedFields.includes(field)) changedFields.splice(changedFields.indexOf(field), 1); else changedFields.push(field);
     }
-    if (changedFields.includes(field)) changedFields.splice(changedFields.indexOf(field), 1); else changedFields.push(field);
     if (changedFields.length > 0) {
         saveAll.classList.remove('disabled');
         cancelAll.classList.remove('disabled');

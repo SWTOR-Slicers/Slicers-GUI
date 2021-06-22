@@ -44,6 +44,7 @@ class ThumbSlider extends HTMLElement {
         } else {
             this.removeAttribute('checked');
         }
+        this.checkBox.checked = this.checked;
     }
 }
 

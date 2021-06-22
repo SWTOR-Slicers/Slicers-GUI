@@ -447,6 +447,8 @@ function initSettingsListeners(window) {
 
     //TODO: once its working, apply for all windows
     mainWindow.webContents.send('updateSettings', changedFields);
+
+    window.close();
   });
   ipcMain.on('settingsCanceled', (event, data) => {
     window.close();

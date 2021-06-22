@@ -9,9 +9,14 @@ const resJson = JSON.parse(res);
 
 let settingsJSON = resJson;
 
-function updateSettings(settingsJson) {
+function getSetting() {
+    return settingsJSON;
+}
+
+async function updateSettings(settingsJson) {
+    console.log(settingsJSON);
     settingsJSON = settingsJson;
     fs.writeFileSync(settingsJsonPath, JSON.stringify(settingsJSON, null, '\t'));
 }
 
-export { settingsJSON, updateSettings };
+export { getSetting, updateSettings };

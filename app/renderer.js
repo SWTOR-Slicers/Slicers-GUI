@@ -4,7 +4,8 @@
 // `nodeIntegration` is turned off. Use `preload.js` to
 // selectively enable features needed in the rendering
 // process.
-import { addTooltip, updateTooltipEvent } from "./src/js/universal/Tooltips.js";
+import { addTooltip, updateTooltipEvent, removeTooltip } from "./src/js/universal/Tooltips.js";
+import { getSetting } from "./src/api/config/settings/Settings.js";
 const {ipcRenderer} = require('electron');
 const ipc = ipcRenderer;
 const logDisplay = document.getElementById("logDisplay");
@@ -12,16 +13,21 @@ const cache = {
     "extractionPreset": ""
 };
 
+let settingsJSON = getSetting();
+
 //file path choosers
+let assetsFolderLabel = document.getElementById('assetsFolderLabel');
 let assetPopupBtn = document.getElementById("assetPopupBtn");
 let assetTextField = document.getElementById("assetTextField");
 let oldAssetValue;
 let extractionPreset = document.getElementById('extractionPreset');
 
+let outputFolderLabel = document.getElementById('outputFolderLabel');
 let outputPopupBtn = document.getElementById("outputPopupBtn");
 let outputTextField = document.getElementById("outputTextField");
 let oldOutputValue;
 
+let dataFolderLabel = document.getElementById('dataFolderLabel');
 let dataPopupBtn = document.getElementById("dataPopupBtn");
 let dataTextField = document.getElementById("dataTextField");
 let oldDataValue;
@@ -60,42 +66,28 @@ function initialize() {
 
     setupListeners();
     initDrops();
-
-    addTooltip('top', assetTextField.previousElementSibling.previousElementSibling, false, (element) => {
-        return 'Game assets (.tor)';
-    });
-    addTooltip('top', outputTextField.previousElementSibling.previousElementSibling, false, (element) => {
-        return 'GUI Output Folder';
-    });
-    addTooltip('top', dataTextField.previousElementSibling.previousElementSibling, false, (element) => {
-        return 'Data folder for use w/ locator';
-    });
-
-    addTooltip('top', assetTextField, true, (element) => {
-        return element.value;
-    });
-    addTooltip('top', outputTextField, true, (element) => {
-        return element.value;
-    });
-    addTooltip('top', dataTextField, true, (element) => {
-        return element.value;
-    });
-
-    addTooltip('top', clearLogBtn, false, (element) => {
-        return 'Clear Log';
-    });
-    addTooltip('top', saveLogToFile, false, (element) => {
-        return 'Log to File';
-    });
-    addTooltip('top', expComprLogBtn, true, (element) => {
-        return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log');
-    });
-
-    addTooltip('top', settingsBtn, false, (element) => {
-        return 'Settings'
-    });
+    initSettings();
 
     log("Boot up complete");
+}
+function initSettings() {
+    if (settingsJSON.usePathTooltips) {
+        addTooltip('top', assetTextField, true, (element) => { return element.value; });
+        addTooltip('top', outputTextField, true, (element) => { return element.value; });
+        addTooltip('top', dataTextField, true, (element) => { return element.value; });
+    }
+
+    if (settingsJSON.useLabelTooltips) {
+        addTooltip('top', assetsFolderLabel, false, (element) => { return 'Game assets (.tor)'; });
+        addTooltip('top', outputFolderLabel, false, (element) => { return 'GUI Output Folder'; });
+        addTooltip('top', dataFolderLabel, false, (element) => { return 'Data folder for use w/ locator'; });
+    
+        addTooltip('top', clearLogBtn, false, (element) => { return 'Clear Log'; });
+        addTooltip('top', saveLogToFile, false, (element) => { return 'Log to File'; });
+        addTooltip('top', expComprLogBtn, true, (element) => { return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log'); });
+    
+        addTooltip('top', settingsBtn, false, (element) => { return 'Settings'; });
+    }
 }
 
 function updateCache(field, value) {
@@ -315,6 +307,68 @@ function setupListeners() {
     })
 }
 function initSubscribes() {
+    ipcRenderer.on('updateSettings', (event, data) => {
+        settingsJSON = data[1];
+        for (const dEnt of data[0]) {
+            if (Array.isArray(dEnt)) {
+                const field = dEnt[1];
+                const parent = dEnt[0];
+                if (parent == "ambientMusic") {
+                    switch (field) {
+                        case "enabled":
+                            
+                            break;
+                        case "selected":
+                            
+                            break;
+                        case "path":
+                            
+                            break;
+                        case "playMinimized":
+                            
+                            break;
+                    }
+                }
+            } else {
+                switch (dEnt) {
+                    case "usePathTooltips":
+                        if (settingsJSON.usePathTooltips) {
+                            addTooltip('top', assetTextField, true, (element) => { return element.value; });
+                            addTooltip('top', outputTextField, true, (element) => { return element.value; });
+                            addTooltip('top', dataTextField, true, (element) => { return element.value; });
+                        } else {
+                            removeTooltip(assetTextField, true, (element) => { return element.value; });
+                            removeTooltip(outputTextField, true, (element) => { return element.value; });
+                            removeTooltip(dataTextField, true, (element) => { return element.value; });
+                        }
+                        break;
+                    case "useLabelTooltips":
+                        if (settingsJSON.useLabelTooltips) {
+                            addTooltip('top', assetsFolderLabel, false, (element) => { return 'Game assets (.tor)'; });
+                            addTooltip('top', outputFolderLabel, false, (element) => { return 'GUI Output Folder'; });
+                            addTooltip('top', dataFolderLabel, false, (element) => { return 'Data folder for use w/ locator'; });
+                        
+                            addTooltip('top', clearLogBtn, false, (element) => { return 'Clear Log'; });
+                            addTooltip('top', saveLogToFile, false, (element) => { return 'Log to File'; });
+                            addTooltip('top', expComprLogBtn, true, (element) => { return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log'); });
+                        
+                            addTooltip('top', settingsBtn, false, (element) => { return 'Settings'; });
+                        } else {
+                            removeTooltip(assetsFolderLabel, false, (element) => { return 'Game assets (.tor)'; });
+                            removeTooltip(outputFolderLabel, false, (element) => { return 'GUI Output Folder'; });
+                            removeTooltip(dataFolderLabel, false, (element) => { return 'Data folder for use w/ locator'; });
+                        
+                            removeTooltip(clearLogBtn, false, (element) => { return 'Clear Log'; });
+                            removeTooltip(saveLogToFile, false, (element) => { return 'Log to File'; });
+                            removeTooltip(expComprLogBtn, true, (element) => { return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log'); });
+                        
+                            removeTooltip(settingsBtn, false, (element) => { return 'Settings'; });
+                        }
+                        break;
+                }
+            }
+        }
+    });
     ipcRenderer.on('displayLog', (event, data) => {
         log(data);
     });

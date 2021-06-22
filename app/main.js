@@ -143,6 +143,7 @@ function initMain () {
 
   //mainWindow.setResizable(false);
   mainWindow.removeMenu();
+  mainWindow.webContents.openDevTools();
   mainWindow.loadFile('./src/html/index.html');
 
   mainWindow.on('close', () => {
@@ -399,7 +400,7 @@ async function copyResourcesRecursive(originalDir, targetDir) {
     const tPath = path.join(targetDir, entr);
     if (fs.statSync(ogPath).isFile()) {
       //is a file
-      if (entr != "resources.json") {
+      if (entr != "resources.json" && entr != "appSettings.json") {
         fs.copyFileSync(ogPath, tPath);
       }
     } else {
@@ -422,7 +423,6 @@ function initSettingsWindow() {
   });
   
   settingsWindow.removeMenu();
-  settingsWindow.webContents.openDevTools();
   settingsWindow.loadURL(`${__dirname}/src/html/Settings.html`);
 
   settingsWindow.on('close', (e) => {
@@ -446,7 +446,7 @@ function initSettingsListeners(window) {
     console.log(changedFields);
 
     //TODO: once its working, apply for all windows
-    mainWindow.webContents.send('updateSettings', changedFields);
+    mainWindow.webContents.send('updateSettings', [changedFields, data[1]]);
 
     window.close();
   });

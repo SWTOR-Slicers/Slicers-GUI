@@ -1,9 +1,10 @@
-import { resourcePath } from "../../../api/config/resourcePath/ResourcePath.js";
-import { settingsJSON, updateSettings } from "../../../api/config/settings/Settings.js";
+import { getSetting, updateSettings } from "../../../api/config/settings/Settings.js";
 
 const fs = require("fs");
 const { ipcRenderer } = require("electron");
 const changeEvent = new Event('change');
+
+let settingsJSON = getSetting();
 
 //DOM elements
 
@@ -42,13 +43,13 @@ const cache = {
     "ambientMusic": {
         "enabled": "",
         "selected": "",
-        "path": ""
+        "path": "",
+        "playMinimized": ""
     }
 };
 let changedFields = [];
 
 async function loadCache() {
-    console.log(settingsJSON)
     cache.alerts = settingsJSON.alerts;
     cache.useLabelTooltips = settingsJSON.useLabelTooltips;
     cache.usePathTooltips = settingsJSON.usePathTooltips;
@@ -76,7 +77,7 @@ async function loadCache() {
     if (cache.ambientMusic.selected == "Custom") {
         musicPathInput.value = cache.ambientMusic.path;
     }
-    playWhenMin.checked = cache['ambientMusic']['selected'];
+    playWhenMin.checked = cache['ambientMusic']['playMinimized'];
 }
 function updateCache(field, value, parent=null) {
     if (field == "selected") {
@@ -114,7 +115,15 @@ function init() {
 }
 function initListeners() {
     //change buttons
-    saveAll.addEventListener('click', (e) => { updateSettings(cache); ipcRenderer.send('settingsSaved', [changedFields]); changedFields = []; });
+    saveAll.addEventListener('click', async (e) => { 
+        await updateSettings(cache); 
+
+        ipcRenderer.send('settingsSaved', [changedFields, cache]); 
+        changedFields = []; 
+        
+        saveAll.classList.add('disabled'); 
+        cancelAll.classList.add('disabled'); 
+    });
     cancelAll.addEventListener('click', (e) => { cancelModalBackground.style.display = ''; });
 
     //alerts
@@ -136,7 +145,7 @@ function initListeners() {
         }
     });
     ambientMusicSelect.clickCallback = (e) => { updateCache('selected', e.currentTarget.innerHTML, 'ambientMusic'); }
-    playWhenMin.addEventListener('click', (e) => { updateCache('playMinimized', playWhenMin.checked); });
+    playWhenMin.addEventListener('click', (e) => { updateCache('playMinimized', playWhenMin.checked, 'ambientMusic'); });
 
     musicPathInput.addEventListener('change', (e) => {
         if (fs.existsSync(e.currentTarget.value)) {
@@ -150,7 +159,14 @@ function initListeners() {
 
 
     //cancel modal
-    confirmCancel.addEventListener('click', (e) => { ipcRenderer.send('settingsCanceled'); cancelModalBackground.style.display = 'none'; });
+    confirmCancel.addEventListener('click', (e) => {
+        ipcRenderer.send('settingsCanceled');
+        
+        cancelModalBackground.style.display = 'none';
+
+        saveAll.classList.add('disabled');
+        cancelAll.classList.add('disabled');
+    });
     cancelCancel.addEventListener('click', (e) => { cancelModalBackground.style.display = 'none'; });
 }
 function initSubs() {

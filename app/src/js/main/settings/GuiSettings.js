@@ -57,6 +57,9 @@ async function loadCache() {
 
     //set allert settings
     alertNotif.options[0].innerHTML = cache.alerts;
+    alertNotif.nextElementSibling.innerHTML = alertNotif.options[0].innerHTML;
+    alertNotif.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
+    alertNotif.nextElementSibling.nextElementSibling.querySelector(`#${alertNotif.options[0].innerHTML}`).classList.toggle('same-as-selected');
 
     //set tooltip settings
     useLabelTooltips.checked = cache.useLabelTooltips;
@@ -73,9 +76,13 @@ async function loadCache() {
     }
 
     ambientMusicSelect.options[0].innerHTML = cache.ambientMusic.selected;
+    ambientMusicSelect.nextElementSibling.innerHTML = ambientMusicSelect.options[0].innerHTML;
+    ambientMusicSelect.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
+    ambientMusicSelect.nextElementSibling.nextElementSibling.querySelector(`#${ambientMusicSelect.options[0].innerHTML}`).classList.toggle('same-as-selected');
     
     if (cache.ambientMusic.selected == "Custom") {
         musicPathInput.value = cache.ambientMusic.path;
+        customMusicCont.style.display = '';
     }
     playWhenMin.checked = cache['ambientMusic']['playMinimized'];
 }
@@ -123,6 +130,7 @@ function initListeners() {
         
         saveAll.classList.add('disabled'); 
         cancelAll.classList.add('disabled'); 
+        saveAll.blur();
     });
     cancelAll.addEventListener('click', (e) => { cancelModalBackground.style.display = ''; });
 
@@ -166,6 +174,7 @@ function initListeners() {
 
         saveAll.classList.add('disabled');
         cancelAll.classList.add('disabled');
+        cancelAll.blur();
     });
     cancelCancel.addEventListener('click', (e) => { cancelModalBackground.style.display = 'none'; });
 }

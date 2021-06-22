@@ -1,11 +1,6 @@
-// This file is required by the index.html file and will
-// be executed in the renderer process for that window.
-// No Node.js APIs are available in this process because
-// `nodeIntegration` is turned off. Use `preload.js` to
-// selectively enable features needed in the rendering
-// process.
 import { addTooltip, updateTooltipEvent, removeTooltip } from "./src/js/universal/Tooltips.js";
 import { getSetting } from "./src/api/config/settings/Settings.js";
+import { updateAlertType } from "./src/js/universal/Logger.js";
 const {ipcRenderer} = require('electron');
 const ipc = ipcRenderer;
 const logDisplay = document.getElementById("logDisplay");
@@ -14,6 +9,7 @@ const cache = {
 };
 
 let settingsJSON = getSetting();
+let alertType = settingsJSON.alerts;
 
 //file path choosers
 let assetsFolderLabel = document.getElementById('assetsFolderLabel');
@@ -331,6 +327,10 @@ function initSubscribes() {
                 }
             } else {
                 switch (dEnt) {
+                    case "alerts":
+                        alertType = settingsJSON.alerts;
+                        updateAlertType(settingsJSON.alerts);
+                        break;
                     case "usePathTooltips":
                         if (settingsJSON.usePathTooltips) {
                             addTooltip('top', assetTextField, true, (element) => { return element.value; });
@@ -518,9 +518,11 @@ function log(message, type=null) {
     logDisplay.insertBefore(div, termText);
 
     if (type) {
-        const alertElem = document.getElementsByTagName('log-alert')[0];
-        alertElem.setAttribute('type', type);
-        alertElem.setAttribute('visible', "true");
+        if (alertType == 'All' || (alertType == 'Alert' && (type == 'alert' || type == 'error'))) {
+            const alertElem = document.getElementsByTagName('log-alert')[0];
+            alertElem.setAttribute('type', type);
+            alertElem.setAttribute('visible', "true");
+        }
     }
     
     termText.scrollIntoView();

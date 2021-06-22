@@ -423,6 +423,7 @@ function initSettingsWindow() {
   });
   
   settingsWindow.removeMenu();
+  settingsWindow.webContents.openDevTools();
   settingsWindow.loadURL(`${__dirname}/src/html/Settings.html`);
 
   settingsWindow.on('close', (e) => {

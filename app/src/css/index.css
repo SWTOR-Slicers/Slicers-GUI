@@ -29,7 +29,7 @@ html, body {
 .main-page {
 	font-family: 'Eurofont';
     background-color: var(--medium-grey);
-    height: calc(100% - 30px);
+    height: calc(100% - 35px);
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -407,6 +407,20 @@ html, body {
 .settings-btn-cont:hover .fa-cog {
     color: var(--slicers-yellow-background);
     transform: rotate(237deg);
+}
+
+.ambient-progress-cont {
+    width: 100%;
+    height: 5px;
+    top: 30px;
+}
+.ambient-progress-cont:hover {
+    cursor: pointer;
+}
+.ambient-progress {
+    width: 0%;
+    height: 5px;
+    background-color: var(--slicers-yellow-background);
 }
 
 .disabled {

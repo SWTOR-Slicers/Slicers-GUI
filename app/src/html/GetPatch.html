@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
     <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../css/universal.css">
     <link rel="stylesheet" href="../css/GetPatch.css">
@@ -22,7 +22,7 @@
             <div class="body-container">
                 <div class="patch-settings">
                     <div class="setting enviromentType-setting">
-                        <label class="setting-label" for="enviromentType">Enviroment Type: </label>
+                        <label class="setting-label" for="enviromentType" id="envTypeLabel">Enviroment Type: </label>
                         <div class="custom-select">
                             <select name="enviromentType" id="enviromentType">
                                 <option value="0">live</option>
@@ -37,7 +37,7 @@
                         </div>
                     </div>
                     <div class="setting productType-setting">
-                        <label class="setting-label" for="productType">Product Type: </label>
+                        <label class="setting-label" for="productType" id="prodTypeLabel">Product Type: </label>
                         <div class="custom-select">
                             <select name="productType" id="productType">
                                 <option value="0">main</option>
@@ -50,7 +50,7 @@
                         </div>
                     </div>
                     <div class="setting patch-varient-setting">
-                        <label class="setting-label" for="varient">Varient: </label>
+                        <label class="setting-label" for="varient" id="varientLabel">Varient: </label>
                         <div class="custom-select">
                             <select name="varient" id="varient">
                                 <option value="0">-1to0</option>
@@ -61,11 +61,11 @@
                         </div>
                     </div>
                     <div class="setting patch-num-setting">
-                        <label class="setting-label" for="versionInput">Version (Y): </label>
+                        <label class="setting-label" for="versionInput" id=versionYLabel">Version (Y): </label>
                         <input class="version-input paths-field-input" type="text" name="versionInput" id="versionInput" value="6.3a">
                     </div>
                     <div class="setting patch-output-setting">
-                        <label class="setting-label" for="output">Output Path: </label>
+                        <label class="setting-label" for="output" id="outputFolderLabel">Output Path: </label>
                         <input class="paths-field-input" type="text" name="output" id="output" value="">
                         <button id="pathsBrowseBtn" class="browse-paths__button">
                             <i class="fas fa-ellipsis-h"></i>

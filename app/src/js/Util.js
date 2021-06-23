@@ -1,5 +1,21 @@
 import { codebooks } from "./classes/Cookbooks.js";
-
+/**
+ * Shuffles a list using the modern Fisher-Yates shuffle algorithm
+ * @param  {Array} a Array to be shuffled and returned.
+ */
+export function shuffle(a) {
+    for(let i = a.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        let x = a[i];
+        a[i] = a[j];
+        a[j] = x;
+    }
+    return a;
+}
+/**
+ * Converts the DataView of a .wem file to a .ogg represented by a buffer.
+ * @param  {DataView} dv DataView representing the .wem file.
+ */
 export function ww2ogg(dv) {
     var pos = 0;
     var reader = new BitReader(dv);
@@ -326,6 +342,12 @@ export function ww2ogg(dv) {
     buffer.sampleCount = sampleCount;
     return buffer
 }
+/**
+ * Reads the string from the specified buffer at posIn until length or next 00 byte if unspecified
+ * @param  {ArrayBuffer} buffer ArrayBuffer containing the data to read.
+ * @param  {Number} posIn Position of the string data in the buffer.
+ * @param  {Number} length Length of data to read, or undefined if not specified
+ */
 export function readString(buffer, posIn, length = undefined) {
     let pos = posIn;
     let outString = '';
@@ -345,9 +367,18 @@ export function readString(buffer, posIn, length = undefined) {
     }
     return outString
 }
+/**
+ * Runs console.assert(), passing statement and msg as parameters
+ * @param  {Boolean} statement Boolean value representing the statement to assert based upon
+ * @param  {String} msg Value representing the msg to display if Statement is false.
+ */
 export function assert(statement, msg) {
     console.assert(statement, msg);
 }
+/**
+ * Adds a stylesheet to the document if it has not been already
+ * @param  {String} href a string representing the href attribute of the stylesheet
+ */
 export function addStyleIfNotExists(href) {
     const existingStyles = document.getElementsByTagName('link');
     let exists = false;

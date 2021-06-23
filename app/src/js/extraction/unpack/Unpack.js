@@ -1,6 +1,9 @@
 import {resourcePath} from "../../../api/config/resourcePath/ResourcePath.js";
-import { log } from "../../universal/Logger.js";
-import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { getSetting } from "../../../api/config/settings/Settings.js";
+import { log, updateAlertType } from "../../universal/Logger.js";
+import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+
+let settingsJSON = getSetting();
 
 const ssn = require('ssn');
 const fs = require('fs');
@@ -32,9 +35,12 @@ const unpackFile = document.getElementById("unpackFile");
 const progressBar = document.getElementById("progressBar");
 
 //settings inputs
+const unpackPathLabel = document.getElementById('unpackPathLabel');
 const filePathInput = document.getElementById("filePathInput");
 const folderPathBrowserBtn = document.getElementById('folderPathBrowserBtn');
 const filePathBrowserBtn = document.getElementById("filePathBrowserBtn");
+
+const outputPathLabel = document.getElementById('outputPathLabel');
 const outputInput = document.getElementById("outputInput");
 const outputBrowserBtn = document.getElementById("outputBrowserBtn");
 
@@ -43,15 +49,16 @@ async function initialize() {
     filePathInput.value = cache["unpackPath"];
     outputInput.value = cache["output"];
 
-    addTooltip('top', filePathInput, true, (element) => {
-        return element.value;
-    });
-    addTooltip('top', outputInput, true, (element) => {
-        return element.value;
-    });
-    addTooltip('top', progressBar, false, (element) => {
-        return 'Progress Bar';
-    });
+    if (settingsJSON.usePathTooltips) {
+        addTooltip('top', filePathInput, true, (element) => { return element.value; });
+        addTooltip('top', outputInput, true, (element) => { return element.value; });
+    }
+
+    if (settingsJSON.useLabelTooltips) {
+        addTooltip('top', progressBar, false, (element) => { return 'Progress Bar'; });
+        addTooltip('top', unpackPathLabel, false, (element) => { return 'Unpack file or folder'; });
+        addTooltip('top', outputPathLabel, false, (element) => { return 'Output folder'; });
+    }
     
     initListeners();
     initSubs();
@@ -131,6 +138,39 @@ function initListeners() {
 }
 //initializes main process subscriptions
 function initSubs() {
+    ipcRenderer.on('updateSettings', (event, data) => {
+        settingsJSON = data[1];
+        for (const dEnt of data[0]) {
+            if (!Array.isArray(dEnt)) {
+                switch (dEnt) {
+                    case "alerts":
+                        alertType = settingsJSON.alerts;
+                        updateAlertType(settingsJSON.alerts);
+                        break;
+                    case "usePathTooltips":
+                        if (settingsJSON.usePathTooltips) {
+                            addTooltip('top', filePathInput, true, (element) => { return element.value; });
+                            addTooltip('top', outputInput, true, (element) => { return element.value; });
+                        } else {
+                            removeTooltip(filePathInput, true, (element) => { return element.value; });
+                            removeTooltip(outputInput, true, (element) => { return element.value; });
+                        }
+                        break;
+                    case "useLabelTooltips":
+                        if (settingsJSON.useLabelTooltips) {
+                            addTooltip('top', progressBar, false, (element) => { return 'Progress Bar'; });
+                            addTooltip('top', unpackPathLabel, false, (element) => { return 'Unpack file or folder'; });
+                            addTooltip('top', outputPathLabel, false, (element) => { return 'Output folder'; });
+                        } else {
+                            removeTooltip(progressBar, false, (element) => { return 'Progress Bar'; });
+                            removeTooltip(unpackPathLabel, false, (element) => { return 'Unpack file or folder'; });
+                            removeTooltip(outputPathLabel, false, (element) => { return 'Output folder'; }); 
+                        }
+                        break;
+                }
+            }
+        }
+    });
     ipcRenderer.on("recieveDialogUnpacker", (event, data) => {
         if (data != "") {
             const field = data[0];

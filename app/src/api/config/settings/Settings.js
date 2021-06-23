@@ -9,10 +9,16 @@ const resJson = JSON.parse(res);
 
 let settingsJSON = resJson;
 
+/**
+ * Returns the settings json
+ */
 function getSetting() {
     return settingsJSON;
 }
-
+/**
+ * Updates the settings json file
+ * @param  {Object} settingsJson The updated settings object
+ */
 async function updateSettings(settingsJson) {
     console.log(settingsJSON);
     settingsJSON = settingsJson;

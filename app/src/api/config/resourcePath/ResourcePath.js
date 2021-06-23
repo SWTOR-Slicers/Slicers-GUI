@@ -8,6 +8,10 @@ const resJson = JSON.parse(res);
 
 let resourcePath = resJson['resourceDirPath'];
 
+/**
+ * Updates the resources path
+ * @param  {String} path The new resource path
+ */
 export function updateResourcePath(path) {
     resourcePath = path;
 }

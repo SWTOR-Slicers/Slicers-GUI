@@ -1,6 +1,9 @@
 import {FolderTree} from "./FolderTree.js";
-import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
-import { log } from "../../universal/Logger.js";
+import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { log, updateAlertType } from "../../universal/Logger.js";
+import { getSetting } from "../../../api/config/settings/Settings.js";
+
+let settingsJSON = getSetting();
 
 const {ipcRenderer} = require('electron');
 const os = require('os');
@@ -76,9 +79,9 @@ function initialize() {
     
     fileTree.render(treeList);
 
-    addTooltip('top', pathField, true, (element) => {
-        return element.value;
-    });
+    if (settingsJSON.usePathTooltips) {
+        addTooltip('top', pathField, true, (element) => { return element.value; });
+    }
 
     addQuickNav();
     initListeners();
@@ -157,6 +160,26 @@ function initListeners() {
     });
 }
 function initSubs() {
+    ipcRenderer.on('updateSettings', (event, data) => {
+        settingsJSON = data[1];
+        for (const dEnt of data[0]) {
+            if (!Array.isArray(dEnt)) {
+                switch (dEnt) {
+                    case "alerts":
+                        alertType = settingsJSON.alerts;
+                        updateAlertType(settingsJSON.alerts);
+                        break;
+                    case "usePathTooltips":
+                        if (settingsJSON.usePathTooltips) {
+                            addTooltip('top', pathField, true, (element) => { return element.value; });
+                        } else {
+                            removeTooltip(pathField, true, (element) => { return element.value; });
+                        }
+                        break;
+                }
+            }
+        }
+    });
     ipcRenderer.on("getDialogResponseGR2", (event, data) => {
         pathField.value = data[0];
         pathField.dispatchEvent(changeEvent);

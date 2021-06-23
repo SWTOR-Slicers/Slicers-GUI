@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
     <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../css/index.css">
     <link rel="stylesheet" href="../css/universal.css">
@@ -14,6 +14,13 @@
   <body>
     <log-alert type="alert" visible="false"></log-alert>
     <window-title class="window-title"></window-title>
+
+    <div class="ambient-progress-cont" id="ambientProgressCont">
+      <div class="ambient-progress" id="ambientProgress"></div>
+    </div>
+
+    <audio src="" id="ambience" autoplay></audio>
+
     <div class="main-page unselectable">
       <div class="spacer-top"></div>
       <div class="container-top element-border">

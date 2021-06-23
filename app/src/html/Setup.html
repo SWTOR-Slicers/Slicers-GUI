@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
     <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../css/universal.css">
     <link rel="stylesheet" href="../css/Setup.css">
@@ -23,21 +23,21 @@
                 <h3>Config:</h3>
                 <div class="config-options">
                     <div class="config">
-                        <label class="config-option-label" for="resourceDirField">Resources Folder: </label>
+                        <label class="config-option-label" for="resourceDirField" id="resourceDirLabel">Resources Folder: </label>
                         <input style="margin-left: 8px;" class="paths-field-input" type="text" name="resourceDirField" id="resourceDirField" value="">
                         <button id="resourceDirFieldBtn" class="browse-paths__button">
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
                     </div>
                     <div class="config">
-                        <label class="config-option-label" for="assetsDirField">Assets Folder: </label>
+                        <label class="config-option-label" for="assetsDirField" id="assetsDirLabel">Assets Folder: </label>
                         <input style="margin-left: 34px;" class="paths-field-input" type="text" name="assetsDirField" id="assetsDirField" value="">
                         <button id="assetsDirFieldBtn" class="browse-paths__button">
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
                     </div>
                     <div class="config">
-                        <label class="config-option-label" for="outputDirField">Output Folder: </label>
+                        <label class="config-option-label" for="outputDirField" id="outputDirLabel">Output Folder: </label>
                         <input style="margin-left: 34px;" class="paths-field-input" type="text" name="outputDirField" id="outputDirField" value="">
                         <button id="outputDirFieldBtn" class="browse-paths__button">
                             <i class="fas fa-ellipsis-h"></i>

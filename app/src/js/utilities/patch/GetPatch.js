@@ -1,6 +1,9 @@
 import { resourcePath } from "../../../api/config/resourcePath/ResourcePath.js";
-import { log } from "../../universal/Logger.js";
-import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { getSetting } from "../../../api/config/settings/Settings.js";
+import { log, updateAlertType } from "../../universal/Logger.js";
+import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+
+let settingsJSON = getSetting();
 
 const ssn = require('ssn');
 const fs = require('fs');
@@ -48,11 +51,22 @@ const downloadPkg = document.getElementById("downloadPkg");
 const progressBar = document.getElementById("progressBar");
 
 //settings inputs
+const envTypeLabel = document.getElementById('envTypeLabel');
 const enviromentType = document.getElementById("enviromentType");
+
+
+const prodTypeLabel = document.getElementById('prodTypeLabel');
 const productType = document.getElementById("productType");
+
+const varientLabel = document.getElementById('varientLabel');
 const varient = document.getElementById("varient");
+
+const versionYLabel = document.getElementById('versionYLabel');
 const versionInput = document.getElementById("versionInput");
+
+const outputFolderLabel = document.getElementById('outputFolderLabel');
 const output = document.getElementById("output");
+
 const pathsBrowseBtn = document.getElementById("pathsBrowseBtn");
 
 async function initialize() {
@@ -64,9 +78,17 @@ async function initialize() {
     versionInput.value = cache["version"];
     output.value = cache["output"];
 
-    addTooltip('top', output, true, (element) => {
-        return element.value;
-    });
+    if (settingsJSON.usePathTooltips) {
+        addTooltip('top', output, true, (element) => { return element.value; });
+    }
+
+    if (settingsJSON.useLabelTooltips) {
+        addTooltip('top', envTypeLabel, false, (element) => { return 'Patch enviroment type'; });
+        addTooltip('top', prodTypeLabel, false, (element) => { return 'Patch product type'; });
+        addTooltip('top', varientLabel, false, (element) => { return 'Patch varient type'; });
+        addTooltip('top', versionYLabel, false, (element) => { return 'Version Y value'; });
+        addTooltip('top', outputFolderLabel, false, (element) => { return 'Patch output folder'; });
+    }
     
     initDrops();
     initListeners();
@@ -171,6 +193,41 @@ function initListeners() {
 }
 //initializes main process subscriptions
 function initSubs() {
+    ipcRenderer.on('updateSettings', (event, data) => {
+        settingsJSON = data[1];
+        for (const dEnt of data[0]) {
+            if (!Array.isArray(dEnt)) {
+                switch (dEnt) {
+                    case "alerts":
+                        alertType = settingsJSON.alerts;
+                        updateAlertType(settingsJSON.alerts);
+                        break;
+                    case "usePathTooltips":
+                        if (settingsJSON.usePathTooltips) {
+                            addTooltip('top', output, true, (element) => { return element.value; });
+                        } else {
+                            removeTooltip(output, true, (element) => { return element.value; });
+                        }
+                        break;
+                    case "useLabelTooltips":
+                        if (settingsJSON.useLabelTooltips) {
+                            addTooltip('top', envTypeLabel, false, (element) => { return 'Patch enviroment type'; });
+                            addTooltip('top', prodTypeLabel, false, (element) => { return 'Patch product type'; });
+                            addTooltip('top', varientLabel, false, (element) => { return 'Patch varient type'; });
+                            addTooltip('top', versionYLabel, false, (element) => { return 'Version Y value'; });
+                            addTooltip('top', outputFolderLabel, false, (element) => { return 'Patch output folder'; });
+                        } else {
+                            removeTooltip(envTypeLabel, false, (element) => { return 'Patch enviroment type'; });
+                            removeTooltip(prodTypeLabel, false, (element) => { return 'Patch product type'; });
+                            removeTooltip(varientLabel, false, (element) => { return 'Patch varient type'; });
+                            removeTooltip(versionYLabel, false, (element) => { return 'Version Y value'; });
+                            removeTooltip(outputFolderLabel, false, (element) => { return 'Patch output folder'; });
+                        }
+                        break;
+                }
+            }
+        }
+    });
     ipcRenderer.on("getDialogResponsePatch", (event, data) => {
         output.value = data[0];
         output.dispatchEvent(changeEvent);

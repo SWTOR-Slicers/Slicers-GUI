@@ -1,10 +1,13 @@
 import { WEM } from '../../classes/WEM.js';
 import { BNK } from '../../classes/BNK.js';
 import { resourcePath } from "../../../api/config/resourcePath/ResourcePath.js";
-import { log } from "../../universal/Logger.js";
-import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { log, updateAlertType } from "../../universal/Logger.js";
+import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { setSounds } from './MusicPlayer.js';
 import { ww2ogg } from '../../Util.js';
+import { getSetting } from '../../../api/config/settings/Settings.js';
+
+let settingsJSON = getSetting();
 
 const fs = require('fs');
 const {ipcRenderer} = require('electron');
@@ -23,9 +26,13 @@ const loadPreview = document.getElementById('loadPreview');
 const progressBar = document.getElementById("progressBar");
 
 //settings inputs
+const soundPathLabel = document.getElementById('soundPathLabel');
 const soundPathInput = document.getElementById("soundPathInput");
+
 const folderPathBrowserBtn = document.getElementById('folderPathBrowserBtn');
 const filePathBrowserBtn = document.getElementById("filePathBrowserBtn");
+
+const outputPathLabel = document.getElementById('ouputPathlabel');
 const outputFolder = document.getElementById("outputFolder");
 const outputBrowserBtn = document.getElementById("outputBrowserBtn");
 
@@ -34,15 +41,16 @@ async function initialize() {
     soundPathInput.value = cache["soundPath"];
     outputFolder.value = cache["output"];
 
-    addTooltip('top', soundPathInput, true, (element) => {
-        return element.value;
-    });
-    addTooltip('top', outputFolder, true, (element) => {
-        return element.value;
-    });
-    addTooltip('top', progressBar, false, (element) => {
-        return 'Progress Bar';
-    });
+    if (settingsJSON.usePathTooltips) {
+        addTooltip('top', soundPathInput, true, (element) => { return element.value; });
+        addTooltip('top', outputFolder, true, (element) => { return element.value; });
+    }
+
+    if (settingsJSON.useLabelTooltips) {
+        addTooltip('top', soundPathLabel, false, (element) => { return 'Path to sound files or folder'; });
+        addTooltip('top', outputPathLabel, false, (element) => { return 'Converter output folder'; });
+        addTooltip('top', progressBar, false, (element) => { return 'Progress Bar'; });
+    }
     
     initListeners();
     initSubs();
@@ -129,6 +137,38 @@ function initListeners() {
 }
 //initializes main process subscriptions
 function initSubs() {
+    ipcRenderer.on('updateSettings', (event, data) => {
+        settingsJSON = data[1];
+        for (const dEnt of data[0]) {
+            if (!Array.isArray(dEnt)) {
+                switch (dEnt) {
+                    case "alerts":
+                        updateAlertType(settingsJSON.alerts);
+                        break;
+                    case "usePathTooltips":
+                        if (settingsJSON.usePathTooltips) {
+                            addTooltip('top', soundPathInput, true, (element) => { return element.value; });
+                            addTooltip('top', outputFolder, true, (element) => { return element.value; });
+                        } else {
+                            removeTooltip(soundPathInput, true, (element) => { return element.value; });
+                            removeTooltip(outputFolder, true, (element) => { return element.value; });
+                        }
+                        break;
+                    case "useLabelTooltips":
+                        if (settingsJSON.useLabelTooltips) {
+                            addTooltip('top', soundPathLabel, false, (element) => { return 'Path to sound files or folder'; });
+                            addTooltip('top', outputPathLabel, false, (element) => { return 'Converter output folder'; });
+                            addTooltip('top', progressBar, false, (element) => { return 'Progress Bar'; });
+                        } else {
+                            removeTooltip(soundPathLabel, false, (element) => { return 'Path to sound files or folder'; });
+                            removeTooltip(outputPathLabel, false, (element) => { return 'Converter output folder'; });
+                            removeTooltip(progressBar, false, (element) => { return 'Progress Bar'; });
+                        }
+                        break;
+                }
+            }
+        }
+    });
     ipcRenderer.on("recieveSoundConvDialog", (event, data) => {
         if (data != "") {
             const field = data[0];

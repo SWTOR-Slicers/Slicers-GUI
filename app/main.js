@@ -3,6 +3,8 @@
 //TODO: Icons8 <a target="_blank" href="https://icons8.com">Icons8</a>
 
 const {app, BrowserWindow, dialog, ipcMain, screen} = require('electron');
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+
 const fs = require('fs');
 const path = require('path');
 const child = require('child_process');
@@ -132,24 +134,26 @@ function handleBootUp() {
 function initMain () {
   mainWindow = new BrowserWindow({
     width: 716,
-    height: 539,
+    height: 545,
     frame: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: "src/img/SlicersLogo.ico"
+    icon: "src/img/SlicersLogo.ico",
+    show: false
   });
+  mainWindow.once('ready-to-show', () => mainWindow.show());
 
-  //mainWindow.setResizable(false);
   mainWindow.removeMenu();
-  mainWindow.webContents.openDevTools();
   mainWindow.loadFile('./src/html/index.html');
+  
+  let wasMinimized = false
+  mainWindow.on('minimize', () => { mainWindow.webContents.send('minimizedMain'); wasMinimized = true; });
+  mainWindow.on('maximize', () => { if (wasMinimized) mainWindow.webContents.send('restoredMain'); wasMinimized = false; });
+  mainWindow.on('restore', () => { mainWindow.webContents.send('restoredMain'); wasMinimized = false; });
 
-  mainWindow.on('close', () => {
-    appQuiting = true;
-    app.quit();
-  })
+  mainWindow.on('close', () => {  appQuiting = true; app.quit(); });
 }
 function initApp() {
   initMainListeners();
@@ -164,6 +168,9 @@ function initApp() {
   extractionPresetConsts.gui = json.gui;
 }
 function initMainListeners() {
+  ipcMain.on('getWindowStatus', (event, data) => {
+    event.reply('sendWindowStatus', [mainWindow.isMinimized()]);
+  });
   ipcMain.on("getConfigJSON", async (event, data) => {
     let res = fs.readFileSync(path.join(resourcePath, "config.json"));
     let json = JSON.parse(res);
@@ -344,8 +351,10 @@ function initSetupUI() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    icon: "src/img/SlicersLogo.ico"
+    icon: "src/img/SlicersLogo.ico",
+    show: false
   });
+  setupWindow.once('ready-to-show', () => setupWindow.show());
 
   setupWindow.removeMenu();
   setupWindow.loadFile('./src/html/Setup.html');
@@ -420,10 +429,11 @@ function initSettingsWindow() {
       contextIsolation: false
     },
     icon: "src/img/SlicersLogo.ico",
+    show: false
   });
+  settingsWindow.once('ready-to-show', () => settingsWindow.show());
   
   settingsWindow.removeMenu();
-  settingsWindow.webContents.openDevTools();
   settingsWindow.loadURL(`${__dirname}/src/html/Settings.html`);
 
   settingsWindow.on('close', (e) => {
@@ -444,10 +454,13 @@ function initSettingsListeners(window) {
   ipcMain.on('settingsSaved', (event, data) => {
     const changedFields = data[0];
 
-    console.log(changedFields);
-
     //TODO: once its working, apply for all windows
     mainWindow.webContents.send('updateSettings', [changedFields, data[1]]);
+    setupWindow.webContents.send('updateSettings', [changedFields, data[1]]);
+    unpackerWindow.webContents.send('updateSettings', [changedFields, data[1]]);
+    soundConverterWindow.webContents.send('updateSettings', [changedFields, data[1]]);
+    getPatchWindow.webContents.send('updateSettings', [changedFields, data[1]]);
+    gr2Window.webContents.send('updateSettings', [changedFields, data[1]]);
 
     window.close();
   });
@@ -476,7 +489,9 @@ function initLoggerWindow() {
       contextIsolation: false
     },
     icon: "src/img/SlicersLogo.ico",
+    show: false
   });
+  loggerWindow.once('ready-to-show', () => loggerWindow.show());
   
   loggerWindow.removeMenu();
   loggerWindow.loadURL(`${__dirname}/src/html/Logger.html`);
@@ -517,7 +532,9 @@ function initUnpackerGUI() {
       contextIsolation: false
     },
     icon: "src/img/SlicersLogo.ico",
+    show: false
   });
+  unpackerWindow.once('ready-to-show', () => unpackerWindow.show());
 
   unpackerWindow.removeMenu();
   unpackerWindow.loadURL(`${__dirname}/src/html/Unpacker.html`);
@@ -567,7 +584,9 @@ function initGetPatchGUI() {
       contextIsolation: false
     },
     icon: "src/img/SlicersLogo.ico",
+    show: false
   });
+  getPatchWindow.once('ready-to-show', () => getPatchWindow.show());
 
   getPatchWindow.removeMenu();
   getPatchWindow.loadURL(`${__dirname}/src/html/GetPatch.html`);
@@ -608,7 +627,9 @@ function initSoundConvGUI() {
       contextIsolation: false
     },
     icon: "src/img/SlicersLogo.ico",
+    show: false
   });
+  soundConverterWindow.once('ready-to-show', () => soundConverterWindow.show());
 
   soundConverterWindow.removeMenu();
   soundConverterWindow.loadURL(`${__dirname}/src/html/SoundConverter.html`);
@@ -660,7 +681,9 @@ function initGR2Viewer() {
       contextIsolation: false
     },
     icon: "src/img/SlicersLogo.ico",
+    show: false
   });
+  gr2Window.once('ready-to-show', () => gr2Window.show());
 
   gr2Window.removeMenu();
   gr2Window.loadURL(`${__dirname}/src/html/GR2Viewer.html`);

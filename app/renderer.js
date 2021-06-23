@@ -1,12 +1,16 @@
 import { addTooltip, updateTooltipEvent, removeTooltip } from "./src/js/universal/Tooltips.js";
 import { getSetting } from "./src/api/config/settings/Settings.js";
 import { updateAlertType } from "./src/js/universal/Logger.js";
-const {ipcRenderer} = require('electron');
-const ipc = ipcRenderer;
+import { changeSource, playAudio, pauseAudio } from "./src/js/main/audio/BackgroundTheme.js";
+
+const { ipcRenderer } = require('electron');
+const path = require('path');
+
 const logDisplay = document.getElementById("logDisplay");
 const cache = {
     "extractionPreset": ""
 };
+const parent = path.normalize(path.join(__dirname, '../music'));
 
 let settingsJSON = getSetting();
 let alertType = settingsJSON.alerts;
@@ -64,6 +68,23 @@ function initialize() {
     initDrops();
     initSettings();
 
+    if (settingsJSON.ambientMusic.enabled) {
+        switch (settingsJSON.ambientMusic.selected) {
+            case "Theme":
+                changeSource(path.join(parent, 'Theme'));
+                break;
+            case "Location":
+                changeSource(path.join(parent, 'Location'));
+                break;
+            case "Cantina":
+                changeSource(path.join(parent, 'Cantina'));
+                break;
+            case "Custom":
+                changeSource(settingsJSON.ambientMusic.path);
+                break;
+        }
+    }
+
     log("Boot up complete");
 }
 function initSettings() {
@@ -75,8 +96,8 @@ function initSettings() {
 
     if (settingsJSON.useLabelTooltips) {
         addTooltip('top', assetsFolderLabel, false, (element) => { return 'Game assets (.tor)'; });
-        addTooltip('top', outputFolderLabel, false, (element) => { return 'GUI Output Folder'; });
-        addTooltip('top', dataFolderLabel, false, (element) => { return 'Data folder for use w/ locator'; });
+        addTooltip('top', outputFolderLabel, false, (element) => { return 'GUI output folder'; });
+        addTooltip('top', dataFolderLabel, false, (element) => { return 'Data data folder for use w/ locator'; });
     
         addTooltip('top', clearLogBtn, false, (element) => { return 'Clear Log'; });
         addTooltip('top', saveLogToFile, false, (element) => { return 'Log to File'; });
@@ -303,6 +324,17 @@ function setupListeners() {
     })
 }
 function initSubscribes() {
+    ipcRenderer.on('restoredMain', (event, data) => { if (settingsJSON.ambientMusic.enabled && !settingsJSON.ambientMusic.playMinimized) playAudio(); });
+    ipcRenderer.on('minimizedMain', (event, data) => { if (settingsJSON.ambientMusic.enabled && !settingsJSON.ambientMusic.playMinimized) pauseAudio(); });
+    ipcRenderer.on('sendWindowStatus', (event, data) => {
+        if (data[0] && settingsJSON.ambientMusic.enabled) {
+            if (settingsJSON.ambientMusic.playMinimized) {
+                playAudio();
+            } else {
+                pauseAudio();
+            }
+        }
+    })
     ipcRenderer.on('updateSettings', (event, data) => {
         settingsJSON = data[1];
         for (const dEnt of data[0]) {
@@ -312,16 +344,46 @@ function initSubscribes() {
                 if (parent == "ambientMusic") {
                     switch (field) {
                         case "enabled":
-                            
+                            if (settingsJSON.ambientMusic.enabled) {
+                                switch (settingsJSON.ambientMusic.selected) {
+                                    case "Theme":
+                                        changeSource(path.join(parent, 'Theme'));
+                                        break;
+                                    case "Location":
+                                        changeSource(path.join(parent, 'Location'));
+                                        break;
+                                    case "Cantina":
+                                        changeSource(path.join(parent, 'Cantina'));
+                                        break;
+                                    case "Custom":
+                                        changeSource(settingsJSON.ambientMusic.path);
+                                        break;
+                                }
+                            } else {
+                                pauseAudio();
+                            }
                             break;
                         case "selected":
-                            
+                            switch (settingsJSON.ambientMusic.selected) {
+                                case "Theme":
+                                    changeSource(path.join(parent, 'Theme'));
+                                    break;
+                                case "Location":
+                                    changeSource(path.join(parent, 'Location'));
+                                    break;
+                                case "Cantina":
+                                    changeSource(path.join(parent, 'Cantina'));
+                                    break;
+                                case "Custom":
+                                    changeSource(settingsJSON.ambientMusic.path);
+                                    break;
+                            }
                             break;
                         case "path":
-                            
+                            changeSource(settingsJSON.ambientMusic.path);
                             break;
                         case "playMinimized":
-                            
+                            ipcRenderer.send('getWindowStatus');
                             break;
                     }
                 }
@@ -345,8 +407,8 @@ function initSubscribes() {
                     case "useLabelTooltips":
                         if (settingsJSON.useLabelTooltips) {
                             addTooltip('top', assetsFolderLabel, false, (element) => { return 'Game assets (.tor)'; });
-                            addTooltip('top', outputFolderLabel, false, (element) => { return 'GUI Output Folder'; });
-                            addTooltip('top', dataFolderLabel, false, (element) => { return 'Data folder for use w/ locator'; });
+                            addTooltip('top', outputFolderLabel, false, (element) => { return 'GUI output folder'; });
+                            addTooltip('top', dataFolderLabel, false, (element) => { return 'Data data folder for use w/ locator'; });
                         
                             addTooltip('top', clearLogBtn, false, (element) => { return 'Clear Log'; });
                             addTooltip('top', saveLogToFile, false, (element) => { return 'Log to File'; });
@@ -355,8 +417,8 @@ function initSubscribes() {
                             addTooltip('top', settingsBtn, false, (element) => { return 'Settings'; });
                         } else {
                             removeTooltip(assetsFolderLabel, false, (element) => { return 'Game assets (.tor)'; });
-                            removeTooltip(outputFolderLabel, false, (element) => { return 'GUI Output Folder'; });
-                            removeTooltip(dataFolderLabel, false, (element) => { return 'Data folder for use w/ locator'; });
+                            removeTooltip(outputFolderLabel, false, (element) => { return 'GUI output folder'; });
+                            removeTooltip(dataFolderLabel, false, (element) => { return 'Data data folder for use w/ locator'; });
                         
                             removeTooltip(clearLogBtn, false, (element) => { return 'Clear Log'; });
                             removeTooltip(saveLogToFile, false, (element) => { return 'Log to File'; });

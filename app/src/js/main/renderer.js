@@ -1,7 +1,7 @@
-import { addTooltip, updateTooltipEvent, removeTooltip } from "./src/js/universal/Tooltips.js";
-import { getSetting } from "./src/api/config/settings/Settings.js";
-import { updateAlertType } from "./src/js/universal/Logger.js";
-import { changeSource, playAudio, pauseAudio } from "./src/js/main/audio/BackgroundTheme.js";
+import { addTooltip, updateTooltipEvent, removeTooltip } from "../universal/Tooltips.js";
+import { getSetting } from "../../api/config/settings/Settings.js";
+import { updateAlertType } from "../universal/Logger.js";
+import { changeSource, playAudio, pauseAudio } from "./BackgroundTheme.js";
 
 const { ipcRenderer } = require('electron');
 const path = require('path');

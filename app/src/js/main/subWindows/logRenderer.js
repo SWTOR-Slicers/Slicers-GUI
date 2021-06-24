@@ -1,5 +1,4 @@
-const ipcRenderer = window.api;
-const {ipcRendererRenderer} = require('electron');
+const { ipcRenderer } = require('electron');
 const logDisplay = document.getElementById("logDisplay");
 
 function initialize() {
@@ -9,13 +8,12 @@ function initialize() {
 }
 
 function initSubs() {
-    ipcRenderer.on('recieveLoggerData', (data) => {
-        console.log(data);
+    ipcRenderer.on('recieveLoggerData', (event, data) => {
         for (const msg of data) {
             log(msg);
         }
     });
-    ipcRenderer.on('displayLogData', (data) => {
+    ipcRenderer.on('displayLogData', (event, data) => {
         log(data);
     });
 }

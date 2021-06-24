@@ -1,6 +1,5 @@
 // Modules to control application life and create native browser window
 //TODO: make a sources list/window
-//TODO: Icons8 <a target="_blank" href="https://icons8.com">Icons8</a>
 
 const {app, BrowserWindow, dialog, ipcMain, screen} = require('electron');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
@@ -31,6 +30,7 @@ let gr2Window;
 let getPatchWindow;
 let soundConverterWindow;
 let settingsWindow;
+const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window];
 
 let appQuiting = false;
 const cache = {
@@ -454,13 +454,11 @@ function initSettingsListeners(window) {
   ipcMain.on('settingsSaved', (event, data) => {
     const changedFields = data[0];
 
-    //TODO: once its working, apply for all windows
-    mainWindow.webContents.send('updateSettings', [changedFields, data[1]]);
-    setupWindow.webContents.send('updateSettings', [changedFields, data[1]]);
-    unpackerWindow.webContents.send('updateSettings', [changedFields, data[1]]);
-    soundConverterWindow.webContents.send('updateSettings', [changedFields, data[1]]);
-    getPatchWindow.webContents.send('updateSettings', [changedFields, data[1]]);
-    gr2Window.webContents.send('updateSettings', [changedFields, data[1]]);
+    for (const win of windows) {
+      if (win) {
+        win.webContents.send('updateSettings', [changedFields, data[1]]);
+      }
+    }
 
     window.close();
   });
@@ -482,7 +480,7 @@ function initSettingsListeners(window) {
 function initLoggerWindow() {
   loggerWindow = new BrowserWindow({
     width: 716,
-    height: 539,
+    height: 545,
     frame: false,
     webPreferences: {
       nodeIntegration: true,
@@ -735,7 +733,7 @@ async function extract() {
 
     const params = [JSON.stringify(values), output, hashPath];
     //TODO: possibly change this to be async. Only if I can figure out how to make a progress bar. maybe in log?
-    child.execFileSync(path.join(resourcePath, "scripts\\Extraction\\main.exe"), params);
+    child.execFileSync(path.join(resourcePath, "scripts", "Extraction", "main.exe"), params);
   } catch (err) {
     console.log(err);
   } finally {

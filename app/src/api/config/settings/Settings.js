@@ -20,7 +20,6 @@ function getSetting() {
  * @param  {Object} settingsJson The updated settings object
  */
 async function updateSettings(settingsJson) {
-    console.log(settingsJSON);
     settingsJSON = settingsJson;
     fs.writeFileSync(settingsJsonPath, JSON.stringify(settingsJSON, null, '\t'));
 }

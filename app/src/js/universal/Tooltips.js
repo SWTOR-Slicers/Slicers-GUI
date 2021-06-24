@@ -1,16 +1,17 @@
+/**
+ * @type {Event}
+ */
 export const updateTooltipEvent = new Event('updateTooltip');
 
 /**
- * @param  {String} orientation
- * @param  {Node} element
- * @param  {Boolean} multiCheck
- * @param  {Function} callback
- * @param  {String} eventType='updateTooltip'
+ * Adds a tooltip to the specified element
+ * @param  {String} orientation Side of the element to display the tooltip on
+ * @param  {Node} element Element to attach the tooltip to
+ * @param  {Boolean} multiCheck Whether or not the tooltip value will dynamically update. Element will get passed to it, allowing values to be updated.
+ * @param  {Function} callback Callback function that provides the tooltip value (rerun on eventType event trigger)
+ * @param  {String} [eventType='updateTooltip'] Event to update tooltip on. updateTooltip event is used by default
  */
 export function addTooltip(orientation, element, multiCheck, callback, eventType='updateTooltip') {
-    //callback function will return the value we want to display in the tooltip
-    //callbacks must always take the element as a parameter
-    
     const parent = element.parentNode;
     const tooltipContainer = document.createElement('div');
     tooltipContainer.className = "tooltip";
@@ -30,10 +31,11 @@ export function addTooltip(orientation, element, multiCheck, callback, eventType
 }
 
 /**
- * @param  {Node} element
- * @param  {Boolean} multiCheck
- * @param  {Function} callback
- * @param  {String} eventType='updateTooltip'
+ * Removes the tooltip from the specified element
+ * @param  {Node} element Element to remove tooltip from
+ * @param  {Boolean} multiCheck Whether or no tthe tooltip was multicheck
+ * @param  {Function} callback Callback function used to get the tooltip value
+ * @param  {String} [eventType='updateTooltip'] Event to update tooltip on. updateTooltip event is used by default
  */
 export function removeTooltip(element, multiCheck, callback, eventType='updateTooltip') {
     

@@ -250,7 +250,13 @@ class GR2Material {
         return mat;
     }
 }
+/**
+ * Parses a Bioware Austin GR2 file and creates an object representation of it
+ */
 class GR2 {
+    /**
+     * @param {ArrayBuffer} buffer The array buffer of the GR2 file.
+     */
     constructor(buffer) {
         this.type = new Uint32Array(buffer, 20, 1)[0];
 
@@ -295,7 +301,9 @@ class GR2 {
             }
         }
     }
-
+    /**
+     * Converts the GR2 element into a displayable group of DOM nodes, allowing it to be rendered to the HTML.
+     */
     render() {
         if (this.type == 0 || 1) {
             let children = [];

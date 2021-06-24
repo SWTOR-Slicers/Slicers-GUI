@@ -724,7 +724,7 @@ async function extract(progBarId) {
 
     if (cache.extraction.extractionPreset != 'All') {
       values = [];
-      const tors = extractionPresetConsts[cache.extraction.extractionPreset.toLocaleLowerCase()];
+      const tors = extractionPresetConsts[cache.extraction.extractionPreset.toLowerCase()];
       for (const tor of tors) {
         values.push(path.join(temp, tor));
       }

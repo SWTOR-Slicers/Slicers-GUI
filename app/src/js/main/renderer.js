@@ -231,8 +231,13 @@ function setupListeners() {
 
     //extraction
     extrBtn.addEventListener("click", (e) => {
-        ipcRenderer.send('runExec', 'extraction');
         log(`Extraction: Assets started, please stand by.`, 'info');
+        log(`<div class="prog-bar-container"><div id="extractProgBar" class="prog-bar__bar"></div></div>`);
+        extrBtn.classList.add('disabled');
+
+        addTooltip('top', document.getElementById('extractProgBar').parentElement, false, (element) => { return 'Extraction progress...'});
+
+        ipcRenderer.send('runExec', ['extraction', 'extractProgBar']);
     });
     lctBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'locate');
@@ -324,6 +329,7 @@ function setupListeners() {
     })
 }
 function initSubscribes() {
+    ipcRenderer.on('updateProgBar', (event, data) => { document.getElementById(data[0]).style.width = data[1]; });
     ipcRenderer.on('restoredMain', (event, data) => { if (settingsJSON.ambientMusic.enabled && !settingsJSON.ambientMusic.playMinimized) playAudio(); });
     ipcRenderer.on('minimizedMain', (event, data) => { if (settingsJSON.ambientMusic.enabled && !settingsJSON.ambientMusic.playMinimized) pauseAudio(); });
     ipcRenderer.on('sendWindowStatus', (event, data) => {
@@ -504,6 +510,11 @@ function initSubscribes() {
         }
     });
     ipcRenderer.on('extrCompl', (event, data) => {
+        const parent = document.getElementById('extractProgBar').parentElement;
+        parent.classList.add('prog-bar-complete');
+        removeTooltip(parent, false, (element) => { return 'Extraction progress...'});
+        
+        extrBtn.classList.remove('disabled');
         log(`Extraction: Assets finished.`, 'info');
     });
     ipcRenderer.on('locCompl', (event, data) => {

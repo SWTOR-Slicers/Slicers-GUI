@@ -423,6 +423,21 @@ html, body {
     background-color: var(--slicers-yellow-background);
 }
 
+.prog-bar-container {
+    height: 15px;
+    width: 100%;
+    background-color: var(--medium-grey);
+}
+.prog-bar__bar {
+    height: 15px;
+    width: 0%;
+    max-width: 100%;
+    background-color: var(--slicers-yellow-background);
+}
+.prog-bar-complete .prog-bar__bar {
+    background-color: rgb(81, 255, 0);
+}
+
 .disabled {
     pointer-events: none;
     background-color: #222222;

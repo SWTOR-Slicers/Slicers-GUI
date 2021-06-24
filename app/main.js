@@ -5,6 +5,7 @@ const {app, BrowserWindow, dialog, ipcMain, screen} = require('electron');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 const fs = require('fs');
+const ChildProcess = require('child_process');
 const path = require('path');
 const child = require('child_process');
 const dateTime = require('node-datetime');
@@ -244,66 +245,67 @@ function initMainListeners() {
     }
   });
   ipcMain.on("runExec", async (event, data) => {
-    switch (data) {
-      case "extraction":
-        extract();
-        break;
-      case "locate":
-        locate();
-        break;
-      case "genHash":
-        //generate new hash
-        break;
-      case "unpack":
-        if (unpackerWindow) {
-          unpackerWindow.show();
-        } else {
-          initUnpackerGUI();
-        }
-        break;
-      case "nodeViewer":
-        //run node viewer
-        break;
-      case "gr2Viewer":
-        if (gr2Window) {
-          gr2Window.show();
-        } else {
-          initGR2Viewer();
-        }
-        break;
-      case "modelViewer":
-        //open modal viewer window
-        break;
-      case "worldViewer":
-        //open world viewer window
-        break;
-      case "convBnk":
-        if (soundConverterWindow) {
-          soundConverterWindow.show();
-        } else {
-          initSoundConvGUI();
-        }
-        break;
-      case "fileChanger":
-        //open file changer window
-        break;
-      case "getPatch":
-        if (getPatchWindow) {
-          getPatchWindow.show();
-        } else {
-          initGetPatchGUI();
-        }
-        break;
-      case "walkthrough":
-        //open walkthrough window
-        break;
-      case "settings":
-        if (settingsWindow) {
-          settingsWindow.show();
-        } else {
-          initSettingsWindow();
-        }
-        break;
+    if (data[0] == "extraction") {
+      extract(data[1]);
+    } else {
+      switch (data) {
+        case "locate":
+          locate();
+          break;
+        case "genHash":
+          //generate new hash
+          break;
+        case "unpack":
+          if (unpackerWindow) {
+            unpackerWindow.show();
+          } else {
+            initUnpackerGUI();
+          }
+          break;
+        case "nodeViewer":
+          //run node viewer
+          break;
+        case "gr2Viewer":
+          if (gr2Window) {
+            gr2Window.show();
+          } else {
+            initGR2Viewer();
+          }
+          break;
+        case "modelViewer":
+          //open modal viewer window
+          break;
+        case "worldViewer":
+          //open world viewer window
+          break;
+        case "convBnk":
+          if (soundConverterWindow) {
+            soundConverterWindow.show();
+          } else {
+            initSoundConvGUI();
+          }
+          break;
+        case "fileChanger":
+          //open file changer window
+          break;
+        case "getPatch":
+          if (getPatchWindow) {
+            getPatchWindow.show();
+          } else {
+            initGetPatchGUI();
+          }
+          break;
+        case "walkthrough":
+          //open walkthrough window
+          break;
+        case "settings":
+          if (settingsWindow) {
+            settingsWindow.show();
+          } else {
+            initSettingsWindow();
+          }
+          break;
+      }
     }
   });
   ipcMain.on("logToFile", async (event, data) => {
@@ -713,11 +715,10 @@ function initGR2Listeners(window) {
 }
 
 //utility methods
-//TODO: add a form of progress bar to extraction, and make it async
-async function extract() {
+async function extract(progBarId) {
   try {
     const output = cache.outputFolder;
-    const hashPath = path.join(resourcePath, 'hash\\hashes_filename.txt');
+    const hashPath = path.join(resourcePath, 'hash', 'hashes_filename.txt');
     const temp = cache.assetsFolder;
     let values;
 
@@ -732,19 +733,29 @@ async function extract() {
     }
 
     const params = [JSON.stringify(values), output, hashPath];
-    //TODO: possibly change this to be async. Only if I can figure out how to make a progress bar. maybe in log?
-    child.execFileSync(path.join(resourcePath, "scripts", "Extraction", "main.exe"), params);
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "Extraction", "main.exe"), params);
+    let i = 0;
+    extrProc.stdout.on('data', (data) => {
+      const lDat = data.toString().split(' ');
+      const percent = `${lDat[0] / lDat[1] * 100}%`;
+      mainWindow.webContents.send('updateProgBar', [progBarId, percent]);
+    });
+    extrProc.stderr.on('data', (data) => {
+      console.log(`Error: ${data.toString()}`);
+    });
+    extrProc.on('exit', (code) => {
+      console.log(`child process exited with status: ${code.toString()}`);
+      mainWindow.webContents.send("extrCompl", "");
+    });
   } catch (err) {
     console.log(err);
-  } finally {
-    mainWindow.webContents.send("extrCompl", "");
   }
 }
 async function locate() {
   try {
     const temp = cache.dataFolder;
     const params = [temp, path.join(cache.outputFolder, "resources")];
-    child.execFileSync(path.join(resourcePath, "scripts\\FileLocator\\main.exe"), params);
+    child.execFileSync(path.join(resourcePath, "scripts", "FileLocator", "main.exe"), params);
   } catch (err) {
     console.log(err);
   } finally {
@@ -764,9 +775,6 @@ function handleSquirrelEvent() {
   if (process.argv.length === 1) {
     return false;
   }
-
-  const ChildProcess = require('child_process');
-  const path = require('path');
 
   const appFolder = path.resolve(process.execPath, '..');
   const rootAtomFolder = path.resolve(appFolder, '..');

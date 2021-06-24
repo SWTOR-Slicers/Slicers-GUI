@@ -71,6 +71,10 @@ audioSrc.addEventListener('timeupdate', updateProgress);
 
 progressContainer.addEventListener('click', setProgress);
 
-audioSrc.addEventListener('ended', nextSong);
+audioSrc.addEventListener('ended', () => {
+    setTimeout(() => {
+        nextSong();
+    }, 3000);
+});
 
 export { changeSource, pauseAudio, playAudio };

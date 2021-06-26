@@ -1,4 +1,4 @@
-import { codebooks } from "./classes/Cookbooks.js";
+import { codebooks } from "./classes/util/Cookbooks.js";
 /**
  * Shuffles a list using the modern Fisher-Yates shuffle algorithm
  * @param  {Array} a Array to be shuffled and returned.
@@ -398,6 +398,26 @@ export function addStyleIfNotExists(href) {
         head.appendChild(link);
     }
 }
+/**
+ * Debounces the function passed to it, preventing it from firing too many times.
+ * @param  {Function} func Function to debounce.
+ * @param  {Number} wait Amount of time to wait before firing function
+ * @param  {Boolean} immediate Whether or not the function should fire immediately
+ */
+export function debounce(func, wait, immediate) {
+    var timeout;
+    return function () {
+        var context = this, args = arguments;
+        var later = function () {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+    };
+};
 class BitReader {
     constructor(dv) {
         this.dv = dv;

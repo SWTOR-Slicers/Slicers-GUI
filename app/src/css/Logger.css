@@ -5,27 +5,7 @@
 }
 
 html, body {
-    padding: 0;
-    margin: 0;
-    height: 100%;
-    width: 100%;
     background-color: black;
-    color: white;
-    font-family: 'Eurofont';
-}
-
-::-webkit-scrollbar {
-    width: 8px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background: var(--grey-black);
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #ffce00;
 }
 
 .terminal-page {

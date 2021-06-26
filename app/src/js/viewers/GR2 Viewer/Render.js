@@ -1,8 +1,8 @@
 const THREE = require('three');
 import { OrbitControls } from "../../externals/ModOrbitControls.js";
 import { Resizer } from "../../externals/Resizer.js";
-import { BufferGeometryUtils } from "https://unpkg.com/three@0.124.0/examples/jsm/utils/BufferGeometryUtils.js";
-import { WEBGL } from "https://unpkg.com/three@0.124.0/examples/jsm/WebGL.js";
+import { BufferGeometryUtils } from "../../externals/BufferGeometryUtils.js";
+import { WEBGL } from "../../externals/WedGL.js";
 import { GR2 } from "../../classes/GR2.js";
 import { exportObj } from "../../export/ExportObj.js";
 import { exportJSON } from "../../export/ExportJSON.js";

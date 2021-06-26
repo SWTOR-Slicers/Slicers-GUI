@@ -35,7 +35,7 @@
 			"\t$1.once('ready-to-show', () => $1.show());",
 			"\t",  
 			"\t$1.removeMenu();",
-			"\t$1.loadFile(`${__dirname}/src/html/$2.html`);",
+			"\t$1.loadFile(`${5:$}{__dirname}/src/html/$2.html`);",
 			"\t",
 			"\t",
 			"\t$1.on('close', (e) => {",
@@ -45,11 +45,17 @@
 			"\t\t}",
 			"\t\tif (mainWindow) {",
 			"\t\t\tif (mainWindow.webContents) {",
-			"\t\t\t\tmainWindow.webContents.send('$5', '');",
+			"\t\t\t\tmainWindow.webContents.send('$6', '');",
 			"\t\t\t}",
 			"\t\t}",
+			"\t",
+			"\tinit$2Listeners($1);",
 			"\t});",
-			"}\n$0"
+			"}\n",
+			"",
+			"function init$2Listeners(window) {",
+			"\t$0",
+			"}\n"
 		],
 		"description": "Creates a new electron.js window init function"
 	}

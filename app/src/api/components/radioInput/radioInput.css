@@ -1,0 +1,62 @@
+:root {
+    --grey-black: #1a1a1a;
+    --grey-black-hover: #2b2b2b;
+    --medium-grey: #333;
+    --medium-grey-bright: rgb(97, 97, 97);
+    --background-yellow-slicers: #ffce00;
+}
+
+.radio-input-container {
+    display: block;
+    position: relative;
+    cursor: pointer;
+
+    font-size: 22px;
+    margin-bottom: 12px;
+    padding-left: 35px;
+}
+
+.radio-input-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.radio-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: var(--grey-black);
+    border-radius: 50%;
+}
+
+.radio-input-container:hover input ~ .radio-input {
+    background-color: var(--grey-black-hover);
+}
+
+.radio-input input:checked ~ .radio-input {
+    background-color: var(--background-yellow-slicers);
+}
+
+.radio-input::after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.radio-input input:checked ~ .radio-input::after {
+    display: block;
+}
+
+.radio-input-container .radio-input::after {
+    top: 9px;
+    height: 9px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--grey-black);
+}

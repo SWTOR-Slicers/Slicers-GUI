@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'"> -->
+    <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../css/universal.css">
+    <link rel="stylesheet" href="../css/FileChanger.css">
+    <link rel="stylesheet" href="../css/tooltips.css">
+    <title>SWTOR File Changer</title>
+</head>
+<body>
+    <log-alert type="alert" visible="false"></log-alert>
+    <window-title class="window-title"></window-title>
+    <div class="window-background">
+        <div class="window-main">
+            <div class="assets-folder-wrapper">
+                <label for="assetsFolderInput" class="input-field-label">SWTOR Assets Folder</label>
+                <input type="text" name="assetsFolderInput" id="assetsFolderInput" class="paths-field-input-alt">
+                <button id="assetsFolderBrowseBtn" class="browse-paths__button-alt">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+            </div>
+
+            <div class="changer-info-wrapper">
+                <label for="" class="input-field-label">List of files to change: </label>
+                <div class="version-toggle-wrapper">
+                    <div class="toggle">
+                        <input type="checkbox" is="radio-input">
+                    </div>
+                    
+                    <div class="toggle">
+                        
+                    </div>
+                </div>
+            </div>
+
+            <div class="file-changes">
+
+            </div>
+
+            <div class="file-changer-actions-wrapper">
+
+            </div>
+        </div>
+    </div>
+    
+
+    <script type="module" src="../api/components/radioInput/radioInput.js"></script>
+    <script type="module" src="../api/components/alert/Alert.js"></script>
+    <script type="module" src="../api/components/titleBar/WindowTitleBar.js"></script>
+    <script type="module" src="../js/utilities/filechanger/FileChanger.js"></script>
+</body>
+</html>

@@ -9,8 +9,36 @@
     --grey-black: #1a1a1a;
     --grey-black-hover: #2b2b2b;
     --medium-grey: #333;
+    --medium-grey-bright: rgb(97, 97, 97);
     --background-yellow-slicers: #ffce00;
 }
+
+html, body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    background-color: var(--grey-black);
+    color: white;
+    font-family: 'Eurofont';
+    overflow: hidden;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--grey-black);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--background-yellow-slicers);
+}
+::-webkit-scrollbar-corner { background: transparent; }
+
 /* for header component */
 .window-title {
     width: 100%;
@@ -66,6 +94,34 @@
 }
 .paths-field-input:focus {
     border: 1px solid var(--background-yellow-slicers);
+}
+/* was path-container__text-field */
+.paths-field-input-alt {
+    background-color: var(--grey-black);
+    border: 1px solid #000;
+    border-radius: 2px;
+    height: 14px;
+    min-width: 200px;
+    color: white;
+}
+.paths-field-input-alt:focus {
+    outline: 1px solid var(--slicers-yellow-background);
+}
+
+/* was .path-container__choose-dir-btn */
+.browse-paths__button-alt {
+    background-color: var(--grey-black);
+    border: 1px solid #000;
+    border-radius: 2px;
+    height: 18px;
+    color: white;
+}
+.browse-paths__button-alt:hover {
+    background-color: var(--grey-black-hover);
+    cursor: pointer;
+}
+.browse-paths__button-alt:focus {
+    outline: 1px solid var(--slicers-yellow-background);
 }
 
 .browse-paths__button {

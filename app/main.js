@@ -31,7 +31,8 @@ let gr2Window;
 let getPatchWindow;
 let soundConverterWindow;
 let settingsWindow;
-const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window];
+let fileChangerWin;
+const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin];
 
 let appQuiting = false;
 const cache = {
@@ -94,6 +95,9 @@ function getWindowFromArg(arg) {
       break;
     case "Slicers GUI Settings":
       win = settingsWindow;
+      break;
+    case "SWTOR File Changer":
+      win = fileChangerWin;
       break;
   }
   return win;
@@ -286,7 +290,11 @@ function initMainListeners() {
           }
           break;
         case "fileChanger":
-          //open file changer window
+          if (fileChangerWin) {
+            fileChangerWin.show();
+          } else {
+            initFileChanger();
+          }
           break;
         case "getPatch":
           if (getPatchWindow) {
@@ -521,6 +529,43 @@ function initLoggerListeners(window) {
     window.webContents.send('displayLogData', data);
   });
 }
+//file changer
+function initFileChanger () {
+  fileChangerWin = new BrowserWindow({
+    width: 640,
+    height: 485,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: 'src/img/SlicersLogo.ico',
+    show: false
+  });
+  fileChangerWin.once('ready-to-show', () => fileChangerWin.show());
+  
+  fileChangerWin.removeMenu();
+  fileChangerWin.webContents.openDevTools();
+  fileChangerWin.loadFile(`${__dirname}/src/html/FileChanger.html`);
+  
+  
+  fileChangerWin.on('close', (e) => {
+    if (!appQuiting) {
+      e.preventDefault();
+      fileChangerWin.hide();
+    }
+    if (mainWindow) {
+      if (mainWindow.webContents) {
+        mainWindow.webContents.send('utilFileChngClosed', '');
+      }
+    }
+  });
+
+  initFileChangerListeners(fileChangerWin);
+}
+function initFileChangerListeners(window) {
+
+}
 //unpacker
 function initUnpackerGUI() {
   unpackerWindow = new BrowserWindow({
@@ -632,6 +677,7 @@ function initSoundConvGUI() {
   soundConverterWindow.once('ready-to-show', () => soundConverterWindow.show());
 
   soundConverterWindow.removeMenu();
+  soundConverterWindow.webContents.openDevTools();
   soundConverterWindow.loadURL(`${__dirname}/src/html/SoundConverter.html`);
 
   soundConverterWindow.on('close', (e) => {

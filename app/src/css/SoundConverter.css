@@ -1,24 +1,3 @@
-::-webkit-scrollbar {
-    width: 8px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background: var(--grey-black);
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #ffce00;
-}
-::-webkit-scrollbar-corner { background: transparent; }
-
-html, body {
-    height: 100%;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-}
 :root {
 	--color-light: #2fa5d4;
     --grey-black: #1a1a1a;
@@ -70,7 +49,7 @@ html, body {
     justify-content: space-around;
 }
 
-.patch-settings {
+.sound-settings {
     width: 100%;
     height: 70%;
     display: flex;
@@ -89,7 +68,7 @@ html, body {
     margin-right: 7px;
 }
 
-.patch-actions {
+.sound-actions {
     width: 100%;
     height: 30%;
     display: flex;
@@ -101,42 +80,15 @@ html, body {
     width: 121px;
 }
 
-.paths-field-input {
-    background-color: var(--grey-black);
-    color: white;
-    outline: none;
-    border: 1px solid #000;
-    border-radius: 3px;
-    height: 16px;
+
+.sound-input-setting .paths-field-input-alt {
     width: 200px;
-    margin-right: 5px;
-}
-.paths-field-input:focus {
-    border: 1px solid var(--background-yellow-slicers);
-}
-.patch-unpack-path-setting > .paths-field-input {
-    margin-left: 8px;
-}
-.version-input {
-    width: 50px;
+    margin: 0px 7px;
 }
 
-.browse-paths__button {
-    background-color: var(--grey-black);
-    padding: 4px;
-    height: 20px;
-    width: 20px;
-    border: 1px solid #000;
-    box-shadow: 0 0 4px rgb(0 0 0 / 50%);
-    border-radius: 3px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-.browse-paths__button:hover {
-    cursor: pointer;
-    background-color: rgb(71, 71, 71);
+
+.version-input {
+    width: 50px;
 }
 
 .fa-ellipsis-h {

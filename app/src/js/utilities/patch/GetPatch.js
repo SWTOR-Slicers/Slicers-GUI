@@ -73,8 +73,24 @@ async function initialize() {
     await getPatches();
     await loadCache();
     enviromentType.options[0].innerHTML = cache["enviromentType"];
+    enviromentType.nextElementSibling.innerHTML = enviromentType.options[0].innerHTML;
+    enviromentType.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
+    enviromentType.nextElementSibling.nextElementSibling.querySelector(`#${enviromentType.options[0].innerHTML}`).classList.toggle('same-as-selected');
+
     productType.options[0].innerHTML = cache["productType"];
+    productType.nextElementSibling.innerHTML = productType.options[0].innerHTML;
+    productType.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
+    productType.nextElementSibling.nextElementSibling.querySelector(`#${productType.options[0].innerHTML}`).classList.toggle('same-as-selected');
+
     varient.options[0].innerHTML = cache["varient"];
+    varient.nextElementSibling.innerHTML = varient.options[0].innerHTML;
+    varient.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
+    if (varient.options[0].innerHTML == '-1to0') {
+        document.getElementById('-1to0').classList.toggle('same-as-selected');
+    } else {
+        varient.nextElementSibling.nextElementSibling.querySelector(`#${varient.options[0].innerHTML}`).classList.toggle('same-as-selected');
+    }
+
     versionInput.value = cache["version"];
     output.value = cache["output"];
 
@@ -90,7 +106,6 @@ async function initialize() {
         addTooltip('top', outputFolderLabel, false, (element) => { return 'Patch output folder'; });
     }
     
-    initDrops();
     initListeners();
     initSubs();
 
@@ -159,6 +174,18 @@ function updateCache(field, val) {
 }
 //init dom listeners
 function initListeners() {
+    enviromentType.clickCallback = (e) => {
+        const elem = e.currentTarget;
+        updateCache(enviromentType.id, elem.innerHTML);
+    }
+    productType.clickCallback = (e) => {
+        const elem = e.currentTarget;
+        updateCache(productType.id, elem.innerHTML);
+    }
+    varient.clickCallback = (e) => {
+        const elem = e.currentTarget;
+        updateCache(varient.id, elem.innerHTML);
+    }
     pathsBrowseBtn.addEventListener("click", (e) => {
         ipcRenderer.send("showDialogPatch")
     });
@@ -232,95 +259,6 @@ function initSubs() {
         output.value = data[0];
         output.dispatchEvent(changeEvent);
     });
-}
-//initializes custom dropdown menus
-function initDrops() {
-    let customSelects = document.getElementsByClassName("custom-select");
-    let custSelLen = customSelects.length;
-
-    for (let i = 0; i < custSelLen; i++) {
-        let select = customSelects[i].getElementsByTagName("select")[0];
-        let selLen = select.length;
-        
-        let a = document.createElement("DIV");
-        a.setAttribute("class", "select-selected");
-        a.innerHTML = select.options[select.selectedIndex].innerHTML;
-        customSelects[i].appendChild(a);
-        
-        let b = document.createElement("DIV");
-        b.setAttribute("class", "select-items select-hide");
-
-        for (let j = 1; j < selLen; j++) {
-            let c = document.createElement("DIV");
-            c.id = select.options[j].innerHTML;
-            c.innerHTML = select.options[j].innerHTML;
-
-            if (c.id == a.innerHTML) {
-                c.classList.add("same-as-selected");
-            }
-
-            c.addEventListener("click", function(e) {
-                let s = this.parentNode.parentNode.getElementsByTagName("select")[0];
-                let sl = s.length;
-                let h = this.parentNode.previousSibling;
-
-                for (let i = 0; i < sl; i++) {
-                    if (s.options[i].innerHTML == this.innerHTML) {
-                        s.selectedIndex = i;
-                        h.innerHTML = this.innerHTML;
-
-                        let y = this.parentNode.getElementsByClassName("same-as-selected");
-                        let yl = y.length;
-                        for (let k = 0; k < yl; k++) {
-                            y[k].removeAttribute("class");
-                        }
-
-                        this.setAttribute("class", "same-as-selected");
-
-                        break;
-                    }
-                }
-
-                updateCache(select.id, this.innerHTML);
-                checkFields();
-
-                h.click();
-
-            });
-
-            b.appendChild(c);
-
-        }
-
-        customSelects[i].appendChild(b);
-
-        a.addEventListener("click", function(e) {
-            e.stopPropagation();
-            closeAllSelect(this);
-            this.nextSibling.classList.toggle("select-hide");
-            this.classList.toggle("select-arrow-active");
-        });
-    }
-    function closeAllSelect(elmnt) {
-        var x, y, i, xl, yl, arrNo = [];
-        x = document.getElementsByClassName("select-items");
-        y = document.getElementsByClassName("select-selected");
-        xl = x.length;
-        yl = y.length;
-        for (i = 0; i < yl; i++) {
-            if (elmnt == y[i]) {
-            arrNo.push(i)
-            } else {
-            y[i].classList.remove("select-arrow-active");
-            }
-        }
-        for (i = 0; i < xl; i++) {
-            if (arrNo.indexOf(i)) {
-            x[i].classList.add("select-hide");
-            }
-        }
-    }
-    document.addEventListener("click", closeAllSelect);
 }
 //this checks field values and if certain cases are met, then it will hide certain other inputs
 function checkFields() {

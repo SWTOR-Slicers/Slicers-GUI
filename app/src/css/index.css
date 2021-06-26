@@ -63,31 +63,6 @@
     font-size: 14px;
     color: white;
 }
-.main-page .path-container__text-field {
-    background-color: var(--grey-black);
-    border: 1px solid #000;
-    border-radius: 2px;
-    height: 14px;
-    width: 200px;
-    color: white;
-}
-.main-page .path-container__choose-dir-btn {
-    background-color: var(--grey-black);
-    border: 1px solid #000;
-    border-radius: 2px;
-    height: 18px;
-    color: white;
-}
-.main-page .path-container__choose-dir-btn:hover {
-    background-color: var(--grey-black-hover);
-    cursor: pointer;
-}
-.main-page .path-container__choose-dir-btn:focus {
-    outline: 1px solid var(--slicers-yellow-background);
-}
-.main-page .path-container__text-field:focus {
-    outline: 1px solid var(--slicers-yellow-background);
-}
 .main-page .additional-content {
     height: 130px;
     width: 125px;
@@ -302,54 +277,6 @@
     }
 }
 
-/* Custom select */
-.custom-select {
-    margin-top: 7px;
-    position: relative;
-    font-size: 12px;
-    width: 78px;
-}
-.custom-select select {
-    display: none;
-}
-.select-selected {
-    background-color: var(--grey-black);
-}
-.select-selected:after {
-    position: absolute;
-    content: "";
-    top: 7px;
-    right: 7px;
-    width: 0;
-    height: 0;
-    border: 5px solid transparent;
-    border-color: #fff transparent transparent transparent;
-}
-.select-selected.select-arrow-active:after {
-    border-color: transparent transparent #fff transparent;
-    top: 7px;
-}
-.select-items div,.select-selected {
-    color: #ffffff;
-    padding: 2px 4px;
-    border: 1px solid transparent;
-    border-color: 1px solid #000;
-    cursor: pointer;
-}
-.select-items {
-    position: absolute;
-    background-color: var(--grey-black);
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: 99;
-}
-.select-hide {
-    display: none;
-}
-.select-items div:hover, .same-as-selected {
-    background-color: var(--grey-black-hover);
-}
 .actions-side > button {
     width: 130px;
 }
@@ -364,13 +291,13 @@
     font-size: 16px;
 }
 .a-c-row-1 {
+    margin: 7px;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
 }
 .settings-btn-cont {
-    margin-top: 7px;
     margin-left: 10px;
     color: white;
     font-size: 12px;

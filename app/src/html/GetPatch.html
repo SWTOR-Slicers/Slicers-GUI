@@ -23,51 +23,45 @@
                 <div class="patch-settings">
                     <div class="setting enviromentType-setting">
                         <label class="setting-label" for="enviromentType" id="envTypeLabel">Enviroment Type: </label>
-                        <div class="custom-select">
-                            <select name="enviromentType" id="enviromentType">
-                                <option value="0">live</option>
-                                <option value="live">live</option>
-                                <option value="pts">pts</option>
-                                <option value="movies">movies</option>
-                                <option value="liveqatest">liveqatest</option>
-                                <option value="betatest">betatest</option>
-                                <option value="cstraining">cstraining</option>
-                                <option value="liveeptest">liveeptest</option>
-                            </select>
-                        </div>
+                        <select name="enviromentType" id="enviromentType" is="drop-down">
+                            <option value="0">live</option>
+                            <option value="live">live</option>
+                            <option value="pts">pts</option>
+                            <option value="movies">movies</option>
+                            <option value="liveqatest">liveqatest</option>
+                            <option value="betatest">betatest</option>
+                            <option value="cstraining">cstraining</option>
+                            <option value="liveeptest">liveeptest</option>
+                        </select>
                     </div>
                     <div class="setting productType-setting">
                         <label class="setting-label" for="productType" id="prodTypeLabel">Product Type: </label>
-                        <div class="custom-select">
-                            <select name="productType" id="productType">
-                                <option value="0">main</option>
-                                <option value="main">main</option>
-                                <option value="client">client</option>
-                                <option value="en_us">en_us</option>
-                                <option value="de_de">de_de</option>
-                                <option value="fr_fr">fr_fr</option>
-                            </select>
-                        </div>
+                        <select name="productType" id="productType" is="drop-down">
+                            <option value="0">main</option>
+                            <option value="main">main</option>
+                            <option value="client">client</option>
+                            <option value="en_us">en_us</option>
+                            <option value="de_de">de_de</option>
+                            <option value="fr_fr">fr_fr</option>
+                        </select>
                     </div>
                     <div class="setting patch-varient-setting">
                         <label class="setting-label" for="varient" id="varientLabel">Varient: </label>
-                        <div class="custom-select">
-                            <select name="varient" id="varient">
-                                <option value="0">-1to0</option>
-                                <option value="-1to0">-1to0</option>
-                                <option value="-0toY">0toY</option>
-                                <option value="-XtoY">XtoY</option>
-                            </select>
-                        </div>
+                        <select name="varient" id="varient" is="drop-down">
+                            <option value="0">-1to0</option>
+                            <option value="-1to0">-1to0</option>
+                            <option value="-0toY">0toY</option>
+                            <option value="-XtoY">XtoY</option>
+                        </select>
                     </div>
                     <div class="setting patch-num-setting">
                         <label class="setting-label" for="versionInput" id="versionYLabel">Version (Y): </label>
-                        <input class="version-input paths-field-input" type="text" name="versionInput" id="versionInput" value="6.3a">
+                        <input class="paths-field-input-alt version-input" type="text" name="versionInput" id="versionInput" value="">
                     </div>
                     <div class="setting patch-output-setting">
                         <label class="setting-label" for="output" id="outputFolderLabel">Output Path: </label>
-                        <input class="paths-field-input" type="text" name="output" id="output" value="">
-                        <button id="pathsBrowseBtn" class="browse-paths__button">
+                        <input class="paths-field-input-alt" type="text" name="output" id="output" value="">
+                        <button id="pathsBrowseBtn" class="browse-paths__button-alt">
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
                     </div>
@@ -91,6 +85,7 @@
         </div>
     </div>
 
+    <script type="module" src="../api/components/dropDown/DropDown.js"></script>
     <script type="module" src="../api/components/alert/Alert.js"></script>
     <script type="module" src="../api/components/titleBar/WindowTitleBar.js"></script>
     <script type="module" src="../js/utilities/patch/GetPatch.js"></script>

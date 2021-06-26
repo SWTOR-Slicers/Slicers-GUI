@@ -57,7 +57,6 @@
 
 .color-picker{
     position: absolute;
-    transform: translate(-50%, 50%);
     width: 180px;
     height: auto;
     min-height: 226px;
@@ -73,6 +72,18 @@
                     0px 2px 2px 0px rgba(0, 0, 0, 0.14), 
                         0px 1px 5px 0px rgba(0,0,0,.12);
     z-index: 1000;
+}
+.top-left {
+    transform: translate(-50%, -50%);
+}
+.top-right {
+    transform: translate(50%, -50%);
+}
+.bottom-left {
+    transform: translate(-50%, 50%);
+}
+.bottom-right {
+    transform: translate(50%, 50%);
 }
 .color-picker-controls{
     position: relative;

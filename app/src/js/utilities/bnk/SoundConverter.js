@@ -32,7 +32,7 @@ const soundPathInput = document.getElementById("soundPathInput");
 const folderPathBrowserBtn = document.getElementById('folderPathBrowserBtn');
 const filePathBrowserBtn = document.getElementById("filePathBrowserBtn");
 
-const outputPathLabel = document.getElementById('ouputPathlabel');
+const outputPathLabel = document.getElementById('outputPathLabel');
 const outputFolder = document.getElementById("outputFolder");
 const outputBrowserBtn = document.getElementById("outputBrowserBtn");
 

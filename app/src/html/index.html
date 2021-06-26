@@ -31,9 +31,9 @@
             <div class="path-container">
               <h3 class="path-container__header" id="assetsFolderLabel">Assets Folder:</h3>
               <div class="to-file-1"></div>
-              <input id="assetTextField" class="path-container__text-field" type="text" name="assets-folder">
+              <input id="assetTextField" class="paths-field-input-alt" type="text" name="assets-folder">
               <div class="to-file-2"></div>
-              <button id="assetPopupBtn" class="path-container__choose-dir-btn">
+              <button id="assetPopupBtn" class="browse-paths__button-alt">
                 <i class="fas fa-ellipsis-h"></i>
               </button>
             </div>
@@ -41,9 +41,9 @@
             <div class="path-container">
               <h3 class="path-container__header" id="outputFolderLabel">Output Folder:</h3>
               <div class="to-file-3"></div>
-              <input id="outputTextField" class="path-container__text-field" type="text" name="assets-folder">
+              <input id="outputTextField" class="paths-field-input-alt" type="text" name="assets-folder">
               <div class="to-file-2"></div>
-              <button id="outputPopupBtn" class="path-container__choose-dir-btn">
+              <button id="outputPopupBtn" class="browse-paths__button-alt">
                 <i class="fas fa-ellipsis-h"></i>
               </button>
             </div>
@@ -51,9 +51,9 @@
             <div class="path-container">
               <h3 class="path-container__header" id="dataFolderLabel">Data Folder:</h3>
               <div class="to-file-4"></div>
-              <input id="dataTextField" class="path-container__text-field" type="text" name="assets-folder">
+              <input id="dataTextField" class="paths-field-input-alt" type="text" name="assets-folder">
               <div class="to-file-2"></div>
-              <button id="dataPopupBtn" class="path-container__choose-dir-btn">
+              <button id="dataPopupBtn" class="browse-paths__button-alt">
                 <i class="fas fa-ellipsis-h"></i>
               </button>
             </div>
@@ -61,16 +61,14 @@
           </div>
           <div class="additional-content">
             <div class="a-c-row-1">
-              <div class="custom-select">
-                <select id="extractionPreset" name="extractionPreset">
-                    <option value="0">All</option>
-                    <option value="all">All</option>
-                    <option value="dynamic">Dynamic</option>
-                    <option value="static">Static</option>
-                    <option value="sound">Sound</option>
-                    <option value="gui">GUI</option>
-                </select>
-              </div>
+              <select id="extractionPreset" name="extractionPreset" is="drop-down">
+                <option value="0">All</option>
+                <option value="all">All</option>
+                <option value="dynamic">Dynamic</option>
+                <option value="static">Static</option>
+                <option value="sound">Sound</option>
+                <option value="gui">GUI</option>
+            </select>
 
               <div id="settingsBtn" class="settings-btn-cont log-extra-func">
                 <i class="fas fa-cog"></i>
@@ -148,6 +146,7 @@
     </div>
     
     <script type="module" src="../api/components/alert/Alert.js"></script>
+    <script type="module" src="../api/components/dropDown/DropDown.js"></script>
     <script type="module" src="../api/components/titleBar/WindowTitleBar.js"></script>
     <script type="module" src="../js/main/renderer.js"></script>
   </body>

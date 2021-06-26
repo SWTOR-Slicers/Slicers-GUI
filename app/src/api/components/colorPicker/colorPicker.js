@@ -163,6 +163,7 @@ class ColorPicker extends HTMLElement {
         this.shadowRoot.append(styles, container);
 
         let colorPicker = new ColorPickerControl({
+            position: this.hasAttribute('position') ? this.getAttribute('position') : 'top-left',
             container: container,
             color: (this.hasAttribute('value')) ? utils.hexToRgb(this.getAttribute('value')) : {
                 r: 255,
@@ -178,8 +179,13 @@ class ColorPicker extends HTMLElement {
 
         this.colorPicker = colorPicker;
         this.colorPicker.on('change', debounce((e) => {
+            this.setAttribute('value', this.colorPicker.color.toHEX())
             this.changeCallback();
         }, 200));
+        subCont.nextElementSibling.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        })
 
         subCont.dispatchEvent(new Event('click'));
 
@@ -189,11 +195,11 @@ class ColorPicker extends HTMLElement {
     }
 
     get value() {
-        const hsv = this.colorPicker.color;
-        return utils.hsvToHex(hsv.h, hsv.s, hsv.v);
+        return this.colorPicker.color.toHEX();
     }
 
     set value(newVal) {
+        console.log(newVal);
         this.setAttribute('value', newVal);
         this.colorPicker.color = new HSVaColor().fromHEX(newVal);
         this.colorPicker.update(false);
@@ -208,6 +214,7 @@ customElements.define('color-picker', ColorPicker);
 function ColorPickerControl(cfg) {
     // configuration
     let config = Object.assign({
+        position: 'top-left',
         container: document.body,
         theme: 'dark',
         debug: false,
@@ -322,7 +329,7 @@ function ColorPickerControl(cfg) {
         // creating root element
         let root = document.createElement('div');
         root.innerHTML = `
-            <div class="color-picker">
+            <div class="color-picker ${config.position}">
         
             <div class="color-picker-controls">
                 <div class="color-picker-controls-group" style="display: flex; flex-direction: row;">

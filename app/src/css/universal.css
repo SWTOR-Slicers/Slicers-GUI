@@ -85,7 +85,6 @@ html, body {
 .paths-field-input {
     background-color: var(--grey-black);
     color: white;
-    outline: none;
     border: 1px solid #000;
     border-radius: 3px;
     height: 16px;
@@ -93,9 +92,8 @@ html, body {
     margin-right: 5px;
 }
 .paths-field-input:focus {
-    border: 1px solid var(--background-yellow-slicers);
+    outline: 1px solid var(--background-yellow-slicers);
 }
-/* was path-container__text-field */
 .paths-field-input-alt {
     background-color: var(--grey-black);
     border: 1px solid #000;
@@ -105,7 +103,7 @@ html, body {
     color: white;
 }
 .paths-field-input-alt:focus {
-    outline: 1px solid var(--slicers-yellow-background);
+    outline: 1px solid var(--background-yellow-slicers);
 }
 
 /* was .path-container__choose-dir-btn */
@@ -121,7 +119,7 @@ html, body {
     cursor: pointer;
 }
 .browse-paths__button-alt:focus {
-    outline: 1px solid var(--slicers-yellow-background);
+    outline: 1px solid var(--background-yellow-slicers);
 }
 
 .browse-paths__button {
@@ -142,7 +140,7 @@ html, body {
     background-color: rgb(71, 71, 71);
 }
 .browse-paths__button:focus {
-    outline: 1px solid #ffce00;
+    outline: 1px solid var(--background-yellow-slicers);
 }
 .element-border {
     border: 1px solid #000;
@@ -150,10 +148,10 @@ html, body {
 }
 
 .disabled {
-    pointer-events: none;
-    background-color: #222222;
-    border: 1px solid rgb(51, 51, 51);
-    color: rgb(177, 177, 177);
+    pointer-events: none !important;
+    background-color: #222222 !important;
+    border: 1px solid rgb(51, 51, 51) !important;
+    color: rgb(177, 177, 177) !important;
 }
 .unselectable {
     -webkit-touch-callout: none;

@@ -20,27 +20,27 @@
                 <h2 class="h2">SWTOR Unpacker</h2>
             </div>
             <div class="body-container">
-                <div class="patch-settings">
-                    <div class="setting patch-unpack-path-setting">
+                <div class="unpack-settings">
+                    <div class="setting unpack-unpack-path-setting">
                         <label class="setting-label" for="filePathInput" id="unpackPathLabel">Unpack Path: </label>
-                        <input style="margin-left: 8px;" class="paths-field-input" type="text" name="filePathInput" id="filePathInput" value="">
-                        <button id="folderPathBrowserBtn" class="browse-paths__button">
+                        <input style="margin-left: 8px; margin-right: 7px;" class="paths-field-input-alt" type="text" name="filePathInput" id="filePathInput" value="">
+                        <button id="folderPathBrowserBtn" class="browse-paths__button-alt">
                             <i class="fas fa-folder"></i>
                         </button>
-                        <button id="filePathBrowserBtn" class="browse-paths__button">
+                        <button id="filePathBrowserBtn" class="browse-paths__button-alt">
                             <i class="fas fa-file"></i>
                         </button>
                     </div>
-                    <div class="setting patch-output-setting">
+                    <div class="setting unpack-output-setting">
                         <label class="setting-label" for="outputInput" id="outputPathLabel">Output Folder: </label>
-                        <input class="paths-field-input" type="text" name="outputInput" id="outputInput" value="">
-                        <button id="outputBrowserBtn" class="browse-paths__button">
+                        <input style="margin-right: 7px;" class="paths-field-input-alt" type="text" name="outputInput" id="outputInput" value="">
+                        <button id="outputBrowserBtn" class="browse-paths__button-alt">
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
                     </div>
                 </div>
                 
-                <div class="patch-actions">
+                <div class="unpack-actions">
                     <button id="unpackFile" class="container-bottom__sub__btn action-btn">Unpack</button>
                     <div class="progress-bar-container container-bottom__sub__btn action-btn">
                         <div id="progressBar" class="progress-bar"></div>

@@ -14,7 +14,6 @@ const path = require('path');
 
 let modalColor = document.getElementById("modalColor");
 let wireframeContainer = document.getElementById("wireframeContainer");
-let wireFrame = document.getElementById("wireFrame");
 let fovInput = document.getElementById("fovInput");
 
 let exportAsObj = document.getElementById("exportAsObj");
@@ -67,7 +66,7 @@ const GOOD_CAM_HEIGHT_MOD = 1.0427657658789222;
 async function init() {
     await loadCache();
     modalColor.value = cache["color"];
-    wireFrame.checked = cache["wireframe"];
+    wireframeContainer.checked = cache["wireframe"];
     fovInput.value = cache["fov"];
 
     initConsts();
@@ -237,15 +236,14 @@ function createMaterial(bufferGeometry, shouldRemoveLoad) {
 
 //utils
 function addOptionsListeners() {
-    modalColor.addEventListener("change", (e) => {
-        updateCache("color", e.target.value);
+    modalColor.changeCallback = (e) => {
+        updateCache("color", modalColor.value);
         for (const gr2 of parsedGR2s) {
             gr2.material.color.set(cache["color"]);
         }
-    });
+    }
     wireframeContainer.addEventListener("click", (e) => {
-        wireFrame.checked = !wireFrame.checked;
-        updateCache("wireframe", wireFrame.checked);
+        updateCache("wireframe", wireframeContainer.checked);
         for (const gr2 of parsedGR2s) {
             gr2.material.wireframe = cache["wireframe"];
         }

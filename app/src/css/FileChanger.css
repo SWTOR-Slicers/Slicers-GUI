@@ -48,7 +48,7 @@
 }
 
 .changer-info-wrapper {
-    margin-top: 20px;
+    margin-top: 14px;
     width: calc(100% - 14px);
     height: 28px;
 
@@ -57,8 +57,22 @@
     align-items: center;
     justify-content: space-between;
 }
+.options-wrapper {
+    height: 28px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.backup-setting-cont {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    margin-right: 22px;
+}
 .version-toggle-wrapper {
-    /* width: calc(14px); */
     height: 28px;
 
     display: flex;
@@ -71,4 +85,57 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
+}
+.toggle-label {
+    margin-right: 7px;
+}
+
+.file-changes {
+    margin-top: 7px;
+    width: calc(100% - 14px);
+    height: calc(100% - 159px);
+    overflow-y: scroll;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: var(--grey-black);
+}
+
+#loadedPresetPath { flex-grow: 1; }
+.file-changer-actions-wrapper > button.browse-paths__button-alt { height: auto; font-family: 'Eurofont'; }
+.file-changer-actions-wrapper > input.paths-field-input-alt { height: 16px; }
+
+.file-changer-actions-wrapper {
+    margin-top: 7px;
+    width: calc(100% - 14px);
+    height: 28px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+.progress-bar-container {
+    margin-top: 4px;
+    padding: 1px 0px;
+    height: 21px;
+    width: 20px;
+
+    border: 1px solid #000;
+    border-radius: 2px;
+    background-color: var(--grey-black);
+
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background-color: var(--background-yellow-slicers);
 }

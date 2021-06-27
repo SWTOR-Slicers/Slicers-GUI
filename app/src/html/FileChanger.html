@@ -26,15 +26,21 @@
 
             <div class="changer-info-wrapper">
                 <label for="" class="input-field-label">List of files to change: </label>
-                <div class="version-toggle-wrapper">
-                    <div class="toggle">
-                        <label class="toggle-label">Live: </label>
-                        <input id="live" type="checkbox" is="radio-input" radios="pts" checked>
+                <div class="options-wrapper">
+                    <div class="backup-setting-cont">
+                        <label for="createBackup">Create Backup: </label>
+                        <input name="createBackup" id="createBackup" is="check-box">
                     </div>
-                    
-                    <div class="toggle">
-                        <label for="" class="toggle-label">Pts: </label>
-                        <input id="pts" type="checkbox" is="radio-input" radios="live">
+                    <div class="version-toggle-wrapper">
+                        <div class="toggle" style="margin-right: 7px;">
+                            <label class="toggle-label">Live: </label>
+                            <input id="live" is="radio-input" radios="pts" checked>
+                        </div>
+                        
+                        <div class="toggle">
+                            <label for="" class="toggle-label">Pts: </label>
+                            <input id="pts" is="radio-input" radios="live">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -44,13 +50,31 @@
             </div>
 
             <div class="file-changer-actions-wrapper">
+                <button id="loadPre" class="browse-paths__button-alt" style="margin-right: 7px;">Load Preset</button>
+                <button id="writPre" class="browse-paths__button-alt" style="margin-right: 7px;">Create Preset</button>
 
+                <input type="text" name="" id="loadedPresetPath" class="paths-field-input-alt" style="margin-right: 7px;">
+
+                <button id="convPre" class="browse-paths__button-alt">Convert to Preset</button>
+            </div>
+
+            <div class="file-changer-actions-wrapper">
+                <button id="restoreBackup" class="container-bottom__sub__btn" style="margin-right: 7px; width: 130px;">Restore Backup</button>
+                <button id="extrFile" class="container-bottom__sub__btn" style="margin-right: 7px;">Extract File</button>
+                <button id="extrNode" class="container-bottom__sub__btn" style="margin-right: 7px;">Extract Node</button>
+
+                <div class="progress-bar-container" id="progBarCont" style="margin-right: 7px;">
+                    <div class="progress-bar" id="progBar"></div>
+                </div>
+
+                <button id="chngFiles" class="container-bottom__sub__btn">Change Files</button>
             </div>
         </div>
     </div>
     
 
     <script type="module" src="../api/components/radioInput/radioInput.js"></script>
+    <script type="module" src="../api/components/checkBox/checkBox.js"></script>
     <script type="module" src="../api/components/alert/Alert.js"></script>
     <script type="module" src="../api/components/titleBar/WindowTitleBar.js"></script>
     <script type="module" src="../js/utilities/filechanger/FileChanger.js"></script>

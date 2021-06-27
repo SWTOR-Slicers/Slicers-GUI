@@ -532,7 +532,7 @@ function initLoggerListeners(window) {
 //file changer
 function initFileChanger () {
   fileChangerWin = new BrowserWindow({
-    width: 640,
+    width: 952,
     height: 485,
     frame: false,
     webPreferences: {

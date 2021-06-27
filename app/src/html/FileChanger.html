@@ -28,8 +28,8 @@
                 <label for="" class="input-field-label">List of files to change: </label>
                 <div class="options-wrapper">
                     <div class="backup-setting-cont">
-                        <label for="createBackup">Create Backup: </label>
-                        <input name="createBackup" id="createBackup" is="check-box">
+                        <label for="createBackup" style="margin-right: 7px;">Create Backup: </label>
+                        <input name="createBackup" id="createBackup" is="check-box" checked>
                     </div>
                     <div class="version-toggle-wrapper">
                         <div class="toggle" style="margin-right: 7px;">
@@ -38,7 +38,7 @@
                         </div>
                         
                         <div class="toggle">
-                            <label for="" class="toggle-label">Pts: </label>
+                            <label for="" class="toggle-label">PTS: </label>
                             <input id="pts" is="radio-input" radios="live">
                         </div>
                     </div>
@@ -46,14 +46,50 @@
             </div>
 
             <div class="file-changes">
+                <div class="file-changes-body" id="fileChangesCont">
+                    <div class="change-elem">
+                        <div class="change-type">
+                            <label for="testType" class="test-label">Type: </label>
+                            <select name="testType" id="testType" is="drop-down">
+                                <option value="0">File</option>
+                                <option value="file">File</option>
+                                <option value="node">Node</option>
+                            </select>
+                        </div>
 
+                        <div class="file-to-change">
+                            <label for="targetInput" class="test-label">Target: </label>
+                            <input type="text" name="targetInput" class="paths-field-input-alt" style="margin-right: 7px;">
+                            <button class="browse-paths__button-alt">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+
+                        <div class="file-to-use">
+                            <label for="moddedInput" class="test-label">Modded: </label>
+                            <input type="text" name="moddedInput" class="paths-field-input-alt" style="margin-right: 7px;">
+                            <button class="browse-paths__button-alt">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+
+                        <div class="remove-elem-wrapper">
+                            <button class="browse-paths__button-alt">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-changes-options-cont">
+                    <button id="addChange" class="file-change-btn"><i class="fas fa-plus"></i></button>
+                </div>
             </div>
 
             <div class="file-changer-actions-wrapper">
                 <button id="loadPre" class="browse-paths__button-alt" style="margin-right: 7px;">Load Preset</button>
                 <button id="writPre" class="browse-paths__button-alt" style="margin-right: 7px;">Create Preset</button>
 
-                <input type="text" name="" id="loadedPresetPath" class="paths-field-input-alt" style="margin-right: 7px;">
+                <input type="text" name="" id="loadedPresetPath" class="paths-field-input-alt" style="margin-right: 7px;" placeholder="Modding Preset Path...">
 
                 <button id="convPre" class="browse-paths__button-alt">Convert to Preset</button>
             </div>
@@ -73,6 +109,7 @@
     </div>
     
 
+    <script type="module" src="../api/components/dropDown/DropDown.js"></script>
     <script type="module" src="../api/components/radioInput/radioInput.js"></script>
     <script type="module" src="../api/components/checkBox/checkBox.js"></script>
     <script type="module" src="../api/components/alert/Alert.js"></script>

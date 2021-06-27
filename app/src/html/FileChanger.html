@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
-    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'"> -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
     <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../css/universal.css">
     <link rel="stylesheet" href="../css/FileChanger.css">
@@ -28,11 +28,13 @@
                 <label for="" class="input-field-label">List of files to change: </label>
                 <div class="version-toggle-wrapper">
                     <div class="toggle">
-                        <input type="checkbox" is="radio-input">
+                        <label class="toggle-label">Live: </label>
+                        <input id="live" type="checkbox" is="radio-input" radios="pts" checked>
                     </div>
                     
                     <div class="toggle">
-                        
+                        <label for="" class="toggle-label">Pts: </label>
+                        <input id="pts" type="checkbox" is="radio-input" radios="live">
                     </div>
                 </div>
             </div>

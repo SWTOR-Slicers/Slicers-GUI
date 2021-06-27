@@ -11,9 +11,8 @@
     position: relative;
     cursor: pointer;
 
-    font-size: 22px;
-    margin-bottom: 12px;
-    padding-left: 35px;
+    height: 18px;
+    width: 18px;
 }
 
 .radio-input-container input {
@@ -25,38 +24,29 @@
 }
 
 .radio-input {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 25px;
-    width: 25px;
+    height: 100%;
+    width: 100%;
     background-color: var(--grey-black);
     border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .radio-input-container:hover input ~ .radio-input {
     background-color: var(--grey-black-hover);
 }
 
-.radio-input input:checked ~ .radio-input {
+.radio-input::after {
+    content: "";
+    display: none;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
     background-color: var(--background-yellow-slicers);
 }
 
-.radio-input::after {
-    content: "";
-    position: absolute;
-    display: none;
-}
-
-.radio-input input:checked ~ .radio-input::after {
+.radio-input-container input:checked ~ .radio-input::after {
     display: block;
-}
-
-.radio-input-container .radio-input::after {
-    top: 9px;
-    height: 9px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: var(--grey-black);
 }

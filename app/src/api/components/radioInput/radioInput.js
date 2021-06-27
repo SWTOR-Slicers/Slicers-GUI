@@ -21,7 +21,18 @@ class RadioInput extends HTMLInputElement {
         container.append(span);
 
         span.addEventListener('click', (e) => {
-            this.checked = !this.checked;
+            if (!this.checked)  {
+                if (this.hasAttribute('radios')) {
+                    const rads = this.getAttribute('radios').split(' ');
+                    for (const rad of rads) {
+                        document.getElementById(rad).checked = false;
+                    }
+                } else {
+                    this.checked = true;
+                    this.setAttribute('checked', '');
+                }
+                this.checked = true;
+            }
         });
     }
 }

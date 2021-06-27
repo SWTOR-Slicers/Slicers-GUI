@@ -135,6 +135,56 @@ const utils = {
         return !isNaN(res) ? res : 0;
     }
 }
+function makeColWheelInit() {
+    // create temporary canvas element
+    let can = document.createElement("canvas");
+    // set canvas size
+    can.height = can.width = 512;
+    // get canvas context
+    let ctx = can.getContext("2d");
+    // calculate canvas radius
+    let radius = can.width / 2;
+    // set loop step
+    let step = 1 / radius;
+    // clear canvas
+    ctx.clearRect(0, 0, can.width, can.height);
+    // set center points
+    let cx = radius;
+    let cy = radius;
+    // loop around circle
+    for(let i = 0; i < 360; i += step) {
+        // get angle in radians
+        let rad = i * (2 * Math.PI) / 360;
+        // get line direction from center
+        let x = radius * Math.cos(rad),
+            y = radius * Math.sin(rad);
+        // set stroke style
+        ctx.strokeStyle = 'hsl(' + i + ', 100%, 50%)';
+        // draw color line
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.lineTo(cx + x, cy + y);
+        ctx.stroke();
+    }
+
+    // draw saturation gradient
+    let grd = ctx.createRadialGradient(cx,cy,0,cx,cx,radius);
+    grd.addColorStop(0,'rgba(255, 255, 255, 1)');
+    grd.addColorStop(1,'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.fill();
+    // draw circle border
+    ctx.beginPath();
+    ctx.strokeStyle = "rgb(38, 41, 50)";
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    // create image and load canvas result into it
+    return can;
+};
+const colWheel = makeColWheelInit();
 const body = document.querySelector('body');
 class ColorPicker extends HTMLElement {
     constructor() {
@@ -157,7 +207,20 @@ class ColorPicker extends HTMLElement {
 
         subCont.addEventListener('click', (e) => {
             e.stopImmediatePropagation();
-            container.children[1].style.display == 'none' ? container.children[1].style.display = '' : container.children[1].style.display = 'none';
+            const wheelCan = subCont.nextElementSibling.querySelector('#wheel-canvas');
+            const wheelCtx = wheelCan.getContext('2d');
+
+            const brightCan = subCont.nextElementSibling.querySelector('#brightness-canvas');
+            const brightCtx = brightCan.getContext('2d');
+
+            if (container.children[1].style.display == 'none') {
+                //wheelCtx.drawImage(colWheel, 0, 0, wheelCan.width, wheelCan.height);
+                container.children[1].style.display = '';
+            } else {
+                //body.appendChild(colWheel);
+
+                container.children[1].style.display = 'none';
+            }
         });
 
         this.shadowRoot.append(styles, container);
@@ -335,12 +398,12 @@ function ColorPickerControl(cfg) {
                 <div class="color-picker-controls-group" style="display: flex; flex-direction: row;">
         
                     <div class="color-picker-wheel-control">
-                        <canvas id="wheel-canvas" class="wheel-canvas"></canvas>
+                        <canvas id="wheel-canvas" class="wheel-canvas" width="140" height="140"></canvas>
                         <div class="color-picker-wheel-control-thumb" style="top:50%; left: 50%;"></div>
                     </div>
         
                     <div class="color-picker-brightness-control">
-                        <canvas id="brightness-canvas" class="brightness-canvas"></canvas>
+                        <canvas id="brightness-canvas" class="brightness-canvas" width="8" height="140"></canvas>
                         <div class="color-picker-brightness-control-thumb"></div>
                     </div>
         
@@ -957,10 +1020,7 @@ function ColorPickerControl(cfg) {
          * The function of drawing control's canvas with color wheel gradient and applying brightness filter
         **/
         let drawCanvas = function () {
-            // get the size of the canvas and its position relative to the document
-            let canvas_bb = utils.getBoundingBox(canvas);
             // update canvas size based received values
-            canvas.width = canvas.height = canvas_bb.width;
             // get canvas context
             let ctx = canvas.getContext("2d");
             // rotate canvas context to 90 degrees
@@ -968,77 +1028,73 @@ function ColorPickerControl(cfg) {
             ctx.rotate(90 * Math.PI / 180);
             ctx.translate(-canvas.width/2, -canvas.height/2);
             
+            ctx.imageSmoothingEnabled = true;
+                
+            ctx.beginPath();
+            ctx.arc(canvas.width/2, canvas.width/2, canvas.width/2, 0, Math.PI*2);
+            ctx.clip();
+            ctx.closePath();
+            // drawing multiple times on this clipped area will increase artifacts
 
+            // creating opacity pattern
+            let opacityPattern = document.createElement("canvas");
+            // set cell size to 10 pixels
+            let cell_size = 10;
+            // set the size of the opacity pattern to two cells in height and in width
+            opacityPattern.width = cell_size * 2;
+            opacityPattern.height = cell_size * 2;
+            // get opacity pattern context
+            var opacityPatternContext = opacityPattern.getContext("2d");
+            // set cells colors
+            let cell_1_color = 'rgba(255, 255, 255, 1)', cell_2_color = 'rgba(205, 205,205, 1)';
+            // draw first cell
+            opacityPatternContext.beginPath();
+            opacityPatternContext.fillStyle = cell_1_color;
+            opacityPatternContext.fillRect(0, 0, cell_size, cell_size);
+            opacityPatternContext.closePath();
+            // draw second cell
+            opacityPatternContext.beginPath();
+            opacityPatternContext.fillStyle = cell_2_color;
+            opacityPatternContext.fillRect(cell_size, 0, cell_size, cell_size);
+            opacityPatternContext.closePath();
+            // draw third cell
+            opacityPatternContext.beginPath();
+            opacityPatternContext.fillStyle = cell_2_color;
+            opacityPatternContext.fillRect(0, cell_size, cell_size, cell_size);
+            opacityPatternContext.closePath();
+            // draw fourth cell
+            opacityPatternContext.beginPath();
+            opacityPatternContext.fillStyle = cell_1_color;
+            opacityPatternContext.fillRect(cell_size, cell_size, cell_size, cell_size);
+            opacityPatternContext.closePath();
+        
+            // add opacity pattern on the canvas
+            var opacity_pattern = ctx.createPattern(opacityPattern, "repeat");
+
+            // draw an opacity pattern on the canvas
+            ctx.beginPath();
+            ctx.fillStyle = opacity_pattern;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.closePath();
+
+
+            // applying brightness filter to canvas context
+            ctx.filter = 'brightness(' + color_picker_control.color.v + '%)';
             
-                ctx.imageSmoothingEnabled = true;
-                
-                
-                
-                ctx.beginPath();
-                ctx.arc(canvas.width/2, canvas.width/2, canvas.width/2, 0, Math.PI*2);
-                ctx.clip();
-                ctx.closePath();
-                // drawing multiple times on this clipped area will increase artifacts
 
-                // creating opacity pattern
-                let opacityPattern = document.createElement("canvas");
-                // set cell size to 10 pixels
-                let cell_size = 10;
-                // set the size of the opacity pattern to two cells in height and in width
-                opacityPattern.width = cell_size * 2;
-                opacityPattern.height = cell_size * 2;
-                // get opacity pattern context
-                var opacityPatternContext = opacityPattern.getContext("2d");
-                // set cells colors
-                let cell_1_color = 'rgba(255, 255, 255, 1)', cell_2_color = 'rgba(205, 205,205, 1)';
-                // draw first cell
-                opacityPatternContext.beginPath();
-                opacityPatternContext.fillStyle = cell_1_color;
-                opacityPatternContext.fillRect(0, 0, cell_size, cell_size);
-                opacityPatternContext.closePath();
-                // draw second cell
-                opacityPatternContext.beginPath();
-                opacityPatternContext.fillStyle = cell_2_color;
-                opacityPatternContext.fillRect(cell_size, 0, cell_size, cell_size);
-                opacityPatternContext.closePath();
-                // draw third cell
-                opacityPatternContext.beginPath();
-                opacityPatternContext.fillStyle = cell_2_color;
-                opacityPatternContext.fillRect(0, cell_size, cell_size, cell_size);
-                opacityPatternContext.closePath();
-                // draw fourth cell
-                opacityPatternContext.beginPath();
-                opacityPatternContext.fillStyle = cell_1_color;
-                opacityPatternContext.fillRect(cell_size, cell_size, cell_size, cell_size);
-                opacityPatternContext.closePath();
+            //..
+            ctx.beginPath();
+            //ctx.strokeStyle = "rgb(38, 41, 50)";
+            ctx.strokeStyle = "rgb(217, 214, 205)";
+            ctx.arc(canvas.width/2, canvas.width/2, canvas.width/2, 0, Math.PI*2);
+            ctx.stroke();
+            ctx.closePath();
+                
             
-                // add opacity pattern on the canvas
-                var opacity_pattern = ctx.createPattern(opacityPattern, "repeat");
-
-                // draw an opacity pattern on the canvas
-                ctx.beginPath();
-                ctx.fillStyle = opacity_pattern;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.closePath();
-
-
-                // applying brightness filter to canvas context
-                ctx.filter = 'brightness(' + color_picker_control.color.v + '%)';
-                
-
-                //..
-                ctx.beginPath();
-                //ctx.strokeStyle = "rgb(38, 41, 50)";
-                ctx.strokeStyle = "rgb(217, 214, 205)";
-                ctx.arc(canvas.width/2, canvas.width/2, canvas.width/2, 0, Math.PI*2);
-                ctx.stroke();
-                ctx.closePath();
-                   
-                
-                //..
-                ctx.globalAlpha = color_picker_control.color.a / 255;
-                // draw color wheel gradient to canvas context
-                ctx.drawImage(color_wheel, 0, 0, canvas.width, canvas.height);
+            //..
+            ctx.globalAlpha = color_picker_control.color.a / 255;
+            // draw color wheel gradient to canvas context
+            ctx.drawImage(color_wheel, 0, 0, canvas.width, canvas.height);
         };
 
         /**
@@ -1515,10 +1571,6 @@ function ColorPickerControl(cfg) {
         **/
         let drawCanvas = function () {
             // get the size of the canvas and its position relative to the document
-            let canvas_bb = utils.getBoundingBox(canvas);
-            // update canvas size based received values
-            canvas.width = canvas_bb.width;
-            canvas.height = canvas_bb.height;
             // create a canvas gradient
             var gradient = canvas.getContext("2d").createLinearGradient(0, 0, 0, canvas.height);
             // get main color data as rgb with brightness equals 100

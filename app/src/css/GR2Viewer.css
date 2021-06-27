@@ -386,13 +386,14 @@ input[type="color"] {
 }
 
 .data-field-input{
-    width: 40px;
+    width: 30px;
     background-color: var(--grey-black);
     color: white;
     outline: none;
     border: 1px solid #000;
     border-radius: 2px;
-    height: 16px;
+    height: 14px;
+    font-size: 14px;
 }
 .data-field-input:focus {
     outline: 1px solid var(--background-yellow-slicers);

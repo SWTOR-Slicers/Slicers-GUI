@@ -135,56 +135,6 @@ const utils = {
         return !isNaN(res) ? res : 0;
     }
 }
-function makeColWheelInit() {
-    // create temporary canvas element
-    let can = document.createElement("canvas");
-    // set canvas size
-    can.height = can.width = 512;
-    // get canvas context
-    let ctx = can.getContext("2d");
-    // calculate canvas radius
-    let radius = can.width / 2;
-    // set loop step
-    let step = 1 / radius;
-    // clear canvas
-    ctx.clearRect(0, 0, can.width, can.height);
-    // set center points
-    let cx = radius;
-    let cy = radius;
-    // loop around circle
-    for(let i = 0; i < 360; i += step) {
-        // get angle in radians
-        let rad = i * (2 * Math.PI) / 360;
-        // get line direction from center
-        let x = radius * Math.cos(rad),
-            y = radius * Math.sin(rad);
-        // set stroke style
-        ctx.strokeStyle = 'hsl(' + i + ', 100%, 50%)';
-        // draw color line
-        ctx.beginPath();
-        ctx.moveTo(radius, radius);
-        ctx.lineTo(cx + x, cy + y);
-        ctx.stroke();
-    }
-
-    // draw saturation gradient
-    let grd = ctx.createRadialGradient(cx,cy,0,cx,cx,radius);
-    grd.addColorStop(0,'rgba(255, 255, 255, 1)');
-    grd.addColorStop(1,'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = grd;
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2, true);
-    ctx.closePath();
-    ctx.fill();
-    // draw circle border
-    ctx.beginPath();
-    ctx.strokeStyle = "rgb(38, 41, 50)";
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.stroke();
-    // create image and load canvas result into it
-    return can;
-};
-const colWheel = makeColWheelInit();
 const body = document.querySelector('body');
 class ColorPicker extends HTMLElement {
     constructor() {
@@ -207,20 +157,7 @@ class ColorPicker extends HTMLElement {
 
         subCont.addEventListener('click', (e) => {
             e.stopImmediatePropagation();
-            const wheelCan = subCont.nextElementSibling.querySelector('#wheel-canvas');
-            const wheelCtx = wheelCan.getContext('2d');
-
-            const brightCan = subCont.nextElementSibling.querySelector('#brightness-canvas');
-            const brightCtx = brightCan.getContext('2d');
-
-            if (container.children[1].style.display == 'none') {
-                //wheelCtx.drawImage(colWheel, 0, 0, wheelCan.width, wheelCan.height);
-                container.children[1].style.display = '';
-            } else {
-                //body.appendChild(colWheel);
-
-                container.children[1].style.display = 'none';
-            }
+            (container.children[1].style.display == 'none') ? container.children[1].style.display = '' : container.children[1].style.display = 'none';
         });
 
         this.shadowRoot.append(styles, container);
@@ -262,7 +199,6 @@ class ColorPicker extends HTMLElement {
     }
 
     set value(newVal) {
-        console.log(newVal);
         this.setAttribute('value', newVal);
         this.colorPicker.color = new HSVaColor().fromHEX(newVal);
         this.colorPicker.update(false);
@@ -404,7 +340,7 @@ function ColorPickerControl(cfg) {
         
                     <div class="color-picker-brightness-control">
                         <canvas id="brightness-canvas" class="brightness-canvas" width="8" height="140"></canvas>
-                        <div class="color-picker-brightness-control-thumb"></div>
+                        <div class="color-picker-brightness-control-thumb" style="top:-2px; left: -2px;"></div>
                     </div>
         
                 </div>
@@ -1103,8 +1039,14 @@ function ColorPickerControl(cfg) {
         **/
         let updateThumb = function () {
             // get the sizes of the canvas and thumb elements and the position of these elements relative to the document
-            let canvas_bb = utils.getBoundingBox(canvas);
-            let thumb_bb = utils.getBoundingBox(thumb);
+            let canvas_bb = {
+                width: 140,
+                height: 140
+            };
+            let thumb_bb = {
+                width: 12,
+                height: 12
+            };
             
             // get main color data as rgb
             var main_color = utils.hsvToRgb(color_picker_control.color.h, color_picker_control.color.s, color_picker_control.color.v);
@@ -1115,7 +1057,7 @@ function ColorPickerControl(cfg) {
             // update thumb position based on hue and saturation values (if it changed ouside)  
             if(!is_mouse_down){
                 thumb.style.left = (canvas_bb.width / 2) + ((canvas_bb.width / 2)/100*color_picker_control.color.s) * Math.cos(utils.degreesToRadians(color_picker_control.color.h + 90)) - (thumb_bb.width / 2) + 'px';
-                thumb.style.top = (canvas_bb.height / 2) + ((canvas_bb.width / 2)/100*color_picker_control.color.s)  * Math.sin(utils.degreesToRadians(color_picker_control.color.h + 90)) - (thumb_bb.height / 2) + 'px';
+                thumb.style.top = (canvas_bb.height / 2) + ((canvas_bb.height / 2)/100*color_picker_control.color.s)  * Math.sin(utils.degreesToRadians(color_picker_control.color.h + 90)) - (thumb_bb.height / 2) + 'px';
             }
             
             // update thumb dataset hue and saturation values
@@ -1590,8 +1532,14 @@ function ColorPickerControl(cfg) {
         **/
         let updateThumb = function () {
             // get the sizes of the canvas and thumb elements and the position of these elements relative to the document
-            let canvas_bb = utils.getBoundingBox(canvas);
-            let thumb_bb = utils.getBoundingBox(thumb);
+            let canvas_bb = {
+                width: 8,
+                height: 140
+            };
+            let thumb_bb = {
+                width: 12,
+                height: 12
+            };
 
             // get main color data as rgb
             var main_color = utils.hsvToRgb(color_picker_control.color.h, color_picker_control.color.s, color_picker_control.color.v);

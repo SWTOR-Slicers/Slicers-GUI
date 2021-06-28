@@ -1,3 +1,4 @@
+import { FileEntry } from "./FileEntry.js";
 //DOM variables
 
 //version radio selection
@@ -26,12 +27,22 @@ const extrNode = document.getElementById('extrNode');
 
 const chngFiles = document.getElementById('chngFiles');
 
+//file changes variables
+const fileChangesCont = document.getElementById('fileChangesCont');
+
 //progress bar
 const progBar = document.getElementById('progBar');
 
 //change variables
 const addChange = document.getElementById('addChange');
 
+function init() {
+    const test = new FileEntry('File', 'Temp', 'Temp2').render();
+    fileChangesCont.appendChild(test);
+}
+
 function verifyEntry(ent) {
     
 }
+
+init();

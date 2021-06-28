@@ -1,8 +1,12 @@
+const fs = require('fs');
+
 export class FileEntry {
-    constructor(type, target, modded) {
+    constructor(type, target, modded, fileChanges) {
         this.type = type;
+        this.oldTarget = target;
         this.target = target;
         this.modded = modded;
+        this.fileChanges = fileChanges;
     }
 
     render() {
@@ -19,7 +23,7 @@ export class FileEntry {
                     <option value="node">Node</option>
                 </select>
             `;
-
+            this.dropDown = cType.querySelector('select');
 
             const fToChng = document.createElement('div');
             fToChng.className = 'file-to-change';
@@ -31,6 +35,19 @@ export class FileEntry {
                 </button>
             `;
 
+            fToChng.querySelector('input').addEventListener('change', (e) => {
+                const idx = fileChanges.findIndex(fc => { return fc.type == newChng.type && fc.target == newChng.target && fc.modded == newChng.modded; })
+                const match = fileChanges.find(fc => { return fc.target == newChng.target; })
+                if (match && !(fileChanges.indexOf(match) == idx)) {
+                    this.target = this.oldTarget;
+                } else {
+                    this.target = e.currentTarget.value;
+                    this.oldTarget = this.target
+                }
+            });
+            fToChng.querySelector('button').addEventListener('click', (e) => {
+
+            });
             
             const fToUse = document.createElement('div');
             fToUse.className = 'file-to-use';
@@ -41,6 +58,17 @@ export class FileEntry {
                     <i class="fas fa-ellipsis-h"></i>
                 </button>
             `;
+            fToUse.querySelector('input').addEventListener('change', (e) => {
+                if (fs.existsSync(e.currentTarget.value)) {
+                    this.target = e.currentTarget.value;
+                    this.oldTarget = this.target
+                } else {
+                    this.target = this.oldTarget;
+                }
+            });
+            fToUse.querySelector('button').addEventListener('click', (e) => {
+
+            });
 
             
             const rElemWrap = document.createElement('div');
@@ -51,6 +79,8 @@ export class FileEntry {
                 remove.innerHTML = '<i class="fas fa-minus"></i>';
 
                 remove.addEventListener('click', (e) => {
+                    chngElem.parentElement.removeChild(chngElem);
+                    this.fileChanges.splice(this.fileChanges.indexOf(this), 1);
                     chngElem.parentElement.removeChild(chngElem);
                 });
 

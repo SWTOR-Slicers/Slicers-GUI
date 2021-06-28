@@ -1,4 +1,9 @@
+import { log } from "../../universal/Logger.js";
 import { FileEntry } from "./FileEntry.js";
+
+//consts
+const fileChanges = [];
+
 //DOM variables
 
 //version radio selection
@@ -37,8 +42,32 @@ const progBar = document.getElementById('progBar');
 const addChange = document.getElementById('addChange');
 
 function init() {
+    initListeners();
     const test = new FileEntry('File', 'Temp', 'Temp2').render();
     fileChangesCont.appendChild(test);
+}
+
+function initListeners() {
+    addChange.addEventListener('click', (e) => {
+        let shouldAdd = true
+        if (fileChanges.length > 0) {
+            const lastChld = fileChanges[fileChanges.length - 1];
+            if (lastChld.target == '' || lastChld.modded == '') {
+                shouldAdd = false;
+                log('You need to fill out the previous file change element.', 'alert');
+            }
+        }
+
+        if (shouldAdd) {
+            const newChng = new FileEntry('File', '', '', fileChanges);
+            newChng.dropDown.clickCallback = (e) => { newChng.type = e.currentTarget.innerHTML; }
+
+            fileChanges.push(newChng);
+
+            const newChngElem = newChng.render();
+            fileChangesCont.appendChild(newChngElem);
+        }
+    })
 }
 
 function verifyEntry(ent) {

@@ -4,6 +4,7 @@ import { FileEntry } from "./FileEntry.js";
 
 //consts
 const fileChanges = [];
+const chngEvn = new Event('change');
 
 //DOM variables
 
@@ -76,7 +77,9 @@ function initSubs() {
             const id = data[0];
             const fPath = data[1][0];
 
-            
+            const mInput = document.getElementById(`${id}-ModdedInput`);
+            mInput.value = fPath;
+            mInput.dispatchEvent(chngEvn);
         }
     });
 }

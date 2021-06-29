@@ -1,3 +1,4 @@
+const { ipcRenderer } = require("electron");
 import { log } from "../../universal/Logger.js";
 import { FileEntry } from "./FileEntry.js";
 
@@ -43,8 +44,7 @@ const addChange = document.getElementById('addChange');
 
 function init() {
     initListeners();
-    const test = new FileEntry('File', 'Temp', 'Temp2').render();
-    fileChangesCont.appendChild(test);
+    initSubs();
 }
 
 function initListeners() {
@@ -68,6 +68,17 @@ function initListeners() {
             fileChangesCont.appendChild(newChngElem);
         }
     })
+}
+
+function initSubs() {
+    ipcRenderer.on('changerDialogResponse', (event, data) => {
+        if (data != "") {
+            const id = data[0];
+            const fPath = data[1][0];
+
+            
+        }
+    });
 }
 
 function verifyEntry(ent) {

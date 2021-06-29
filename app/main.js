@@ -564,7 +564,15 @@ function initFileChanger () {
   initFileChangerListeners(fileChangerWin);
 }
 function initFileChangerListeners(window) {
-
+  ipcMain.on('openFileDialogChanger', (event, data) => {
+    dialog.showOpenDialog(window, { properties: ['openFile'] }).then(async (file) => {
+      if (!file.canceled) {
+        event.reply("recieveUnpackerDialogFile", [data, file.filePaths]);
+      } else {
+        event.reply("recieveUnpackerDialogFile", "");
+      }
+    });
+  });
 }
 //unpacker
 function initUnpackerGUI() {

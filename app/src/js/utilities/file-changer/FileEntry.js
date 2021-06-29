@@ -1,7 +1,10 @@
+const { ipcRenderer } = require('electron');
 const fs = require('fs');
+import { v4 as uuidV4} from 'uuid';
 
 export class FileEntry {
     constructor(type, target, modded, fileChanges) {
+        this.id = uuidV4();
         this.type = type;
         this.oldTarget = target;
         this.target = target;
@@ -11,6 +14,7 @@ export class FileEntry {
 
     render() {
         const chngElem = document.createElement('div');
+        chngElem.id = this.id;
         chngElem.className = 'change-elem';
 
             const cType = document.createElement('div');
@@ -46,14 +50,14 @@ export class FileEntry {
                 }
             });
             fToChng.querySelector('button').addEventListener('click', (e) => {
-
+                //TODO this functionality will be added once I better understand how nodes work.
             });
             
             const fToUse = document.createElement('div');
             fToUse.className = 'file-to-use';
             fToUse.innerHTML = `
                 <label for="moddedInput" class="test-label">Modded: </label>
-                <input type="text" name="moddedInput" class="paths-field-input-alt" style="margin-right: 7px;" value="${this.modded}">
+                <input id="${this.id}-TargetInput" type="text" name="moddedInput" class="paths-field-input-alt" style="margin-right: 7px;" value="${this.modded}">
                 <button class="browse-paths__button-alt">
                     <i class="fas fa-ellipsis-h"></i>
                 </button>
@@ -67,7 +71,7 @@ export class FileEntry {
                 }
             });
             fToUse.querySelector('button').addEventListener('click', (e) => {
-
+                ipcRenderer.send('openFileDialogChanger', chngElem.id);
             });
 
             

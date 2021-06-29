@@ -4,13 +4,13 @@ class ThumbSlider extends HTMLElement {
     constructor() {
         super();
 
-        addStyleIfNotExists('../api/components/thumbSlider/ThumbSlider.css')
+        addStyleIfNotExists('../api/components/thumb-slider/ThumbSlider.css')
 
         this.attachShadow({mode: 'open'});
 
         const styles = document.createElement('link');
         styles.rel = 'stylesheet';
-        styles.href = '../api/components/thumbSlider/ThumbSlider.css';
+        styles.href = '../api/components/thumb-slider/ThumbSlider.css';
 
         const sliderCont = document.createElement('div');
         sliderCont.className = 'switch';

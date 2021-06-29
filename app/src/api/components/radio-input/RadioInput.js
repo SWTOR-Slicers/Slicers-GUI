@@ -4,7 +4,7 @@ class RadioInput extends HTMLInputElement {
     constructor() {
         super();
 
-        addStyleIfNotExists('../api/components/radioInput/radioInput.css');
+        addStyleIfNotExists('../api/components/radio-input/RadioInput.css');
 
         this.type = 'radio';
         

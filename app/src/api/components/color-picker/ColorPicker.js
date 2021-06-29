@@ -142,11 +142,11 @@ class ColorPicker extends HTMLElement {
 
         this.attachShadow({ mode: 'open'});
 
-        addStyleIfNotExists('../api/components/colorPicker/colorPicker.css');
+        addStyleIfNotExists('../api/components/color-picker/ColorPicker.css');
 
         const styles = document.createElement('link')
         styles.rel = 'stylesheet';
-        styles.href = '../api/components/colorPicker/colorPicker.css';
+        styles.href = '../api/components/color-picker/ColorPicker.css';
 
         const container = document.createElement('div');
         container.className = 'color-picker-container';

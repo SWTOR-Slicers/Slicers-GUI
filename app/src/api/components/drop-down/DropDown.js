@@ -8,7 +8,7 @@ class DropDown extends HTMLSelectElement {
 
         const body = document.getElementsByTagName('body')[0];
 
-        addStyleIfNotExists('../api/components/dropDown/DropDown.css');
+        addStyleIfNotExists('../api/components/drop-down/DropDown.css');
 
         //pull select out of doc, add a wrapper div, and append select to it
         const parent = this.parentNode;

@@ -1,4 +1,4 @@
-import {resourcePath} from "../../../api/config/resourcePath/ResourcePath.js";
+import {resourcePath} from "../../../api/config/resource-path/ResourcePath.js";
 import { getSetting } from "../../../api/config/settings/Settings.js";
 import { log, updateAlertType } from "../../universal/Logger.js";
 import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";

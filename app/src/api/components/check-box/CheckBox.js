@@ -4,7 +4,7 @@ class CheckBox extends HTMLInputElement {
     constructor() {
         super();
 
-        addStyleIfNotExists('../api/components/checkBox/checkBox.css');
+        addStyleIfNotExists('../api/components/check-box/CheckBox.css');
 
         this.type = 'checkbox';
         

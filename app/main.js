@@ -151,7 +151,7 @@ function initMain () {
   mainWindow.once('ready-to-show', () => mainWindow.show());
 
   mainWindow.removeMenu();
-  mainWindow.loadFile('./src/html/index.html');
+  mainWindow.loadFile('./src/html/Index.html');
   
   let wasMinimized = false
   mainWindow.on('minimize', () => { mainWindow.webContents.send('minimizedMain'); wasMinimized = true; });

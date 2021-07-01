@@ -50,6 +50,11 @@
     margin: 0px 7px;
     flex-grow: 1;
 }
+#outputFolderInput {
+    flex-grow: 1;
+    margin: 0px 7px;
+    margin-left: 66px;
+}
 
 .changer-info-wrapper {
     margin-top: 14px;
@@ -97,7 +102,7 @@
 .file-changes {
     margin-top: 7px;
     width: calc(100% - 14px);
-    height: calc(100% - 159px);
+    height: calc(100% - 194px);
     display: flex;
     flex-direction: column;
     align-items: center;

@@ -18,7 +18,7 @@ const path = require('path');
 const configPath = path.normalize(path.join(resourcePath, "config.json"));
 const changeEvent = new Event('change');
 const patches = [];
-let backupCache = {
+const cache = {
     "devmode": null,
     "enviromentType": "", 
     "productType": "", 
@@ -26,21 +26,6 @@ let backupCache = {
     "version": "",
     "output": ""
 }
-const cacheInit = {
-    "devmode": null,
-    "enviromentType": "", 
-    "productType": "", 
-    "varient": "", 
-    "version": "",
-    "output": ""
-}
-const cache = new Proxy(cacheInit, {
-    set(target, property, value) {
-        backupCache[property] = target[property];
-        target[property] = value;
-        return true;
-    }
-})
 
 //action buttons
 const downloadPatch = document.getElementById("downloadPatch");

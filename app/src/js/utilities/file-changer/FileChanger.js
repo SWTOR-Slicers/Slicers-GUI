@@ -1,12 +1,17 @@
-const { ipcRenderer } = require("electron");
-import { log } from "../../universal/Logger.js";
+import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
+import { log, updateAlertType } from "../../universal/Logger.js";
+import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { FileEntry } from "./FileEntry.js";
 
 //consts
+const { ipcRenderer } = require("electron");
+const path = require('path');
+
+const configPath = path.normalize(path.join(resourcePath, "config.json"));
 const fileChanges = [];
 const chngEvn = new Event('change');
 const cache = {
-    "assetsFolder": "",
+    "assets": "",
     "backup": true,
     "version": "Live"
 }
@@ -19,6 +24,11 @@ const pts = document.getElementById('pts');
 //assets folder variables
 const assetsFolderInput = document.getElementById('assetsFolderInput');
 const assetsFolderBrowseBtn = document.getElementById('assetsFolderBrowseBtn');
+
+//output folder variables
+const outputFolderLabel = document.getElementById('outputFolderLabel');
+const outputFolderInput = document.getElementById('outputFolderInput');
+const outputFolderBrowseBtn = document.getElementById('outputFolderBrowseBtn');
 
 //backup checkbox
 const createBackup = document.getElementById('createBackup');
@@ -49,14 +59,53 @@ const addChange = document.getElementById('addChange');
 
 
 async function loadCache() {
+    let res = fs.readFileSync(configPath);
+    let jsonObj = await JSON.parse(res);
+    let json = jsonObj["fileChanger"];
 
+    cache["version"] = json["version"];
+
+    if (json["output"] == "") {
+        const defaultPath = path.join(jsonObj["outputFolder"], 'changer');
+        if (!fs.existsSync(defaultPath)) {
+            fs.mkdirSync(defaultPath);
+        }
+        updateCache('output', defaultPath);
+        cache["output"] = defaultPath
+    } else {
+        cache["output"] = json["output"];
+    }
+
+    if (json["assets"] == "") {
+        const defaultPath = jsonObj["assetsFolder"];
+        updateCache('output', defaultPath);
+        cache["assets"] = defaultPath
+    } else {
+        cache["assets"] = json["assets"];
+    }
 }
 
-function updateCache(field, value) {
+function updateCache(field, val) {
+    const shouldUpdate = (field == "assetsFolder") ? fs.existsSync(val) : true; 
+    if (shouldUpdate) {
+        let res = fs.readFileSync(configPath);
+        let json = JSON.parse(res);
+        if (json["fileChanger"][field] != val) {
+            json["fileChanger"][field] = val;
+            cache[field] = val;
+        
+            fs.writeFileSync(configPath, JSON.stringify(json, null, '\t'), 'utf-8');
+        }
 
+        if (field == "assetsFolder") {
+            assetsFolderInput.dispatchEvent(updateTooltipEvent);
+        }
+    } else {
+        assetsFolderInput.value = cache["output"];
+    }
 }
 
-function init() {
+async function init() {
     await loadCache();
     initListeners();
     initSubs();

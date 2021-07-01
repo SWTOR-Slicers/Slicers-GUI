@@ -27,7 +27,8 @@
         "output": ""
     },
     "fileChanger": {
-        "assetsFolder": "",
+        "assets": "",
+        "output": "",
         "backup": true,
         "version": "Live"
     }

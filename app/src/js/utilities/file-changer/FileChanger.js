@@ -5,7 +5,11 @@ import { FileEntry } from "./FileEntry.js";
 //consts
 const fileChanges = [];
 const chngEvn = new Event('change');
-
+const cache = {
+    "assetsFolder": "",
+    "backup": true,
+    "version": "Live"
+}
 //DOM variables
 
 //version radio selection
@@ -43,7 +47,17 @@ const progBar = document.getElementById('progBar');
 //change variables
 const addChange = document.getElementById('addChange');
 
+
+async function loadCache() {
+
+}
+
+function updateCache(field, value) {
+
+}
+
 function init() {
+    await loadCache();
     initListeners();
     initSubs();
 }
@@ -61,14 +75,16 @@ function initListeners() {
 
         if (shouldAdd) {
             const newChng = new FileEntry('File', '', '', fileChanges);
-            newChng.dropDown.clickCallback = (e) => { newChng.type = e.currentTarget.innerHTML; }
 
             fileChanges.push(newChng);
 
             const newChngElem = newChng.render();
             fileChangesCont.appendChild(newChngElem);
+
+            newChng.dropDown.clickCallback = (e) => { newChng.type = e.currentTarget.innerHTML; }
         }
-    })
+    });
+
 }
 
 function initSubs() {

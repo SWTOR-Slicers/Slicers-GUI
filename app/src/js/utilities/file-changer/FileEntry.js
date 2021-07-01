@@ -1,6 +1,7 @@
 const { ipcRenderer } = require('electron');
 const fs = require('fs');
-import { v4 as uuidV4} from 'uuid';
+const UUID = require('uuid');
+const uuidV4 = UUID.v4;
 
 export class FileEntry {
     constructor(type, target, modded, fileChanges) {
@@ -85,7 +86,6 @@ export class FileEntry {
                 remove.addEventListener('click', (e) => {
                     chngElem.parentElement.removeChild(chngElem);
                     this.fileChanges.splice(this.fileChanges.indexOf(this), 1);
-                    chngElem.parentElement.removeChild(chngElem);
                 });
 
             rElemWrap.append(remove);
@@ -96,6 +96,11 @@ export class FileEntry {
     }
 
     export() {
-        return JSON.stringify(this, null, '\t');
+        const data = {
+            'type': this.type,
+            'target': this.target,
+            'modded': this.modded
+        }
+        return JSON.stringify(data, null, '\t');
     }
 }

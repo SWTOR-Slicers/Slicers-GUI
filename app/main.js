@@ -567,9 +567,9 @@ function initFileChangerListeners(window) {
   ipcMain.on('openFileDialogChanger', (event, data) => {
     dialog.showOpenDialog(window, { properties: ['openFile'] }).then(async (file) => {
       if (!file.canceled) {
-        event.reply("recieveUnpackerDialogFile", [data, file.filePaths]);
+        event.reply("changerDialogResponse", [data, file.filePaths]);
       } else {
-        event.reply("recieveUnpackerDialogFile", "");
+        event.reply("changerDialogResponse", "");
       }
     });
   });

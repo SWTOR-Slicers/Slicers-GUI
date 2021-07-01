@@ -25,5 +25,10 @@
     "soundConverter": {
         "soundPath": "",
         "output": ""
+    },
+    "fileChanger": {
+        "assetsFolder": "",
+        "backup": true,
+        "version": "Live"
     }
 }

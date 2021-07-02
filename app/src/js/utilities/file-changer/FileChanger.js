@@ -1,20 +1,31 @@
 import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
+import { getSetting } from "../../../api/config/settings/Settings.js";
 import { log, updateAlertType } from "../../universal/Logger.js";
 import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { FileEntry } from "./FileEntry.js";
+import * as MOD from "./Mod.js";
 
 //consts
 const { ipcRenderer } = require("electron");
+const fs = require('fs');
 const path = require('path');
-
 const configPath = path.normalize(path.join(resourcePath, "config.json"));
+/**
+ * Array of mod entries
+ * @type {FileEntry[]}
+ */
 const fileChanges = [];
 const chngEvn = new Event('change');
 const cache = {
     "assets": "",
+    "output": "",
     "backup": true,
     "version": "Live"
 }
+
+//globals
+let settingsJSON = getSetting();
+
 //DOM variables
 
 //version radio selection
@@ -33,13 +44,13 @@ const outputFolderBrowseBtn = document.getElementById('outputFolderBrowseBtn');
 //backup checkbox
 const createBackup = document.getElementById('createBackup');
 
-//preset variables
-const loadPre = document.getElementById('loadPre');
-const writPre = document.getElementById('writPre');
+//Mod variables
+const loadMod = document.getElementById('loadMod');
+const writeMod = document.getElementById('writeMod');
 
-const loadedPresetPath = document.getElementById('loadedPresetPath');
+const loadedModPath = document.getElementById('loadedModPath');
 
-const convPre = document.getElementById('convPre');
+const convMod = document.getElementById('convMod');
 
 //action variables
 const restoreBackup = document.getElementById('restoreBackup');
@@ -84,7 +95,6 @@ async function loadCache() {
         cache["assets"] = json["assets"];
     }
 }
-
 function updateCache(field, val) {
     const shouldUpdate = (field == "assetsFolder") ? fs.existsSync(val) : true; 
     if (shouldUpdate) {
@@ -104,14 +114,60 @@ function updateCache(field, val) {
         assetsFolderInput.value = cache["output"];
     }
 }
+function setupFolders() {
+    const folders = ['backups', 'mods', 'presets'];
+
+    for (const folder of folders) {
+        const fPath = path.join(cache['output'], folder);
+        if (!fs.existsSync(fPath)) {
+            fs.mkdirSync(fPath);
+        }
+    }
+}
+function initTooltips() {
+    if (settingsJSON.usePathTooltips) {
+        addTooltip('top', assetsFolderInput, true, (element) => { return element.value; });
+        addTooltip('top', outputFolderInput, true, (element) => { return element.value; });
+    }
+
+    if (settingsJSON.useLabelTooltips) {
+        addTooltip('top', outputFolderLabel, false, (element) => { return 'FileChanger output folder'; });
+    }
+}
 
 async function init() {
     await loadCache();
+    setupFolders();
     initListeners();
     initSubs();
+    initTooltips();
 }
 
 function initListeners() {
+    //config fields
+    assetsFolderInput.addEventListener('change', (e) => {
+        if (fs.existsSync(e.currentTarget.value)) {
+            log('FileChanger assets field successfully set', 'info');
+            updateCache('assets', e.currentTarget.value);
+            e.currentTarget.dispatchEvent(updateTooltipEvent);
+        } else {
+            log('Invalid path for fileChanger assets field.', 'alert');
+            e.currentTarget.value = cache['assets'];
+        }
+    });
+    assetsFolderBrowseBtn.addEventListener('click', (e) => { ipcRenderer.send('openFolderDialogChanger', assetsFolderInput.id); });
+    outputFolderInput.addEventListener('change', (e) => {
+        if (fs.existsSync(e.currentTarget.value)) {
+            log('FileChanger output field successfully set', 'info');
+            updateCache('output', e.currentTarget.value);
+            e.currentTarget.dispatchEvent(updateTooltipEvent);
+        } else {
+            log('Invalid path for fileChanger output field.', 'alert');
+            e.currentTarget.value = cache['output'];
+        }
+    });
+    outputFolderBrowseBtn.addEventListener('click', (e) => { ipcRenderer.send('openFolderDialogChanger', outputFolderInput.id); });
+    //change functionality
     addChange.addEventListener('click', (e) => {
         let shouldAdd = true
         if (fileChanges.length > 0) {
@@ -133,10 +189,59 @@ function initListeners() {
             newChng.dropDown.clickCallback = (e) => { newChng.type = e.currentTarget.innerHTML; }
         }
     });
+    //mod preset functionality
+    writeMod.addEventListener('click', (e) => {
+        const errList = [];
+        const functionalList = [];
+        for (let i = 0; i < fileChanges.length; i++) {
+            const change = fileChanges[i];
+            const status = change.verify();
+            if (status == 200) {
+                functionalList.push(change);
+            } else {
+                errList.push(i);
+            }
+        }
 
+        if (functionalList.length > 0 && errList.length == 0) {
+            const success = MOD.write(functionalList);
+            if (success == 200) { log('Mod created sucessfully!', 'info'); } else { log('Something went wrong when creating the mod.', 'alert'); }
+        } else if (errList.length > 0) {
+            //TODO: make a popup saying there was an issue, give error'd indices, and ask if user still wants to create the mod
+        }
+    });
 }
 
 function initSubs() {
+    ipcRenderer.on('updateSettings', (event, data) => {
+        settingsJSON = data[1];
+        for (const dEnt of data[0]) {
+            if (!Array.isArray(dEnt)) {
+                switch (dEnt) {
+                    case "alerts":
+                        alertType = settingsJSON.alerts;
+                        updateAlertType(settingsJSON.alerts);
+                        break;
+                    case "usePathTooltips":
+                        if (settingsJSON.usePathTooltips) {
+                            addTooltip('top', assetsFolderInput, true, (element) => { return element.value; });
+                            addTooltip('top', outputFolderInput, true, (element) => { return element.value; });
+                        } else {
+                            removeTooltip(assetsFolderInput, true, (element) => { return element.value; });
+                            removeTooltip(outputFolderInput, true, (element) => { return element.value; });
+                        }
+                        break;
+                    case "useLabelTooltips":
+                        if (settingsJSON.useLabelTooltips) {
+                            addTooltip('top', outputFolderLabel, false, (element) => { return 'FileChanger output folder'; });
+                        } else {
+                            removeTooltip(outputFolderLabel, false, (element) => { return 'FileChanger output folder'; });
+                        }
+                        break;
+                }
+            }
+        }
+    });
     ipcRenderer.on('changerDialogResponse', (event, data) => {
         if (data != "") {
             const id = data[0];
@@ -147,10 +252,13 @@ function initSubs() {
             mInput.dispatchEvent(chngEvn);
         }
     });
-}
-
-function verifyEntry(ent) {
-    
+    ipcRenderer.on('changerFolderDialogResponse', (event, data) => {
+        if (data != '') {
+            const elem = document.getElementById(data[0]);
+            elem.value = data[1];
+            elem.dispatchEvent(chngEvn);
+        }
+    });
 }
 
 init();

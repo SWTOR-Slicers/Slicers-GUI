@@ -573,6 +573,15 @@ function initFileChangerListeners(window) {
       }
     });
   });
+  ipcMain.on('openFolderDialogChanger', (event, data) => {
+    dialog.showOpenDialog(window, { properties: ['openDirectory'] }).then(async (file) => {
+      if (!file.canceled) {
+        event.reply("changerFolderDialogResponse", [data, file.filePaths]);
+      } else {
+        event.reply("changerFolderDialogResponse", "");
+      }
+    });
+  });
 }
 //unpacker
 function initUnpackerGUI() {

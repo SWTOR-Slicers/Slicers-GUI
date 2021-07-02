@@ -13,6 +13,12 @@ export class FileEntry {
         this.fileChanges = fileChanges;
     }
 
+    verify() {
+        let status = 400;
+        if (this.type && this.target && fs.existsSync(this.modded)) status = 200;
+        return status;
+    }
+
     render() {
         const chngElem = document.createElement('div');
         chngElem.id = this.id;

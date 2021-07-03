@@ -64,7 +64,7 @@
 
             <div class="file-changer-actions-wrapper">
                 <button id="loadMod" class="browse-paths__button-alt" style="margin-right: 7px;">Load Mod</button>
-                <button id="writeMod" class="browse-paths__button-alt" style="margin-right: 7px;">Create Mod</button>
+                <button id="writeMod" class="disabled browse-paths__button-alt" style="margin-right: 7px;">Create Mod</button>
 
                 <input type="text" name="" id="loadedModPath" class="paths-field-input-alt" style="margin-right: 7px;" placeholder="Mod Path...">
 
@@ -81,6 +81,32 @@
                 </div>
 
                 <button id="chngFiles" class="container-bottom__sub__btn">Change Files</button>
+            </div>
+        </div>
+    </div>
+    <div id="saveModal" class="modal-background" style="display: none;">
+        <div class="save-modal-background">
+            <div class="modal">
+                <input type="text" id="nameInput" class="paths-field-input-alt">
+
+                <div class="modal-buttons-cont">
+                    <button id="confirmSave" class="disabled container-bottom__sub__btn">Create</button>
+                    <button id="cancelSave" class="container-bottom__sub__btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="errModal" class="modal-background" style="display: none;">
+        <div class="error-modal-background">
+            <div class="modal">
+                <p class="information-display">
+                    Something went wrong when making your mod. Errors at entries: <b id="infoDisp" style="font-weight: normal;"></b>. Would you like to still compile your mod?
+                </p>
+
+                <div class="modal-buttons-cont">
+                    <button id="contCreate" class="container-bottom__sub__btn">Create</button>
+                    <button id="cancelCreate" class="container-bottom__sub__btn">Cancel</button>
+                </div>
             </div>
         </div>
     </div>

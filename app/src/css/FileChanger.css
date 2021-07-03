@@ -155,7 +155,7 @@
 .change-elem {
     background-color: var(--medium-grey);
     width: 100%;
-    height: 22px;
+    height: 26px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -218,4 +218,77 @@
     height: 100%;
     width: 0%;
     background-color: var(--background-yellow-slicers);
+}
+
+/* Modal classes */
+.modal-background {
+    position: absolute;
+    width: 100%;
+    height: calc(100% - 30px);
+    top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+.modal {
+    width: calc(100% - 20px);
+    height: calc(100% - 20px);
+
+    background-color: var(--medium-grey);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.error-modal-background {
+    min-height: 140px;
+    width: 280px;
+
+    background-color: var(--grey-black);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.error-modal-background > .modal {
+    min-height: calc(100% - 20px);
+    margin: 10px 0px;
+}
+.information-display {
+    font-size: 14px;
+    padding: 0;
+    margin-top: 7px;
+    width: calc(100% - 14px);
+    text-align: center;
+}
+
+.save-modal-background {
+    height: 80px;
+    width: 240px;
+
+    background-color: var(--grey-black);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.modal input { margin-top: 7px; }
+
+.modal-buttons-cont {
+    margin-bottom: 7px;
+    width: calc(100% - 14px);
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.modal-buttons-cont > button {
+    width: auto;
 }

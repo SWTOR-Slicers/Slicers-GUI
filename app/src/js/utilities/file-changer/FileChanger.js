@@ -9,12 +9,14 @@ import * as MOD from "./Mod.js";
 const { ipcRenderer } = require("electron");
 const fs = require('fs');
 const path = require('path');
+const validFilename = require('valid-filename');
 const configPath = path.normalize(path.join(resourcePath, "config.json"));
 /**
  * Array of mod entries
  * @type {FileEntry[]}
  */
 const fileChanges = [];
+const functionalList = [];
 const chngEvn = new Event('change');
 const cache = {
     "assets": "",
@@ -27,6 +29,18 @@ const cache = {
 let settingsJSON = getSetting();
 
 //DOM variables
+
+//save modal
+const saveModal = document.getElementById('saveModal');
+const nameInput = document.getElementById('nameInput');
+const confirmSave = document.getElementById('confirmSave');
+const cancelSave = document.getElementById('cancelSave');
+
+//error modal
+const errModal = document.getElementById('errModal');
+const infoDisp = document.getElementById('infoDisp');
+const contCreate = document.getElementById('contCreate');
+const cancelCreate = document.getElementById('cancelCreate');
 
 //version radio selection
 const live = document.getElementById('live');
@@ -74,7 +88,14 @@ async function loadCache() {
     let jsonObj = await JSON.parse(res);
     let json = jsonObj["fileChanger"];
 
-    cache["version"] = json["version"];
+    cache['backup'] = json['backup'];
+    createBackup.checked = cache['backup'];
+
+    cache['version'] = json['version'];
+    if (cache['version'] == 'pts') {
+        live.checked = false;
+        pts.checked = true;
+    }
 
     if (json["output"] == "") {
         const defaultPath = path.join(jsonObj["outputFolder"], 'changer');
@@ -125,6 +146,8 @@ function setupFolders() {
     }
 }
 function initTooltips() {
+    addTooltip('top', nameInput, false, (element) => { return 'Name of your mod'; });
+
     if (settingsJSON.usePathTooltips) {
         addTooltip('top', assetsFolderInput, true, (element) => { return element.value; });
         addTooltip('top', outputFolderInput, true, (element) => { return element.value; });
@@ -167,6 +190,8 @@ function initListeners() {
         }
     });
     outputFolderBrowseBtn.addEventListener('click', (e) => { ipcRenderer.send('openFolderDialogChanger', outputFolderInput.id); });
+    createBackup.addEventListener('change', (e) => { updateCache('backup', e.currentTarget.checked); });
+    live.addEventListener('change', (e) => { updateCache('version', (e.currentTarget.checked) ? 'live' : 'pts'); });
     //change functionality
     addChange.addEventListener('click', (e) => {
         let shouldAdd = true
@@ -179,7 +204,7 @@ function initListeners() {
         }
 
         if (shouldAdd) {
-            const newChng = new FileEntry('File', '', '', fileChanges);
+            const newChng = new FileEntry('File', '', '', fileChanges, writeMod);
 
             fileChanges.push(newChng);
 
@@ -187,12 +212,23 @@ function initListeners() {
             fileChangesCont.appendChild(newChngElem);
 
             newChng.dropDown.clickCallback = (e) => { newChng.type = e.currentTarget.innerHTML; }
+
+            writeMod.classList.remove('disabled')
         }
     });
     //mod preset functionality
-    writeMod.addEventListener('click', (e) => {
+    writeMod.addEventListener('click', (e) => { saveModal.style.display = ''; });
+    //save modal functionality
+    nameInput.addEventListener('change', (e) => {
+        const val = e.currentTarget.value;
+        if (val == '' || val == ' ' || (!validFilename(val))) {
+            confirmSave.classList.add('disabled');
+        } else {
+            confirmSave.classList.remove('disabled');
+        }
+    });
+    confirmSave.addEventListener('click', (e) => {
         const errList = [];
-        const functionalList = [];
         for (let i = 0; i < fileChanges.length; i++) {
             const change = fileChanges[i];
             const status = change.verify();
@@ -204,11 +240,33 @@ function initListeners() {
         }
 
         if (functionalList.length > 0 && errList.length == 0) {
-            const success = MOD.write(functionalList);
+            const success = MOD.write(nameInput.value, functionalList);
             if (success == 200) { log('Mod created sucessfully!', 'info'); } else { log('Something went wrong when creating the mod.', 'alert'); }
+            functionalList = [];
         } else if (errList.length > 0) {
-            //TODO: make a popup saying there was an issue, give error'd indices, and ask if user still wants to create the mod
+            infoDisp.innerHTML = errList.join(', ');
+            errModal.style.display = '';
         }
+        saveModal.style.display = 'none';
+        confirmSave.classList.add('disabled');
+        nameInput.value = '';
+    });
+    cancelSave.addEventListener('click', (e) => {
+        saveModal.style.display = 'none';
+        confirmSave.classList.add('disabled');
+        nameInput.value = '';
+    });
+    //err modal functionality
+    contCreate.addEventListener('click', (e) => {
+        const success = MOD.write(nameInput.value, functionalList);
+        if (success == 200) { log('Incomplet mod created sucessfully!', 'info'); } else { log('Something went wrong when creating the incomplete mod.', 'alert'); }
+        functionalList = [];
+        errModal.style.display = 'none';
+        infoDisp.innerHTML = '';
+    });
+    cancelCreate.addEventListener('click', (e) => {
+        errModal.style.display = 'none';
+        infoDisp.innerHTML = '';
     });
 }
 

@@ -4,13 +4,16 @@ const UUID = require('uuid');
 const uuidV4 = UUID.v4;
 
 export class FileEntry {
-    constructor(type, target, modded, fileChanges) {
+    constructor(type, target, modded, fileChanges, writeMod) {
         this.id = uuidV4();
         this.type = type;
-        this.oldTarget = target;
         this.target = target;
         this.modded = modded;
+
+        //? not part of true object data
+        this.oldTarget = target;
         this.fileChanges = fileChanges;
+        this.writeMod = writeMod;
     }
 
     verify() {
@@ -92,6 +95,9 @@ export class FileEntry {
                 remove.addEventListener('click', (e) => {
                     chngElem.parentElement.removeChild(chngElem);
                     this.fileChanges.splice(this.fileChanges.indexOf(this), 1);
+                    if (this.fileChanges.length == 0) {
+                        this.writeMod.classList.add('disabled');
+                    }
                 });
 
             rElemWrap.append(remove);

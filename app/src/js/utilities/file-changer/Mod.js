@@ -1,4 +1,4 @@
-function write(changesJson) {
+function write(zmodName, changesJson) {
 
 }
 

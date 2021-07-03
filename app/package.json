@@ -38,6 +38,7 @@
     "ssn": "git+https://github.com/Tormak9970/ssn.git",
     "three": "^0.128.0",
     "uuid": "^8.3.2",
+    "valid-filename": "^3.1.0",
     "xml-js": "^1.6.11",
     "xml2js": "^0.4.23"
   },

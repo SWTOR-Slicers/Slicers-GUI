@@ -191,7 +191,8 @@ function initListeners() {
     });
     outputFolderBrowseBtn.addEventListener('click', (e) => { ipcRenderer.send('openFolderDialogChanger', outputFolderInput.id); });
     createBackup.addEventListener('change', (e) => { updateCache('backup', e.currentTarget.checked); });
-    live.addEventListener('change', (e) => { updateCache('version', (e.currentTarget.checked) ? 'live' : 'pts'); });
+    live.addEventListener('change', (e) => { updateCache('version', 'Live'); });
+    pts.addEventListener('change', (e) => { updateCache('version', 'pts'); });
     //change functionality
     addChange.addEventListener('click', (e) => {
         let shouldAdd = true

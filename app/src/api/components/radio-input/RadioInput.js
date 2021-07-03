@@ -1,4 +1,5 @@
 import { addStyleIfNotExists } from "../../../js/Util.js";
+const chngEvn = new Event('change');
 
 class RadioInput extends HTMLInputElement {
     constructor() {
@@ -33,6 +34,7 @@ class RadioInput extends HTMLInputElement {
                 }
                 this.checked = true;
             }
+            this.dispatchEvent(chngEvn);
         });
     }
 }

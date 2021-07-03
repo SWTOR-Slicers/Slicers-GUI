@@ -1,4 +1,5 @@
 import { addStyleIfNotExists } from "../../../js/Util.js";
+const chngEvn = new Event('change');
 
 class CheckBox extends HTMLInputElement {
     constructor() {
@@ -21,7 +22,13 @@ class CheckBox extends HTMLInputElement {
         container.append(span);
 
         span.addEventListener('click', (e) => {
-            this.checked = !this.checked
+            this.checked = !this.checked;
+            if (this.checked) {
+                this.setAttribute('checked', '');
+            } else {
+                this.removeAttribute('checked');
+            }
+            this.dispatchEvent(chngEvn);
         });
     }
 }

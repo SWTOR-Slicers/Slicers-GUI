@@ -419,12 +419,14 @@ async function copyResourcesRecursive(originalDir, targetDir) {
     const tPath = path.join(targetDir, entr);
     if (fs.statSync(ogPath).isFile()) {
       //is a file
-      if (entr != "resources.json" && entr != "appSettings.json") {
+      if (entr != "resources.json" && entr != "appSettings.json" && entr != "app.ico") {
         fs.copyFileSync(ogPath, tPath);
       }
     } else {
       //is a dir
-      await copyResourcesRecursive(ogPath, tPath);
+      if (entr != "app") {
+        await copyResourcesRecursive(ogPath, tPath);
+      }
     }
   }
 }

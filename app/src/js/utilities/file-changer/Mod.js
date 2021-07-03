@@ -5,7 +5,7 @@ const path = require('path');
 async function write(outputPath, modName, changesJson) {
     try {
         const writeObjs = [];
-        for (const fc in changesJson) {
+        for (const fc of changesJson) {
             const data = fc.export();
             data.modded = `::relative::\\mods\\${modName}.tormod\\lut\\${path.basename(data.modded)}`;
         }
@@ -20,18 +20,21 @@ async function write(outputPath, modName, changesJson) {
             lut.file(path.basename(filePath), data);
         }
 
-        const blob = await tormod.generateAsync({ type: "blob" });
+        const buffer = await tormod.generateAsync({ type: "nodebuffer" });
 
-        fs.writeFileSync(path.join(outputPath, `${modName}.tormod`));
+        fs.writeFileSync(path.join(outputPath, `${modName}.tormod`), buffer);
 
         return 200;
     } catch (e) {
+        console.log(e);
         return 400;
     }
 }
 
-function read(path) {
-
+async function read(path) {
+    const buffer = fs.readFileSync(path);
+    const zip = await JSZip.loadAsync(buffer);
+    
 }
 
 export {write, read};

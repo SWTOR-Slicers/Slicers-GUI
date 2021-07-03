@@ -11,6 +11,7 @@ export class FileEntry {
         this.modded = modded;
 
         //? not part of true object data
+        this.oldModded = modded
         this.oldTarget = target;
         this.fileChanges = fileChanges;
         this.writeMod = writeMod;
@@ -50,9 +51,9 @@ export class FileEntry {
             `;
 
             fToChng.querySelector('input').addEventListener('change', (e) => {
-                const idx = fileChanges.findIndex(fc => { return fc.type == newChng.type && fc.target == newChng.target && fc.modded == newChng.modded; })
-                const match = fileChanges.find(fc => { return fc.target == newChng.target; })
-                if (match && !(fileChanges.indexOf(match) == idx)) {
+                const idx = this.fileChanges.findIndex(fc => { return fc.type == this.type && fc.target == this.target && fc.modded == this.modded; })
+                const match = this.fileChanges.find(fc => { return fc.target == this.target; })
+                if (match && !(this.fileChanges.indexOf(match) == idx)) {
                     this.target = this.oldTarget;
                 } else {
                     this.target = e.currentTarget.value;
@@ -74,10 +75,10 @@ export class FileEntry {
             `;
             fToUse.querySelector('input').addEventListener('change', (e) => {
                 if (fs.existsSync(e.currentTarget.value)) {
-                    this.target = e.currentTarget.value;
-                    this.oldTarget = this.target
+                    this.modded = e.currentTarget.value;
+                    this.oldModded = this.modded;
                 } else {
-                    this.target = this.oldTarget;
+                    this.modded = this.oldModded;
                 }
             });
             fToUse.querySelector('button').addEventListener('click', (e) => {
@@ -108,11 +109,10 @@ export class FileEntry {
     }
 
     export() {
-        const data = {
+        return {
             'type': this.type,
             'target': this.target,
             'modded': this.modded
         }
-        return JSON.stringify(data, null, '\t');
     }
 }

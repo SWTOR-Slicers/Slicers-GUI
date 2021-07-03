@@ -16,7 +16,6 @@ const configPath = path.normalize(path.join(resourcePath, "config.json"));
  * @type {FileEntry[]}
  */
 const fileChanges = [];
-const functionalList = [];
 const chngEvn = new Event('change');
 const cache = {
     "assets": "",
@@ -27,6 +26,7 @@ const cache = {
 
 //globals
 let settingsJSON = getSetting();
+let functionalList = [];
 
 //DOM variables
 
@@ -150,7 +150,11 @@ function initTooltips() {
 
     if (settingsJSON.usePathTooltips) {
         addTooltip('top', assetsFolderInput, true, (element) => { return element.value; });
+        assetsFolderInput.parentElement.style.flexGrow = 1;
+        assetsFolderInput.style.width = `calc(100% - 14px)`;
         addTooltip('top', outputFolderInput, true, (element) => { return element.value; });
+        outputFolderInput.parentElement.style.flexGrow = 1;
+        outputFolderInput.style.width = `calc(100% - 73px)`;
     }
 
     if (settingsJSON.useLabelTooltips) {
@@ -228,7 +232,7 @@ function initListeners() {
             confirmSave.classList.remove('disabled');
         }
     });
-    confirmSave.addEventListener('click', (e) => {
+    confirmSave.addEventListener('click', async (e) => {
         const errList = [];
         for (let i = 0; i < fileChanges.length; i++) {
             const change = fileChanges[i];
@@ -241,7 +245,7 @@ function initListeners() {
         }
 
         if (functionalList.length > 0 && errList.length == 0) {
-            const success = MOD.write(nameInput.value, functionalList);
+            const success = await MOD.write(path.join(cache['output'], 'mods'), nameInput.value, functionalList);
             if (success == 200) { log('Mod created sucessfully!', 'info'); } else { log('Something went wrong when creating the mod.', 'alert'); }
             functionalList = [];
         } else if (errList.length > 0) {
@@ -284,10 +288,16 @@ function initSubs() {
                     case "usePathTooltips":
                         if (settingsJSON.usePathTooltips) {
                             addTooltip('top', assetsFolderInput, true, (element) => { return element.value; });
+                            assetsFolderInput.parentElement.style.flexGrow = 1;
+                            assetsFolderInput.style.width = `calc(100% - 14px)`;
                             addTooltip('top', outputFolderInput, true, (element) => { return element.value; });
+                            outputFolderInput.parentElement.style.flexGrow = 1;
+                            outputFolderInput.style.width = `calc(100% - 73px)`;
                         } else {
                             removeTooltip(assetsFolderInput, true, (element) => { return element.value; });
+                            assetsFolderInput.style.width = ``;
                             removeTooltip(outputFolderInput, true, (element) => { return element.value; });
+                            outputFolderInput.style.width = ``;
                         }
                         break;
                     case "useLabelTooltips":

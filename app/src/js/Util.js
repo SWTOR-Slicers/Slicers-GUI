@@ -380,11 +380,12 @@ export function assert(statement, msg) {
  * @param  {String} href a string representing the href attribute of the stylesheet
  */
 export function addStyleIfNotExists(href) {
+    let refCont = (href.indexOf('../') > -1) ? href.substr(href.lastIndexOf('../') + 3) : href;
     const existingStyles = document.getElementsByTagName('link');
     let exists = false;
     for (let i = 0; i < existingStyles.length; i++) {
         const l = existingStyles[i];
-        if (l.href == href) {
+        if (l.href.indexOf(refCont) > -1) {
             exists = true;
             break;
         }

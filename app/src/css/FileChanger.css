@@ -155,7 +155,11 @@
 .change-elem {
     background-color: var(--medium-grey);
     width: 100%;
+    
+    min-height: 26px;
     height: 26px;
+    margin-bottom: 7px;
+    
     display: flex;
     flex-direction: row;
     align-items: center;

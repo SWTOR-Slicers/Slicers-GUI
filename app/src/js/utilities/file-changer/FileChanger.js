@@ -228,7 +228,14 @@ function initListeners() {
     });
     writeMod.addEventListener('click', (e) => { saveModal.style.display = ''; });
     loadMod.addEventListener('click', (e) => { ipcRenderer.send('openFileDialogChanger', loadMod.id); });
-
+    convMod.addEventListener('click', async (e) => {
+        const status = await MOD.convert(loadedModPath.value, fileChangesCont, fileChanges, writeMod);
+        if (status == 200) {
+            log('Mod converted sucessfully!', 'info');
+        } else {
+            log('Error when converting mod.', 'alert');
+        }
+    });
     //save modal functionality
     nameInput.addEventListener('change', (e) => {
         const val = e.currentTarget.value;
@@ -324,6 +331,7 @@ function initSubs() {
 
             if (id == "loadMod") {
                 if (path.extname(fPath) == '.tormod') {
+                    writeMod.classList.remove('disabled');
                     convMod.classList.add('disabled');
 
                     const status = await MOD.read(fPath, fileChangesCont, fileChanges, writeMod);
@@ -336,6 +344,8 @@ function initSubs() {
                 } else if (path.extname(fPath) == '.txt') {
                     //TODO: parse the settings .txt and convert to a torc mod
 
+                    loadedModPath.value = fPath;
+                    writeMod.classList.add('disabled');
                     convMod.classList.remove('disabled');
                 }
             } else {

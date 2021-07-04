@@ -4,11 +4,12 @@ const UUID = require('uuid');
 const uuidV4 = UUID.v4;
 
 export class FileEntry {
-    constructor(type, target, modded, fileChanges, writeMod) {
+    constructor(type, target, modded, fileChanges, writeMod, fileBuffer=null) {
         this.id = uuidV4();
         this.type = type;
         this.target = target;
         this.modded = modded;
+        this.fileBuffer = fileBuffer;
 
         //? not part of true object data
         this.oldModded = modded

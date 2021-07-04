@@ -97,24 +97,28 @@ async function loadCache() {
         pts.checked = true;
     }
 
-    if (json["output"] == "") {
+    if (json["output"] == "" || !fs.existsSync(json["output"])) {
         const defaultPath = path.join(jsonObj["outputFolder"], 'changer');
         if (!fs.existsSync(defaultPath)) {
             fs.mkdirSync(defaultPath);
         }
         updateCache('output', defaultPath);
-        cache["output"] = defaultPath
+        cache["output"] = defaultPath;
     } else {
         cache["output"] = json["output"];
     }
+    outputFolderInput.value = cache['output'];
+    outputFolderInput.dispatchEvent(updateTooltipEvent);
 
-    if (json["assets"] == "") {
+    if (json["assets"] == "" || !fs.existsSync(json["assets"])) {
         const defaultPath = jsonObj["assetsFolder"];
         updateCache('output', defaultPath);
         cache["assets"] = defaultPath
     } else {
         cache["assets"] = json["assets"];
     }
+    assetsFolderInput.value = cache['assets'];
+    assetsFolderInput.dispatchEvent(updateTooltipEvent);
 }
 function updateCache(field, val) {
     const shouldUpdate = (field == "assetsFolder") ? fs.existsSync(val) : true; 
@@ -197,7 +201,8 @@ function initListeners() {
     createBackup.addEventListener('change', (e) => { updateCache('backup', e.currentTarget.checked); });
     live.addEventListener('change', (e) => { updateCache('version', 'Live'); });
     pts.addEventListener('change', (e) => { updateCache('version', 'pts'); });
-    //change functionality
+
+    //mods related
     addChange.addEventListener('click', (e) => {
         let shouldAdd = true
         if (fileChanges.length > 0) {
@@ -221,8 +226,9 @@ function initListeners() {
             writeMod.classList.remove('disabled')
         }
     });
-    //mod preset functionality
     writeMod.addEventListener('click', (e) => { saveModal.style.display = ''; });
+    loadMod.addEventListener('click', (e) => { ipcRenderer.send('openFileDialogChanger', loadMod.id); });
+
     //save modal functionality
     nameInput.addEventListener('change', (e) => {
         const val = e.currentTarget.value;
@@ -311,14 +317,32 @@ function initSubs() {
             }
         }
     });
-    ipcRenderer.on('changerDialogResponse', (event, data) => {
+    ipcRenderer.on('changerDialogResponse', async (event, data) => {
         if (data != "") {
             const id = data[0];
             const fPath = data[1][0];
 
-            const mInput = document.getElementById(`${id}-ModdedInput`);
-            mInput.value = fPath;
-            mInput.dispatchEvent(chngEvn);
+            if (id == "loadMod") {
+                if (path.extname(fPath) == '.tormod') {
+                    convMod.classList.add('disabled');
+
+                    const status = await MOD.read(fPath, fileChangesCont, fileChanges, writeMod);
+                    if (status == 200) {
+                        loadedModPath.value = fPath;
+                        log('Mod loaded sucessfully!', 'info');
+                    } else {
+                        log('Encountered error loading mod.', 'alert');
+                    }
+                } else if (path.extname(fPath) == '.txt') {
+                    //TODO: parse the settings .txt and convert to a torc mod
+
+                    convMod.classList.remove('disabled');
+                }
+            } else {
+                const mInput = document.getElementById(`${id}-ModdedInput`);
+                mInput.value = fPath;
+                mInput.dispatchEvent(chngEvn);
+            }
         }
     });
     ipcRenderer.on('changerFolderDialogResponse', (event, data) => {

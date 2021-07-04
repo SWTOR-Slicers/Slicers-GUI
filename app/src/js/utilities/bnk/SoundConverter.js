@@ -63,7 +63,7 @@ async function loadCache() {
 
     cache["soundPath"] = json["soundPath"];
 
-    if (json["output"] == "") {
+    if (json["output"] == "" || !fs.existsSync(json["output"])) {
         const defaultPath = path.join(jsonObj["outputFolder"], 'sound');
         if (!fs.existsSync(defaultPath)) {
             fs.mkdirSync(defaultPath);

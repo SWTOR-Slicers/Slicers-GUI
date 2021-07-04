@@ -34,25 +34,32 @@ async function write(outputPath, modName, changesJson) {
 }
 
 async function read(path, domParent, changesList, writeModElem) {
-    const buffer = fs.readFileSync(path);
-    const zip = await JSZip.loadAsync(buffer);
+    try {
+        const buffer = fs.readFileSync(path);
+        const zip = await JSZip.loadAsync(buffer);
 
-    const chngFile = await zip.file('Changes.json').async('string');
-    const changes = JSON.parse(chngFile);
+        const chngFile = await zip.file('Changes.json').async('string');
+        const changes = JSON.parse(chngFile);
 
-    for (const change of changes) {
-        const fileName = change.modded.substr(change.modded.lastIndexOf('\\') + 1);
-        const fBuff = await zip.folder('lut').file(fileName).async('arraybuffer');
+        for (const change of changes) {
+            const fileName = change.modded.substr(change.modded.lastIndexOf('\\') + 1);
+            const fBuff = await zip.folder('lut').file(fileName).async('arraybuffer');
 
-        const fc = new FileEntry(change.type, change.target, change.modded, changesList, writeModElem, fBuff);
-        changesList.push(fc);
+            const fc = new FileEntry(change.type, change.target, change.modded, changesList, writeModElem, fBuff);
+            changesList.push(fc);
 
-        const newChngElem = fc.render();
-        domParent.appendChild(newChngElem);
+            const newChngElem = fc.render();
+            domParent.appendChild(newChngElem);
 
-        fc.dropDown.clickCallback = (e) => { fc.type = e.currentTarget.innerHTML; }
+            fc.dropDown.clickCallback = (e) => { fc.type = e.currentTarget.innerHTML; }
 
-        writeModElem.classList.remove('disabled');
+            writeModElem.classList.remove('disabled');
+        }
+
+        return 200;
+    } catch (e) {
+        console.log(e);
+        return 400;
     }
 }
 

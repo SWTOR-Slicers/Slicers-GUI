@@ -3,6 +3,7 @@ import { FileEntry } from './FileEntry.js';
 
 const JSZip = require('jszip');
 const fs = require('fs');
+const Ofs = require('original-fs');
 const path = require('path');
 
 async function write(outputPath, modName, changesJson) {
@@ -66,9 +67,9 @@ async function read(path, domParent, changesList, writeModElem) {
     }
 }
 
-async function convert(path, domParent, changesList, writeModElem) {
+async function convert(fPath, domParent, changesList, writeModElem, parentDir) {
     try {
-        const buffer = fs.readFileSync(path);
+        const buffer = fs.readFileSync(fPath);
         const fileStr = buffer.toString();
         const entries = fileStr.split('\n');
 
@@ -84,8 +85,10 @@ async function convert(path, domParent, changesList, writeModElem) {
                     const chng = {
                         'type': (info[0] == 'replace') ? 'File' : 'Node', 
                         'target': info[1], 
-                        'modded': info[2]
+                        'modded': path.join(parentDir, info[2])
                     }
+                    fs.existsSync(chng.modded);
+                    Ofs.existsSync(chng.modded);
 
                     changes.push(chng);
                 } else {

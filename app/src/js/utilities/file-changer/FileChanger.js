@@ -65,6 +65,8 @@ const writeMod = document.getElementById('writeMod');
 const loadedModPath = document.getElementById('loadedModPath');
 
 const convMod = document.getElementById('convMod');
+const moddedParentFolder = document.getElementById('moddedParentFolder');
+const moddedParentFolderBrowseBtn = document.getElementById('moddedParentFolderBrowseBtn');
 
 //action variables
 const restoreBackup = document.getElementById('restoreBackup');
@@ -229,13 +231,23 @@ function initListeners() {
     writeMod.addEventListener('click', (e) => { saveModal.style.display = ''; });
     loadMod.addEventListener('click', (e) => { ipcRenderer.send('openFileDialogChanger', loadMod.id); });
     convMod.addEventListener('click', async (e) => {
-        const status = await MOD.convert(loadedModPath.value, fileChangesCont, fileChanges, writeMod);
+        const status = await MOD.convert(loadedModPath.value, fileChangesCont, fileChanges, writeMod, moddedParentFolder.value);
         if (status == 200) {
             log('Mod converted sucessfully!', 'info');
         } else {
             log('Error when converting mod.', 'alert');
         }
     });
+    moddedParentFolder.addEventListener('change', (e) => {
+        let val = e.currentTarget.value;
+        if (fs.existsSync(val)) {
+            convMod.classList.remove('disabled');
+        } else {
+            log('That is not a valid path', 'alert');
+            moddedParentFolder.value = '';
+        }
+    });
+    moddedParentFolderBrowseBtn.addEventListener('click', (e) => { ipcRenderer.send('openFolderDialogChanger', moddedParentFolder.id); })
     //save modal functionality
     nameInput.addEventListener('change', (e) => {
         const val = e.currentTarget.value;
@@ -331,6 +343,8 @@ function initSubs() {
 
             if (id == "loadMod") {
                 if (path.extname(fPath) == '.tormod') {
+                    moddedParentFolderBrowseBtn.style.display = 'none';
+                    moddedParentFolder.style.display = 'none';
                     writeMod.classList.remove('disabled');
                     convMod.classList.add('disabled');
 
@@ -346,7 +360,8 @@ function initSubs() {
 
                     loadedModPath.value = fPath;
                     writeMod.classList.add('disabled');
-                    convMod.classList.remove('disabled');
+                    moddedParentFolder.style.display = '';
+                    moddedParentFolderBrowseBtn.style.display = '';
                 }
             } else {
                 const mInput = document.getElementById(`${id}-ModdedInput`);

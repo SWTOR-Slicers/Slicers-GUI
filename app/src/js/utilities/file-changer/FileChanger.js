@@ -273,13 +273,13 @@ function initListeners() {
             const success = await MOD.write(path.join(cache['output'], 'mods'), nameInput.value, functionalList);
             if (success == 200) { log('Mod created sucessfully!', 'info'); } else { log('Something went wrong when creating the mod.', 'alert'); }
             functionalList = [];
+            nameInput.value = '';
         } else if (errList.length > 0) {
             infoDisp.innerHTML = errList.join(', ');
             errModal.style.display = '';
         }
         saveModal.style.display = 'none';
         confirmSave.classList.add('disabled');
-        nameInput.value = '';
     });
     cancelSave.addEventListener('click', (e) => {
         saveModal.style.display = 'none';
@@ -287,16 +287,18 @@ function initListeners() {
         nameInput.value = '';
     });
     //err modal functionality
-    contCreate.addEventListener('click', (e) => {
-        const success = MOD.write(nameInput.value, functionalList);
+    contCreate.addEventListener('click', async (e) => {
+        const success = await MOD.write(path.join(cache['output'], 'mods'), nameInput.value, functionalList);
         if (success == 200) { log('Incomplet mod created sucessfully!', 'info'); } else { log('Something went wrong when creating the incomplete mod.', 'alert'); }
         functionalList = [];
         errModal.style.display = 'none';
         infoDisp.innerHTML = '';
+        nameInput.value = '';
     });
     cancelCreate.addEventListener('click', (e) => {
         errModal.style.display = 'none';
         infoDisp.innerHTML = '';
+        nameInput.value = '';
     });
 }
 

@@ -3,7 +3,6 @@ import { FileEntry } from './FileEntry.js';
 
 const JSZip = require('jszip');
 const fs = require('fs');
-const Ofs = require('original-fs');
 const path = require('path');
 
 async function write(outputPath, modName, changesJson) {
@@ -76,7 +75,7 @@ async function convert(fPath, domParent, changesList, writeModElem, parentDir) {
         const changes = [];
 
         for (let i = 0; i < entries.length; i++) {
-            const entr = entries[i];
+            const entr = entries[i].replace(/(?:\r\n|\r|\n)/g, '');
             const info = entr.split(' ');
             if (info[0].indexOf('replace') > -1) {
                 if (info.length >= 3) {
@@ -87,8 +86,6 @@ async function convert(fPath, domParent, changesList, writeModElem, parentDir) {
                         'target': info[1], 
                         'modded': path.join(parentDir, info[2])
                     }
-                    fs.existsSync(chng.modded);
-                    Ofs.existsSync(chng.modded);
 
                     changes.push(chng);
                 } else {

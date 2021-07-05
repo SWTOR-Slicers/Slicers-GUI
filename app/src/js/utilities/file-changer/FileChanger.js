@@ -441,6 +441,21 @@ function initSubs() {
     });
 }
 
+//more complexed methods related to modifying/extracting unextracted, encoded files
+const jsZip = require('jszip');
+
+class ArchiveEntry {
+    constructor(offset, metaDataSize, comprSize, uncomprSize, metaDataCheckSum, comprType, fileTableNum, fileTableFileIndex) {
+        this.offset = offset;
+        this.metaDataSize = metaDataSize;
+        this.comprSize = comprSize;
+        this.uncomprSize = uncomprSize;
+        this.metaDataCheckSum = metaDataCheckSum;
+        this.comprType = comprType;
+        this.fileTableNum = fileTableNum;
+        this.fileTableFileIndex = fileTableFileIndex;
+    }
+}
 function extractFile(name) {
     
 }

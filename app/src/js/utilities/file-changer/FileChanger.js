@@ -42,6 +42,12 @@ const infoDisp = document.getElementById('infoDisp');
 const contCreate = document.getElementById('contCreate');
 const cancelCreate = document.getElementById('cancelCreate');
 
+//extr modal
+const extrModal = document.getElementById('extrModal');
+const extrInput = document.getElementById('extrInput');
+const startExtr = document.getElementById('startExtr');
+const cancelExtr = document.getElementById('cancelExtr');
+
 //version radio selection
 const live = document.getElementById('live');
 const pts = document.getElementById('pts');
@@ -153,6 +159,7 @@ function setupFolders() {
 }
 function initTooltips() {
     addTooltip('top', nameInput, false, (element) => { return 'Name of your mod'; });
+    addTooltip('top', extrInput, true, (element) => { return element.getAttribute('data-tooltip'); });
 
     if (settingsJSON.usePathTooltips) {
         addTooltip('top', assetsFolderInput, true, (element) => { return element.value; });
@@ -247,7 +254,59 @@ function initListeners() {
             moddedParentFolder.value = '';
         }
     });
-    moddedParentFolderBrowseBtn.addEventListener('click', (e) => { ipcRenderer.send('openFolderDialogChanger', moddedParentFolder.id); })
+    moddedParentFolderBrowseBtn.addEventListener('click', (e) => { ipcRenderer.send('openFolderDialogChanger', moddedParentFolder.id); });
+
+    //changer functionality
+    chngFiles.addEventListener('click', (e) => {
+        if (fileChanges.length > 0) {
+            log('File changing started.', 'info');
+            changeFiles();
+        } else {
+            log('You have not specified any file changes.', 'alert');
+        }
+    })
+    restoreBackup.addEventListener('click', (e) => { restoreBackupFiles(); });
+    extrNode.addEventListener('click', (e) => {
+        extrInput.setAttribute('data-tooltip', 'Node FQN');
+        extrInput.dispatchEvent(updateTooltipEvent);
+
+        extrModal.style.display = ''
+    });
+    extrFile.addEventListener('click', (e) => {
+        extrInput.setAttribute('data-tooltip', 'File name');
+        extrInput.dispatchEvent(updateTooltipEvent);
+
+        extrModal.style.display = ''
+    });
+
+    //save modal functionality
+    extrInput.addEventListener('change', (e) => {
+        const val = e.currentTarget.value;
+        if (val == '' || val == ' ') {
+            startExtr.classList.add('disabled');
+        } else {
+            startExtr.classList.remove('disabled');
+        }
+    });
+    startExtr.addEventListener('click', async (e) => {
+        if (extrInput.getAttribute('data-tooltip') == 'Node FQN') {
+            log('Extracting Node...', 'info');
+            extractNode(extrInput.value);
+        } else {
+            log('Extracting File...', 'info');
+            extractFile(extrInput.value);
+        }
+
+        extrModal.style.display = 'none';
+        startExtr.classList.add('disabled');
+        extrInput.value = '';
+    });
+    cancelExtr.addEventListener('click', (e) => {
+        extrModal.style.display = 'none';
+        startExtr.classList.add('disabled');
+        extrInput.value = '';
+    });
+
     //save modal functionality
     nameInput.addEventListener('change', (e) => {
         const val = e.currentTarget.value;
@@ -286,6 +345,7 @@ function initListeners() {
         confirmSave.classList.add('disabled');
         nameInput.value = '';
     });
+
     //err modal functionality
     contCreate.addEventListener('click', async (e) => {
         const success = await MOD.write(path.join(cache['output'], 'mods'), nameInput.value, functionalList);
@@ -379,6 +439,22 @@ function initSubs() {
             elem.dispatchEvent(chngEvn);
         }
     });
+}
+
+function extractFile(name) {
+    
+}
+
+function extractNode(name) {
+    
+}
+
+function restoreBackupFiles() {
+    
+}
+
+function changeFiles() {
+    
 }
 
 init();

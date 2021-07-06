@@ -1,5 +1,6 @@
 import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { getSetting } from "../../../api/config/settings/Settings.js";
+import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 import { log, updateAlertType } from "../../universal/Logger.js";
 import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { FileEntry } from "./FileEntry.js";
@@ -23,6 +24,8 @@ const cache = {
     "backup": true,
     "version": "Live"
 }
+const hashDict = new HashDictionary('hash/hashes_filename.txt');
+
 
 //globals
 let settingsJSON = getSetting();
@@ -176,6 +179,7 @@ function initTooltips() {
 }
 
 async function init() {
+    await hashDict.loadHashList(progBar);
     await loadCache();
     setupFolders();
     initListeners();

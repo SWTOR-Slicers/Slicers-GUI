@@ -30,7 +30,8 @@ class HashDictionary {
      */
     loadHash(ph, sh, name, crc) {
         const sig = ((ph /* cast ph to long */) << 32) + sh;
-        this.hashList[sig] = new HashData(ph, sh, name, crc);
+        //this.hashList[sig] = new HashData(ph, sh, name, crc);
+        this.hashList[name] = new HashData(ph, sh, name, crc);
     }
 
     async loadHashList(progressBarElem) {
@@ -64,12 +65,11 @@ class HashDictionary {
      * @param  {int} sh sh value
      * @param  {String} name the file's hash as a string
      * @param  {int} crc
-     * @param  {String} archiveName name of archive to use.
      * 
      * @returns {HashData} returns hashData or null.
      */
-    searchHashList(ph, sh, archiveName) {
-
+    searchHashList(ph, sh, name, crc) {
+        return this.hashList[name];
     }
 }
 

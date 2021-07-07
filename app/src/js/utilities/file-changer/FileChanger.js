@@ -1,10 +1,21 @@
 import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { getSetting } from "../../../api/config/settings/Settings.js";
+import { Archive } from "../../classes/Archive.js";
 import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 import { log, updateAlertType } from "../../universal/Logger.js";
 import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { FileEntry } from "./FileEntry.js";
 import * as MOD from "./Mod.js";
+
+class HashChange {
+    constructor(oldName, newName, ph, sh, crc) {
+        this.oldName = oldName;
+        this.newName = newName;
+        this.ph = ph;
+        this.sh = sh;
+        this.crc = crc;
+    }
+}
 
 //consts
 const { ipcRenderer } = require("electron");
@@ -12,6 +23,10 @@ const fs = require('fs');
 const path = require('path');
 const validFilename = require('valid-filename');
 const configPath = path.normalize(path.join(resourcePath, "config.json"));
+const RawDeflate = this.RawDeflate;
+let hashChangeList = {
+    /* format of "ph|sh": new HashChange() */
+};
 /**
  * Array of mod entries
  * @type {FileEntry[]}
@@ -151,7 +166,7 @@ function updateCache(field, val) {
     }
 }
 function setupFolders() {
-    const folders = ['backups', 'mods', 'presets'];
+    const folders = ['backups', 'mods', 'presets', 'extracted'];
 
     for (const folder of folders) {
         const fPath = path.join(cache['output'], folder);
@@ -448,22 +463,96 @@ function initSubs() {
 //more complexed methods related to modifying/extracting unextracted, encoded files
 const jsZip = require('jszip');
 
-class ArchiveEntry {
-    constructor(offset, metaDataSize, comprSize, uncomprSize, metaDataCheckSum, comprType, fileTableNum, fileTableFileIndex) {
-        this.offset = offset;
-        this.metaDataSize = metaDataSize;
-        this.comprSize = comprSize;
-        this.uncomprSize = uncomprSize;
-        this.metaDataCheckSum = metaDataCheckSum;
-        this.comprType = comprType;
-        this.fileTableNum = fileTableNum;
-        this.fileTableFileIndex = fileTableFileIndex;
+/**
+ * Returns the hash information for the file name passed to the function.
+ * @param  {String} name the file name to generate the hash of.
+ */
+function fileNameToHash(name) {
+    let ph, sh;
+
+    if (/^[0-9a-fA-F]{8}_[0-9a-fA-F]{8}$/.test(name)) {
+        ph = parseInt(name.substr(0, 8), 16);
+        sh = parseInt(name.substr(9, 8), 16);
+    } else {
+        [ph, sh] = hashDict.getHashByFileName(name);
     }
-}
-function extractFile(name) {
-    
+
+    return [ph, sh];
 }
 
+function extractFile(name) {
+    let fileFound = false;
+    let len = 0;
+    const fileHash = fileNameToHash(name);
+
+    let assetFiles = fs.readdirSync(cache['assets']);
+    assetFiles = assetFiles.filter((f) => { return path.extname(f) == '.tor'; });
+    assetFiles.map((f) => { return path.join(cache['assets'], f); });
+    let retCli = fs.readdirSync(path.normalize(path.join(cache['assets'], `../${cache['version'] == 'Live'? 'swtor' : 'publictest'}/retailclient`)));
+    let filtered = retCli.filter((f) => { return path.extname(f) == '.tor'; });
+    filtered.map((f) => { return path.join(cache['assets'], f); });
+    assetFiles.concat(filtered);
+
+    len = assetFiles.length;
+    for (let i = 0; i < len - 1; i++) {
+        let assetFile = assetFiles[i];
+        let assetName;
+        let progSegLen1 = progBar.clientWidth / len;
+
+        if (assetFile.indexOf('retailclient') == -1) {
+            assetName = assetFile.substr(assetFile.lastIndexOf('\\') + 1);
+            if (cahce['verion'] == 'pts' && !assetName.indexOf('swtor_test_')) continue;
+            if (cahce['verion'] == 'Live' && assetName.indexOf('swtor_test_')) continue;
+        }
+
+        const assetBuffer = fs.readFileSync(assetFile).buffer;
+        const dv = new DataView(assetBuffer);
+        let ftOffset = 0;
+        let ftCapacity = 1000;
+
+        if (dv.getUint32(0, !0) != 0x50594d) { log('.tor is not a valid tor file! Invalid MYP header.', 'alert'); return; }
+        if (dv.getUint32(4, !0) != 5) { log('.tor is not a valid tor file! Only version 5 is supported.', 'alert'); return; }
+        if (dv.getUint32(8, !0) != 0xfd23ec43) { log('.tor is not a valid tor file!', 'alert'); return; }
+        ftOffset = dv.getUint32(12, !0);
+        if (ftOffset == 0) { log('file table offset is 0', 'alert'); return; }
+
+        for (let j = 0; j < ftCapacity; j++) {
+            const offset = dv.getUint32(12 + 34 * i + 0, !0);
+            if (offset === 0) break;
+            const metadataSize = dv.getUint32(12 + 34 * i + 8, !0);
+            const comprSize = dv.getUint32(12 + 34 * i + 12, !0);
+            const uncomprSize = dv.getUint32(12 + 34 * i + 16, !0);
+            const sh = dv.getUint32(12 + 34 * i + 20, !0);
+            const ph = dv.getUint32(12 + 34 * i + 24, !0);
+            const crc = dv.getUint32(12 + 34 * i + 28, !0);
+            const compressed = dv.getUint16(12 + 34 * i + 32, !0);
+
+            if (ph == fileHash[0] && sh == fileHash[1]) {
+                const fileOffset = offset + metadataSize;
+                if (compressed) {
+                    const comprArr = new Uint8Array(assetBuffer, fileOffset, comprSize);
+                    const uncomprBuffer = new Uint8Array(uncomprSize);
+                    RawDeflate.inflate(comprArr, uncomprBuffer);
+                    fs.writeFileSync(path.join(cache['output'], 'extracted', name.substr(name.lastIndexOf('\\') + 1)), uncomprBuffer);
+                } else {
+                    fs.writeFileSync(path.join(cache['output'], 'extracted', name.substr(name.lastIndexOf('\\') + 1)), assetBuffer.slice(fileOffset, fileOffset + comprSize));
+                }
+                fileFound = true;
+                break;
+            }
+        }
+    }
+
+    if (fileFound) {
+        log('File extracted sucessfully!', 'info');
+    } else {
+        log('COuld not find the specified file in the specified version.', 'alert');
+    }
+    
+    console.log({fileHash});
+}
+
+//  /resources/art/dynamic/waist/model/waist_belt_bma_med_jk_a19_back.lod.gr2
 function extractNode(name) {
     
 }

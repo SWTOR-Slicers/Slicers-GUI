@@ -419,6 +419,109 @@ export function debounce(func, wait, immediate) {
         if (callNow) func.apply(context, args);
     };
 };
+/**
+ * hashes the given file name
+ * @param  {String} k the file name.
+ */
+export function hashlittle2(k) {
+    let length = k.length;
+    let offset = 0;
+    let a = 0xdeadbeef + length;
+    let b = a;
+    let c = a;
+    while (length > 12) {
+        a = (a + (k.charCodeAt(offset + 0) + (k.charCodeAt(offset + 1) << 8) + (k.charCodeAt(offset + 2) << 16) + (k.charCodeAt(offset + 3) << 24))) | 0;
+        b = (b + (k.charCodeAt(offset + 4) + (k.charCodeAt(offset + 5) << 8) + (k.charCodeAt(offset + 6) << 16) + (k.charCodeAt(offset + 7) << 24))) | 0;
+        c = (c + (k.charCodeAt(offset + 8) + (k.charCodeAt(offset + 9) << 8) + (k.charCodeAt(offset + 10) << 16) + (k.charCodeAt(offset + 11) << 24))) | 0;
+        a = (a - c) | 0;
+        a ^= (c << 4) | (c >>> 28);
+        c = (c + b) | 0;
+        b = (b - a) | 0;
+        b ^= (a << 6) | (a >>> 26);
+        a = (a + c) | 0;
+        c = (c - b) | 0;
+        c ^= (b << 8) | (b >>> 24);
+        b = (b + a) | 0;
+        a = (a - c) | 0;
+        a ^= (c << 16) | (c >>> 16);
+        c = (c + b) | 0;
+        b = (b - a) | 0;
+        b ^= (a << 19) | (a >>> 13);
+        a = (a + c) | 0;
+        c = (c - b) | 0;
+        c ^= (b << 4) | (b >>> 28);
+        b = (b + a) | 0;
+        length -= 12;
+        offset += 12
+    }
+    switch (length) {
+        case 12:
+            c += (k.charCodeAt(offset + 8) + (k.charCodeAt(offset + 9) << 8) + (k.charCodeAt(offset + 10) << 16) + (k.charCodeAt(offset + 11) << 24));
+            b += (k.charCodeAt(offset + 4) + (k.charCodeAt(offset + 5) << 8) + (k.charCodeAt(offset + 6) << 16) + (k.charCodeAt(offset + 7) << 24));
+            a += (k.charCodeAt(offset + 0) + (k.charCodeAt(offset + 1) << 8) + (k.charCodeAt(offset + 2) << 16) + (k.charCodeAt(offset + 3) << 24));
+            break;
+        case 11:
+            c += (k.charCodeAt(offset + 8) + (k.charCodeAt(offset + 9) << 8) + (k.charCodeAt(offset + 10) << 16));
+            b += (k.charCodeAt(offset + 4) + (k.charCodeAt(offset + 5) << 8) + (k.charCodeAt(offset + 6) << 16) + (k.charCodeAt(offset + 7) << 24));
+            a += (k.charCodeAt(offset + 0) + (k.charCodeAt(offset + 1) << 8) + (k.charCodeAt(offset + 2) << 16) + (k.charCodeAt(offset + 3) << 24));
+            break;
+        case 10:
+            c += (k.charCodeAt(offset + 8) + (k.charCodeAt(offset + 9) << 8));
+            b += (k.charCodeAt(offset + 4) + (k.charCodeAt(offset + 5) << 8) + (k.charCodeAt(offset + 6) << 16) + (k.charCodeAt(offset + 7) << 24));
+            a += (k.charCodeAt(offset + 0) + (k.charCodeAt(offset + 1) << 8) + (k.charCodeAt(offset + 2) << 16) + (k.charCodeAt(offset + 3) << 24));
+            break;
+        case 9:
+            c += (k.charCodeAt(offset + 8));
+            b += (k.charCodeAt(offset + 4) + (k.charCodeAt(offset + 5) << 8) + (k.charCodeAt(offset + 6) << 16) + (k.charCodeAt(offset + 7) << 24));
+            a += (k.charCodeAt(offset + 0) + (k.charCodeAt(offset + 1) << 8) + (k.charCodeAt(offset + 2) << 16) + (k.charCodeAt(offset + 3) << 24));
+            break;
+        case 8:
+            b += (k.charCodeAt(offset + 4) + (k.charCodeAt(offset + 5) << 8) + (k.charCodeAt(offset + 6) << 16) + (k.charCodeAt(offset + 7) << 24));
+            a += (k.charCodeAt(offset + 0) + (k.charCodeAt(offset + 1) << 8) + (k.charCodeAt(offset + 2) << 16) + (k.charCodeAt(offset + 3) << 24));
+            break;
+        case 7:
+            b += (k.charCodeAt(offset + 4) + (k.charCodeAt(offset + 5) << 8) + (k.charCodeAt(offset + 6) << 16));
+            a += (k.charCodeAt(offset + 0) + (k.charCodeAt(offset + 1) << 8) + (k.charCodeAt(offset + 2) << 16) + (k.charCodeAt(offset + 3) << 24));
+            break;
+        case 6:
+            b += (k.charCodeAt(offset + 4) + (k.charCodeAt(offset + 5) << 8));
+            a += (k.charCodeAt(offset + 0) + (k.charCodeAt(offset + 1) << 8) + (k.charCodeAt(offset + 2) << 16) + (k.charCodeAt(offset + 3) << 24));
+            break;
+        case 5:
+            b += (k.charCodeAt(offset + 4));
+            a += (k.charCodeAt(offset + 0) + (k.charCodeAt(offset + 1) << 8) + (k.charCodeAt(offset + 2) << 16) + (k.charCodeAt(offset + 3) << 24));
+            break;
+        case 4:
+            a += (k.charCodeAt(offset + 0) + (k.charCodeAt(offset + 1) << 8) + (k.charCodeAt(offset + 2) << 16) + (k.charCodeAt(offset + 3) << 24));
+            break;
+        case 3:
+            a += (k.charCodeAt(offset + 0) + (k.charCodeAt(offset + 1) << 8) + (k.charCodeAt(offset + 2) << 16));
+            break;
+        case 2:
+            a += (k.charCodeAt(offset + 0) + (k.charCodeAt(offset + 1) << 8));
+            break;
+        case 1:
+            a += (k.charCodeAt(offset + 0));
+            break;
+        default:
+            return [b >>> 0, c >>> 0]
+    }
+    c ^= b;
+    c -= (b << 14) | (b >>> 18) | 0;
+    a ^= c;
+    a -= (c << 11) | (c >>> 21) | 0;
+    b ^= a;
+    b -= (a << 25) | (a >>> 7) | 0;
+    c ^= b;
+    c -= (b << 16) | (b >>> 16) | 0;
+    a ^= c;
+    a -= (c << 4) | (c >>> 28) | 0;
+    b ^= a;
+    b -= (a << 14) | (a >>> 18) | 0;
+    c ^= b;
+    c -= (b << 24) | (b >>> 8) | 0;
+    return [b >>> 0, c >>> 0]
+}
 class BitReader {
     constructor(dv) {
         this.dv = dv;

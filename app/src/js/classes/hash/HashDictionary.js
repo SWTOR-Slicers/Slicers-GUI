@@ -23,13 +23,13 @@ class HashDictionary {
 
     /**
      * loads a hash from the hash file
-     * @param  {int} ph ph value
-     * @param  {int} sh sh value
-     * @param  {String} name the file name
-     * @param  {int} crc
+     * @param  {int} ph primary hash value
+     * @param  {int} sh secondary hash value
+     * @param  {String} name the file's name
+     * @param  {int} crc the content redundancy check number
      */
     loadHash(ph, sh, name, crc) {
-        const sig = ((ph /* cast ph to long */) << 32) + sh;
+        //const sig = ((ph /* cast ph to long */) << 32) + sh;
         //this.hashList[sig] = new HashData(ph, sh, name, crc);
         this.hashList[name] = new HashData(ph, sh, name, crc);
     }
@@ -39,7 +39,7 @@ class HashDictionary {
         let downloaded = 0;
         const len = hashData.readableLength;
 
-        await hashData.pipe(es.split()).pipe(es.mapSync((line) => {
+        hashData.pipe(es.split()).pipe(es.mapSync((line) => {
             hashData.pause();
 
             const strsplt = line.split(hashSeperator);
@@ -60,16 +60,14 @@ class HashDictionary {
     }
 
     /**
-     * searches in the hashList provided
-     * @param  {int} ph ph value
-     * @param  {int} sh sh value
-     * @param  {String} name the file's hash as a string
-     * @param  {int} crc
+     * gets the file hash given a file name
+     * @param  {String} name the file's name
      * 
-     * @returns {HashData} returns hashData or null.
+     * @returns {Array} Array containing primary and secondary hashes.
      */
-    searchHashList(ph, sh, name, crc) {
-        return this.hashList[name];
+    getHashByFileName(name) {
+        const entry = this.hashList[name];
+        return [entry.ph, entry.sh];
     }
 }
 

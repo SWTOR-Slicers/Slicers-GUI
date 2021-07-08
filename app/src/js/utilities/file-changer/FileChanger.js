@@ -1,11 +1,13 @@
 import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { getSetting } from "../../../api/config/settings/Settings.js";
+import { RawDeflate } from "../../externals/Inflate.js";
 import { Archive } from "../../classes/Archive.js";
 import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 import { log, updateAlertType } from "../../universal/Logger.js";
 import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { FileEntry } from "./FileEntry.js";
 import * as MOD from "./Mod.js";
+import { readString } from "../../Util.js";
 
 class HashChange {
     constructor(oldName, newName, ph, sh, crc) {
@@ -23,7 +25,6 @@ const fs = require('fs');
 const path = require('path');
 const validFilename = require('valid-filename');
 const configPath = path.normalize(path.join(resourcePath, "config.json"));
-const RawDeflate = this.RawDeflate;
 let hashChangeList = {
     /* format of "ph|sh": new HashChange() */
 };
@@ -298,7 +299,7 @@ function initListeners() {
         extrModal.style.display = ''
     });
 
-    //save modal functionality
+    //extr modal functionality
     extrInput.addEventListener('change', (e) => {
         const val = e.currentTarget.value;
         if (val == '' || val == ' ') {
@@ -307,7 +308,11 @@ function initListeners() {
             startExtr.classList.remove('disabled');
         }
     });
-    startExtr.addEventListener('click', async (e) => {
+    startExtr.addEventListener('click', (e) => {
+        extrModal.style.display = 'none';
+        startExtr.classList.add('disabled');
+        extrInput.value = '';
+
         if (extrInput.getAttribute('data-tooltip') == 'Node FQN') {
             log('Extracting Node...', 'info');
             extractNode(extrInput.value);
@@ -315,10 +320,6 @@ function initListeners() {
             log('Extracting File...', 'info');
             extractFile(extrInput.value);
         }
-
-        extrModal.style.display = 'none';
-        startExtr.classList.add('disabled');
-        extrInput.value = '';
     });
     cancelExtr.addEventListener('click', (e) => {
         extrModal.style.display = 'none';
@@ -461,7 +462,6 @@ function initSubs() {
 }
 
 //more complexed methods related to modifying/extracting unextracted, encoded files
-const jsZip = require('jszip');
 
 /**
  * Returns the hash information for the file name passed to the function.
@@ -480,29 +480,26 @@ function fileNameToHash(name) {
     return [ph, sh];
 }
 
-function extractFile(name) {
+async function extractFile(name) {
     let fileFound = false;
     let len = 0;
     const fileHash = fileNameToHash(name);
 
     let assetFiles = fs.readdirSync(cache['assets']);
-    assetFiles = assetFiles.filter((f) => { return path.extname(f) == '.tor'; });
-    assetFiles.map((f) => { return path.join(cache['assets'], f); });
+    assetFiles = assetFiles.filter((f) => { return path.extname(f) == '.tor'; }).map((f) => { return path.join(cache['assets'], f); });
     let retCli = fs.readdirSync(path.normalize(path.join(cache['assets'], `../${cache['version'] == 'Live'? 'swtor' : 'publictest'}/retailclient`)));
-    let filtered = retCli.filter((f) => { return path.extname(f) == '.tor'; });
-    filtered.map((f) => { return path.join(cache['assets'], f); });
+    let filtered = retCli.filter((f) => { return path.extname(f) == '.tor'; }).map((f) => { return path.join(cache['assets'], f); });
     assetFiles.concat(filtered);
 
     len = assetFiles.length;
+    let progSegLen1 = progBar.parentElement.clientWidth / len;
     for (let i = 0; i < len - 1; i++) {
         let assetFile = assetFiles[i];
-        let assetName;
-        let progSegLen1 = progBar.clientWidth / len;
 
         if (assetFile.indexOf('retailclient') == -1) {
-            assetName = assetFile.substr(assetFile.lastIndexOf('\\') + 1);
-            if (cahce['verion'] == 'pts' && !assetName.indexOf('swtor_test_')) continue;
-            if (cahce['verion'] == 'Live' && assetName.indexOf('swtor_test_')) continue;
+            let assetName = assetFile.substr(assetFile.lastIndexOf('\\') + 1);
+            if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_')) continue;
+            if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_')) continue;
         }
 
         const assetBuffer = fs.readFileSync(assetFile).buffer;
@@ -517,7 +514,8 @@ function extractFile(name) {
         if (ftOffset == 0) { log('file table offset is 0', 'alert'); return; }
 
         for (let j = 0; j < ftCapacity; j++) {
-            const offset = dv.getUint32(12 + 34 * i + 0, !0);
+            progBar.style.width = `${(progSegLen1 / ftCapacity) * j + progSegLen1 * i}px`;
+            const offset = dv.getBigUint64(12 + 34 * i + 0, !0);
             if (offset === 0) break;
             const metadataSize = dv.getUint32(12 + 34 * i + 8, !0);
             const comprSize = dv.getUint32(12 + 34 * i + 12, !0);
@@ -546,10 +544,8 @@ function extractFile(name) {
     if (fileFound) {
         log('File extracted sucessfully!', 'info');
     } else {
-        log('COuld not find the specified file in the specified version.', 'alert');
+        log('Could not find the specified file in the specified version.', 'alert');
     }
-    
-    console.log({fileHash});
 }
 
 //  /resources/art/dynamic/waist/model/waist_belt_bma_med_jk_a19_back.lod.gr2

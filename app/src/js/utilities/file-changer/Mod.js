@@ -77,7 +77,7 @@ async function convert(fPath, domParent, changesList, writeModElem, parentDir) {
         for (let i = 0; i < entries.length; i++) {
             const entr = entries[i].replace(/(?:\r\n|\r|\n)/g, '');
             const info = entr.split(' ');
-            if (info[0].indexOf('replace') > -1) {
+            if (info[0].indexOf('replace') == 0) { //was > -1
                 if (info.length >= 3) {
                     info[0] = info[0].substr(info[0].indexOf('replace'));
 

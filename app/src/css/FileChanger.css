@@ -223,6 +223,13 @@
     width: 0%;
     background-color: var(--background-yellow-slicers);
 }
+.progress-complete .progress-bar {
+    width: 100%;
+    background-color: rgb(81, 255, 0);
+}
+.progress-error .progress-bar {
+    background-color: rgb(255, 38, 0);
+}
 
 /* Modal classes */
 .modal-background {

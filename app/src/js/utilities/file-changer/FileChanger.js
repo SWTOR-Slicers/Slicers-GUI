@@ -309,6 +309,9 @@ function initListeners() {
         }
     });
     startExtr.addEventListener('click', (e) => {
+        extrFile.classList.add('disabled');
+        extrNode.classList.add('disabled');
+
         extrModal.style.display = 'none';
         startExtr.classList.add('disabled');
         extrInput.value = '';
@@ -459,6 +462,23 @@ function initSubs() {
             elem.dispatchEvent(chngEvn);
         }
     });
+    ipcRenderer.on("changerFileExtr", (event, data) => {
+        extrFile.classList.remove('disabled');
+        extrNode.classList.remove('disabled');
+        if (data[0]) {
+            progBar.parentElement.classList.add('progress-complete');
+            log('File extracted sucessfully!', 'info');
+        } else {
+            progBar.parentElement.classList.add('progress-error');
+            log('Could not find the specified file in the specified version.', 'alert');
+        }
+
+        setTimeout(() => {
+            progBar.style.width = "";
+            progBar.parentElement.classList.remove('progress-complete', 'progress-error');
+        }, 3000)
+    });
+    ipcRenderer.on("updateProgBar", (event, data) => { progBar.style.width = data[1]; });
 }
 
 //more complexed methods related to modifying/extracting unextracted, encoded files
@@ -481,71 +501,26 @@ function fileNameToHash(name) {
 }
 
 async function extractFile(name) {
-    let fileFound = false;
-    let len = 0;
     const fileHash = fileNameToHash(name);
 
     let assetFiles = fs.readdirSync(cache['assets']);
-    assetFiles = assetFiles.filter((f) => { return path.extname(f) == '.tor'; }).map((f) => { return path.join(cache['assets'], f); });
+    assetFiles = assetFiles.filter((f) => {
+        let isValid = true;
+        if (path.extname(f) == '.tor') {
+            let assetName = f.substr(f.lastIndexOf('\\') + 1);
+            if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_')) isValid = false;
+            if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_')) isValid = false;
+        } else {
+            isValid = false;
+        }
+        return isValid;
+    }).map((f) => { return path.join(cache['assets'], f); });
+
     let retCli = fs.readdirSync(path.normalize(path.join(cache['assets'], `../${cache['version'] == 'Live'? 'swtor' : 'publictest'}/retailclient`)));
     let filtered = retCli.filter((f) => { return path.extname(f) == '.tor'; }).map((f) => { return path.join(cache['assets'], f); });
     assetFiles.concat(filtered);
 
-    len = assetFiles.length;
-    let progSegLen1 = progBar.parentElement.clientWidth / len;
-    for (let i = 0; i < len - 1; i++) {
-        let assetFile = assetFiles[i];
-
-        if (assetFile.indexOf('retailclient') == -1) {
-            let assetName = assetFile.substr(assetFile.lastIndexOf('\\') + 1);
-            if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_')) continue;
-            if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_')) continue;
-        }
-
-        const assetBuffer = fs.readFileSync(assetFile).buffer;
-        const dv = new DataView(assetBuffer);
-        let ftOffset = 0;
-        let ftCapacity = 1000;
-
-        if (dv.getUint32(0, !0) != 0x50594d) { log('.tor is not a valid tor file! Invalid MYP header.', 'alert'); return; }
-        if (dv.getUint32(4, !0) != 5) { log('.tor is not a valid tor file! Only version 5 is supported.', 'alert'); return; }
-        if (dv.getUint32(8, !0) != 0xfd23ec43) { log('.tor is not a valid tor file!', 'alert'); return; }
-        ftOffset = dv.getUint32(12, !0);
-        if (ftOffset == 0) { log('file table offset is 0', 'alert'); return; }
-
-        for (let j = 0; j < ftCapacity; j++) {
-            progBar.style.width = `${(progSegLen1 / ftCapacity) * j + progSegLen1 * i}px`;
-            const offset = dv.getBigUint64(12 + 34 * i + 0, !0);
-            if (offset === 0) break;
-            const metadataSize = dv.getUint32(12 + 34 * i + 8, !0);
-            const comprSize = dv.getUint32(12 + 34 * i + 12, !0);
-            const uncomprSize = dv.getUint32(12 + 34 * i + 16, !0);
-            const sh = dv.getUint32(12 + 34 * i + 20, !0);
-            const ph = dv.getUint32(12 + 34 * i + 24, !0);
-            const crc = dv.getUint32(12 + 34 * i + 28, !0);
-            const compressed = dv.getUint16(12 + 34 * i + 32, !0);
-
-            if (ph == fileHash[0] && sh == fileHash[1]) {
-                const fileOffset = offset + metadataSize;
-                if (compressed) {
-                    const comprArr = new Uint8Array(assetBuffer, fileOffset, comprSize);
-                    const uncomprBuffer = new Uint8Array(uncomprSize);
-                    RawDeflate.inflate(comprArr, uncomprBuffer);
-                    fs.writeFileSync(path.join(cache['output'], 'extracted', name.substr(name.lastIndexOf('\\') + 1)), uncomprBuffer);
-                } else {
-                    fs.writeFileSync(path.join(cache['output'], 'extracted', name.substr(name.lastIndexOf('\\') + 1)), assetBuffer.slice(fileOffset, fileOffset + comprSize));
-                }
-                fileFound = true;
-                break;
-            }
-        }
-    }
-
-    if (fileFound) {
-        log('File extracted sucessfully!', 'info');
-    } else {
-        log('Could not find the specified file in the specified version.', 'alert');
-    }
+    ipcRenderer.send("changerExtrFileStart", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), fileHash]);
 }
 
 //  /resources/art/dynamic/waist/model/waist_belt_bma_med_jk_a19_back.lod.gr2

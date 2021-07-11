@@ -584,6 +584,17 @@ function initFileChangerListeners(window) {
       }
     });
   });
+  ipcMain.on("changerExtrFileStart", (event, data) => {
+    const progId = data[0];
+    const assetFiles = data[1];
+    const outputDir = data[2];
+    const hashes = data[3];
+    const hashPath = path.join(resourcePath, 'hash', 'hashes_filename.txt');
+
+    const params = [JSON.stringify(assetFiles), outputDir, hashPath, JSON.stringify(hashes)];
+
+    extractSingleFile(progId, params);
+  });
 }
 //unpacker
 function initUnpackerGUI() {
@@ -779,6 +790,25 @@ function initGR2Listeners(window) {
 }
 
 //utility methods
+async function extractSingleFile(progBarId, params) {
+  try {
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "FileChanger", "FileExtraction", "main.exe"), params);
+    extrProc.stdout.on('data', (data) => {
+      const lDat = data.toString().split(' ');
+      const percent = `${lDat[0] / lDat[1] * 100}%`;
+      fileChangerWin.webContents.send('updateProgBar', [progBarId, percent]);
+    });
+    extrProc.stderr.on('data', (data) => {
+      console.log(`Error: ${data.toString()}`);
+    });
+    extrProc.on('exit', (code) => {
+      console.log(`child process exited with status: ${code.toString()}`);
+      fileChangerWin.webContents.send("changerFileExtr", "");
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
 async function extract(progBarId) {
   try {
     const output = cache.outputFolder;
@@ -798,7 +828,6 @@ async function extract(progBarId) {
 
     const params = [JSON.stringify(values), output, hashPath];
     const extrProc = child.spawn(path.join(resourcePath, "scripts", "Extraction", "main.exe"), params);
-    let i = 0;
     extrProc.stdout.on('data', (data) => {
       const lDat = data.toString().split(' ');
       const percent = `${lDat[0] / lDat[1] * 100}%`;

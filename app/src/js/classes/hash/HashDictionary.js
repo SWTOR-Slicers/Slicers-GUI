@@ -29,8 +29,6 @@ class HashDictionary {
      * @param  {int} crc the content redundancy check number
      */
     loadHash(ph, sh, name, crc) {
-        //const sig = ((ph /* cast ph to long */) << 32) + sh;
-        //this.hashList[sig] = new HashData(ph, sh, name, crc);
         this.hashList[name] = new HashData(ph, sh, name, crc);
     }
 

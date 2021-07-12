@@ -791,18 +791,28 @@ function initGR2Listeners(window) {
 //utility methods
 async function extractSingleFile(progBarId, params) {
   try {
+    let success = false;
     const extrProc = child.spawn(path.join(resourcePath, "scripts", "FileChanger", "FileExtraction", "main.exe"), params);
+    let len = 0;
     extrProc.stdout.on('data', (data) => {
       const lDat = data.toString().split(' ');
-      const percent = `${lDat[0] / lDat[1] * 100}%`;
+      len = (lDat[1] != '' && len == 0) ? lDat[1] : 0;
+      const percent = `${lDat[0] / len * 100}%`;
+      console.log(lDat[0], JSON.stringify(lDat[1]));
       fileChangerWin.webContents.send('updateProgBar', [progBarId, percent]);
     });
     extrProc.stderr.on('data', (data) => {
-      console.log(`Error: ${data.toString()}`);
+      const datStr = data.toString();
+      if (datStr.indexOf('matched') > -1) {
+        success = true;
+        console.log('matched!')
+      } else {
+        console.log(`Error: ${datStr}`);
+      }
     });
     extrProc.on('exit', (code) => {
       console.log(`child process exited with status: ${code.toString()}`);
-      fileChangerWin.webContents.send("changerFileExtr", "");
+      fileChangerWin.webContents.send("changerFileExtr", success);
     });
   } catch (err) {
     console.log(err);

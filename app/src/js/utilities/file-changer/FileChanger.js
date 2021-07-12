@@ -312,10 +312,6 @@ function initListeners() {
         extrFile.classList.add('disabled');
         extrNode.classList.add('disabled');
 
-        extrModal.style.display = 'none';
-        startExtr.classList.add('disabled');
-        extrInput.value = '';
-
         if (extrInput.getAttribute('data-tooltip') == 'Node FQN') {
             log('Extracting Node...', 'info');
             extractNode(extrInput.value);
@@ -323,6 +319,10 @@ function initListeners() {
             log('Extracting File...', 'info');
             extractFile(extrInput.value);
         }
+
+        extrModal.style.display = 'none';
+        startExtr.classList.add('disabled');
+        extrInput.value = '';
     });
     cancelExtr.addEventListener('click', (e) => {
         extrModal.style.display = 'none';

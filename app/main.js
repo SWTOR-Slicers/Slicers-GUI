@@ -354,7 +354,7 @@ function initMainListeners() {
 //boot config
 function initSetupUI() {
   setupWindow = new BrowserWindow({
-    width: 432,
+    width: 453,
     height: 376,
     frame: false,
     webPreferences: {
@@ -549,7 +549,6 @@ function initFileChanger () {
   fileChangerWin.removeMenu();
   fileChangerWin.webContents.openDevTools();
   fileChangerWin.loadFile(`${__dirname}/src/html/FileChanger.html`);
-  
   
   fileChangerWin.on('close', (e) => {
     if (!appQuiting) {

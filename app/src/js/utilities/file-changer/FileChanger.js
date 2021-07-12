@@ -516,14 +516,17 @@ async function extractFile(name) {
         return isValid;
     }).map((f) => { return path.join(cache['assets'], f); });
 
-    let retCli = fs.readdirSync(path.normalize(path.join(cache['assets'], `../${cache['version'] == 'Live'? 'swtor' : 'publictest'}/retailclient`)));
-    let filtered = retCli.filter((f) => { return path.extname(f) == '.tor'; }).map((f) => { return path.join(cache['assets'], f); });
-    assetFiles.concat(filtered);
+    const retPath = path.normalize(path.join(cache['assets'], `../${cache['version'] == 'Live'? 'swtor' : 'publictest'}/retailclient`));
+    if (fs.existsSync(retPath)) {
+        let retCli = fs.readdirSync(retPath);
+        let filtered = retCli.filter((f) => { return path.extname(f) == '.tor'; }).map((f) => { return path.join(cache['assets'], f); });
+        assetFiles.concat(filtered);
+    }
 
     ipcRenderer.send("changerExtrFileStart", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), fileHash]);
 }
 
-//  /resources/art/dynamic/waist/model/waist_belt_bma_med_jk_a19_back.lod.gr2
+//  /resources/art/decoration/frames/art/frame/aggressive_negotiations_43.gr2
 function extractNode(name) {
     
 }

@@ -508,8 +508,8 @@ async function extractFile(name) {
         let isValid = true;
         if (path.extname(f) == '.tor') {
             let assetName = f.substr(f.lastIndexOf('\\') + 1);
-            if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_')) isValid = false;
-            if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_')) isValid = false;
+            if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_') > -1) isValid = false;
+            if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_') > -1) isValid = false;
         } else {
             isValid = false;
         }
@@ -526,9 +526,27 @@ async function extractFile(name) {
     ipcRenderer.send("changerExtrFileStart", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), fileHash]);
 }
 
-//  /resources/art/decoration/frames/art/frame/aggressive_negotiations_43.gr2
 function extractNode(name) {
-    
+    let assetFiles = fs.readdirSync(cache['assets']);
+    assetFiles = assetFiles.filter((f) => {
+        let isValid = true;
+        if (path.extname(f) == '.tor' && f.indexOf('main_global_1.tor') >= 0) {
+            let assetName = f.substr(f.lastIndexOf('\\') + 1);
+            if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_') > -1) isValid = false;
+            if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_') > -1) isValid = false;
+        } else {
+            isValid = false;
+        }
+        return isValid;
+    }).map((f) => { return path.join(cache['assets'], f); });
+
+    if (assetFiles.length > 0) {
+        ipcRenderer.send("changerExtrNodeStart", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), name]);
+    } else {
+        log('Your provided directory does not contain any files with <i>main_global_1.tor</i> in their name.', 'alert');
+        extrFile.classList.remove('disabled');
+        extrNode.classList.remove('disabled');
+    }
 }
 
 function restoreBackupFiles() {

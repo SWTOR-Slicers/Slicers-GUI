@@ -541,7 +541,6 @@ async function extractFile(name) {
 
     ipcRenderer.send("changerExtrFileStart", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), fileHash]);
 }
-
 function extractNode(name) {
     let assetFiles = fs.readdirSync(cache['assets']);
     assetFiles = assetFiles.filter((f) => {

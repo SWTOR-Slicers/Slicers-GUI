@@ -583,6 +583,16 @@ function initFileChangerListeners(window) {
       }
     });
   });
+  ipcMain.on("changerExtrNodeStart", (event, data) => {
+    const progId = data[0];
+    const assetFile = data[1][0];
+    const outputDir = data[2];
+    const nodeName = data[3];
+
+    const params = [assetFile, outputDir, nodeName];
+
+    extractSingleNode(progId, params);
+  });
   ipcMain.on("changerExtrFileStart", (event, data) => {
     const progId = data[0];
     const assetFiles = data[1];
@@ -791,7 +801,7 @@ function initGR2Listeners(window) {
 //utility methods
 async function extractSingleFile(progBarId, params) {
   try {
-    const extrProc = child.spawn(path.join(resourcePath, "scripts", "FileChanger", "FileExtraction", "main.exe"), params);
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "fileExtractor.exe"), params);
     let len = 0;
     extrProc.stdout.on('data', (data) => {
       const lDat = data.toString().split(' ');
@@ -803,6 +813,25 @@ async function extractSingleFile(progBarId, params) {
     extrProc.on('exit', (code) => {
       console.log(`child process exited with status: ${code.toString()}`);
       fileChangerWin.webContents.send("changerFileExtr", [code == 0]);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+async function extractSingleNode(progBarId, params) {
+  try {
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "nodeExtractor.exe"), params);
+    let len = 0;
+    extrProc.stdout.on('data', (data) => {
+      const lDat = data.toString().split(' ');
+      len = (lDat[1] != '' && len == 0) ? lDat[1] : 0;
+      const percent = `${lDat[0] / len * 100}%`;
+      fileChangerWin.webContents.send('updateProgBar', [progBarId, percent]);
+    });
+    extrProc.stderr.on('data', (data) => { console.log(`Error: ${data.toString()}`); });
+    extrProc.on('exit', (code) => {
+      console.log(`child process exited with status: ${code.toString()}`);
+      fileChangerWin.webContents.send("changerNodeExtr", [code == 0]);
     });
   } catch (err) {
     console.log(err);
@@ -826,7 +855,7 @@ async function extract(progBarId) {
     }
 
     const params = [JSON.stringify(values), output, hashPath];
-    const extrProc = child.spawn(path.join(resourcePath, "scripts", "Extraction", "main.exe"), params);
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "extraction.exe"), params);
     extrProc.stdout.on('data', (data) => {
       const lDat = data.toString().split(' ');
       const percent = `${lDat[0] / lDat[1] * 100}%`;
@@ -847,7 +876,7 @@ async function locate() {
   try {
     const temp = cache.dataFolder;
     const params = [temp, path.join(cache.outputFolder, "resources")];
-    child.execFileSync(path.join(resourcePath, "scripts", "FileLocator", "main.exe"), params);
+    child.execFileSync(path.join(resourcePath, "scripts", "locator.exe"), params);
   } catch (err) {
     console.log(err);
   } finally {

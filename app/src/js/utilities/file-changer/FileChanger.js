@@ -462,6 +462,22 @@ function initSubs() {
             elem.dispatchEvent(chngEvn);
         }
     });
+    ipcRenderer.on("changerNodeExtr", (event, data) => {
+        extrFile.classList.remove('disabled');
+        extrNode.classList.remove('disabled');
+        if (data[0]) {
+            progBar.parentElement.classList.add('progress-complete');
+            log('Node extracted sucessfully!', 'info');
+        } else {
+            progBar.parentElement.classList.add('progress-error');
+            log('Could not find the specified node in the specified version.', 'alert');
+        }
+
+        setTimeout(() => {
+            progBar.style.width = "";
+            progBar.parentElement.classList.remove('progress-complete', 'progress-error');
+        }, 3000)
+    });
     ipcRenderer.on("changerFileExtr", (event, data) => {
         extrFile.classList.remove('disabled');
         extrNode.classList.remove('disabled');

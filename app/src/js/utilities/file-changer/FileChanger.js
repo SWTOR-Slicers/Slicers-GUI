@@ -494,6 +494,21 @@ function initSubs() {
             progBar.parentElement.classList.remove('progress-complete', 'progress-error');
         }, 3000)
     });
+    ipcRenderer.on("changerBackupRestore", (event, data) => {
+        restoreBackup.classList.remove('disabled');
+        if (data[0]) {
+            progBar.parentElement.classList.add('progress-complete');
+            log('Backup restored sucessfully!', 'info');
+        } else {
+            progBar.parentElement.classList.add('progress-error');
+            log(`An error occured while restoring your backup. Reached file ${data[1]}`, 'alert');
+        }
+
+        setTimeout(() => {
+            progBar.style.width = "";
+            progBar.parentElement.classList.remove('progress-complete', 'progress-error');
+        }, 3000)
+    });
     ipcRenderer.on("updateProgBar", (event, data) => { progBar.style.width = data[1]; });
 }
 
@@ -563,9 +578,10 @@ function extractNode(name) {
         extrNode.classList.remove('disabled');
     }
 }
-
 function restoreBackupFiles() {
-    
+    const { assets, output, version } = cache;
+    const params = { assets, output, version };
+    ipcRenderer.send("changerRestoreBackupStart", [progBar.id, params])
 }
 
 function changeFiles() {

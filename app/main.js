@@ -616,6 +616,12 @@ function initFileChangerListeners(window) {
 
     extractSingleFile(progId, params);
   });
+  ipcMain.on("changerRestoreBackupStart", (event, data) => {
+    const progId = data[0];
+    const params = data[1];
+
+    restoreBackups(progId, params);
+  });
 }
 //unpacker
 function initUnpackerGUI() {
@@ -849,6 +855,43 @@ async function extractSingleNode(progBarId, params) {
     console.log(err);
   }
 }
+async function restoreBackups(progBarId, params) {
+  let completed = false;
+  let deadIdx = 0
+  let totalSize = 0;
+  let currentSize = 0;
+
+  const dirPath = path.join(params['output'], 'backups');
+  const backupContents = fs.readdirSync(dirPath);
+  const pathInfos = [];
+  const sizes = backupContents.map((val, idx) => {
+    const fPath = path.join(dirPath, val);
+    let destPath = path.join(params['assets'], bkUp);
+    if (val == "main_gfx_1.tor") { destPath = path.join(params['assets'], params['version'] == 'Live' ? 'swtor' : 'publictest', "retailclient", val); }
+    pathInfos[idx] = {
+      fPath: fPath,
+      destPath: destPath
+    };
+    const size = fs.statSync(fPath).size;
+    totalSize += size;
+    return size;
+  });
+  for (let i = 0; i < pathInfos.length; i++) {
+    const pathInfo = pathInfos[i];
+    const size = sizes[i]
+    
+    const status = await copyFileViaStream(progBarId, pathInfo.fPath, pathInfo.destPath, currentSize, totalSize);
+    if (status != 200) {
+      deadIdx = i;
+      break
+    }
+  }
+  if (completed) {
+    fileChangerWin.webContents.send("changerBackupRestore", [true])
+  } else {
+    fileChangerWin.webContents.send("changerBackupRestore", [false, deadIdx])
+  }
+}
 async function extract(progBarId) {
   try {
     const output = cache.outputFolder;
@@ -962,3 +1005,21 @@ function handleSquirrelEvent() {
       return true;
   }
 };
+
+async function copyFileViaStream(progBarId, tPath, dPath, cSize, tSize) {
+  return new Promise((resolve, reject) => {
+    const tarFile = fs.createReadStream(tPath)
+    const destFile = fs.createWriteStream(dPath);
+    tarFile.pipe(destFile);
+
+    tarFile.on('data', (chunk) => {
+      cSize += chunk.length;
+      const percent = (100.0 * cSize / tSize).toFixed(2);
+      fileChangerWin.webContents.send('updateProgBar', [progBarId, percent]);
+    });
+
+    destFile.on('finish', () => {
+      resolve(200);
+    });
+  });
+}

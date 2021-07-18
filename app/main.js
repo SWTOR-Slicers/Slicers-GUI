@@ -1021,5 +1021,8 @@ async function copyFileViaStream(progBarId, tPath, dPath, cSize, tSize) {
     destFile.on('finish', () => {
       resolve(200);
     });
+    destFile.on('error', () => {
+      reject(500);
+    })
   });
 }

@@ -622,6 +622,17 @@ function initFileChangerListeners(window) {
 
     restoreBackups(progId, params);
   });
+  ipcMain.on("changerChangeFiles", (event, data) => {
+    const progBarId = data[0];
+    const assetFiles = data[1];
+    const outputDir = data[2];
+    const fChanges = data[3];
+    const hashPath = path.join(resourcePath, 'hash', 'hashes_filename.txt');
+
+    const params = [JSON.stringify(assetFiles), outputDir, hashPath, JSON.stringify(fChanges)];
+
+    changeFiles(progBarId, params);
+  });
 }
 //unpacker
 function initUnpackerGUI() {
@@ -850,6 +861,25 @@ async function extractSingleNode(progBarId, params) {
     extrProc.on('exit', (code) => {
       console.log(`child process exited with status: ${code.toString()}`);
       fileChangerWin.webContents.send("changerNodeExtr", [code == 0]);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+async function changeFiles(progBarId, params) {
+  try {
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "fileChanger.exe"), params);
+    let len = 0;
+    extrProc.stdout.on('data', (data) => {
+      const lDat = data.toString().split(' ');
+      len = (lDat[1] != '' && len == 0) ? lDat[1] : 0;
+      const percent = `${lDat[0] / len * 100}%`;
+      fileChangerWin.webContents.send('updateProgBar', [progBarId, percent]);
+    });
+    extrProc.stderr.on('data', (data) => { console.log(`Error: ${data.toString()}`); });
+    extrProc.on('exit', (code) => {
+      console.log(`child process exited with status: ${code.toString()}`);
+      fileChangerWin.webContents.send("changerChangedFiles", [code == 0]);
     });
   } catch (err) {
     console.log(err);

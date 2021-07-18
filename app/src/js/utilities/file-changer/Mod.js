@@ -48,7 +48,10 @@ async function read(path, domParent, changesList, writeModElem) {
             const fileName = change.modded.substr(change.modded.lastIndexOf('\\') + 1);
             const fBuff = await zip.folder('lut').file(fileName).async('arraybuffer');
 
-            const fc = new FileEntry(change.type, change.target, change.modded, changesList, writeModElem, fBuff);
+            const fc = new FileEntry(change.type, change.target, change.modded, changesList, writeModElem, {
+                "zip": path,
+                "file": fileName
+            });
             changesList.push(fc);
 
             const newChngElem = fc.render();

@@ -509,6 +509,21 @@ function initSubs() {
             progBar.parentElement.classList.remove('progress-complete', 'progress-error');
         }, 3000)
     });
+    ipcRenderer.on("changerChangedFiles", (event, data) => {
+        restoreBackup.classList.remove('disabled');
+        if (data[0]) {
+            progBar.parentElement.classList.add('progress-complete');
+            log('Files changed sucessfully!', 'info');
+        } else {
+            progBar.parentElement.classList.add('progress-error');
+            log(`An error occured while changing the files. It is recommended to immediately restore a backup.`, 'alert');
+        }
+
+        setTimeout(() => {
+            progBar.style.width = "";
+            progBar.parentElement.classList.remove('progress-complete', 'progress-error');
+        }, 3000)
+    });
     ipcRenderer.on("updateProgBar", (event, data) => { progBar.style.width = data[1]; });
 }
 
@@ -583,9 +598,50 @@ function restoreBackupFiles() {
     const params = { assets, output, version };
     ipcRenderer.send("changerRestoreBackupStart", [progBar.id, params])
 }
-
 function changeFiles() {
-    
+    let assetFiles = fs.readdirSync(cache['assets']);
+    assetFiles = assetFiles.filter((f) => {
+        let isValid = true;
+        if (path.extname(f) == '.tor') {
+            let assetName = f.substr(f.lastIndexOf('\\') + 1);
+            if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_') > -1) isValid = false;
+            if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_') > -1) isValid = false;
+        } else {
+            isValid = false;
+        }
+        return isValid;
+    }).map((f) => { return path.join(cache['assets'], f); });
+
+    const retPath = path.normalize(path.join(cache['assets'], `../${cache['version'] == 'Live'? 'swtor' : 'publictest'}/retailclient`));
+    if (fs.existsSync(retPath)) {
+        let retCli = fs.readdirSync(retPath);
+        let filtered = retCli.filter((f) => { return path.extname(f) == '.tor'; }).map((f) => { return path.join(cache['assets'], f); });
+        assetFiles.concat(filtered);
+    }
+
+    const fChanges = {
+        "files": [],
+        "nodes": []
+    }
+
+    for (const change of fileChanges) {
+        if (change.type == "files") {
+            const hash = fileNameToHash(change.target);
+            fChanges.files.push({
+                "hash": hash,
+                "data": change.fileData ? change.fileData : change.modded,
+                "isCompressed": change.fileData != null
+            });
+        } else {
+            fChanges.nodes.push({
+                "name": change.target,
+                "data": change.fileData ? change.fileData : change.modded,
+                "isCompressed": change.fileData != null
+            });
+        }
+    }
+
+    ipcRenderer.send("changerChangeFiles", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), fChanges])
 }
 
 init();

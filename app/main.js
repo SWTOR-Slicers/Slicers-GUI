@@ -626,10 +626,11 @@ function initFileChangerListeners(window) {
     const progBarId = data[0];
     const assetFiles = data[1];
     const outputDir = data[2];
-    const fChanges = data[3];
+    const backupObj = data[3];
+    const fChanges = data[4];
     const hashPath = path.join(resourcePath, 'hash', 'hashes_filename.txt');
 
-    const params = [JSON.stringify(assetFiles), outputDir, hashPath, JSON.stringify(fChanges)];
+    const params = [JSON.stringify(assetFiles), outputDir, hashPath, JSON.stringify(backupObj), JSON.stringify(fChanges)];
 
     changeFiles(progBarId, params);
   });

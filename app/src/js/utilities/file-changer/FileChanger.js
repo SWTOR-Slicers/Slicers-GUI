@@ -641,7 +641,10 @@ function changeFiles() {
         }
     }
 
-    ipcRenderer.send("changerChangeFiles", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), fChanges])
+    ipcRenderer.send("changerChangeFiles", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), {
+        "backup": cache['backup'],
+        "path": path.join(cache['output'], 'backups')
+    }, fChanges])
 }
 
 init();

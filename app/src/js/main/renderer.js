@@ -9,7 +9,7 @@ const path = require('path');
 const logDisplay = document.getElementById("logDisplay");
 const cache = {
     "extractionPreset": "",
-    "version": "Live"
+    "version": ""
 };
 const parent = path.normalize(path.join(__dirname, '../music'));
 
@@ -397,12 +397,14 @@ function initSubscribes() {
         oldDataValue = json.dataFolder;
         dataTextField.dispatchEvent(updateTooltipEvent);
 
+        cache.extractionPreset = json.extraction.extractionPreset;
         extractionPreset.options[0].innerHTML = json.extraction.extractionPreset;
         extractionPreset.nextElementSibling.innerHTML = extractionPreset.options[0].innerHTML;
         extractionPreset.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
         extractionPreset.nextElementSibling.nextElementSibling.querySelector(`#${extractionPreset.options[0].innerHTML}`).classList.toggle('same-as-selected');
 
         if (json.extraction.version == 'pts') {
+            cache.version = json.extraction.version;
             live.checked = false;
             pts.checked = true;
         }
@@ -429,10 +431,21 @@ function initSubscribes() {
             if (!data[1]) {
                 document.getElementById('All').click();
                 extractionPreset.nextElementSibling.classList.add('disabled');
+            } else {
+                extractionPreset.nextElementSibling.classList.remove('disabled');
             }
         } else {
             log(`Invalid path. Reseting assetsFolder field to ${oldAssetValue}`, 'alert');
             assetTextField.value = oldAssetValue;
+        }
+    });
+    ipcRenderer.on('updateExtractionPresetStatus', (event, data) => {
+        console.log(data)
+        if (!data[0]) {
+            document.getElementById('All').click();
+            extractionPreset.nextElementSibling.classList.add('disabled');
+        } else {
+            extractionPreset.nextElementSibling.classList.remove('disabled');
         }
     });
     ipcRenderer.on('outputFolderReply', (event, data) => {

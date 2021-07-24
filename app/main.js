@@ -1,7 +1,7 @@
 // Modules to control application life and create native browser window
 //TODO: make a sources list/window
 
-const {app, BrowserWindow, dialog, ipcMain, screen} = require('electron');
+const {app, BrowserWindow, dialog, ipcMain, screen, shell} = require('electron');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 const fs = require('fs');
@@ -41,15 +41,24 @@ const cache = {
   dataFolder:"",
   extraction: {
     extractionPreset: "",
-    version: "Live"
+    version: ""
   }
 }
 const extractionPresetConsts = {
-  "names": [],
-  "dynamic": [],
-  "static": [],
-  "sound": [],
-  "gui": []
+  "Live": {
+    "names": [],
+    "dynamic": [],
+    "static": [],
+    "sound": [],
+    "gui": []
+  },
+  "pts": {
+    "names": [],
+    "dynamic": [],
+    "static": [],
+    "sound": [],
+    "gui": []
+  }
 };
 
 function initGlobalListeners() {
@@ -168,11 +177,17 @@ function initApp() {
   //grab resources
   let res = fs.readFileSync(path.join(resourcePath, "extractionPresets.json"));
   let json = JSON.parse(res);
-  extractionPresetConsts.names = json.names;
-  extractionPresetConsts.dynamic = json.dynamic;
-  extractionPresetConsts.static = json.static;
-  extractionPresetConsts.sound = json.sound;
-  extractionPresetConsts.gui = json.gui;
+  extractionPresetConsts.Live.names = json.Live.names;
+  extractionPresetConsts.Live.dynamic = json.Live.dynamic;
+  extractionPresetConsts.Live.static = json.Live.static;
+  extractionPresetConsts.Live.sound = json.Live.sound;
+  extractionPresetConsts.Live.gui = json.Live.gui;
+  
+  extractionPresetConsts.pts.names = json.pts.names;
+  extractionPresetConsts.pts.dynamic = json.pts.dynamic;
+  extractionPresetConsts.pts.static = json.pts.static;
+  extractionPresetConsts.pts.sound = json.pts.sound;
+  extractionPresetConsts.pts.gui = json.pts.gui;
 }
 function initMainListeners() {
   ipcMain.on('getWindowStatus', (event, data) => {
@@ -192,8 +207,8 @@ function initMainListeners() {
     if (cache.assetsFolder != "") {
       if (fs.statSync(cache.assetsFolder).isDirectory()) {
         const contents = fs.readdirSync(cache.assetsFolder);
-        dropIsEnabled = extractionPresetConsts.names.every((elem) => {
-          return contents.includes(elem);;
+        dropIsEnabled = extractionPresetConsts[cache.extraction.version].names.every((elem) => {
+          return contents.includes(elem);
         });
       }
     }
@@ -208,8 +223,8 @@ function initMainListeners() {
             let dropIsEnabled = false;
             if (fs.statSync(dir.filePaths[0]).isDirectory()) {
               const contents = fs.readdirSync(dir.filePaths[0]);
-              dropIsEnabled = extractionPresetConsts.names.every((elem) => {
-                return contents.includes(elem);;
+              dropIsEnabled = extractionPresetConsts[cache.extraction.version].names.every((elem) => {
+                return contents.includes(elem);
               });
             }
             mainWindow.webContents.send("assetsFolderReply", [dir.filePaths, dropIsEnabled]);
@@ -235,7 +250,7 @@ function initMainListeners() {
         if (exists && fs.statSync(data[1]).isDirectory()) {
           const contents = fs.readdirSync(data[1]);
           dropIsEnabled = extractionPresetConsts[cache.extraction.version].names.every((elem) => {
-            return contents.includes(path.join(data[1], elem));
+            return contents.includes(elem);
           });
         }
         mainWindow.webContents.send("isDirAsset", [exists, dropIsEnabled]);
@@ -358,6 +373,15 @@ function initMainListeners() {
     cache.extraction.version = data;
 
     fs.writeFileSync(path.join(resourcePath, 'config.json'), JSON.stringify(json, null, '\t'), 'utf-8');
+
+    let dropIsEnabled = false;
+    if (fs.statSync(cache.assetsFolder).isDirectory()) {
+      const contents = fs.readdirSync(cache.assetsFolder);
+      dropIsEnabled = extractionPresetConsts[cache.extraction.version].names.every((elem) => {
+        return contents.includes(elem);;
+      });
+    }
+    mainWindow.webContents.send('updateExtractionPresetStatus', [dropIsEnabled]);
   });
   ipcMain.on('updateExtractionPreset', (event, data) => {
     let res = fs.readFileSync(path.join(resourcePath, 'config.json'));
@@ -367,6 +391,7 @@ function initMainListeners() {
 
     fs.writeFileSync(path.join(resourcePath, 'config.json'), JSON.stringify(json, null, '\t'), 'utf-8');
   });
+  ipcMain.on('openLink', (event, data) => { shell.openExternal(data[0]); });
 }
 //boot config
 function initSetupUI() {
@@ -947,7 +972,7 @@ async function extract(progBarId) {
     const temp = cache.assetsFolder;
     let values;
 
-    const lastPath = path.normalize(path.join(temp, `../${cache.extraction.version == 'Live' ? 'swtor' : 'publictest'}/retailclient/${cache.extraction.version == 'Live' ? 'main_gfx_1.tor' : 'test_main_gfx_1.tor'}`));
+    const lastPath = path.normalize(path.join(temp, `../${cache.extraction.version == 'Live' ? 'swtor' : 'publictest'}/retailclient/main_gfx_1.tor`));
     if (cache.extraction.extractionPreset != 'All') {
       values = [];
       const tors = extractionPresetConsts[cache.extraction.version][cache.extraction.extractionPreset.toLowerCase()];

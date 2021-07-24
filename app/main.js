@@ -151,6 +151,7 @@ function initMain () {
   mainWindow.once('ready-to-show', () => mainWindow.show());
 
   mainWindow.removeMenu();
+  mainWindow.webContents.openDevTools();
   mainWindow.loadFile('./src/html/Index.html');
   
   let wasMinimized = false
@@ -282,6 +283,9 @@ function initMainListeners() {
         case "worldViewer":
           //open world viewer window
           break;
+        case "fileBrowser":
+          //open fileBrowser window
+          break;
         case "convBnk":
           if (soundConverterWindow) {
             soundConverterWindow.show();
@@ -305,6 +309,9 @@ function initMainListeners() {
           break;
         case "walkthrough":
           //open walkthrough window
+          break;
+        case "dbmUtils":
+          //open dbmUtils window
           break;
         case "settings":
           if (settingsWindow) {

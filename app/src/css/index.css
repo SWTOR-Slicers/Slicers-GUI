@@ -64,7 +64,6 @@
     color: white;
 }
 .main-page .additional-content {
-    height: 130px;
     width: 125px;
     display: flex;
     flex-direction: column;
@@ -291,11 +290,14 @@
     font-size: 16px;
 }
 .a-c-row-1 {
-    margin: 7px;
+    margin: 14px 7px;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
+}
+.a-c-row-1 > .browse-paths__button-alt {
+    width: 78px;
 }
 .settings-btn-cont {
     margin-left: 10px;

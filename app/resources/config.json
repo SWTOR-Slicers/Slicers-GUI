@@ -3,7 +3,8 @@
     "outputFolder": "",
     "dataFolder": "",
     "extraction": {
-        "extractionPreset": "All"
+        "extractionPreset": "All",
+        "version": "Live"
     },
     "unpacker": {
         "unpackPath": "",

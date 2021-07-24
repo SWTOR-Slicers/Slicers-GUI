@@ -315,6 +315,24 @@
     color: var(--slicers-yellow-background);
     transform: rotate(237deg);
 }
+.version-toggle-wrapper {
+    height: 18px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.toggle {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+.toggle-label {
+    font-size: 14px;
+    margin-right: 7px;
+}
 
 .ambient-progress-cont {
     width: 100%;

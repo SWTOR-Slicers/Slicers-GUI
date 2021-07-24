@@ -8,7 +8,8 @@ const path = require('path');
 
 const logDisplay = document.getElementById("logDisplay");
 const cache = {
-    "extractionPreset": ""
+    "extractionPreset": "",
+    "version": "Live"
 };
 const parent = path.normalize(path.join(__dirname, '../music'));
 
@@ -63,9 +64,10 @@ const settingsBtn = document.getElementById('settingsBtn');
 
 //additional features
 const layoutEditorWindowBtn = document.getElementById('layoutEditorWindowBtn');
-const aboutOrganizationBtn = document.getElementById('aboutOrganizationBtn');
-const resourcesWindowBtn = document.getElementById('resourcesWindowBtn');
 const creditWindowBtn = document.getElementById('creditWindowBtn');
+//--> version radio selection
+const live = document.getElementById('live');
+const pts = document.getElementById('pts');
 
 //functions
 function initialize() {
@@ -116,9 +118,14 @@ function initSettings() {
 
 function updateCache(field, value) {
     if (field == "extractionPreset") {
-        if (value != cache['extractionPreset']) {
+        if (value != cache[field]) {
             ipcRenderer.send('updateExtractionPreset', value);
-            cache['extractionPreset'] = value;
+            cache[field] = value;
+        }
+    } else if (field == "version") {
+        if (value != cache[field]) {
+            ipcRenderer.send('updateMainUIVersion', value);
+            cache[field] = value;
         }
     }
 }
@@ -258,6 +265,10 @@ function setupListeners() {
         ipcRenderer.send('runExec', 'settings');
         log('Settings opened.', 'info');
     });
+
+    //version radio inputs
+    live.addEventListener('change', (e) => { updateCache('version', 'Live'); });
+    pts.addEventListener('change', (e) => { updateCache('version', 'pts'); });
 }
 function initSubscribes() {
     ipcRenderer.on('updateProgBar', (event, data) => { document.getElementById(data[0]).style.width = data[1]; });
@@ -390,6 +401,11 @@ function initSubscribes() {
         extractionPreset.nextElementSibling.innerHTML = extractionPreset.options[0].innerHTML;
         extractionPreset.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
         extractionPreset.nextElementSibling.nextElementSibling.querySelector(`#${extractionPreset.options[0].innerHTML}`).classList.toggle('same-as-selected');
+
+        if (json.extraction.version == 'pts') {
+            live.checked = false;
+            pts.checked = true;
+        }
 
         if (data[1]) {
             extractionPreset.nextElementSibling.classList.add('disabled');

@@ -40,7 +40,8 @@ const cache = {
   outputFolder:"",
   dataFolder:"",
   extraction: {
-    extractionPreset: ""
+    extractionPreset: "",
+    version: "Live"
   }
 }
 const extractionPresetConsts = {
@@ -154,7 +155,7 @@ function initMain () {
   mainWindow.webContents.openDevTools();
   mainWindow.loadFile('./src/html/Index.html');
   
-  let wasMinimized = false
+  let wasMinimized = false;
   mainWindow.on('minimize', () => { mainWindow.webContents.send('minimizedMain'); wasMinimized = true; });
   mainWindow.on('maximize', () => { if (wasMinimized) mainWindow.webContents.send('restoredMain'); wasMinimized = false; });
   mainWindow.on('restore', () => { mainWindow.webContents.send('restoredMain'); wasMinimized = false; });
@@ -185,6 +186,7 @@ function initMainListeners() {
     cache.outputFolder = json.outputFolder;
     cache.dataFolder = json.dataFolder;
     cache.extraction.extractionPreset = json.extraction.extractionPreset;
+    cache.extraction.version = json.extraction.version;
 
     let dropIsEnabled = false;
     if (cache.assetsFolder != "") {
@@ -232,7 +234,7 @@ function initMainListeners() {
         let dropIsEnabled = false;
         if (exists && fs.statSync(data[1]).isDirectory()) {
           const contents = fs.readdirSync(data[1]);
-          dropIsEnabled = extractionPresetConsts.names.every((elem) => {
+          dropIsEnabled = extractionPresetConsts[cache.extraction.version].names.every((elem) => {
             return contents.includes(path.join(data[1], elem));
           });
         }
@@ -348,6 +350,14 @@ function initMainListeners() {
   });
   ipcMain.on('getPoppedLoggerData', (event, data) => {
     mainWindow.webContents.send('sendPoppedLoggerData', "");
+  });
+  ipcMain.on('updateMainUIVersion', (event, data) => {
+    let res = fs.readFileSync(path.join(resourcePath, 'config.json'));
+    let json = JSON.parse(res);
+    json.extraction.version = data;
+    cache.extraction.version = data;
+
+    fs.writeFileSync(path.join(resourcePath, 'config.json'), JSON.stringify(json, null, '\t'), 'utf-8');
   });
   ipcMain.on('updateExtractionPreset', (event, data) => {
     let res = fs.readFileSync(path.join(resourcePath, 'config.json'));
@@ -937,14 +947,25 @@ async function extract(progBarId) {
     const temp = cache.assetsFolder;
     let values;
 
+    const lastPath = path.normalize(path.join(temp, `../${cache.extraction.version == 'Live' ? 'swtor' : 'publictest'}/retailclient/${cache.extraction.version == 'Live' ? 'main_gfx_1.tor' : 'test_main_gfx_1.tor'}`));
     if (cache.extraction.extractionPreset != 'All') {
       values = [];
-      const tors = extractionPresetConsts[cache.extraction.extractionPreset.toLowerCase()];
+      const tors = extractionPresetConsts[cache.extraction.version][cache.extraction.extractionPreset.toLowerCase()];
       for (const tor of tors) {
         values.push(path.join(temp, tor));
       }
+      if (cache.extraction.extractionPreset == "gui" && fs.existsSync(lastPath)) {
+        values.push(lastPath);
+      }
     } else {
-      values = [temp];
+      values = [];
+      const tors = extractionPresetConsts[cache.extraction.version]["names"];
+      for (const tor of tors) {
+        values.push(path.join(temp, tor));
+      }
+      if (fs.existsSync(lastPath)) {
+        values.push(lastPath);
+      }
     }
 
     const params = [JSON.stringify(values), output, hashPath];

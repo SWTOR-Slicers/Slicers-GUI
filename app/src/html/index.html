@@ -77,15 +77,21 @@
             <div class="a-c-row-1">
               <button id="layoutEditorWindowBtn" class="disabled browse-paths__button-alt">Editor</button>
 
-              <div id="aboutOrganizationBtn" class="settings-btn-cont log-extra-func">
-                <i class="fas fa-info-circle"></i>
+              <div id="creditWindowBtn" class="settings-btn-cont log-extra-func">
+                <i class="fas fa-user-circle"></i>
               </div>
             </div>
             <div class="a-c-row-1">
-              <button id="resourcesWindowBtn" class="disabled browse-paths__button-alt">Resources</button>
-
-              <div id="creditWindowBtn" class="settings-btn-cont log-extra-func">
-                <i class="fas fa-user-circle"></i>
+              <div class="version-toggle-wrapper">
+                <div class="toggle" style="margin-right: 7px;">
+                    <label class="toggle-label">Live: </label>
+                    <input id="live" is="radio-input" radios="pts" checked>
+                </div>
+                
+                <div class="toggle">
+                    <label for="" class="toggle-label">PTS: </label>
+                    <input id="pts" is="radio-input" radios="live">
+                </div>
               </div>
             </div>
           </div>
@@ -162,6 +168,7 @@
     </div>
     
     <script type="module" src="../api/components/alert/Alert.js"></script>
+    <script type="module" src="../api/components/radio-input/RadioInput.js"></script>
     <script type="module" src="../api/components/drop-down/DropDown.js"></script>
     <script type="module" src="../api/components/title-bar/WindowTitleBar.js"></script>
     <script type="module" src="../js/main/Renderer.js"></script>

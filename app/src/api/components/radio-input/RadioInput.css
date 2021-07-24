@@ -41,8 +41,8 @@
 .radio-input::after {
     content: "";
     display: none;
-    width: 8px;
-    height: 8px;
+    width: calc(100% - 8px);
+    height: calc(100% - 8px);
     border-radius: 50%;
     background-color: var(--background-yellow-slicers);
 }

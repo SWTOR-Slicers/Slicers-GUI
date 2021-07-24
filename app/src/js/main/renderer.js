@@ -43,11 +43,13 @@ let gr2ViewBtn = document.getElementById("gr2ViewBtn");
 let nvBtn = document.getElementById("nodeViewBtn");
 let modelViewBtn = document.getElementById("modelViewBtn");
 let worldViewBtn = document.getElementById("worldViewBtn");
+let fileBrowserBtn = document.getElementById("fileBrowserBtn");
 
 //utilities
 let fileChangerBtn = document.getElementById("fileChangerBtn");
 let bnkConvBtn = document.getElementById("bnkConverterBtn");
 let getPatchBtn = document.getElementById("getPatchBtn");
+let dbmUtilsBtn = document.getElementById("dbmUtilsBtn");
 let walkthroughBtn = document.getElementById("walkthroughBtn");
 
 //log related
@@ -58,6 +60,12 @@ const poppedOutCover= document.getElementById('poppedOutCover');
 
 //settings btn
 const settingsBtn = document.getElementById('settingsBtn');
+
+//additional features
+const layoutEditorWindowBtn = document.getElementById('layoutEditorWindowBtn');
+const aboutOrganizationBtn = document.getElementById('aboutOrganizationBtn');
+const resourcesWindowBtn = document.getElementById('resourcesWindowBtn');
+const creditWindowBtn = document.getElementById('creditWindowBtn');
 
 //functions
 function initialize() {
@@ -184,6 +192,10 @@ function setupListeners() {
         ipcRenderer.send('runExec', 'worldViewer');
         log(`Viewer: World opened.`, 'info');
     });
+    fileBrowserBtn.addEventListener("click", (e) => {
+        ipcRenderer.send('runExec', 'fileBrowser');
+        log(`Viewer: swtor File Browser opened.`, 'info');
+    });
 
     //utilities
     fileChangerBtn.addEventListener("click", (e) => {
@@ -197,6 +209,10 @@ function setupListeners() {
     getPatchBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'getPatch');
         log(`Utlity: Patch-Getter opened.`, 'info');
+    });
+    dbmUtilsBtn.addEventListener("click", (e) => {
+        ipcRenderer.send('runExec', 'dbmUtils');
+        log(`Utlity: DBM Utils opened.`, 'info');
     });
     walkthroughBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'walkthrough');
@@ -241,7 +257,7 @@ function setupListeners() {
     settingsBtn.addEventListener('click', (e) => {
         ipcRenderer.send('runExec', 'settings');
         log('Settings opened.', 'info');
-    })
+    });
 }
 function initSubscribes() {
     ipcRenderer.on('updateProgBar', (event, data) => { document.getElementById(data[0]).style.width = data[1]; });
@@ -383,6 +399,8 @@ function initSubscribes() {
         if (!data[1]) {
             document.getElementById('All').click();
             extractionPreset.nextElementSibling.classList.add('disabled');
+        } else {
+            extractionPreset.nextElementSibling.classList.remove('disabled');
         }
         processResponse(data[0], assetTextField, 'assetsFolder');
     });
@@ -456,6 +474,9 @@ function initSubscribes() {
     ipcRenderer.on('worViewClosed', (event, data) => {
         log(`Viewer: World closed.`, 'info');
     });
+    ipcRenderer.on('swtorFileBrowserClosed', (event, data) => {
+        log(`Viewer: File Browser closed.`, 'info');
+    });
     ipcRenderer.on('utilFileChngClosed', (event, data) => {
         log(`Utility: File-Changer closed.`, 'info');
     });
@@ -464,6 +485,9 @@ function initSubscribes() {
     });
     ipcRenderer.on('utilGPClosed', (event, data) => {
         log(`Utility: Patch-Getter closed.`, 'info');
+    });
+    ipcRenderer.on('utilDBMUtilsClosed', (event, data) => {
+        log(`Utility: DDBM Utils closed.`, 'info');
     });
     ipcRenderer.on('walkthroughClosed', (event, data) => {
         log(`Utility: Walkthrough closed.`, 'info');

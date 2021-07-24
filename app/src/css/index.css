@@ -84,6 +84,14 @@
     height: 45px;
     margin-left: 7px;
     display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+}
+.main-page .info-links-cont {
+    height: 45px;
+    display: flex;
     flex-direction: column;
     justify-content: space-around;
     align-items: flex-start;

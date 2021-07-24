@@ -161,7 +161,6 @@ function initMain () {
   mainWindow.once('ready-to-show', () => mainWindow.show());
 
   mainWindow.removeMenu();
-  mainWindow.webContents.openDevTools();
   mainWindow.loadFile('./src/html/Index.html');
   
   let wasMinimized = false;

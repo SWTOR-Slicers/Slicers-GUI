@@ -269,6 +269,14 @@ function setupListeners() {
     //version radio inputs
     live.addEventListener('change', (e) => { updateCache('version', 'Live'); });
     pts.addEventListener('change', (e) => { updateCache('version', 'pts'); });
+
+    //links
+    document.querySelectorAll('.container-info__link').forEach((link) => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            ipcRenderer.send('openLink', [link.href])
+        });
+    });
 }
 function initSubscribes() {
     ipcRenderer.on('updateProgBar', (event, data) => { document.getElementById(data[0]).style.width = data[1]; });

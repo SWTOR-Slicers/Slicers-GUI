@@ -454,7 +454,7 @@ async function copyResourcesRecursive(originalDir, targetDir) {
       recursive: true
     });
   } else {
-    const fileRemovalChecklist = ["resources.json", "appSettings.json", "app.ico", "SlicersLogo.ico", "app"]
+    const fileRemovalChecklist = ["resources.json", "appSettings.json", "app.ico", "SlicersLogo.ico", "app", "hash", "scripts"]
     for (const elem of fileRemovalChecklist) {
       const elemPath = path.join(targetDir, elem)
       if (fs.existsSync(elemPath)) {

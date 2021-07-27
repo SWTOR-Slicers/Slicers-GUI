@@ -1,0 +1,11 @@
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M51 222C62.0457 222 71 213.046 71 202C71 190.954 62.0457 182 51 182C39.9543 182 31 190.954 31 202C31 213.046 39.9543 222 51 222ZM51 217C59.2843 217 66 210.284 66 202C66 193.716 59.2843 187 51 187C42.7157 187 36 193.716 36 202C36 210.284 42.7157 217 51 217Z" fill="#388E22"/>
+<rect x="249.299" y="223.714" width="40" height="198.096" transform="rotate(102.1 249.299 223.714)" fill="#388E22"/>
+<circle cx="242" cy="242" r="15" fill="white" style="mix-blend-mode:lighten"/>
+<circle cx="51" cy="202" r="15" fill="white" style="mix-blend-mode:lighten"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M170 83C181.046 83 190 74.0457 190 63C190 51.9543 181.046 43 170 43C158.954 43 150 51.9543 150 63C150 74.0457 158.954 83 170 83ZM170 78C178.284 78 185 71.2843 185 63C185 54.7157 178.284 48 170 48C161.716 48 155 54.7157 155 63C155 71.2843 161.716 78 170 78Z" fill="#3CE213"/>
+<rect x="259.559" y="232.213" width="40" height="194.229" transform="rotate(158.1 259.559 232.213)" fill="#3CE213"/>
+<circle cx="170" cy="63" r="15" fill="white" style="mix-blend-mode:lighten"/>
+<circle cx="242" cy="242" r="15" fill="white" style="mix-blend-mode:lighten"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M242 262C253.046 262 262 253.046 262 242C262 230.954 253.046 222 242 222C230.954 222 222 230.954 222 242C222 253.046 230.954 262 242 262ZM242 257C250.284 257 257 250.284 257 242C257 233.716 250.284 227 242 227C233.716 227 227 233.716 227 242C227 250.284 233.716 257 242 257Z" fill="#3CE213"/>
+</svg>

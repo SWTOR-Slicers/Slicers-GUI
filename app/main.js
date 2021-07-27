@@ -510,7 +510,6 @@ function initCreditsWindow() {
   creditsWindow.once('ready-to-show', () => creditsWindow.show());
   
   creditsWindow.removeMenu();
-  creditsWindow.webContents.openDevTools();
   creditsWindow.loadURL(`${__dirname}/src/html/Credits.html`);
 
   creditsWindow.on('close', (e) => {
@@ -524,11 +523,6 @@ function initCreditsWindow() {
       }
     }
   });
-
-  initCreditsListeners(creditsWindow);
-}
-function initCreditsListeners(window) {
-  
 }
 //settings
 function initSettingsWindow() {

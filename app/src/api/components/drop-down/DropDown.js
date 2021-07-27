@@ -26,8 +26,12 @@ class DropDown extends HTMLSelectElement {
         a.innerHTML = select.options[select.selectedIndex].innerHTML;
         customSelect.appendChild(a);
         
+        let b1 = document.createElement("DIV");
+        b1.setAttribute("class", "select-items select-hide");
+
         let b = document.createElement("DIV");
-        b.setAttribute("class", "select-items select-hide");
+        b.setAttribute("class", "select-scroll");
+        b.style.height = this.hasAttribute("scrollable") && this.hasAttribute("scrollHeight") ? this.getAttribute("scrollHeight") : "100%";
 
         for (let j = 1; j < selLen; j++) {
             let c = document.createElement("DIV");
@@ -71,7 +75,8 @@ class DropDown extends HTMLSelectElement {
 
         }
 
-        customSelect.appendChild(b);
+        b1.appendChild(b);
+        customSelect.appendChild(b1);
 
         a.addEventListener("click", function(e) {
             e.stopPropagation();

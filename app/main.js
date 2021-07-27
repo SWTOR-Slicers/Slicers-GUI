@@ -32,7 +32,8 @@ let getPatchWindow;
 let soundConverterWindow;
 let settingsWindow;
 let fileChangerWin;
-const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin];
+let creditsWindow;
+const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin, creditsWindow];
 
 let appQuiting = false;
 const cache = {
@@ -108,6 +109,9 @@ function getWindowFromArg(arg) {
       break;
     case "SWTOR File Changer":
       win = fileChangerWin;
+      break;
+    case "Slicers GUI Credits":
+      win = creditsWindow;
       break;
   }
   return win;
@@ -336,6 +340,13 @@ function initMainListeners() {
             initSettingsWindow();
           }
           break;
+        case "credits":
+          if (creditsWindow) {
+            creditsWindow.show();
+          } else {
+            initCreditsWindow();
+          }
+          break;
       }
     }
   });
@@ -482,6 +493,42 @@ async function copyResourcesRecursive(originalDir, targetDir) {
       }
     }
   }
+}
+//credits
+function initCreditsWindow() {
+  creditsWindow = new BrowserWindow({
+    width: 716,
+    height: 539,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: "src/img/SlicersLogo.ico",
+    show: false
+  });
+  creditsWindow.once('ready-to-show', () => creditsWindow.show());
+  
+  creditsWindow.removeMenu();
+  creditsWindow.webContents.openDevTools();
+  creditsWindow.loadURL(`${__dirname}/src/html/Credits.html`);
+
+  creditsWindow.on('close', (e) => {
+    if (!appQuiting) {
+      e.preventDefault();
+      creditsWindow.hide();
+    }
+    if (mainWindow) {
+      if (mainWindow.webContents) {
+        mainWindow.webContents.send("creditsWindowClosed", "");
+      }
+    }
+  });
+
+  initCreditsListeners(creditsWindow);
+}
+function initCreditsListeners(window) {
+  
 }
 //settings
 function initSettingsWindow() {

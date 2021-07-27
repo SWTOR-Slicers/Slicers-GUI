@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
+    <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../css/Universal.css">
+    <link rel="stylesheet" href="../css/Credits.css">
+    <title>Slicers GUI Credits</title>
+</head>
+<body>
+    <log-alert type="alert" visible="false"></log-alert>
+    <window-title class="window-title"></window-title>
+    <div class="credits-background">
+        <div class="credits-main">
+            <div class="credits-msg">
+
+            </div>
+            <div class="credits-entries">
+                
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="../api/components/alert/Alert.js"></script>
+    <script type="module" src="../api/components/title-bar/WindowTitleBar.js"></script>
+    <script type="module" src="../js/main/sub-windows/Credits.js"></script>
+</body>
+</html>

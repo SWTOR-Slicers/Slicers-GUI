@@ -113,6 +113,8 @@ function initSettings() {
         addTooltip('top', expComprLogBtn, true, (element) => { return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log'); });
     
         addTooltip('top', settingsBtn, false, (element) => { return 'Settings'; });
+        addTooltip('top', creditWindowBtn, false, (element) => { return 'Credits'; });
+        addTooltip('top', layoutEditorWindowBtn, false, (element) => { return 'App Layout Editor'; });
     }
 }
 
@@ -180,7 +182,7 @@ function setupListeners() {
     genHashBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'genHash');
         log(`Extraction: Generate Hash started, please stand by.`, 'info');
-    })
+    });
 
     //viewers
     gr2ViewBtn.addEventListener("click", (e) => {
@@ -269,6 +271,12 @@ function setupListeners() {
     //version radio inputs
     live.addEventListener('change', (e) => { updateCache('version', 'Live'); });
     pts.addEventListener('change', (e) => { updateCache('version', 'pts'); });
+
+    //credits
+    creditWindowBtn.addEventListener("click", (e) => {
+        ipcRenderer.send("runExec", "credits");
+        log("Credits Opened.", 'info');
+    });
 
     //links
     document.querySelectorAll('.container-info__link').forEach((link) => {
@@ -371,6 +379,8 @@ function initSubscribes() {
                             addTooltip('top', expComprLogBtn, true, (element) => { return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log'); });
                         
                             addTooltip('top', settingsBtn, false, (element) => { return 'Settings'; });
+                            addTooltip('top', creditWindowBtn, false, (element) => { return 'Credits'; });
+                            addTooltip('top', layoutEditorWindowBtn, false, (element) => { return 'App Layout Editor'; });
                         } else {
                             removeTooltip(assetsFolderLabel, false, (element) => { return 'Game assets (.tor)'; });
                             removeTooltip(outputFolderLabel, false, (element) => { return 'GUI output folder'; });
@@ -381,6 +391,8 @@ function initSubscribes() {
                             removeTooltip(expComprLogBtn, true, (element) => { return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log'); });
                         
                             removeTooltip(settingsBtn, false, (element) => { return 'Settings'; });
+                            removeTooltip(creditWindowBtn, false, (element) => { return 'Credits'; });
+                            removeTooltip(layoutEditorWindowBtn, false, (element) => { return 'App Layout Editor'; });
                         }
                         break;
                 }
@@ -549,6 +561,9 @@ function initSubscribes() {
     });
     ipcRenderer.on('settingsWindowClosed', (event, data) => {
         log('Settings closed.', 'info');
+    });
+    ipcRenderer.on('creditsWindowClosed', (event, data) => {
+        log('Credits closed.', 'info');
     });
 }
 

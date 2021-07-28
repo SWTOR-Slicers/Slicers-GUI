@@ -277,6 +277,10 @@ function setupListeners() {
         ipcRenderer.send("runExec", "credits");
         log("Credits Opened.", 'info');
     });
+    layoutEditorWindowBtn.addEventListener("click", (e) => {
+        ipcRenderer.send("runExec", "editor");
+        log("Editor Opened.", 'info');
+    });
 
     //links
     document.querySelectorAll('.container-info__link').forEach((link) => {
@@ -564,6 +568,9 @@ function initSubscribes() {
     });
     ipcRenderer.on('creditsWindowClosed', (event, data) => {
         log('Credits closed.', 'info');
+    });
+    ipcRenderer.on('editorWindowClosed', (event, data) => {
+        log('Editor closed.', 'info');
     });
 }
 

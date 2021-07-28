@@ -33,7 +33,8 @@ let soundConverterWindow;
 let settingsWindow;
 let fileChangerWin;
 let creditsWindow;
-const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin, creditsWindow];
+let editorWindow;
+const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin, creditsWindow, editorWindow];
 
 let appQuiting = false;
 const cache = {
@@ -112,6 +113,9 @@ function getWindowFromArg(arg) {
       break;
     case "Slicers GUI Credits":
       win = creditsWindow;
+      break;
+    case "Slicers GUI Layout Editor":
+      win = editorWindow;
       break;
   }
   return win;
@@ -347,6 +351,13 @@ function initMainListeners() {
             initCreditsWindow();
           }
           break;
+        case "editor":
+          if (editorWindow) {
+            editorWindow.show();
+          } else {
+            initEditorWindow();
+          }
+          break;
       }
     }
   });
@@ -524,6 +535,44 @@ function initCreditsWindow() {
     }
   });
 }
+//Layout Editor
+function initEditorWindow() {
+  editorWindow = new BrowserWindow({
+    width: 716,
+    height: 539,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: 'src/img/SlicersLogo.ico',
+    show: false
+  });
+  editorWindow.once('ready-to-show', () => editorWindow.show());
+  
+  editorWindow.removeMenu();
+  editorWindow.webContents.openDevTools();
+  editorWindow.loadFile(`${__dirname}/src/html/Editor.html`);
+  
+  editorWindow.on('close', (e) => {
+    if (!appQuiting) {
+      e.preventDefault();
+      editorWindow.hide();
+    }
+    if (mainWindow) {
+      if (mainWindow.webContents) {
+        mainWindow.webContents.send('editorWindowClosed', '');
+      }
+    }
+  
+    initEditorListeners(editorWindow);
+  });
+}
+
+function initEditorListeners(window) {
+  
+}
+
 //settings
 function initSettingsWindow() {
   settingsWindow = new BrowserWindow({

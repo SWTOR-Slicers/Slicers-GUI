@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; script-src 'self'">
+    <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../css/Universal.css">
+    <link rel="stylesheet" href="../css/Editor.css">
+    <title>Slicers GUI Layout Editor</title>
+</head>
+<body>
+    <log-alert type="alert" visible="false"></log-alert>
+    <window-title class="window-title"></window-title>
+    <div class="editor-background">
+        <div class="side-bar">
+
+        </div>
+        <div class="file-list">
+            <div class="section-label">
+                <h2 class="file-list-header">Stylesheets</h2>
+            </div>
+            <div class="section-label-sub">
+                <button class="file-list-header">
+                    <div class="chevron-cont">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <div>Open Sheets</div>
+                </button>
+                <div id="openSheetsCont" class="section-label-content">
+                    <div class="open-sheet">
+                        <i class="fas fa-hashtag"></i>
+                        <div>Universal.css</div>
+                    </div>
+                </div>
+            </div>
+            <div class="section-label-sub">
+                <button class="file-list-header">
+                    <div class="chevron-cont">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div>Existing Sheets</div>
+                </button>
+                <div id="existingSheetsCont" class="style-sheets-list section-open">
+                    <div class="under-shadow"></div>
+
+                </div>
+            </div>
+        </div>
+        <div class="editor-container">
+            <div class="editor-tabs-container">
+
+            </div>
+            <div class="under-shadow"></div>
+            <div class="editor-content">
+
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="../api/components/alert/Alert.js"></script>
+    <script type="module" src="../api/components/title-bar/WindowTitleBar.js"></script>
+    <script type="module" src="../js/main/sub-windows/Editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+:root {
+    --black-alt: #1f1f1f;
+    --black-alt-hover: rgb(41, 41, 41);
+
+    --grey-black: #1a1a1a;
+    --grey-black-hover: #2b2b2b;
+    
+    --medium-grey: #333;
+    --medium-grey-hover: rgb(61, 61, 61);
+
+    --medium-grey-alt: #242424;
+    --medium-grey-alt-hover: #2c2c2c;
+
+    --background-yellow-slicers: #ffce00;
+}
+
+.editor-background {
+    background-color: var(--grey-black);
+    
+    height: calc(100% - 30px);
+    width: 100%;
+
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+/* side bar styles */
+.side-bar {
+    height: 100%;
+    width: 40px;
+    background-color: var(--medium-grey);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* style sheet list styles */
+.file-list {
+    height: 100%;
+    width: 200px;
+
+    background-color: var(--black-alt);
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+.section-label { width: 100%; height: 30px; border-bottom: 2px solid var(--medium-grey); padding-bottom: 5px; }
+.section-label > .file-list-header { margin: 6.6px 7px; font-size: 14px; }
+
+.section-label-sub { width: 100%; min-height: 20px; }
+.section-label-sub .file-list-header {
+    background-color: transparent;
+    border: none;
+    outline: none;
+
+    width: calc(100% - 31px);
+    margin: 2.1px 7px;
+
+    font-size: 12px;
+    font-family: 'Eurofont';
+    color: white;
+    text-align: left;
+
+    cursor: pointer;
+
+    display: flex; flex-direction: row; align-items: center;
+}
+.section-label-sub .file-list-header:focus { border: none; outline: none; }
+.section-label-sub .section-label-content {
+    width: 100%;
+    height: 0;
+    border-bottom: 2px solid var(--medium-grey);
+
+    transition: height 0.2s ease-in-out;
+    overflow: hidden;
+}
+.section-label-sub > .section-open {
+    height: 20px; /* will be height: auto */
+}
+
+.open-sheet {
+    width: 100%;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+.open-sheet div {
+    margin-left: 7px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.style-sheets-list {
+    width: 100%;
+    height: calc(100% - 30px);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* editor page styles */
+.editor-container {
+    height: 100%;
+    width: calc(100% - 240px);
+    position: relative;
+}
+
+
+.under-shadow {
+    width: 100%;
+    height: 3px;
+
+    background-color: rgba(8, 7, 7, 0.4);
+}
+
+.chevron-cont {
+    width: 12px;
+    height: 12px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    margin-right: 7px;
+}
+.fas {
+    color: white;
+    font-size: 12px;
+}
+.fa-hashtag {
+    font-size: 10px;
+    color: rgb(25, 147, 196)
+}

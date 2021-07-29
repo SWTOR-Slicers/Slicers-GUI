@@ -755,13 +755,12 @@ function initFileChangerListeners(window) {
   ipcMain.on("changerChangeFiles", (event, data) => {
     const progBarId = data[0];
     const assetFiles = data[1];
-    const outputDir = data[2];
-    const backupObj = data[3];
-    const fChanges = data[4];
+    const backupObj = data[2];
+    const fChanges = data[3];
     const hashPath = path.join(resourcePath, 'hash', 'hashes_filename.txt');
-    const zipPath = data[5];
+    const zipPath = data[4];
 
-    const params = [JSON.stringify(assetFiles), outputDir, hashPath, JSON.stringify(backupObj), JSON.stringify(fChanges), zipPath];
+    const params = [JSON.stringify(assetFiles), hashPath, JSON.stringify(backupObj), JSON.stringify(fChanges), zipPath];
 
     changeFiles(progBarId, params);
   });

@@ -44,9 +44,9 @@ class DropDown extends HTMLSelectElement {
 
             c.addEventListener("click", (e) => {
                 const elem = e.currentTarget;
-                let s = elem.parentNode.parentNode.getElementsByTagName("select")[0];
+                let s = elem.parentNode.parentNode.parentNode.getElementsByTagName("select")[0];
                 let sl = s.length;
-                let h = elem.parentNode.previousSibling;
+                let h = elem.parentNode.parentNode.previousSibling;
 
                 for (let i = 0; i < sl; i++) {
                     if (s.options[i].innerHTML == elem.innerHTML) {

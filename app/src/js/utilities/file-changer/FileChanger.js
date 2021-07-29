@@ -139,7 +139,7 @@ async function loadCache() {
 
     if (json["assets"] == "" || !fs.existsSync(json["assets"])) {
         const defaultPath = jsonObj["assetsFolder"];
-        updateCache('output', defaultPath);
+        updateCache('assets', defaultPath);
         cache["assets"] = defaultPath
     } else {
         cache["assets"] = json["assets"];
@@ -547,50 +547,58 @@ function fileNameToHash(name) {
 }
 
 async function extractFile(name) {
-    const fileHash = fileNameToHash(name);
+    try {
+        const fileHash = fileNameToHash(name);
 
-    let assetFiles = fs.readdirSync(cache['assets']);
-    assetFiles = assetFiles.filter((f) => {
-        let isValid = true;
-        if (path.extname(f) == '.tor') {
-            let assetName = f.substr(f.lastIndexOf('\\') + 1);
-            if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_') > -1) isValid = false;
-            if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_') > -1) isValid = false;
-        } else {
-            isValid = false;
+        let assetFiles = fs.readdirSync(cache['assets']);
+        assetFiles = assetFiles.filter((f) => {
+            let isValid = true;
+            if (path.extname(f) == '.tor') {
+                let assetName = f.substr(f.lastIndexOf('\\') + 1);
+                if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_') > -1) isValid = false;
+                if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_') > -1) isValid = false;
+            } else {
+                isValid = false;
+            }
+            return isValid;
+        }).map((f) => { return path.join(cache['assets'], f); });
+
+        const retPath = path.normalize(path.join(cache['assets'], `../${cache['version'] == 'Live'? 'swtor' : 'publictest'}/retailclient`));
+        if (fs.existsSync(retPath)) {
+            let retCli = fs.readdirSync(retPath);
+            let filtered = retCli.filter((f) => { return path.extname(f) == '.tor'; }).map((f) => { return path.join(cache['assets'], f); });
+            assetFiles.concat(filtered);
         }
-        return isValid;
-    }).map((f) => { return path.join(cache['assets'], f); });
 
-    const retPath = path.normalize(path.join(cache['assets'], `../${cache['version'] == 'Live'? 'swtor' : 'publictest'}/retailclient`));
-    if (fs.existsSync(retPath)) {
-        let retCli = fs.readdirSync(retPath);
-        let filtered = retCli.filter((f) => { return path.extname(f) == '.tor'; }).map((f) => { return path.join(cache['assets'], f); });
-        assetFiles.concat(filtered);
+        ipcRenderer.send("changerExtrFileStart", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), fileHash]);
+    } catch (e) {
+        log('Invalid file provided. please provide a valid file.', 'error');
     }
-
-    ipcRenderer.send("changerExtrFileStart", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), fileHash]);
 }
 function extractNode(name) {
-    let assetFiles = fs.readdirSync(cache['assets']);
-    assetFiles = assetFiles.filter((f) => {
-        let isValid = true;
-        if (path.extname(f) == '.tor' && f.indexOf('main_global_1.tor') >= 0) {
-            let assetName = f.substr(f.lastIndexOf('\\') + 1);
-            if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_') > -1) isValid = false;
-            if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_') > -1) isValid = false;
-        } else {
-            isValid = false;
-        }
-        return isValid;
-    }).map((f) => { return path.join(cache['assets'], f); });
+    try {
+        let assetFiles = fs.readdirSync(cache['assets']);
+        assetFiles = assetFiles.filter((f) => {
+            let isValid = true;
+            if (path.extname(f) == '.tor' && f.indexOf('main_global_1.tor') >= 0) {
+                let assetName = f.substr(f.lastIndexOf('\\') + 1);
+                if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_') > -1) isValid = false;
+                if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_') > -1) isValid = false;
+            } else {
+                isValid = false;
+            }
+            return isValid;
+        }).map((f) => { return path.join(cache['assets'], f); });
 
-    if (assetFiles.length > 0) {
-        ipcRenderer.send("changerExtrNodeStart", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), name]);
-    } else {
-        log('Your provided directory does not contain any files with <i>main_global_1.tor</i> in their name.', 'alert');
-        extrFile.classList.remove('disabled');
-        extrNode.classList.remove('disabled');
+        if (assetFiles.length > 0) {
+            ipcRenderer.send("changerExtrNodeStart", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), name]);
+        } else {
+            log('Your provided directory does not contain any files with <i>main_global_1.tor</i> in their name.', 'alert');
+            extrFile.classList.remove('disabled');
+            extrNode.classList.remove('disabled');
+        }
+    } catch (e) {
+        log('Invalid node provided. please provide a valid node.', 'error');
     }
 }
 function restoreBackupFiles() {
@@ -624,7 +632,11 @@ function changeFiles() {
         "nodes": []
     }
 
+    let zipPath;
     for (const change of fileChanges) {
+        if (change.fileData && !zipPath) {
+            zipPath = change.fileData.zip;
+        }
         if (change.type == "files") {
             const hash = fileNameToHash(change.target);
             fChanges.files.push({
@@ -644,7 +656,7 @@ function changeFiles() {
     ipcRenderer.send("changerChangeFiles", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), {
         "backup": cache['backup'],
         "path": path.join(cache['output'], 'backups')
-    }, fChanges])
+    }, fChanges, (zipPath) ? zipPath : ""])
 }
 
 init();

@@ -573,6 +573,8 @@ async function extractFile(name) {
         ipcRenderer.send("changerExtrFileStart", [progBar.id, assetFiles, path.join(cache['output'], 'extracted'), fileHash]);
     } catch (e) {
         log('Invalid file provided. please provide a valid file.', 'error');
+        extrFile.classList.remove('disabled');
+        extrNode.classList.remove('disabled');
     }
 }
 function extractNode(name) {
@@ -599,6 +601,8 @@ function extractNode(name) {
         }
     } catch (e) {
         log('Invalid node provided. please provide a valid node.', 'error');
+        extrFile.classList.remove('disabled');
+        extrNode.classList.remove('disabled');
     }
 }
 function restoreBackupFiles() {

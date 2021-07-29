@@ -690,7 +690,6 @@ function initFileChanger () {
   fileChangerWin.once('ready-to-show', () => fileChangerWin.show());
   
   fileChangerWin.removeMenu();
-  fileChangerWin.webContents.openDevTools();
   fileChangerWin.loadFile(`${__dirname}/src/html/FileChanger.html`);
   
   fileChangerWin.on('close', (e) => {
@@ -760,8 +759,9 @@ function initFileChangerListeners(window) {
     const backupObj = data[3];
     const fChanges = data[4];
     const hashPath = path.join(resourcePath, 'hash', 'hashes_filename.txt');
+    const zipPath = data[5];
 
-    const params = [JSON.stringify(assetFiles), outputDir, hashPath, JSON.stringify(backupObj), JSON.stringify(fChanges)];
+    const params = [JSON.stringify(assetFiles), outputDir, hashPath, JSON.stringify(backupObj), JSON.stringify(fChanges), zipPath];
 
     changeFiles(progBarId, params);
   });
@@ -1000,6 +1000,7 @@ async function extractSingleNode(progBarId, params) {
 }
 async function changeFiles(progBarId, params) {
   try {
+    console.log(params)
     const extrProc = child.spawn(path.join(resourcePath, "scripts", "fileChanger.exe"), params);
     let len = 0;
     extrProc.stdout.on('data', (data) => {

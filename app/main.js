@@ -1000,7 +1000,6 @@ async function extractSingleNode(progBarId, params) {
 }
 async function changeFiles(progBarId, params) {
   try {
-    console.log(params)
     const extrProc = child.spawn(path.join(resourcePath, "scripts", "fileChanger.exe"), params);
     let len = 0;
     extrProc.stdout.on('data', (data) => {

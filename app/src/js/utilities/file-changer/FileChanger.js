@@ -646,7 +646,7 @@ function changeFiles() {
             fChanges.files.push({
                 "hash": hash,
                 "data": change.fileData ? change.fileData : {
-                    "name": change.modded
+                    "file": change.modded
                 },
                 "isCompressed": change.fileData != null
             });
@@ -654,7 +654,7 @@ function changeFiles() {
             fChanges.nodes.push({
                 "name": change.target,
                 "data": change.fileData ? change.fileData : {
-                    "name": change.modded
+                    "file": change.modded
                 },
                 "isCompressed": change.fileData != null
             });

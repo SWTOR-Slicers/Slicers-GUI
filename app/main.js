@@ -758,7 +758,7 @@ function initFileChangerListeners(window) {
     const backupObj = data[2];
     const fChanges = data[3];
     const hashPath = path.join(resourcePath, 'hash', 'hashes_filename.txt');
-    const ionicComprExe = path.join(resourcePath, 'script', 'IonicCompress.exe');
+    const ionicComprExe = path.join(resourcePath, 'scripts', 'IonicCompress.exe');
     const zipPath = data[4];
 
     const params = [JSON.stringify(assetFiles), hashPath, JSON.stringify(backupObj), JSON.stringify(fChanges), ionicComprExe, zipPath];

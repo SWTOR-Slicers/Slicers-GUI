@@ -645,13 +645,17 @@ function changeFiles() {
             const hash = fileNameToHash(change.target);
             fChanges.files.push({
                 "hash": hash,
-                "data": change.fileData ? change.fileData : change.modded,
+                "data": change.fileData ? change.fileData : {
+                    "name": change.modded
+                },
                 "isCompressed": change.fileData != null
             });
         } else {
             fChanges.nodes.push({
                 "name": change.target,
-                "data": change.fileData ? change.fileData : change.modded,
+                "data": change.fileData ? change.fileData : {
+                    "name": change.modded
+                },
                 "isCompressed": change.fileData != null
             });
         }

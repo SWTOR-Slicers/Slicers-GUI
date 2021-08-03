@@ -641,7 +641,8 @@ function changeFiles() {
         if (change.fileData && !zipPath) {
             zipPath = change.fileData.zip;
         }
-        if (change.type == "files") {
+        console.log(change)
+        if (change.type == "File") {
             const hash = fileNameToHash(change.target);
             fChanges.files.push({
                 "hash": hash,

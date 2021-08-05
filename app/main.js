@@ -1028,7 +1028,7 @@ async function restoreBackups(progBarId, params) {
   const pathInfos = [];
   const sizes = backupContents.map((val, idx) => {
     const fPath = path.join(dirPath, val);
-    let destPath = path.join(params['assets'], bkUp);
+    let destPath = path.join(params['assets'], val);
     if (val == "main_gfx_1.tor") { destPath = path.join(params['assets'], params['version'] == 'Live' ? 'swtor' : 'publictest', "retailclient", val); }
     pathInfos[idx] = {
       fPath: fPath,

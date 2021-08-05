@@ -81,8 +81,6 @@ async function convert(fPath, domParent, changesList, writeModElem, parentDir) {
             const info = entr.split(' ');
             if (info[0].indexOf('replace') == 0) { //was > -1
                 if (info.length >= 3) {
-                    info[0] = info[0].substr(info[0].indexOf('replace'));
-
                     const chng = {
                         'type': (info[0] == 'replace') ? 'File' : 'Node', 
                         'target': info[1], 

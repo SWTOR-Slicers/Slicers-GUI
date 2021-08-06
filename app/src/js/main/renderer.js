@@ -572,6 +572,9 @@ function initSubscribes() {
     ipcRenderer.on('editorWindowClosed', (event, data) => {
         log('Editor closed.', 'info');
     });
+    ipcRenderer.on('extrCanceled', (event, data) => {
+        log('Node Extraction Canceled.', 'info')
+    });
 }
 
 async function processResponse(data, elem, param) {

@@ -11,6 +11,7 @@
     --medium-grey: #333;
     --medium-grey-bright: rgb(97, 97, 97);
     --background-yellow-slicers: #ffce00;
+    --grey-black-alt: #292929;
 }
 
 html, body {
@@ -31,7 +32,7 @@ html, body {
     background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: var(--grey-black);
+    background: var(--grey-black-alt);
     border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {

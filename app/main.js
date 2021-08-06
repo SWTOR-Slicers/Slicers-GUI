@@ -34,7 +34,8 @@ let settingsWindow;
 let fileChangerWin;
 let creditsWindow;
 let editorWindow;
-const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin, creditsWindow, editorWindow];
+let nodeSelectWin;
+const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin, creditsWindow, editorWindow, nodeSelectWin];
 
 let appQuiting = false;
 const cache = {
@@ -116,6 +117,9 @@ function getWindowFromArg(arg) {
       break;
     case "Slicers GUI Layout Editor":
       win = editorWindow;
+      break;
+    case "Node Extract Selection":
+      win = nodeSelectWin;
       break;
   }
   return win;
@@ -275,7 +279,15 @@ function initMainListeners() {
   });
   ipcMain.on("runExec", async (event, data) => {
     if (data[0] == "extraction") {
-      extract(data[1]);
+      if (cache.extraction.extractionPreset == "Node") {
+        if (nodeSelectWin) {
+          nodeSelectWin.show();
+        } else {
+          initNodeSelect();
+        }
+      } else {
+        extract(data[1]);
+      }
     } else {
       switch (data) {
         case "locate":
@@ -572,6 +584,46 @@ function initEditorWindow() {
 function initEditorListeners(window) {
   
 }
+//Node Select
+function initNodeSelect () {
+  nodeSelectWin = new BrowserWindow({
+    width: 300,
+    height: 500,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: 'src/img/SlicersLogo.ico',
+    show: false
+  });
+  nodeSelectWin.once('ready-to-show', () => nodeSelectWin.show());
+  
+  nodeSelectWin.removeMenu();
+  nodeSelectWin.webContents.openDevTools();
+  nodeSelectWin.loadFile(`${__dirname}/src/html/NodeSelect.html`);
+  
+  
+  nodeSelectWin.on('close', (e) => {
+    if (!appQuiting) {
+      e.preventDefault();
+      nodeSelectWin.hide();
+    }
+    if (mainWindow) {
+      if (mainWindow.webContents) {
+        mainWindow.webContents.send('extrCanceled', '');
+      }
+    }
+  });
+  
+  initNodeSelectListeners(nodeSelectWin);
+}
+
+
+function initNodeSelectListeners(window) {
+  
+}
+
 
 //settings
 function initSettingsWindow() {

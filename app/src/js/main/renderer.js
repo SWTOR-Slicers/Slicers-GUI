@@ -164,10 +164,13 @@ function setupListeners() {
     //extraction
     extrBtn.addEventListener("click", (e) => {
         log(`Extraction: Assets started, please stand by.`, 'info');
-        log(`<div class="prog-bar-container"><div id="extractProgBar" class="prog-bar__bar"></div></div>`);
         extrBtn.classList.add('disabled');
 
-        addTooltip('top', document.getElementById('extractProgBar').parentElement, false, (element) => { return 'Extraction progress...'});
+        if (cache.extractionPreset !== "Node") {
+            log(`<div class="prog-bar-container"><div id="extractProgBar" class="prog-bar__bar"></div></div>`);
+
+            addTooltip('top', document.getElementById('extractProgBar').parentElement, false, (element) => { return 'Extraction progress...'});
+        }
 
         ipcRenderer.send('runExec', ['extraction', 'extractProgBar']);
     });

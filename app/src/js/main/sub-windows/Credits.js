@@ -35,6 +35,13 @@ const credits = [
         notes: "Provided general input, beta release feedback, and provided additional suggestions."
     },
     {
+        ir: `File Changer Debugger`,
+        collabs: [
+            "Stolik"
+        ],
+        notes: "Helped to debug the file changer after its initial completion."
+    },
+    {
         ir: "Tor reader lib",
         collabs: [
             "Star | Oliver"

@@ -280,6 +280,7 @@ function initListeners() {
     chngFiles.addEventListener('click', (e) => {
         if (fileChanges.length > 0) {
             log('File changing started.', 'info');
+            chngFiles.classList.add('disabled');
             changeFiles();
         } else {
             log('You have not specified any file changes.', 'alert');
@@ -510,7 +511,7 @@ function initSubs() {
         }, 3000)
     });
     ipcRenderer.on("changerChangedFiles", (event, data) => {
-        restoreBackup.classList.remove('disabled');
+        chngFiles.classList.remove('disabled');
         if (data[0]) {
             progBar.parentElement.classList.add('progress-complete');
             log('Files changed sucessfully!', 'info');

@@ -502,9 +502,11 @@ function initSubscribes() {
         }
     });
     ipcRenderer.on('extrCompl', (event, data) => {
-        const parent = document.getElementById('extractProgBar').parentElement;
+        const extractProgBar = document.getElementById('extractProgBar');
+        const parent = extractProgBar.parentElement;
         parent.classList.add('prog-bar-complete');
         removeTooltip(parent, false, (element) => { return 'Extraction progress...'});
+        extractProgBar.id = "";
         
         extrBtn.classList.remove('disabled');
         log(`Extraction: Assets finished.`, 'info');
@@ -575,8 +577,14 @@ function initSubscribes() {
     ipcRenderer.on('editorWindowClosed', (event, data) => {
         log('Editor closed.', 'info');
     });
+    ipcRenderer.on('nodeExtractionStarted', (event, data) => {
+        log(`<div class="prog-bar-container"><div id="extractProgBar" class="prog-bar__bar"></div></div>`);
+
+        addTooltip('top', document.getElementById('extractProgBar').parentElement, false, (element) => { return 'Extraction progress...'});
+    })
     ipcRenderer.on('extrCanceled', (event, data) => {
-        log('Node Extraction Canceled.', 'info')
+        extrBtn.classList.remove('disabled');
+        log('Node Extraction Canceled.', 'info');
     });
 }
 

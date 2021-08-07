@@ -600,7 +600,6 @@ function initNodeSelect () {
   nodeSelectWin.once('ready-to-show', () => nodeSelectWin.show());
   
   nodeSelectWin.removeMenu();
-  nodeSelectWin.webContents.openDevTools();
   nodeSelectWin.loadFile(`${__dirname}/src/html/NodeSelect.html`);
   
   
@@ -618,13 +617,10 @@ function initNodeSelect () {
   
   initNodeSelectListeners(nodeSelectWin);
 }
-
-
 function initNodeSelectListeners(window) {
-  
+  ipcMain.on('extractNodes', (event, data) => { extractNodes('extractProgBar', data[0]); });
+  ipcMain.on('cancelNodeExtr', (event, data) => { window.close(); });
 }
-
-
 //settings
 function initSettingsWindow() {
   settingsWindow = new BrowserWindow({
@@ -1136,6 +1132,29 @@ async function extract(progBarId) {
 
     const params = [JSON.stringify(values), output, hashPath];
     const extrProc = child.spawn(path.join(resourcePath, "scripts", "extraction.exe"), params);
+    extrProc.stdout.on('data', (data) => {
+      const lDat = data.toString().split(' ');
+      const percent = `${lDat[0] / lDat[1] * 100}%`;
+      mainWindow.webContents.send('updateProgBar', [progBarId, percent]);
+    });
+    extrProc.stderr.on('data', (data) => {
+      console.log(`Error: ${data.toString()}`);
+    });
+    extrProc.on('exit', (code) => {
+      console.log(`child process exited with status: ${code.toString()}`);
+      mainWindow.webContents.send("extrCompl", "");
+    });
+  } catch (err) {
+    console.log(err);
+  }
+}
+async function extractNodes(progBarId, nodeFamilies) {
+  try {
+    const output = cache.outputFolder;
+    let values = [path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_global_1.tor' : 'swtor_test_main_global_1.tor')];
+
+    const params = [JSON.stringify(values), output, JSON.stringify(nodeFamilies)];
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "nodeExtraction.exe"), params);
     extrProc.stdout.on('data', (data) => {
       const lDat = data.toString().split(' ');
       const percent = `${lDat[0] / lDat[1] * 100}%`;

@@ -1151,9 +1151,9 @@ async function extract(progBarId) {
 async function extractNodes(progBarId, nodeFamilies) {
   try {
     const output = path.join(cache.outputFolder, 'resources', 'nodes');
-    let values = [path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_global_1.tor' : 'swtor_test_main_global_1.tor')];
+    let tor = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_global_1.tor' : 'swtor_test_main_global_1.tor');
 
-    const params = [JSON.stringify(values), output, JSON.stringify(nodeFamilies)];
+    const params = [tor, output, JSON.stringify(nodeFamilies)];
     const extrProc = child.spawn(path.join(resourcePath, "scripts", "nodeExtraction.exe"), params);
     extrProc.stdout.on('data', (data) => {
       const lDat = data.toString().split(' ');

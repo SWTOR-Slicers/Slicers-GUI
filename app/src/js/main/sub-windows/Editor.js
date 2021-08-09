@@ -84,7 +84,7 @@ class ExistingSheet {
      */
     constructor(fileName, type) {
         this.fileName = fileName;
-        this.displayName = capitalize(fileName.subStr(fileName.lastIndexOf("\\")+1));
+        this.displayName = capitalize(fileName.substr(fileName.lastIndexOf("\\")+1));
         this.type = type;
 
         //add sheet to the existing section of the DOM

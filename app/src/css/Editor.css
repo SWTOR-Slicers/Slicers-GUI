@@ -72,28 +72,23 @@
     display: flex; flex-direction: row; align-items: center;
 }
 .section-label-sub .file-list-header:focus { border: none; outline: none; }
-.section-label-sub .section-label-content {
-    width: 100%;
-    height: 0;
-    border-bottom: 2px solid var(--medium-grey);
-
-    transition: height 0.2s ease-in-out;
-    overflow: hidden;
-}
 .section-label-sub > .section-open {
-    height: 20px; /* will be height: auto */
+    height: auto;
+    overflow: auto;
 }
 
 .existing-sheet {
-    width: 100%;
+    width: calc(100% - 28px);
 
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
+    
+    margin-left: 28px;
 }
 .existing-sheet:hover {
     background-color: var(--medium-grey);
+    cursor: pointer;
 }
 .existing-sheet div {
     margin-left: 7px;
@@ -103,7 +98,9 @@
 
 .style-sheets-list {
     width: 100%;
-    height: calc(100% - 30px);
+    height: 0;
+    overflow: hidden;
+    transition: height 0.2s ease-in-out;
 
     display: flex;
     flex-direction: column;

@@ -16,6 +16,8 @@ const openSheets = [
 const openSheetsCont = document.getElementById('openSheetsCont');
 const existingSheetsCont = document.getElementById('existingSheetsCont');
 
+const tabsList = document.getElementById("tabsList");
+
 function initialize() {
     initAccordions();
     initSheets();
@@ -59,63 +61,9 @@ function initSheets() {
     console.log(mainUISheets, componentSheets);
 }
 
-class Tab {
-    /**
-     * Represents a tab in the editor UI
-     * @param  {ExistingSheet} parent parent of this object
-     */
-    constructor(parent) {
-        this.fileName = parent.fileName;
-        this.parent = parent;
-    }
-
-    render() {
-        // read file (will always be a css file)
-        // add tab to the DOM
-    }
-
-    save() {
-
-    }
-
-    close(wasMe) {
-        // remove tab from the DOM
-        if (wasMe) {
-            // close open sheet obj
-            this.parent.openSheet.close(false);
-        }
-    }
-}
-
-class OpenSheet {
-    /**
-     * Represents a tab in the editor UI
-     * @param  {ExistingSheet} parent parent of this object
-     */
-    constructor(parent) {
-        this.fileName = parent.fileName;
-        this.parent = parent;
-    }
-
-    render() {
-        // read file (will always be a css file)
-        // add sheet to the DOM
-    }
-
-    close(wasMe) {
-        // remove openSheet from the DOM
-        if (wasMe) {
-            // close tab obj
-            this.parent.tab.close(false);
-        }
-    }
-}
-
 class ExistingSheet {
     constructor(fileName) {
         this.fileName = fileName;
-        this.openSheet = new OpenSheet(this);
-        this.tab = new Tab(this);
 
         //add sheet to the existing section of the DOM
     }

@@ -1065,6 +1065,7 @@ async function changeFiles(progBarId, params) {
     console.log(err);
   }
 }
+
 async function restoreBackups(progBarId, params) {
   let completed = false;
   let deadIdx = 0
@@ -1090,10 +1091,13 @@ async function restoreBackups(progBarId, params) {
     const pathInfo = pathInfos[i];
     const size = sizes[i]
     
-    const status = await copyFileViaStream(progBarId, pathInfo.fPath, pathInfo.destPath, currentSize, totalSize);
-    if (status != 200) {
+    const pipeRes = await copyFileViaStream(progBarId, pathInfo.fPath, pathInfo.destPath, currentSize, totalSize);
+    currentSize = pipeRes[1];
+    if (pipeRes[0] != 200) {
       deadIdx = i;
       break
+    } else {
+      completed = true;
     }
   }
   if (completed) {
@@ -1259,14 +1263,14 @@ async function copyFileViaStream(progBarId, tPath, dPath, cSize, tSize) {
     tarFile.on('data', (chunk) => {
       cSize += chunk.length;
       const percent = (100.0 * cSize / tSize).toFixed(2);
-      fileChangerWin.webContents.send('updateProgBar', [progBarId, percent]);
+      fileChangerWin.webContents.send('updateProgBar', [progBarId, `${percent}%`]);
     });
 
     destFile.on('finish', () => {
-      resolve(200);
+      resolve([200, cSize]);
     });
-    destFile.on('error', () => {
-      reject(500);
-    })
+    destFile.on('error', (e) => {
+      reject([500, cSize]);
+    });
   });
 }

@@ -37,7 +37,7 @@ const credits = [
     {
         ir: `File Changer Debugger`,
         collabs: [
-            "Stolik"
+            "Stolik", "Vix | Urssk"
         ],
         notes: "Helped to debug the file changer after its initial completion."
     },

@@ -13,6 +13,13 @@ export function shuffle(a) {
     return a;
 }
 /**
+ * Capitalizes and returns a string;
+ * @param  {String} s .
+ */
+export function capitalize(s) {
+    return s.substr(0, 1).toUpperCase() + s.slice(1);
+}
+/**
  * Converts the DataView of a .wem file to a .ogg represented by a buffer.
  * @param  {DataView} dv DataView representing the .wem file.
  */

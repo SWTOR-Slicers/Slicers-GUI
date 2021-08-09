@@ -84,7 +84,7 @@
     height: 20px; /* will be height: auto */
 }
 
-.open-sheet {
+.existing-sheet {
     width: 100%;
 
     display: flex;
@@ -92,10 +92,10 @@
     align-items: center;
     justify-content: center;
 }
-.open-sheet:hover {
+.existing-sheet:hover {
     background-color: var(--medium-grey);
 }
-.open-sheet div {
+.existing-sheet div {
     margin-left: 7px;
     text-align: center;
     font-size: 12px;

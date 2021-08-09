@@ -1,22 +1,22 @@
+import { capitalize } from "../../Util.js";
 import { sourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 const fs = require('fs');
 const path = require('path');
 
-const openSheets = [
+const sheets = [
     /**
      * {
-     *  tab: Tab,
-     *  openSheet: OpenSheet
+     *  sheet: sheet
+     *  isOpen: bool
      * }
      */
 ]
 //DOM Variables
 
 //stylesheet accordions
-const openSheetsCont = document.getElementById('openSheetsCont');
-const existingSheetsCont = document.getElementById('existingSheetsCont');
+const mainUISheetsCont = document.getElementById('mainUISheetsCont');
+const componentUISheetsCont = document.getElementById('componentUISheetsCont');
 
-const tabsList = document.getElementById("tabsList");
 
 function initialize() {
     initAccordions();
@@ -59,18 +59,57 @@ function initSheets() {
     });
 
     console.log(mainUISheets, componentSheets);
+    for (const mSheet of mainUISheets) {
+        const es = new ExistingSheet(mSheet, "main");
+        sheets.push({
+            "sheet": es,
+            "isOpen": false
+        });
+    }
+    
+    for (const cSheet of componentSheets) {
+        const es = new ExistingSheet(cSheet, "comp");
+        sheets.push({
+            "sheet": es,
+            "isOpen": false
+        });
+    }
 }
 
 class ExistingSheet {
-    constructor(fileName) {
+    /**
+     * Represents and existing css stylesheet in the Slicers GUI.
+     * @param {String} fileName The full filepath to the css sheet.
+     * @param {String} type Type of sheet. Must be "main" or "comp".
+     */
+    constructor(fileName, type) {
         this.fileName = fileName;
+        this.displayName = capitalize(fileName.subStr(fileName.lastIndexOf("\\")+1));
+        this.type = type;
 
         //add sheet to the existing section of the DOM
+        const esCont = document.createElement('div');
+        esCont.className = "existing-sheet";
+
+        const hTag = document.createElement('i');
+        hTag.className = "fas fa-hashtag";
+        esCont.appendChild(hTag);
+
+        const nDiv = document.createElement('div');
+        nDiv.innerHTML = this.displayName;
+        esCont.appendChild(nDiv);
+        
+        if (type == "main") {
+            mainUISheetsCont.appendChild(esCont);
+        } else if (type == "comp") {
+            componentUISheetsCont.appendChild(esCont);
+        } else {
+            throw new Error(`Unexpect type value: expected type with value of 'main' or 'comp' but got ${type}.`);
+        }
     }
 
     open() {
-        this.openSheet.render();
-        this.tab.render();
+        //render file here
     }
 }
 

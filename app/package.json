@@ -2,7 +2,7 @@
   "name": "slicers-gui",
   "productName": "Slicers GUI",
   "appId": "com.swtor-slicers.tormak",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "description": "A GUI for SWTOR Slicers",
   "main": "main.js",
   "scripts": {

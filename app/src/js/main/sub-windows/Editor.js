@@ -10,13 +10,14 @@ const sheets = [
      *  isOpen: bool
      * }
      */
-]
+];
+let openSheet = null;
 //DOM Variables
 
 //stylesheet accordions
 const mainUISheetsCont = document.getElementById('mainUISheetsCont');
 const componentUISheetsCont = document.getElementById('componentUISheetsCont');
-
+const openSheetName = document.getElementById('openSheetName');
 
 function initialize() {
     initAccordions();
@@ -86,10 +87,14 @@ class ExistingSheet {
         this.fileName = fileName;
         this.displayName = capitalize(fileName.substr(fileName.lastIndexOf("\\")+1));
         this.type = type;
+        this.needsSave = false;
 
         //add sheet to the existing section of the DOM
         const esCont = document.createElement('div');
         esCont.className = "existing-sheet";
+        esCont.addEventListener("click", (e) => {
+            this.open();
+        });
 
         const hTag = document.createElement('i');
         hTag.className = "fas fa-hashtag";
@@ -109,7 +114,20 @@ class ExistingSheet {
     }
 
     open() {
-        //render file here
+        if (openSheet) {
+            //TODO: handle instance where open page may need a prompt to save if it has unsaved changes
+        } else {
+            this.render();
+        }
+        openSheetName.innerHTML = this.displayName;
+    }
+
+    render() {
+
+    }
+
+    save() {
+
     }
 }
 

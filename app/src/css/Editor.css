@@ -108,6 +108,31 @@
     justify-content: flex-start;
 }
 
+.open-sheet-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.open-sheet-header {
+    margin: 6.6px 7px;
+    font-size: 14px;
+    padding-bottom: 5px;
+}
+.needs-saving {
+    margin-right: 12px;
+    width: 12px;
+    height: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.needs-saving > .fa-circle {
+    color: var(--background-yellow-slicers);
+    
+}
+
 /* editor page styles */
 .editor-container {
     height: 100%;
@@ -122,7 +147,6 @@
 
     background-color: rgba(8, 7, 7, 0.4);
 }
-
 .chevron-cont {
     width: 12px;
     height: 12px;

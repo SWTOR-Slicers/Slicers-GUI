@@ -550,8 +550,8 @@ function initCreditsWindow() {
 //Layout Editor
 function initEditorWindow() {
   editorWindow = new BrowserWindow({
-    width: 716,
-    height: 539,
+    width: 1100,
+    height: 700,
     frame: false,
     webPreferences: {
       nodeIntegration: true,

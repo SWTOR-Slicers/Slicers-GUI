@@ -1,5 +1,5 @@
 :root {
-    --black-alt: #1f1f1f;
+    --black-alt: #252424;
     --black-alt-hover: rgb(41, 41, 41);
 
     --grey-black: #1a1a1a;
@@ -62,7 +62,7 @@
     width: calc(100% - 31px);
     margin: 2.1px 7px;
 
-    font-size: 12px;
+    font-size: 14px;
     font-family: 'Eurofont';
     color: white;
     text-align: left;
@@ -84,7 +84,7 @@
     flex-direction: row;
     align-items: center;
     
-    margin-left: 28px;
+    padding-left: 28px;
 }
 .existing-sheet:hover {
     background-color: var(--medium-grey);
@@ -93,7 +93,7 @@
 .existing-sheet div {
     margin-left: 7px;
     text-align: center;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .style-sheets-list {
@@ -128,10 +128,8 @@
     align-items: center;
     justify-content: center;
 }
-.needs-saving > .fa-circle {
-    color: var(--background-yellow-slicers);
-    
-}
+.needs-saving > .fa-circle { color: var(--background-yellow-slicers); }
+.saved > .fa-circle { color: transparent; }
 
 /* editor page styles */
 .editor-container {
@@ -139,7 +137,18 @@
     width: calc(100% - 240px);
     position: relative;
 }
-
+.editor-content {
+    width: 100%;
+    height: calc(100% - 38.19px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+.editor-content > div {
+    width: 100%;
+    overflow-y: scroll;
+}
 
 .under-shadow {
     width: 100%;

@@ -1,8 +1,39 @@
 import { capitalize } from "../../Util.js";
 import { sourcePath } from "../../../api/config/resource-path/ResourcePath.js";
+import { vsCode, vsCodeHighlightStyle, vsCodeTheme } from "./EditorTheme.js";
+
+// Code mirror imports
+const { EditorView, highlightSpecialChars, drawSelection, highlightActiveLine, keymap } = require('@codemirror/view');
+const { EditorState } = require('@codemirror/state');
+const { css, cssCompletion, cssLanguage } = require('@codemirror/lang-css');
+const { defaultTabBinding } = require('@codemirror/commands');
+const { history, historyKeymap } = require('@codemirror/history');
+const { foldGutter, foldKeymap } = require('@codemirror/fold');
+const { indentOnInput } = require('@codemirror/language');
+const { highlightActiveLineGutter, lineNumbers } = require('@codemirror/gutter');
+const { defaultKeymap } = require('@codemirror/commands');
+const { bracketMatching } = require('@codemirror/matchbrackets');
+const { closeBrackets, closeBracketsKeymap } = require('@codemirror/closebrackets');
+const { highlightSelectionMatches, searchKeymap } = require('@codemirror/search');
+const { completionKeymap, autocompletion } = require('@codemirror/autocomplete');
+const { commentKeymap } = require('@codemirror/comment');
+const { rectangularSelection } = require('@codemirror/rectangular-selection');
+const { defaultHighlightStyle } = require('@codemirror/highlight');
+const { lintKeymap } = require('@codemirror/lint');
+
 const fs = require('fs');
 const path = require('path');
 
+// DOM Variables
+
+// stylesheet accordions
+const mainUISheetsCont = document.getElementById('mainUISheetsCont');
+const componentUISheetsCont = document.getElementById('componentUISheetsCont');
+const openSheetName = document.getElementById('openSheetName');
+const saveIcon = document.getElementById("saveIcon");
+const editorContainer = document.getElementById('editorContainer');
+
+// Consts
 const sheets = [
     /**
      * {
@@ -12,12 +43,46 @@ const sheets = [
      */
 ];
 let openSheet = null;
-//DOM Variables
-
-//stylesheet accordions
-const mainUISheetsCont = document.getElementById('mainUISheetsCont');
-const componentUISheetsCont = document.getElementById('componentUISheetsCont');
-const openSheetName = document.getElementById('openSheetName');
+let state = EditorState.create({
+    doc: "Slicers GUI Layout Editor",
+    extensions: [
+        lineNumbers(),
+        highlightActiveLineGutter(),
+        highlightSpecialChars(),
+        drawSelection(),
+        highlightActiveLine(),
+        history(),
+        foldGutter(),
+        EditorState.allowMultipleSelections.of(true),
+        indentOnInput(),
+        defaultHighlightStyle.fallback,
+        bracketMatching(),
+        closeBrackets(),
+        autocompletion(),
+        rectangularSelection(),
+        highlightSelectionMatches(),
+        cssCompletion,
+        css(),
+        keymap.of([
+            ...closeBracketsKeymap,
+            ...defaultKeymap,
+            ...searchKeymap,
+            ...historyKeymap,
+            ...foldKeymap,
+            ...commentKeymap,
+            ...completionKeymap,
+            ...lintKeymap,
+            defaultTabBinding,
+        ]),
+        vsCodeTheme,
+        vsCodeHighlightStyle,
+        EditorState.tabSize.of(4)
+    ]
+});
+let view = new EditorView({
+    state: state,
+    parent: editorContainer
+});
 
 function initialize() {
     initAccordions();
@@ -59,7 +124,6 @@ function initSheets() {
         return path.join(parentPath, styleSheet);
     });
 
-    console.log(mainUISheets, componentSheets);
     for (const mSheet of mainUISheets) {
         const es = new ExistingSheet(mSheet, "main");
         sheets.push({
@@ -87,6 +151,7 @@ class ExistingSheet {
         this.fileName = fileName;
         this.displayName = capitalize(fileName.substr(fileName.lastIndexOf("\\")+1));
         this.type = type;
+        this.isSaved = false;
         this.needsSave = false;
 
         //add sheet to the existing section of the DOM
@@ -113,21 +178,62 @@ class ExistingSheet {
         }
     }
 
+    /**
+     * @param {any} newVal
+     */
+    set needsSave(newVal) {
+        this.isSaved = !newVal;
+        (newVal) ? saveIcon.classList.remove('saved') : saveIcon.classList.add('saved');
+    }
+
     open() {
         if (openSheet) {
             //TODO: handle instance where open page may need a prompt to save if it has unsaved changes
+            if (openSheet.displayName !== this.displayName) {
+
+            }
         } else {
             this.render();
         }
         openSheetName.innerHTML = this.displayName;
+        openSheet = this;
+
+        this.needsSave = true;
+        this.save();
     }
 
     render() {
+        let clearTransaction = view.state.update({
+            changes: {
+                from: 0,
+                to: view.state.doc.length,
+                insert: ""
+            }
+        });
+        view.dispatch(clearTransaction);
 
+        view.state.doc.replace(0, view.state.doc.lines, "");
+        const buffer = fs.readFileSync(this.fileName);
+        /* This is the contents of the css file. They are already properly formatted */
+        const contents = buffer.toString();
+
+        let sheetRenderTransaction = view.state.update({
+            changes: {
+                from: 0,
+                insert: contents
+            }
+        });
+
+        view.dispatch(sheetRenderTransaction);
     }
 
     save() {
+        if (!this.isSaved) {
+            const docCont = view.state.doc.sliceString(0, view.state.doc.length, "\n");
+            console.log(docCont);
 
+            this.needsSave = false;
+        }
     }
 }
 

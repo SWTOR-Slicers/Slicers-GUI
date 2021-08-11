@@ -15,26 +15,31 @@ export class SearchPanel {
         panel.className = "search-panel";
         panel.id = "searchPanel";
         panel.innerHTML = `
-            <div class="seg-cont">
-                <div class="seg-input-cont">
-                    <input type="text">
-                    <button id="matchCase" class=""></button>
-                    <button id="regEx" class=""></button>
-                </div>
-                <div class="num-res">
-
-                </div>
-                <button id="moveUp" class=""></button>
-                <button id="moveDown" class=""></button>
-                <div class="spacer-seg"></div>
-                <button id="closeSearc" class=""></button>
+            <div class="seg-cont" style="margin-bottom: 2px; margin-top: 4px;">
+                <input placeholder="Find" type="text" class="paths-field-input-alt">
+                <div class="num-res">No results</div>
+                <button id="moveUp" class="browse-paths__button-alt">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+                <input id="matchCase" class="over-btn" is="check-box"/>
+                <div class="num-res" style="margin-left: 5px;">match case</div>
+                <button id="closeSearc" class="browse-paths__button-alt" style="margin-left: auto;">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="seg-cont">
-                <div class="seg-input-cont">
-                    <input type="text">
-                </div>
-                <button id="replaceOne" class=""></button>
-                <button id="replaceAll" class=""></button>
+            <div class="seg-cont" style="margin-top: 2px; margin-bottom: 4px;">
+                <input placeholder="Replace" type="text" class="paths-field-input-alt" style="margin-right: 34px;">
+                <button id="replaceOne" class="browse-paths__button-alt">
+                    <i class="fas fa-square"></i>
+                </button>
+                <button id="replaceAll" class="browse-paths__button-alt">
+                    <i class="fas fa-clone"></i>
+                </button>
+                <button id="moveDown" class="browse-paths__button-alt">
+                    <i class="fas fa-arrow-down"></i>
+                </button>
+                <input id="regEx" class="over-btn" is="check-box"/>
+                <div class="num-res" style="margin-left: 5px;">regex</div>
             </div>
         `;
 

@@ -17,15 +17,69 @@
 .search-panel {
     z-index: 2;
 
+    font-size: 13px;
+
     position: absolute;
     top: 0;
-    right: 0;
+    right: 10px;
 
-    height: 70px;
-    width: 400px;
+    height: 50px;
+    width: 360px;
 
     display: flex;
     flex-direction: column;
 
-    background-color: var(--medium-grey);
+    background-color: var(--medium-grey-alt);
+    box-shadow: 0px 3px 3px 0px #000;
+}
+.seg-cont {
+    width: calc(100% - 6px);
+    height: calc(50% - 6px);
+    
+    margin-right: 4px;
+    margin-left: 4px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+.seg-cont > input[type="text"] {
+    min-width: 130px; width: 130px;
+    margin-right: 7px;
+}
+.over-btn {
+    height: 14px;
+    width: 14px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background-color: transparent;
+
+    padding: 0px;
+    margin: 0px;
+}
+.seg-cont > button {
+    width: 18px;
+    height: 18px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0px;
+    margin: 0px;
+
+    margin-right: 3px;
+}
+.num-res {
+    white-space: nowrap;
+    margin-right: 7px;
+}
+.fa-arrow-up, .fa-arrow-down {
+    font-size: 14px;
 }

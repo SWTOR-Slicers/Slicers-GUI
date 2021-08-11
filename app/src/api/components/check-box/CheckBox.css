@@ -13,6 +13,8 @@
 
     height: 14px;
     width: 14px;
+
+    border: 1px solid #000;
 }
 
 .check-box-container input {

@@ -138,6 +138,7 @@
     position: relative;
 }
 .editor-content {
+    position: relative;
     width: 100%;
     height: calc(100% - 38.19px);
     display: flex;
@@ -145,9 +146,14 @@
     align-items: center;
     justify-content: flex-start;
 }
-.editor-content > div {
+.editor-content > .cm-editor {
     width: 100%;
+    min-height: 100%;
     overflow-y: scroll;
+}
+.editor-content > .cm-editor .cm-scroller {
+    outline: none;
+    border: none;
 }
 
 .under-shadow {

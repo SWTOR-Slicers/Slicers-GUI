@@ -1,0 +1,31 @@
+:root {
+    --black-alt: #252424;
+    --black-alt-hover: rgb(41, 41, 41);
+
+    --grey-black: #1a1a1a;
+    --grey-black-hover: #2b2b2b;
+    
+    --medium-grey: #333;
+    --medium-grey-hover: rgb(61, 61, 61);
+
+    --medium-grey-alt: #242424;
+    --medium-grey-alt-hover: #2c2c2c;
+
+    --background-yellow-slicers: #ffce00;
+}
+
+.search-panel {
+    z-index: 2;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    height: 70px;
+    width: 400px;
+
+    display: flex;
+    flex-direction: column;
+
+    background-color: var(--medium-grey);
+}

@@ -1,6 +1,7 @@
 import { capitalize } from "../../Util.js";
 import { sourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { vsCode, vsCodeHighlightStyle, vsCodeTheme } from "./EditorTheme.js";
+import { SearchPanel } from "./SearchPanel.js";
 
 // Code mirror imports
 const { EditorView, highlightSpecialChars, drawSelection, highlightActiveLine, keymap } = require('@codemirror/view');
@@ -43,7 +44,7 @@ const sheets = [
      */
 ];
 let openSheet = null;
-let state = EditorState.create({
+const state = EditorState.create({
     doc: "Slicers GUI Layout Editor",
     extensions: [
         lineNumbers(),
@@ -64,6 +65,11 @@ let state = EditorState.create({
         cssCompletion,
         css(),
         keymap.of([
+            {
+                mac: "Cmd-f",
+                win: "Ctrl-f",
+                run: handleCtrlF
+            },
             ...closeBracketsKeymap,
             ...defaultKeymap,
             ...searchKeymap,
@@ -72,17 +78,15 @@ let state = EditorState.create({
             ...commentKeymap,
             ...completionKeymap,
             ...lintKeymap,
-            defaultTabBinding,
+            defaultTabBinding
         ]),
         vsCodeTheme,
         vsCodeHighlightStyle,
         EditorState.tabSize.of(4)
     ]
 });
-let view = new EditorView({
-    state: state,
-    parent: editorContainer
-});
+const view = new EditorView({ state: state, parent: editorContainer });
+const searchPanel = new SearchPanel(view, editorContainer);
 
 function initialize() {
     initAccordions();
@@ -140,6 +144,8 @@ function initSheets() {
         });
     }
 }
+
+function handleCtrlF() { (searchPanel.showing) ? searchPanel.hide() : searchPanel.show(); }
 
 class ExistingSheet {
     /**

@@ -20,7 +20,8 @@
     font-size: 13px;
 
     position: absolute;
-    top: 0;
+    top: -60px;
+    transition: top 0.1s ease-in-out;
     right: 10px;
 
     height: 50px;

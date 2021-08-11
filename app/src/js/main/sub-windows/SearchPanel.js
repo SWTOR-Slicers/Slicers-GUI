@@ -11,10 +11,10 @@ export class SearchPanel {
 
         //TODO: assemble the search panel and append to the DOM
 
-        const panel = document.createElement('div');
-        panel.className = "search-panel";
-        panel.id = "searchPanel";
-        panel.innerHTML = `
+        this.panel = document.createElement('div');
+        this.panel.className = "search-panel";
+        this.panel.id = "searchPanel";
+        this.panel.innerHTML = `
             <div class="seg-cont" style="margin-bottom: 2px; margin-top: 4px;">
                 <input placeholder="Find" type="text" class="paths-field-input-alt">
                 <div class="num-res">No results</div>
@@ -43,14 +43,19 @@ export class SearchPanel {
             </div>
         `;
 
-        this.parent.insertBefore(panel, this.parent.firstElementChild);
+        this.parent.insertBefore(this.panel, this.parent.firstElementChild);
+
+
+        // add event listeners
     }
 
     show() {
-
+        this.showing = true;
+        this.panel.style.top = '0px';
     }
 
     hide() {
-
+        this.showing = false;
+        this.panel.style.top = '-60px';
     }
 }

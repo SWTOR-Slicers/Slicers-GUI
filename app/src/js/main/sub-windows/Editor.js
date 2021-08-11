@@ -15,7 +15,7 @@ const { highlightActiveLineGutter, lineNumbers } = require('@codemirror/gutter')
 const { defaultKeymap } = require('@codemirror/commands');
 const { bracketMatching } = require('@codemirror/matchbrackets');
 const { closeBrackets, closeBracketsKeymap } = require('@codemirror/closebrackets');
-const { highlightSelectionMatches, searchKeymap } = require('@codemirror/search');
+const { highlightSelectionMatches } = require('@codemirror/search');
 const { completionKeymap, autocompletion } = require('@codemirror/autocomplete');
 const { commentKeymap } = require('@codemirror/comment');
 const { rectangularSelection } = require('@codemirror/rectangular-selection');
@@ -66,13 +66,12 @@ const state = EditorState.create({
         css(),
         keymap.of([
             {
-                mac: "Cmd-f",
-                win: "Ctrl-f",
-                run: handleCtrlF
+                key: "Mod-f",
+                run: handleCtrlF,
+                preventDefault: true
             },
             ...closeBracketsKeymap,
             ...defaultKeymap,
-            ...searchKeymap,
             ...historyKeymap,
             ...foldKeymap,
             ...commentKeymap,

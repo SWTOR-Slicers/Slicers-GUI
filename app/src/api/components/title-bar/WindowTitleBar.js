@@ -1,75 +1,18 @@
+import { addStyleIfNotExists } from "../../../js/Util.js";
+
 const {ipcRenderer} = require( 'electron');
 
 class WindowTitle extends HTMLElement {
     constructor() {
         super();
 
+        addStyleIfNotExists('../api/components/title-bar/WindowTitleBar.css');
+
         this.attachShadow({mode: 'open'});
 
-        //TODO: refactor this to use a style sheet (not supported yet, so unable to do anything right now)
-        const styles = document.createElement('style');
-        styles.textContent = `
-            .window-header {
-                width: 100%;
-                height: 30px;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                justify-content: flex-start;
-                background-color: #1a1a1a;
-                color: white;
-                font-family: 'Eurofont';
-                font-size: 14px;
-                font-weight: lighter;
-                -webkit-app-region: drag;
-            }
-
-            .window-img {
-                padding: 0px 7.5px
-            }
-
-            .window-name {
-                /* any styles for window title go here */
-            }
-
-            .window-btns-wrapper {
-                height: 100%;
-                width: auto;
-                margin-left: auto;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-            }
-
-            .title-btn {
-                height: 100%;
-                width: 40px;
-                color: white;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                justify-content: center;
-                -webkit-app-region: no-drag;
-            }
-
-            .title-btn:hover {
-                background-color: #353535;
-                cursor: pointer;
-            }
-
-            .title-btn-disabled {
-                pointer-events: none;
-                color: rgb(177, 177, 177);
-            }
-
-            .close-win-btn {
-                font-size: 18px;
-            }
-
-            .close-win-btn:hover {
-                background-color: red;
-            }
-        `;
+        const styles = document.createElement('link');
+        styles.rel = 'stylesheet';
+        styles.href = '../api/components/title-bar/WindowTitleBar.css';
 
         const faStyle = document.createElement('link');
         faStyle.rel = 'stylesheet';

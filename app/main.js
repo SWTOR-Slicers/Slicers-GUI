@@ -9,6 +9,8 @@ const ChildProcess = require('child_process');
 const path = require('path');
 const child = require('child_process');
 const dateTime = require('node-datetime');
+const UUID = require('uuid');
+const uuidV4 = UUID.v4;
 
 if (handleSquirrelEvent()) {
   return;
@@ -736,7 +738,6 @@ function initFileChanger () {
   fileChangerWin.once('ready-to-show', () => fileChangerWin.show());
   
   fileChangerWin.removeMenu();
-  fileChangerWin.webContents.openDevTools();
   fileChangerWin.loadFile(`${__dirname}/src/html/FileChanger.html`);
   
   fileChangerWin.on('close', (e) => {
@@ -808,7 +809,11 @@ function initFileChangerListeners(window) {
     const ionicComprExe = path.join(resourcePath, 'scripts', 'IonicCompress.exe');
     const zipPath = data[4];
 
-    const params = [JSON.stringify(assetFiles), hashPath, JSON.stringify(backupObj), JSON.stringify(fChanges), ionicComprExe, zipPath];
+    const changesName = path.join(cache['outputFolder'], 'tmp', `${uuidV4()}-changer.json`);
+    fs.mkdirSync(path.dirname(changesName), { recursive: true });
+    fs.writeFileSync(changesName, JSON.stringify(fChanges))
+
+    const params = [JSON.stringify(assetFiles), hashPath, JSON.stringify(backupObj), changesName, ionicComprExe, zipPath];
 
     changeFiles(progBarId, params);
   });

@@ -612,6 +612,8 @@ function restoreBackupFiles() {
     ipcRenderer.send("changerRestoreBackupStart", [progBar.id, params])
 }
 function changeFiles() {
+    let completed = true;
+
     let assetFiles = fs.readdirSync(cache['assets']);
     assetFiles = assetFiles.filter((f) => {
         let isValid = true;
@@ -638,19 +640,26 @@ function changeFiles() {
     }
 
     let zipPath;
-    for (const change of fileChanges) {
+    for (let i = 0; i < fileChanges.length; i++) {
+        const change = fileChanges[i];
         if (change.fileData && !zipPath) {
             zipPath = change.fileData.zip;
         }
         if (change.type == "File") {
-            const hash = fileNameToHash(change.target);
-            fChanges.files.push({
-                "hash": hash,
-                "data": change.fileData ? change.fileData : {
-                    "file": change.modded
-                },
-                "isCompressed": change.fileData != null
-            });
+            try {
+                const hash = fileNameToHash(change.target);
+                fChanges.files.push({
+                    "hash": hash,
+                    "data": change.fileData ? change.fileData : {
+                        "file": change.modded
+                    },
+                    "isCompressed": change.fileData != null
+                });
+            } catch (e) {
+                log(`Unable to get the hash for change: ${i}`, 'error');
+                completed = false;
+                break;
+            }
         } else {
             fChanges.nodes.push({
                 "name": change.target,
@@ -662,10 +671,12 @@ function changeFiles() {
         }
     }
 
-    ipcRenderer.send("changerChangeFiles", [progBar.id, assetFiles, {
-        "backup": cache['backup'],
-        "path": path.join(cache['output'], 'backups')
-    }, fChanges, (zipPath) ? zipPath : ""])
+    if (completed) {
+        ipcRenderer.send("changerChangeFiles", [progBar.id, assetFiles, {
+            "backup": cache['backup'],
+            "path": path.join(cache['output'], 'backups')
+        }, fChanges, (zipPath) ? zipPath : ""])
+    }
 }
 
 init();

@@ -1,4 +1,5 @@
 const {EditorView} = require('@codemirror/view');
+const inpEvn = new Event('input');
 
 export class SearchPanel {
     /**
@@ -79,12 +80,16 @@ export class SearchPanel {
                 if (regEx.checked) {
                     // if regex apply find as regex
                     let match;
-                    while ((match = querey.exec(docContents)) !== null) {
-                        this.matches.push({
-                            startIdx: match.index,
-                            endIdx: querey.lastIndex
-                        })
-                        console.log(`Found ${match[0]} start=${match.index} end=${querey.lastIndex}.`);
+                    try {
+                        const reX = new RegExp(querey, `g${matchCase.checked ? "" : "i"}`)
+                        while ((match = reX.exec(docContents)) != null) {
+                            this.matches.push({
+                                startIdx: match.index,
+                                endIdx: match.index+querey.length
+                            });
+                        }
+                    } catch (e) {
+                        console.log(e);
                     }
                 } else {
                     // if match case enfroce case match
@@ -123,11 +128,56 @@ export class SearchPanel {
         });
 
         // on move down click move to next selection in matches list
+        moveDown.addEventListener('click', (e) => {
+            this.matchIdx++;
+            if (this.matchIdx == this.matches.length) this.matchIdx = 0;
+            this.setSelection(this.matches[this.matchIdx]);
+            matchesInfo.innerHTML = `${this.matchIdx+1} of ${this.matches.length}`;
+        });
 
         // on move up click move to previous selection in matches list
+        moveUp.addEventListener('click', (e) => {
+            this.matchIdx--;
+            if (this.matchIdx == -1) this.matchIdx = this.matches.length-1;
+            this.setSelection(this.matches[this.matchIdx]);
+            matchesInfo.innerHTML = `${this.matchIdx+1} of ${this.matches.length}`;
+        });
+
+        // on replace one replace selection with replaceInput.val
+        replaceOne.addEventListener('click', (e) => {
+            const matchInfo = this.matches[this.matchIdx];
+            this.view.dispatch({
+                changes: {
+                    from: matchInfo.startIdx,
+                    to: matchInfo.endIdx,
+                    insert: replaceInput.value
+                }
+            });
+        });
+
+        // on replace all replace all entries in this.matches with replaceInput.val
+        replaceAll.addEventListener('click', (e) => {
+            for (const matchInfo of this.matches) {
+                this.view.dispatch({
+                    changes: {
+                        from: matchInfo.startIdx,
+                        to: matchInfo.endIdx,
+                        insert: replaceInput.value
+                    }
+                });
+            }
+        });
 
         // on close call this.hide()
         closeSearch.addEventListener('click', (e) => { this.hide(); });
+
+        matchCase.addEventListener('change', (e) => {
+            findInput.dispatchEvent(inpEvn);
+        });
+
+        regEx.addEventListener('change', (e) => {
+            findInput.dispatchEvent(inpEvn);
+        });
     }
 
     show() {
@@ -149,7 +199,8 @@ export class SearchPanel {
             selection: {
                 anchor: match.startIdx,
                 head: match.endIdx
-            }
+            },
+            scrollIntoView: true
         });
     }
 }

@@ -70,6 +70,11 @@ const state = EditorState.create({
                 run: handleCtrlF,
                 preventDefault: true
             },
+            {
+                key: "Mod-s",
+                run: handleCtrlS,
+                preventDefault: true
+            },
             ...closeBracketsKeymap,
             ...defaultKeymap,
             ...historyKeymap,
@@ -81,7 +86,12 @@ const state = EditorState.create({
         ]),
         vsCodeTheme,
         vsCodeHighlightStyle,
-        EditorState.tabSize.of(4)
+        EditorState.tabSize.of(4),
+        EditorView.updateListener.of(() => {
+            if (openSheet) {
+                if (openSheet.isSaved) openSheet.needsSave = true;
+            }
+        })
     ]
 });
 const view = new EditorView({ state: state, parent: editorContainer });
@@ -145,6 +155,7 @@ function initSheets() {
 }
 
 function handleCtrlF() { (searchPanel.showing) ? searchPanel.hide() : searchPanel.show(); }
+function handleCtrlS() { if (openSheet) openSheet.save(); }
 
 class ExistingSheet {
     /**
@@ -235,7 +246,8 @@ class ExistingSheet {
     save() {
         if (!this.isSaved) {
             const docCont = view.state.doc.sliceString(0, view.state.doc.length, "\n");
-            console.log(docCont);
+
+            fs.writeFileSync(this.fileName, docCont);
 
             this.needsSave = false;
         }

@@ -563,7 +563,6 @@ function initEditorWindow() {
   editorWindow.once('ready-to-show', () => editorWindow.show());
   
   editorWindow.removeMenu();
-  editorWindow.webContents.openDevTools();
   editorWindow.loadFile(`${__dirname}/src/html/Editor.html`);
   
   editorWindow.on('close', (e) => {
@@ -580,7 +579,6 @@ function initEditorWindow() {
     initEditorListeners(editorWindow);
   });
 }
-
 function initEditorListeners(window) {
   
 }

@@ -34,6 +34,10 @@ const openSheetName = document.getElementById('openSheetName');
 const saveIcon = document.getElementById("saveIcon");
 const editorContainer = document.getElementById('editorContainer');
 
+const closeModal = document.getElementById('closeModal');
+const confirmClose = document.getElementById('confirmClose');
+const cancelClose = document.getElementById('cancelClose');
+
 // Consts
 const sheets = [
     /**
@@ -44,6 +48,8 @@ const sheets = [
      */
 ];
 let openSheet = null;
+let originalData = "Slicers GUI Layout Editor";
+let isRendering = false;
 const state = EditorState.create({
     doc: "Slicers GUI Layout Editor",
     extensions: [
@@ -87,17 +93,19 @@ const state = EditorState.create({
         vsCodeTheme,
         vsCodeHighlightStyle,
         EditorState.tabSize.of(4),
-        EditorView.updateListener.of(() => {
-            if (openSheet) {
-                if (openSheet.isSaved) openSheet.needsSave = true;
+        EditorView.updateListener.of((v) => {
+            if (v.docChanged && openSheet && !isRendering) {
+                openSheet.needsSave = openSheet.isSaved && view.state.doc.sliceString(0, view.state.doc.length) != originalData;
             }
         })
     ]
 });
 const view = new EditorView({ state: state, parent: editorContainer });
 const searchPanel = new SearchPanel(view, editorContainer);
+let closeCallback = () => {};
 
 function initialize() {
+    initListeners();
     initAccordions();
     initSheets();
 }
@@ -154,6 +162,17 @@ function initSheets() {
     }
 }
 
+function initListeners() {
+    confirmClose.addEventListener('click', (e) => {
+        closeModal.style.display = 'none';
+        closeCallback();
+    });
+    cancelClose.addEventListener('click', (e) => {
+        closeModal.style.display = 'none';
+        closeCallback = () => {};
+    })
+}
+
 function handleCtrlF() { (searchPanel.showing) ? searchPanel.hide() : searchPanel.show(); }
 function handleCtrlS() { if (openSheet) openSheet.save(); }
 
@@ -203,22 +222,24 @@ class ExistingSheet {
     }
 
     open() {
-        if (openSheet) {
-            //TODO: handle instance where open page may need a prompt to save if it has unsaved changes
-            if (openSheet.displayName !== this.displayName) {
-
+        if (openSheet && !openSheet.isSaved && openSheet.displayName !== this.displayName) {
+            closeModal.style.display = 'flex';
+            closeCallback = () => {
+                this.render();
             }
         } else {
             this.render();
         }
-        openSheetName.innerHTML = this.displayName;
-        openSheet = this;
-
-        this.needsSave = true;
-        this.save();
     }
 
     render() {
+        isRendering = true;
+        const buffer = fs.readFileSync(this.fileName);
+        /* This is the contents of the css file. They are already properly formatted */
+        const contents = buffer.toString();
+
+        originalData = contents;
+
         let clearTransaction = view.state.update({
             changes: {
                 from: 0,
@@ -229,9 +250,6 @@ class ExistingSheet {
         view.dispatch(clearTransaction);
 
         view.state.doc.replace(0, view.state.doc.lines, "");
-        const buffer = fs.readFileSync(this.fileName);
-        /* This is the contents of the css file. They are already properly formatted */
-        const contents = buffer.toString();
 
         let sheetRenderTransaction = view.state.update({
             changes: {
@@ -241,6 +259,12 @@ class ExistingSheet {
         });
 
         view.dispatch(sheetRenderTransaction);
+        
+        openSheetName.innerHTML = this.displayName;
+        openSheet = this;
+        setTimeout(() => {
+            isRendering = false
+        }, 100);
     }
 
     save() {

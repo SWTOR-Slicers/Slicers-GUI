@@ -84,3 +84,6 @@
 .fa-arrow-up, .fa-arrow-down {
     font-size: 14px;
 }
+.search-panel .fas {
+    color: inherit;
+}

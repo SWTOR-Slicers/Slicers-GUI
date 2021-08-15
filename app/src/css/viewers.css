@@ -1,1 +1,180 @@
 /* this will be the universal viewer styles file */
+:root {
+	--color-light: #2fa5d4;
+    --grey-black: #1a1a1a;
+    --grey-black-hover: #2b2b2b;
+    --medium-grey: #333;
+    --medium-grey-bright: rgb(97, 97, 97);
+    --background-yellow-slicers: #ffce00;
+}
+
+.viewer-window {
+    font-family: 'Eurofont';
+    background-color: var(--grey-black);
+    height: calc(100% - 30px);
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+.element-border {
+    border: 1px solid #000;
+    box-shadow: 0 0 4px rgb(0 0 0 / 50%);
+}
+.h2 {
+    color: white;
+    font-family: 'Eurofont';
+    margin: 5px 5px;
+    width: calc(100% - 10px);
+    border-bottom: 1px solid #000;
+}
+
+.h2-container {
+    color: white;
+    margin: 5px 5px;
+    width: calc(100% - 10px);
+    border-bottom: 1px solid #000;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.path-input-field-container {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+
+.view-container {
+    height: 100%;
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.view-body {
+    height: calc(100% - 20px);
+    width: 100%;
+    background-color: var(--medium-grey);
+    border-radius: 6px;
+}
+
+.data-view-container {
+    height: 100%;
+    width: 20%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.data-view-body {
+    height: calc(100% - 20px);
+    width: calc(100% - 20px);
+    border-radius: 6px;
+    background-color: var(--medium-grey);
+}
+.data-view-container__data {
+    width: 100%;
+    height: 70%;
+    overflow: hidden;
+}
+.data-body {
+    font-size: 14px;
+    color: white;
+    width: 100%;
+    height: auto;
+    overflow: scroll;
+}
+.data-info-section {
+    padding-left: 5px;
+    width: calc(100% - 10px);
+}
+.section-container {
+    padding-left: 15px;
+    width: calc(100% - 20px);
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    overflow: hidden;
+}
+.data-label-field-container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+.data-label-field__icon {
+    margin-bottom: 2px;
+    margin-right: 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--background-yellow-slicers);
+    height: 8px;
+    width: 8px;
+}
+.fa-plus-square, .fa-minus-square {
+    color: var(--grey-black);
+}
+.data-label-field {
+    font-size: 16px;
+    width: 100%;
+}
+.data-label-field:hover {
+    cursor: pointer;
+    background-color: rgb(71, 71, 71);
+}
+.data-info-field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 5px;
+}
+.data-info__name {
+    margin-right: 10px;
+}
+.data-info__value {
+    color: rgb(112, 209, 248);
+}
+
+.export-data-options-container {
+    width: 100%;
+    height: 30%
+}
+.data-options-body {
+    width: calc(100% - 10px);
+    height: calc(100% - 35px);
+    margin-left: 5px;
+}
+.data-options-export {
+    width: 100%;
+    height: 25%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+.data-options-body .container-bottom__sub__btn {
+    width: auto;
+    margin-right: 7px;
+    padding: 4px auto;
+}
+.option-name {
+    color: white;
+}
+.option-data {
+    margin-left: 7px;
+}

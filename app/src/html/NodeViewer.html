@@ -8,25 +8,17 @@
     <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../css/Universal.css">
     <link rel="stylesheet" href="../css/NodeViewer.css">
-    <title>GR2 Viewer</title>
+    <link rel="stylesheet" href="../css/Tooltips.css">
+    <title>Node Viewer</title>
 </head>
 <body>
-    <div class="viewer-window">
+    <log-alert type="alert" visible="false"></log-alert>
+    <window-title class="window-title"></window-title>
+    <div class="viewer-window unselectable">
         <div class="file-tree-container">
             <div class="file-tree-body element-border">
                 <div class="h2-container">
                     <h3 class="file-browser-header">Node Tree</h3>
-                    <div class="file-browser-header__buttons-container">
-                        <div id="backArrowBtn" class="file-browser-header__button fbh__disabled">
-                            <i class="fas fa-arrow-left"></i>
-                        </div>
-                        <div id="forwardArrowBtn" class="file-browser-header__button fbh__disabled">
-                            <i class="fas fa-arrow-right"></i>
-                        </div>
-                        <div id="moveUpArrowBtn" class="file-browser-header__button">
-                            <i class="fas fa-arrow-up"></i>
-                        </div>
-                    </div>
                 </div>
                 <div class="path-input-field-container">
                     <input class="paths-field-input" type="text" name="fqnField" id="fqnField">
@@ -76,6 +68,9 @@
         </div>
     </div>
 
+    <script type="module" src="../api/components/thumb-slider/ThumbSlider.js"></script>
+    <script type="module" src="../api/components/alert/Alert.js"></script>
+    <script type="module" src="../api/components/title-bar/WindowTitleBar.js"></script>
     <script type="module" src="../js/node-viewer/NodeViewer.js"></script>
 </body>
 </html>

@@ -37,7 +37,8 @@ let fileChangerWin;
 let creditsWindow;
 let editorWindow;
 let nodeSelectWin;
-const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin, creditsWindow, editorWindow, nodeSelectWin];
+let nodeViewerWin;
+const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin, creditsWindow, editorWindow, nodeSelectWin, nodeViewerWin];
 
 let appQuiting = false;
 const cache = {
@@ -122,6 +123,9 @@ function getWindowFromArg(arg) {
       break;
     case "Node Extract Selection":
       win = nodeSelectWin;
+      break;
+    case "Node Viewer":
+      win = nodeViewerWin;
       break;
   }
   return win;
@@ -306,7 +310,11 @@ function initMainListeners() {
           }
           break;
         case "nodeViewer":
-          //run node viewer
+          if (nodeViewerWin) {
+            nodeViewerWin.show();
+          } else {
+            initNodeViewer();
+          }
           break;
         case "gr2Viewer":
           if (gr2Window) {
@@ -1010,6 +1018,49 @@ function initGR2Listeners(window) {
     });
   });
 }
+//Node viewer
+function initNodeViewer () {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
+  nodeViewerWin = new BrowserWindow({
+    width: width,
+    height: height,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: 'src/img/SlicersLogo.ico',
+    show: false
+  });
+  nodeViewerWin.once('ready-to-show', () => nodeViewerWin.show());
+  
+  nodeViewerWin.removeMenu();
+  nodeViewerWin.webContents.openDevTools();
+  nodeViewerWin.loadFile(`${__dirname}/src/html/NodeViewer.html`);
+  
+  
+  nodeViewerWin.on('close', (e) => {
+    if (!appQuiting) {
+      e.preventDefault();
+      nodeViewerWin.hide();
+    }
+    if (mainWindow) {
+      if (mainWindow.webContents) {
+        mainWindow.webContents.send('nodeViewClosed', '');
+      }
+    }
+  
+  });
+  
+  initNodeViewerListeners(nodeViewerWin);
+}
+
+
+function initNodeViewerListeners(window) {
+  
+}
+
 
 //utility methods
 async function extractSingleFile(progBarId, params) {

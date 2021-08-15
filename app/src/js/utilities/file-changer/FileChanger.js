@@ -25,14 +25,11 @@ const fs = require('fs');
 const path = require('path');
 const validFilename = require('valid-filename');
 const configPath = path.normalize(path.join(resourcePath, "config.json"));
-let hashChangeList = {
-    /* format of "ph|sh": new HashChange() */
-};
 /**
  * Array of mod entries
  * @type {FileEntry[]}
  */
-const fileChanges = [];
+let fileChanges = [];
 const chngEvn = new Event('change');
 const cache = {
     "assets": "",
@@ -428,7 +425,10 @@ function initSubs() {
             const fPath = data[1][0];
 
             if (id == "loadMod") {
+
                 if (path.extname(fPath) == '.tormod') {
+                    fileChanges = [];
+                    fileChangesCont.innerHTML = ''
                     moddedParentFolderBrowseBtn.style.display = 'none';
                     moddedParentFolder.style.display = 'none';
                     writeMod.classList.remove('disabled');

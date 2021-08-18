@@ -8,20 +8,21 @@
     <link rel="stylesheet" href="../../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../css/Universal.css">
     <link rel="stylesheet" href="../css/NodeViewer.css">
+    <link rel="stylesheet" href="../css/viewers.css">
     <link rel="stylesheet" href="../css/Tooltips.css">
     <title>Node Viewer</title>
 </head>
 <body>
     <log-alert type="alert" visible="false"></log-alert>
     <window-title class="window-title"></window-title>
-    <div class="viewer-window unselectable">
-        <div class="file-tree-container">
+    <div id="viewerWindow" class="viewer-window unselectable">
+        <div id="fileTreeContainer" class="file-tree-container">
             <div class="file-tree-body element-border">
                 <div class="h2-container">
                     <h3 class="file-browser-header">Node Tree</h3>
                 </div>
                 <div class="path-input-field-container">
-                    <input class="paths-field-input" type="text" name="fqnField" id="fqnField">
+                    <input class="paths-field-input-alt" type="text" name="fqnField" id="fqnField" style="width: 100%; min-width: 0px; max-width: 200px;">
                 </div>
                 <div class="tree-list-container">
                     <div id="treeList" class="file-tree-elements">
@@ -30,12 +31,14 @@
                 </div>
             </div>
         </div>
-        <div class="model-view-container">
-            <div class="model-view-body element-border">
+        <div id="leftDrag" class="drag-spacer"></div>
+        <div id="viewContainer" class="view-container">
+            <div class="view-body element-border">
                 <!-- this will be where the node info is displayed -->
             </div>
         </div>
-        <div class="data-view-container">
+        <div id="rightDrag" class="drag-spacer"></div>
+        <div id="dataViewContainer" class="data-view-container">
             <div class="data-view-body element-border">
                 <div class="data-view-container__data">
                     <h3 class="h2">Data</h3>
@@ -49,11 +52,16 @@
                         <div class="data-options-main">
                             <div class="data-options-option">
                                 <label class="option-name" for="modalColor">Output: </label>
-                                <input class="paths-field-input data-field-input" type="text" name="outputField" id="outputField">
+                                <input class="paths-field-input-alt data-field-input" type="text" name="outputField" id="outputField" style="min-width: 0px; width: calc(100% - 70px);">
                             </div>
                             <div class="data-options-option">
-                                <label class="option-name" for="modalColor">Format: </label> <!-- json, xml, and -->
-                                <!-- custom dropdown here -->
+                                <label class="option-name" for="modalColor" style="margin-right: 7px;">Format: </label>
+                                <select name="extrFormat" id="extrFormat" is="drop-down">
+                                    <option value="0">json</option>
+                                    <option value="json">json</option>
+                                    <option value="xml">xml</option>
+                                    <option value="raw">raw</option>
+                                </select>
                             </div>
                             <div class="data-options-option">
                                 <button id="collapseData" class="container-bottom__sub__btn data-field-input">Collapse Data</button>
@@ -68,9 +76,10 @@
         </div>
     </div>
 
+    <script type="module" src="../api/components/drop-down/DropDown.js"></script>
     <script type="module" src="../api/components/thumb-slider/ThumbSlider.js"></script>
     <script type="module" src="../api/components/alert/Alert.js"></script>
     <script type="module" src="../api/components/title-bar/WindowTitleBar.js"></script>
-    <script type="module" src="../js/node-viewer/NodeViewer.js"></script>
+    <script type="module" src="../js/viewers/node-viewer/NodeViewer.js"></script>
 </body>
 </html>

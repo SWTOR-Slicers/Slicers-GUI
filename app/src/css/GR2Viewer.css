@@ -107,6 +107,12 @@
     color: white;
 }
 
+.view-body {
+    height: calc(100% - 20px);
+    width: 100%;
+    background-color: var(--medium-grey);
+    border-radius: 6px;
+}
 .canvas-container {
 	height: 100%;
 	width: 100%;
@@ -193,6 +199,12 @@
 	cursor: pointer;
 }
 
+.data-view-body {
+    height: calc(100% - 20px);
+    width: calc(100% - 20px);
+    border-radius: 6px;
+    background-color: var(--medium-grey);
+}
 .data-options-main {
     width: 100%;
     height: 75%;

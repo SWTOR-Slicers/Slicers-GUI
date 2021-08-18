@@ -42,7 +42,8 @@
 }
 
 .path-input-field-container {
-    width: 100%;
+    width: calc(100% - 20px);
+    margin-left: 10px;
     height: auto;
     display: flex;
     flex-direction: row;
@@ -60,12 +61,6 @@
     align-items: center;
     justify-content: center;
 }
-.view-body {
-    height: calc(100% - 20px);
-    width: 100%;
-    background-color: var(--medium-grey);
-    border-radius: 6px;
-}
 
 .data-view-container {
     height: 100%;
@@ -74,12 +69,6 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-}
-.data-view-body {
-    height: calc(100% - 20px);
-    width: calc(100% - 20px);
-    border-radius: 6px;
-    background-color: var(--medium-grey);
 }
 .data-view-container__data {
     width: 100%;

@@ -29,19 +29,23 @@ function initCache() {
 
 function initListeners() {
     leftDrag.addEventListener('mousedown', (e) => { leftResize.shouldResize = true; leftResize.currX = fileTreeContainer.clientWidth; });
+    rightDrag.addEventListener('mousedown', (e) => { rightResize.shouldResize = true; rightResize.currX = viewContainer.clientWidth; });
     document.addEventListener('mouseup', (e) => {
         if (leftResize.shouldResize) leftResize.shouldResize = false; leftResize.currX = null;
         if (rightResize.shouldResize) rightResize.shouldResize = false; rightResize.currX = null;
     });
     document.addEventListener('mousemove', (e) => {
         if (leftResize.shouldResize) {
-            let changePercent = ((e.clientX + leftResize.currX) / viewerWindow.clientWidth) * 100;
+            let changePercent = ((e.clientX) / viewerWindow.clientWidth) * 100;
             let existingIncr = dataViewContainer.clientWidth / viewerWindow.clientWidth * 100;
-            changePercent -= existingIncr;
             fileTreeContainer.style.width = `${changePercent}%`;
             viewContainer.style.width = `${100 - changePercent - existingIncr}%`;
         } else if (rightResize.shouldResize) {
-
+            let changePercent = ((e.clientX) / viewerWindow.clientWidth) * 100;
+            let existingIncr = fileTreeContainer.clientWidth / viewerWindow.clientWidth * 100;
+            changePercent -= existingIncr;
+            viewContainer.style.width = `${changePercent}%`;
+            dataViewContainer.style.width = `${100 - changePercent - existingIncr}%`;
         }
     });
 }

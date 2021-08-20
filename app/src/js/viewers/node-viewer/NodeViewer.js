@@ -1,26 +1,25 @@
+import { initGomTree } from "./GomTree.js";
 
 
 // DOM Elements
 const viewerWindow = document.getElementById('viewerWindow');
 const fileTreeContainer = document.getElementById('fileTreeContainer');
+const treeList = document.getElementById('treeList');
 const leftDrag = document.getElementById('leftDrag');
-let leftResize = {
-    "shouldResize": false,
-    "currX": null
-};
-const viewContainer = document.getElementById('viewContainer');
-const rightDrag = document.getElementById('rightDrag');
-let rightResize = {
-    "shouldResize": false,
-    "currX": null
-};
-const dataViewContainer = document.getElementById('dataViewContainer');
+let leftResize = false;
 
+const viewContainer = document.getElementById('viewContainer');
+
+let rightResize = false;
+const rightDrag = document.getElementById('rightDrag');
+const dataViewContainer = document.getElementById('dataViewContainer');
+const dataContainer = document.getElementById('dataContainer');
 
 function init() {
     initCache();
     initListeners();
     initSubs();
+    initGomTree(treeList, viewContainer);
 }
 
 function initCache() {
@@ -28,19 +27,19 @@ function initCache() {
 }
 
 function initListeners() {
-    leftDrag.addEventListener('mousedown', (e) => { leftResize.shouldResize = true; leftResize.currX = fileTreeContainer.clientWidth; });
-    rightDrag.addEventListener('mousedown', (e) => { rightResize.shouldResize = true; rightResize.currX = viewContainer.clientWidth; });
+    leftDrag.addEventListener('mousedown', (e) => { leftResize = true; });
+    rightDrag.addEventListener('mousedown', (e) => { rightResize = true; });
     document.addEventListener('mouseup', (e) => {
-        if (leftResize.shouldResize) leftResize.shouldResize = false; leftResize.currX = null;
-        if (rightResize.shouldResize) rightResize.shouldResize = false; rightResize.currX = null;
+        if (leftResize) leftResize = false;
+        if (rightResize) rightResize = false;
     });
     document.addEventListener('mousemove', (e) => {
-        if (leftResize.shouldResize) {
+        if (leftResize) {
             let changePercent = ((e.clientX) / viewerWindow.clientWidth) * 100;
             let existingIncr = dataViewContainer.clientWidth / viewerWindow.clientWidth * 100;
             fileTreeContainer.style.width = `${changePercent}%`;
             viewContainer.style.width = `${100 - changePercent - existingIncr}%`;
-        } else if (rightResize.shouldResize) {
+        } else if (rightResize) {
             let changePercent = ((e.clientX) / viewerWindow.clientWidth) * 100;
             let existingIncr = fileTreeContainer.clientWidth / viewerWindow.clientWidth * 100;
             changePercent -= existingIncr;

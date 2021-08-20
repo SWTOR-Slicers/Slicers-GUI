@@ -4,6 +4,7 @@
     --grey-black-hover: #2b2b2b;
     --medium-grey: #333;
     --background-yellow-slicers: #ffce00;
+    --elem-hover: rgb(71, 71, 71);
 }
 
 .file-browser-header {
@@ -87,4 +88,39 @@
     height: 100%;
     width: 10px;
     cursor: w-resize;
+}
+
+.file-tree-elements > .node-fam, .file-tree-elements > .node {
+    width: calc(100% - 7px);
+    margin-left: 7px;
+    height: auto;
+    overflow: auto;
+}
+.node-fam {
+    width: calc(100% - 17px);
+    margin-left: 17px;
+
+    height: 0;
+    overflow: hidden;
+    transition: height 0.2s ease-in-out;
+}
+.fam-open {
+    height: auto;
+    overflow: auto;
+}
+.node-fam__name {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.node-fam__name:hover {
+    cursor: pointer;
+    background-color: var(--elem-hover);
+}
+.node-fam-name {
+    margin-left: 7px;
+}
+.node {
+    width: calc(100% - 17px);
+    margin-left: 17px;
 }

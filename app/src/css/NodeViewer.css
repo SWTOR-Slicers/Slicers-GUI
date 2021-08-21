@@ -34,6 +34,8 @@
     width: 100%;
     height: calc(100% - 53px);
     overflow: scroll;
+
+    font-size: 14px;
 }
 .file-tree-elements {
     height: auto;
@@ -90,10 +92,15 @@
     cursor: w-resize;
 }
 
+/* Gom tree styling */
 .file-tree-elements > .node-fam {
     margin: 0px;
     height: auto;
     overflow: auto;
+    border-left: none;
+}
+.file-tree-elements > .node-fam > .node-fam__name {
+    padding-left: 7px;
 }
 .file-tree-elements > .node {
     min-width: calc(100% - 24px);
@@ -101,20 +108,24 @@
     height: auto;
     overflow: auto;
 }
+.file-tree-elements > .node-fam > .node-fam {
+    min-width: calc(100% - 12px);
+    margin-left: 11px;
+}
 .node-fam {
-    min-width: calc(100% - 24px);
-    margin-left: 24px;
-
+    min-width: calc(100% - 17px);
+    margin-left: 16px;
     height: 0;
     overflow: hidden;
     transition: height 0.2s ease-in-out;
+    border-left: 1px solid var(--background-yellow-slicers);
 }
 .fam-open {
     height: auto;
     overflow: auto;
 }
 .node-fam__name {
-    padding-left: 7px;
+    padding-left: 12px;
 
     display: flex;
     flex-direction: row;
@@ -128,7 +139,13 @@
     margin-left: 7px;
 }
 .node {
-    min-width: calc(100%-17px);
-    padding-left: 17px;
+    min-width: calc(100% - 12px);
+    padding-left: 12px;
     overflow: visible;
 }
+.node:hover {
+    cursor: pointer;
+    background-color: var(--elem-hover);
+}
+
+/* Node data view styling */

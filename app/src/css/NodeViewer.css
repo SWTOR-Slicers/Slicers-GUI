@@ -90,15 +90,20 @@
     cursor: w-resize;
 }
 
-.file-tree-elements > .node-fam, .file-tree-elements > .node {
-    width: calc(100% - 7px);
-    margin-left: 7px;
+.file-tree-elements > .node-fam {
+    margin: 0px;
+    height: auto;
+    overflow: auto;
+}
+.file-tree-elements > .node {
+    min-width: calc(100% - 24px);
+    margin-left: 24px;
     height: auto;
     overflow: auto;
 }
 .node-fam {
-    width: calc(100% - 17px);
-    margin-left: 17px;
+    min-width: calc(100% - 24px);
+    margin-left: 24px;
 
     height: 0;
     overflow: hidden;
@@ -109,6 +114,8 @@
     overflow: auto;
 }
 .node-fam__name {
+    padding-left: 7px;
+
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -121,6 +128,7 @@
     margin-left: 7px;
 }
 .node {
-    width: calc(100% - 17px);
-    margin-left: 17px;
+    min-width: calc(100%-17px);
+    padding-left: 17px;
+    overflow: visible;
 }

@@ -15,16 +15,21 @@ class NodeElem {
 
         for (let i = 0; i < path.length; i++) {
             if (i == path.length - 1) {
+                const dFam = document.createElement('div');
+                dFam.className = "node-fam";
+
                 const dNode = document.createElement('div');
                 dNode.id = this.fqn;
                 dNode.className = "node";
                 dNode.innerHTML = `${path[i]}.node`;
                 dNode.addEventListener('click', (e) => { this.node.render(renderElem); });
 
+                dFam.appendChild(dNode)
+
                 if (i == 0) {
-                    parent.appendChild(dNode)
+                    parent.appendChild(dFam)
                 } else {
-                    document.getElementById(`${path.slice(0, i).join('.')}`).appendChild(dNode);
+                    document.getElementById(`${path.slice(0, i).join('.')}`).appendChild(dFam);
                 }
             } else {
                 const id = path.slice(0, i+1).join(".");
@@ -35,17 +40,25 @@ class NodeElem {
 
                     const dFam = document.createElement('div');
                     dFam.className = "node-fam__name";
-                    dFam.innerHTML = `
-                        <img src="../img/Expand Section Icon.svg" width="10" height="10">
-                        <div class="node-fam-name">${path[i]}</div>
-                    `;
+
+                    const dImg = document.createElement('img');
+                    dImg.src = "../img/Expand Section Icon.svg";
+                    dImg.width = "10";
+                    dImg.height = "10";
+                    dFam.appendChild(dImg);
+
+                    const dName = document.createElement('div');
+                    dName.innerHTML = path[i];
+                    dName.className = "node-fam-name";
+                    dFam.appendChild(dName);
+
                     dFam.addEventListener('click', (e) => {
                         if (dFam.nextElementSibling.classList.contains('fam-open')) {
                             dFam.nextElementSibling.classList.remove('fam-open');
-                            dFam.querySelector('img').src = "../img/Collapse Section Icon.svg";
+                            dImg.src = "../img/Expand Section Icon.svg";
                         } else {
                             dFam.nextElementSibling.classList.add('fam-open');
-                            dFam.querySelector('img').src = "../img/Expand Section Icon.svg";
+                            dImg.src = "../img/Collapse Section Icon.svg";
                         }
                     });
                     dNode.appendChild(dFam);

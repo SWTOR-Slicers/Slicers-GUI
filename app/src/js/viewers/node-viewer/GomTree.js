@@ -1,9 +1,9 @@
-import {Node} from "../../classes/Node.js";
+import {Node, NodeEntr} from "../../classes/Node.js";
 
 class NodeElem {
     /**
      * @param  {String} fqn Node fqn id.
-     * @param  {Node} node Node fqn id.
+     * @param  {NodeEntr} node Node fqn id.
      */
     constructor(fqn, node) {
         this.fqn = fqn;
@@ -74,8 +74,22 @@ class NodeElem {
     }
 }
 
-export function initGomTree(parent, renderElem) {
-    const lanaNodeTest = new Node([]);
-    const lanaTest = new NodeElem('ipp.exp.seasons.01.multi.lana_beniko', lanaNodeTest);
-    lanaTest.render(parent, renderElem);
+class GomTree {
+    constructor (parent, renderElem) {
+        this.parent = parent;
+        this.renderElem = renderElem;
+        this.nodes = {};
+    }
+
+    /**
+     * Adds a node to the Gom tree, and saves the created nodeElem to a dictionary
+     * @param {NodeEntr} node A Node object representing the node entry data from the GO node reader.
+     */
+    addNode(node) {
+        const nodeRep = new NodeElem(node.fqn, node);
+        this.nodes[node.fqn] = nodeRep;
+        nodeRep.render(this.parent, this.renderElem);
+    }
 }
+
+export {GomTree};

@@ -1,5 +1,9 @@
-import { initGomTree } from "./GomTree.js";
+import { GomTree } from "./GomTree.js";
+import {Node, NodeEntr} from "../../classes/Node.js";
+import { log } from "../../universal/Logger.js";
 
+// Node.js imports
+const { ipcRenderer } = require("electron");
 
 // DOM Elements
 const viewerWindow = document.getElementById('viewerWindow');
@@ -15,11 +19,14 @@ const rightDrag = document.getElementById('rightDrag');
 const dataViewContainer = document.getElementById('dataViewContainer');
 const dataContainer = document.getElementById('dataContainer');
 
+// Constants
+const GTree = new GomTree(treeList, viewContainer);
+
 function init() {
     initCache();
     initListeners();
     initSubs();
-    initGomTree(treeList, viewContainer);
+    initGomTree();
 }
 
 function initCache() {
@@ -50,7 +57,26 @@ function initListeners() {
 }
 
 function initSubs() {
+    ipcRenderer.on('nodeEntryPass', (event, data) => {
+        const node = new NodeEntr(data);
+        GTree.addNode(node);
+    });
+    ipcRenderer.on('errorPathNotExist', (event, data) => { log("The required .tor file is not in your assets directory.", "error"); });
+    ipcRenderer.on('nodeReadComplete', (event, data) => {
+        if (data[0] == 0) {
+            log("Node names generated.", "info");
+        } else {
+            log("Error generating node names.", "error");
+        }
+    });
+}
 
+function initGomTree() {
+    ipcRenderer.send('readAllNodes');
+    // const lanaNodeTest = new Node({
+    //     "fqn": 'ipp.exp.seasons.01.multi.lana_beniko'
+    // });
+    // GTree.addNode(lanaNodeTest);
 }
 
 init()

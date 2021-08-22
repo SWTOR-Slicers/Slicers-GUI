@@ -1057,7 +1057,7 @@ function initNodeViewer () {
   initNodeViewerListeners(nodeViewerWin);
 }
 function initNodeViewerListeners(window) {
-  
+  ipcMain.on('readAllNodes', (event, data) => { readAllNodes(); })
 }
 
 
@@ -1251,6 +1251,28 @@ async function updateJSON(param, val) {
   cache[param] = val;
 
   fs.writeFileSync(path.join(resourcePath, "config.json"), JSON.stringify(json, null, '\t'), 'utf-8');
+}
+
+async function readAllNodes() {
+  try {
+    let torFile = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_global_1.tor' : 'swtor_test_main_global_1.tor');
+
+    if (fs.existsSync(torFile)) {
+      const extrProc = child.spawn(path.join(resourcePath, "scripts", "nodeReader.exe"), [torFile]);
+      extrProc.stdout.on('data', (data) => {
+        nodeViewerWin.webContents.send('nodeEntryPass', [JSON.parse(data.toString())]);
+      });
+      extrProc.stderr.on('data', (data) => { console.log(`Error: ${data.toString()}`); });
+      extrProc.on('exit', (code) => {
+        console.log(`child process exited with status: ${code.toString()}`);
+        nodeViewerWin.webContents.send("nodeReadComplete", [code == 0]);
+      });
+    } else {
+      nodeViewerWin.webContents.send("errorPathNotExist");
+    }
+  } catch (err) {
+    console.log(err);
+  }
 }
 //handles installation events
 function handleSquirrelEvent() {

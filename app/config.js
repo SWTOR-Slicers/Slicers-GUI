@@ -22,6 +22,18 @@ async function copyResourcesRecursive(originalDir, targetDir) {
     }
   }
 }
+const resourcesPath = {
+    "resourceDirPath": ""
+};
+async function setDefaultValues() {
+    const data = fs.readFileSync(path.join(__dirname, "resources", "resources.json"));
+    const value = JSON.parse(data);
+    fs.writeFileSync(path.join(__dirname, "resources", "resources.json"), JSON.stringify(resourcesPath));
+    resourcesPath.resourceDirPath = value.resourceDirPath;
+}
+async function setOldValues() {
+    fs.writeFileSync(path.join(__dirname, "resources", "resources.json"), JSON.stringify(resourcesPath));
+}
 module.exports = {
     "packagerConfig": {
         "productName": "Slicers GUI",
@@ -31,8 +43,14 @@ module.exports = {
         ]
     },
     "hooks": {
+        prePackage: async (forgeConfig) => {
+            await setDefaultValues();
+        },
         packageAfterExtract: async (forgeConfig, extractPath) => {
             await copyResources(path.join(extractPath, 'resources'));
+        },
+        postPackage: async (forgeConfig) => {
+            await setOldValues();
         }
     },
     "makers": [

@@ -11,8 +11,9 @@ class Node {
 }
 
 class NodeEntr {
-    constructor(nodeJson) {
+    constructor(nodeJson, torPath) {
         this.id = nodeJson.id;
+        this.fqn = nodeJson.fqn;
         this.baseClass = nodeJson.baseClass;
         this.bktIdx = nodeJson.bktIdx;
         this.dataOffset = nodeJson.dataOffset;
@@ -20,6 +21,7 @@ class NodeEntr {
         this.contentOffset = nodeJson.contentOffset;
         this.uncomprLength = nodeJson.uncomprLength;
         this.streamStyle = nodeJson.streamStyle;
+        this.torPath = torPath;
     }
 
     render(parent) {

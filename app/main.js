@@ -1260,11 +1260,12 @@ async function readAllNodes() {
     if (fs.existsSync(torFile)) {
       const extrProc = child.spawn(path.join(resourcePath, "scripts", "nodeReader.exe"), [torFile]);
       extrProc.stdout.on('data', (data) => {
-        nodeViewerWin.webContents.send('nodeEntryPass', [JSON.parse(data.toString())]);
+        const jsonStr = data.toString()
+        nodeViewerWin.webContents.send('nodeEntryPass', [JSON.parse(JSON.stringify(jsonStr)), torFile]);
       });
       extrProc.stderr.on('data', (data) => { console.log(`Error: ${data.toString()}`); });
       extrProc.on('exit', (code) => {
-        console.log(`child process exited with status: ${code.toString()}`);
+        console.log(`child process exited with status: ${code ? code.toString() : 0}`);
         nodeViewerWin.webContents.send("nodeReadComplete", [code == 0]);
       });
     } else {

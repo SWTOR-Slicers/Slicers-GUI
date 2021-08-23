@@ -1,9 +1,10 @@
 import { GomTree } from "./GomTree.js";
-import {Node, NodeEntr} from "../../classes/Node.js";
 import { log } from "../../universal/Logger.js";
+import { sourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 
 // Node.js imports
 const { ipcRenderer } = require("electron");
+const path = require("path");
 
 // DOM Elements
 const viewerWindow = document.getElementById('viewerWindow');
@@ -21,11 +22,13 @@ const dataContainer = document.getElementById('dataContainer');
 
 // Constants
 const GTree = new GomTree(treeList, viewContainer);
+let worker;
 
 function init() {
     initCache();
     initListeners();
     initSubs();
+    initWorker();
     initGomTree();
 }
 
@@ -56,10 +59,26 @@ function initListeners() {
     });
 }
 
+function initWorker() {
+    worker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "NodeWorker.js"), {
+        type: "module"
+    });
+    worker.onmessage = (e) => {
+        // handle response from worker
+        switch (e.message) {
+            case "finishedEntr":
+                GTree.addNode(e.data);
+                break;
+        }
+    }
+}
+
 function initSubs() {
     ipcRenderer.on('nodeEntryPass', (event, data) => {
-        const node = new NodeEntr(data);
-        GTree.addNode(node);
+        worker.postMessage({
+            "message": 'nodeEntr',
+            "data": data
+        });
     });
     ipcRenderer.on('errorPathNotExist', (event, data) => { log("The required .tor file is not in your assets directory.", "error"); });
     ipcRenderer.on('nodeReadComplete', (event, data) => {

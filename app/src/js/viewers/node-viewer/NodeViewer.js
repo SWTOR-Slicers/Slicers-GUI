@@ -64,12 +64,11 @@ function initWorker() {
         type: "module"
     });
     worker.onmessage = (e) => {
-        console.log('recieved responsive');
-        // handle response from worker
         switch (e.data.message) {
-            case "finishedEntr":
-                GTree.addNode(e.data.data);
-                break;
+            case "NODES":
+                for (const node of e.data.data) {
+                    GTree.addNode(node);
+                }
         }
     }
 }
@@ -79,12 +78,6 @@ function initSubs() {
         worker.postMessage({
             "message": 'loadNodes',
             "data": data[0]
-        });
-    });
-    ipcRenderer.on('nodeEntryPass', (event, data) => {
-        worker.postMessage({
-            "message": 'nodeEntr',
-            "data": data
         });
     });
     ipcRenderer.on('errorPathNotExist', (event, data) => { log("The required .tor file is not in your assets directory.", "error"); });
@@ -99,10 +92,6 @@ function initSubs() {
 
 function initGomTree() {
     ipcRenderer.send('readAllNodes');
-    // const lanaNodeTest = new Node({
-    //     "fqn": 'ipp.exp.seasons.01.multi.lana_beniko'
-    // });
-    // GTree.addNode(lanaNodeTest);
 }
 
 init()

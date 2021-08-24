@@ -31,6 +31,15 @@ onmessage = (e) => {
     }
 }
 
+function readString(dv, pos) {
+    let curChar = 0;
+    let outName = '';
+    while ((curChar = dv.getUint8(pos++)) !== 0) {
+        outName += String.fromCharCode(curChar)
+    }
+    return outName
+}
+
 function uint64(intLo, intHi) {
     const tableLo = [new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 5, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 1, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 4, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 9, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1, 9, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6, 3, 8, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 7, 6, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 5, 5, 3, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 1, 0, 7, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 6, 2, 1, 4, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 2, 4, 2, 8, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 4, 8, 5, 7, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 9, 7, 1, 5, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1, 9, 4, 3, 0, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 3, 8, 8, 6, 0, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6, 7, 7, 7, 2, 1, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 5, 5, 4, 4, 3, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 7, 1, 0, 8, 8, 6, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 4, 2, 1, 7, 7, 2, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 6, 8, 4, 3, 5, 4, 5, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 3, 6, 8, 7, 0, 9, 1, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 7, 3, 7, 4, 1, 8, 2, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 4, 7, 4, 8, 3, 6, 4, 8]), ];
     const tableHi = [new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 9, 4, 9, 6, 7, 2, 9, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 5, 8, 9, 9, 3, 4, 5, 9, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 7, 1, 7, 9, 8, 6, 9, 1, 8, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 3, 5, 9, 7, 3, 8, 3, 6, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 8, 7, 1, 9, 4, 7, 6, 7, 3, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 7, 4, 3, 8, 9, 5, 3, 4, 7, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 2, 7, 4, 8, 7, 7, 9, 0, 6, 9, 4, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 5, 4, 9, 7, 5, 5, 8, 1, 3, 8, 8, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 1, 0, 9, 9, 5, 1, 1, 6, 2, 7, 7, 7, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 9, 9, 0, 2, 3, 2, 5, 5, 5, 5, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 4, 3, 9, 8, 0, 4, 6, 5, 1, 1, 1, 0, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 8, 7, 9, 6, 0, 9, 3, 0, 2, 2, 2, 0, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 1, 7, 5, 9, 2, 1, 8, 6, 0, 4, 4, 4, 1, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 3, 5, 1, 8, 4, 3, 7, 2, 0, 8, 8, 8, 3, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 7, 0, 3, 6, 8, 7, 4, 4, 1, 7, 7, 6, 6, 4]), new Uint8Array([0, 0, 0, 0, 0, 1, 4, 0, 7, 3, 7, 4, 8, 8, 3, 5, 5, 3, 2, 8]), new Uint8Array([0, 0, 0, 0, 0, 2, 8, 1, 4, 7, 4, 9, 7, 6, 7, 1, 0, 6, 5, 6]), new Uint8Array([0, 0, 0, 0, 0, 5, 6, 2, 9, 4, 9, 9, 5, 3, 4, 2, 1, 3, 1, 2]), new Uint8Array([0, 0, 0, 0, 1, 1, 2, 5, 8, 9, 9, 9, 0, 6, 8, 4, 2, 6, 2, 4]), new Uint8Array([0, 0, 0, 0, 2, 2, 5, 1, 7, 9, 9, 8, 1, 3, 6, 8, 5, 2, 4, 8]), new Uint8Array([0, 0, 0, 0, 4, 5, 0, 3, 5, 9, 9, 6, 2, 7, 3, 7, 0, 4, 9, 6]), new Uint8Array([0, 0, 0, 0, 9, 0, 0, 7, 1, 9, 9, 2, 5, 4, 7, 4, 0, 9, 9, 2]), new Uint8Array([0, 0, 0, 1, 8, 0, 1, 4, 3, 9, 8, 5, 0, 9, 4, 8, 1, 9, 8, 4]), new Uint8Array([0, 0, 0, 3, 6, 0, 2, 8, 7, 9, 7, 0, 1, 8, 9, 6, 3, 9, 6, 8]), new Uint8Array([0, 0, 0, 7, 2, 0, 5, 7, 5, 9, 4, 0, 3, 7, 9, 2, 7, 9, 3, 6]), new Uint8Array([0, 0, 1, 4, 4, 1, 1, 5, 1, 8, 8, 0, 7, 5, 8, 5, 5, 8, 7, 2]), new Uint8Array([0, 0, 2, 8, 8, 2, 3, 0, 3, 7, 6, 1, 5, 1, 7, 1, 1, 7, 4, 4]), new Uint8Array([0, 0, 5, 7, 6, 4, 6, 0, 7, 5, 2, 3, 0, 3, 4, 2, 3, 4, 8, 8]), new Uint8Array([0, 1, 1, 5, 2, 9, 2, 1, 5, 0, 4, 6, 0, 6, 8, 4, 6, 9, 7, 6]), new Uint8Array([0, 2, 3, 0, 5, 8, 4, 3, 0, 0, 9, 2, 1, 3, 6, 9, 3, 9, 5, 2]), new Uint8Array([0, 4, 6, 1, 1, 6, 8, 6, 0, 1, 8, 4, 2, 7, 3, 8, 7, 9, 0, 4]), new Uint8Array([0, 9, 2, 2, 3, 3, 7, 2, 0, 3, 6, 8, 5, 4, 7, 7, 5, 8, 0, 8]), ];
@@ -164,4 +173,81 @@ function loadGom(gomArchive, data) {
 
 function loadBucket(bktIdx, dv) {
     console.log('reached bucket: ' + bktIdx);
+    const magic = dv.getUint32(0, !0);
+    if (magic !== 0x4B554250)
+        return postMessage({
+            "message": 'NODES',
+            "data": []
+        });
+    const versionMajor = dv.getUint16(4, !0);
+    const versionMinor = dv.getUint16(6, !0);
+    if (versionMajor !== 2 || versionMinor !== 5)
+        return postMessage({
+            "message": 'NODES',
+            "data": []
+        });
+    let pos = 8;
+    const length = dv.byteLength - 12;
+    const nodes = [];
+    while (pos < length) {
+        const dblbLength = dv.getUint32(pos, !0);
+        pos += 4;
+        const dblbStartOffset = pos;
+        const dblbMagic = dv.getUint32(pos, !0);
+        pos += 4;
+        const dblbVersion = dv.getUint32(pos, !0);
+        pos += 4;
+        while (dblbStartOffset + dblbLength - pos >= 4) {
+            const startOffset = pos;
+            const tmpLength = dv.getUint32(pos, !0);
+            pos += 4;
+            if (tmpLength === 0)
+                break;
+            pos += 4;
+            const idLo = dv.getUint32(pos, !0);
+            pos += 4;
+            const idHi = dv.getUint32(pos, !0);
+            pos += 4;
+            const id = uint64(idLo, idHi);
+            const type = dv.getUint16(pos, !0);
+            pos += 2;
+            const dataOffset = dv.getUint16(pos, !0);
+            pos += 2;
+            const nameOffset = dv.getUint16(pos, !0);
+            pos += 2;
+            pos += 2;
+            const baseClassLo = dv.getUint32(pos, !0);
+            pos += 4;
+            const baseClassHi = dv.getUint32(pos, !0);
+            pos += 4;
+            const baseClass = uint64(baseClassLo, baseClassHi);
+            pos += 8;
+            const uncomprLength = dv.getUint16(pos, !0);
+            pos += 2;
+            pos += 2;
+            const uncomprOffset = dv.getUint16(pos, !0);
+            pos += 2;
+            pos += 2;
+            const streamStyle = dv.getUint8(pos++);
+            const name = readString(dv, startOffset + nameOffset);
+            const dataLength = tmpLength - dataOffset;
+            const node = {};
+            node.id = id;
+            node.fqn = name;
+            node.baseClass = baseClass;
+            node.bkt = bktIdx;
+            node.isBucket = !0;
+            node.dataOffset = startOffset + dataOffset;
+            node.dataLength = dataLength;
+            node.contentOffset = uncomprOffset - dataOffset;
+            node.uncomprLength = uncomprLength;
+            node.streamStyle = streamStyle;
+            nodes.push(node);
+            pos = dblbStartOffset + ((startOffset - dblbStartOffset + tmpLength + 7) & -8)
+        }
+    }
+    postMessage({
+        "message": 'NODES',
+        "data": nodes
+    })
 }

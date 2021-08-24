@@ -104,7 +104,7 @@
 }
 .file-tree-elements > .node {
     min-width: calc(100% - 24px);
-    margin-left: 24px;
+    padding-left: 24px;
     height: auto;
     overflow: auto;
 }

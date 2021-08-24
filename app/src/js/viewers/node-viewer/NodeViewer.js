@@ -64,16 +64,23 @@ function initWorker() {
         type: "module"
     });
     worker.onmessage = (e) => {
+        console.log('recieved responsive');
         // handle response from worker
-        switch (e.message) {
+        switch (e.data.message) {
             case "finishedEntr":
-                GTree.addNode(e.data);
+                GTree.addNode(e.data.data);
                 break;
         }
     }
 }
 
 function initSubs() {
+    ipcRenderer.on('nodeTorPath', (event, data) => {
+        worker.postMessage({
+            "message": 'loadNodes',
+            "data": data[0]
+        });
+    });
     ipcRenderer.on('nodeEntryPass', (event, data) => {
         worker.postMessage({
             "message": 'nodeEntr',

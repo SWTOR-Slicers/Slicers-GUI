@@ -1029,7 +1029,8 @@ function initNodeViewer () {
     frame: false,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      nodeIntegrationInWorker: true
     },
     icon: 'src/img/SlicersLogo.ico',
     show: false
@@ -1257,20 +1258,28 @@ async function readAllNodes() {
   try {
     let torFile = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_global_1.tor' : 'swtor_test_main_global_1.tor');
 
-    if (fs.existsSync(torFile)) {
-      const extrProc = child.spawn(path.join(resourcePath, "scripts", "nodeReader.exe"), [torFile]);
-      extrProc.stdout.on('data', (data) => {
-        const jsonStr = data.toString()
-        nodeViewerWin.webContents.send('nodeEntryPass', [JSON.parse(JSON.stringify(jsonStr)), torFile]);
-      });
-      extrProc.stderr.on('data', (data) => { console.log(`Error: ${data.toString()}`); });
-      extrProc.on('exit', (code) => {
-        console.log(`child process exited with status: ${code ? code.toString() : 0}`);
-        nodeViewerWin.webContents.send("nodeReadComplete", [code == 0]);
-      });
-    } else {
-      nodeViewerWin.webContents.send("errorPathNotExist");
-    }
+    nodeViewerWin.webContents.send('nodeTorPath', [torFile]);
+
+    // if (fs.existsSync(torFile)) {
+    //   const extrProc = child.spawn(path.join(resourcePath, "scripts", "nodeReader.exe"), [torFile]);
+    //   let itts = 0;
+    //   extrProc.stdout.on('data', (data) => {
+    //     const jsonStr = data.toString()
+    //     nodeViewerWin.webContents.send('nodeEntryPass', [JSON.parse(JSON.stringify(jsonStr)), torFile]);
+    //     if (itts >= 20) {
+    //       extrProc.kill('SIGINT');
+    //     } else {
+    //       itts++;
+    //     }
+    //   });
+    //   extrProc.stderr.on('data', (data) => { console.log(`Error: ${data.toString()}`); });
+    //   extrProc.on('exit', (code) => {
+    //     console.log(`child process exited with status: ${code ? code.toString() : 0}`);
+    //     nodeViewerWin.webContents.send("nodeReadComplete", [code == 0]);
+    //   });
+    // } else {
+    //   nodeViewerWin.webContents.send("errorPathNotExist");
+    // }
   } catch (err) {
     console.log(err);
   }

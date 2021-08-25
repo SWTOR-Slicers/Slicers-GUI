@@ -1,4 +1,4 @@
-import { GomTree } from "./GomTree.js";
+import { GomTree, nodesByFqn, nodeFolderSort } from "./GomTree.js";
 import { log } from "../../universal/Logger.js";
 import { sourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 
@@ -69,6 +69,15 @@ function initWorker() {
                 for (const node of e.data.data) {
                     GTree.addNode(node);
                 }
+                GTree.nodeTree.loadedBuckets++;
+                nodesByFqn.files.sort(nodeFolderSort);
+                GTree.nodeTree.resizefull();
+                GTree.nodeTree.redraw();
+                document.getElementById('numBucketsLeft').innerHTML = 500 - GTree.nodeTree.loadedBuckets;
+                if (GTree.nodeTree.loadedBuckets === 500) {
+                    document.getElementById('numBucketsLeft').innerHTML = "Finished Loading GOM";
+                }
+                break;
         }
     }
 }

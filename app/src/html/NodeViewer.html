@@ -24,9 +24,14 @@
                 <div class="path-input-field-container">
                     <input class="paths-field-input-alt" type="text" name="fqnField" id="fqnField" style="width: 100%; min-width: 0px; max-width: 200px;">
                 </div>
+                <div class="path-input-field-container">
+                    <div class="buckets-left" id="numBucketsLeft"></div>
+                </div>
                 <div class="tree-list-container">
-                    <div id="treeList" class="file-tree-elements">
-                        
+                    <canvas id="treeList" width="384" height="610"></canvas>
+                    <div id="nav_nodes_scroller">
+                        <div id="nav_nodes_scrollercon" class="pointer" style="width: 500px; height: 14181px;"></div>
+                        <div id="nav_nodes_scrollersize"></div>
                     </div>
                 </div>
             </div>

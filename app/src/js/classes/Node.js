@@ -1,5 +1,7 @@
 import {GOM} from "./util/Gom.js";
 
+const fs = require('fs');
+
 class Node {
     constructor(data) {
         
@@ -27,6 +29,12 @@ class NodeEntr {
 
     render(parent) {
         console.log(parent);
+        parent.innerHtml = "";
+
+        const data = fs.readFileSync(this.torPath);
+
+        const node = new Node(data.slice(this.contentOffset, this.dataLength));
+        node.render(parent);
     }
 }
 

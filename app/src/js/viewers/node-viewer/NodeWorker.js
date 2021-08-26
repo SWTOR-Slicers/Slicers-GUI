@@ -1,30 +1,10 @@
 import { hashlittle2 } from "../../Util.js";
-import {Node, NodeEntr} from "../../classes/Node.js";
 
 const path = require('path');
 const { promises: { readFile } } = require('fs');
 
 onmessage = (e) => {
     switch (e.data.message) {
-        case 'nodeEntr':
-            console.log("worker recieved");
-            const data = e.data.data
-            const nodeStr = data[0];
-            const nodes = nodeStr.split('\n');
-            for (let i = 0; i < nodes.length; i++) {
-                if (nodes[i] != "") {
-                    if (nodes[i].indexOf('{') > -1) {
-                        const node = new NodeEntr(JSON.parse(nodes[i]), data[1]);
-                        postMessage({
-                            "message": 'finishedEntr',
-                            "data": node
-                        })
-                    } else {
-                        // its a progress update
-                    }
-                }
-            }
-            break;
         case "loadNodes":
             loadNodes(e.data.data)
             break;
@@ -152,27 +132,26 @@ function loadNodes(torPath) {
         }
 
         if (Object.keys(gomArchive.files).length > 0) {
-            loadGom(gomArchive, data);
+            loadGom(gomArchive, data, torPath);
         }
     }).catch(err => {
         throw err;
     });
 }
 
-function loadGom(gomArchive, data) {
+function loadGom(gomArchive, data, torPath) {
     for (let i = 0; i < 500; i++) {
         const hashArr = hashlittle2(`/resources/systemgenerated/buckets/${i}.bkt`);
         const file = gomArchive.files[`${hashArr[1]}|${hashArr[0]}`];
 
         if (file) {
             const blob = data.slice(file.offset, file.offset + file.size);
-            loadBucket(i, new DataView(blob));
+            loadBucket(i, new DataView(blob), torPath);
         }
     }
 }
 
-function loadBucket(bktIdx, dv) {
-    console.log('reached bucket: ' + bktIdx);
+function loadBucket(bktIdx, dv, torPath) {
     const magic = dv.getUint32(0, !0);
     if (magic !== 0x4B554250)
         return postMessage({
@@ -242,7 +221,10 @@ function loadBucket(bktIdx, dv) {
             node.contentOffset = uncomprOffset - dataOffset;
             node.uncomprLength = uncomprLength;
             node.streamStyle = streamStyle;
-            nodes.push(node);
+            nodes.push({
+                "node": node,
+                "torPath": torPath
+            });
             pos = dblbStartOffset + ((startOffset - dblbStartOffset + tmpLength + 7) & -8)
         }
     }

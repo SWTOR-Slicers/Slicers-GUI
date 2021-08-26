@@ -1,6 +1,7 @@
 import { GomTree, nodesByFqn, nodeFolderSort } from "./GomTree.js";
 import { log } from "../../universal/Logger.js";
 import { sourcePath } from "../../../api/config/resource-path/ResourcePath.js";
+import {NodeEntr} from "../../classes/Node.js";
 
 // Node.js imports
 const { ipcRenderer } = require("electron");
@@ -66,7 +67,8 @@ function initWorker() {
     worker.onmessage = (e) => {
         switch (e.data.message) {
             case "NODES":
-                for (const node of e.data.data) {
+                for (const n of e.data.data) {
+                    const node = new NodeEntr(n.node, n.torPath);
                     GTree.addNode(node);
                 }
                 GTree.nodeTree.loadedBuckets++;

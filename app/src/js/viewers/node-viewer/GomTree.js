@@ -200,7 +200,7 @@ class GomTree {
 
     /**
      * Adds a node to the Gom tree, and saves the created nodeElem to a dictionary
-     * @param {NodeEntr} node A Node object representing the node entry data from the GO node reader.
+     * @param {NodeEntr} node A Node object representing the node entry data from the node reader.
      */
     addNode(node) {
         let name = node.fqn;

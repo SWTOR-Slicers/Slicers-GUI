@@ -15,7 +15,8 @@ class NodeEntr {
         this.id = nodeJson.id;
         this.fqn = nodeJson.fqn;
         this.baseClass = nodeJson.baseClass;
-        this.bktIdx = nodeJson.bktIdx;
+        this.bkt = nodeJson.bkt
+        this.isBucket = nodeJson.isBucket;
         this.dataOffset = nodeJson.dataOffset;
         this.dataLength = nodeJson.dataLength;
         this.contentOffset = nodeJson.contentOffset;
@@ -25,7 +26,7 @@ class NodeEntr {
     }
 
     render(parent) {
-
+        console.log(parent);
     }
 }
 

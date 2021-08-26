@@ -1,3 +1,4 @@
+import { fixDpi } from "../../Util.js";
 import {Node, NodeEntr} from "../../classes/Node.js";
 
 const FILETREE_HEIGHT = 16;
@@ -26,14 +27,10 @@ class NodeTree {
         this.scroller.onmouseout = this.redraw;
         this.scrollercon.onmousedown = this.click;
         this.canvas = treeList;
-        let scale = window.devicePixelRatio; 
-            
-        this.canvas.width = Math.floor(this.canvas.clientWidth * scale);
-        this.canvas.height = Math.floor(this.canvas.clientHeight * scale);
         this.ctx = this.canvas.getContext('2d', {
             alpha: false
         });
-        this.ctx.scale(scale, scale);
+        fixDpi(this.canvas);
         this.resizefull();
         this.redraw();
     }
@@ -41,14 +38,14 @@ class NodeTree {
     redraw = (e) => {
         this.canvas.width = this.scrollersize.offsetWidth;
         this.canvas.height = this.scrollersize.offsetHeight;
-        this.ctx.font = 'normal normal 200 10pt Eurofont';
-        this.ctx.fillStyle = '#333';
+        this.ctx.font = 'normal 10pt arial'; //'normal normal 200 10pt Eurofont';
+        this.ctx.fillStyle = "#333"
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         if (e) {
             this.hoverEle = 15 - this.scroller.scrollTop + (e.offsetY & 0xFFFFF0)
         }
         if (this.loadedBuckets === 0) {
-            this.ctx.fillStyle = '#43c4ef';
+            this.ctx.fillStyle = 'rgb(255, 255, 255)';
             this.ctx.fillText('Loading...', 170, 26)
         } else {
             this.drawfolder(nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, this.scrollersize.offsetHeight)
@@ -67,19 +64,22 @@ class NodeTree {
                 }
                 this.ctx.fillStyle = '#ffce00';
                 if (i > NUM_META_FOLDERS || folder !== nodesByFqn) {
-                    this.ctx.fillRect(3 + level - 11, height - 14, 1, 1);
-                    this.ctx.fillRect(3 + level - 11, height - 12, 1, 1);
-                    this.ctx.fillRect(3 + level - 11, height - 10, 1, 1)
+                    // This block adds the vertical dots
+                    this.ctx.fillRect(3 + level - 11, height - 14, 1, 5);
                 }
+                // This block adds the horizontal dots
                 this.ctx.fillRect(3 + level - 5, height - 4, 1, 1);
                 this.ctx.fillRect(3 + level - 3, height - 4, 1, 1);
                 this.ctx.fillRect(3 + level - 1, height - 4, 1, 1);
+
+                // This block makes the squares
                 this.ctx.fillRect(3 + level - 15, height - 8, 9, 1);
                 this.ctx.fillRect(3 + level - 15, height, 9, 1);
                 this.ctx.fillRect(3 + level - 15, height - 7, 1, 7);
                 this.ctx.fillRect(3 + level - 7, height - 7, 1, 7);
                 this.ctx.fillRect(3 + level - 13, height - 4, 5, 1);
-                this.ctx.fillStyle = '#ffffff';
+
+                this.ctx.fillStyle = 'rgb(255, 255, 255)';
                 this.ctx.fillText(dirs[i], 5 + level, height)
             }
             const curDir = folder[dirs[i]];
@@ -92,13 +92,15 @@ class NodeTree {
                         prevHeight = 0;
                     if (newHeight > maxHeight)
                         newHeight = maxHeight;
-                    this.ctx.fillStyle = '#43c4ef';
-                    for (let j = prevHeight; j < newHeight; j += 2) {
-                        this.ctx.fillRect(3 + level - 11, j, 1, 1)
+                    this.ctx.fillStyle = '#ffce00';
+                    for (let j = prevHeight+2; j < newHeight; j ++) {
+                        // This adds the vertical dots to open folders
+                        this.ctx.fillRect(3 + level - 11, j, 1, (j+1 < newHeight) ? 1 : 5)
                     }
                 }
             } else {
-                this.ctx.fillStyle = '#43c4ef';
+                this.ctx.fillStyle = '#ffce00';
+                // This makes the minus a plus
                 this.ctx.fillRect(3 + level - 11, height - 6, 1, 5);
                 height += FILETREE_HEIGHT
             }
@@ -109,24 +111,22 @@ class NodeTree {
                     this.ctx.fillStyle = 'rgb(71, 71, 71)';
                     this.ctx.fillRect(level, height - 12, 500, FILETREE_HEIGHT)
                 }
-                this.ctx.fillStyle = '#43c4ef';
+                this.ctx.fillStyle = '#ffce00';
                 if (i > 0) {
-                    this.ctx.fillRect(3 + level - 11, height - 18, 1, 1);
-                    this.ctx.fillRect(3 + level - 11, height - 16, 1, 1)
+                    // This block adds missing vertical dots
+                    this.ctx.fillRect(3 + level - 11, height - 19, 1, 5);
                 }
-                this.ctx.fillRect(3 + level - 11, height - 14, 1, 1);
-                this.ctx.fillRect(3 + level - 11, height - 12, 1, 1);
-                this.ctx.fillRect(3 + level - 11, height - 10, 1, 1);
-                this.ctx.fillRect(3 + level - 11, height - 8, 1, 1);
-                this.ctx.fillRect(3 + level - 11, height - 6, 1, 1);
-                this.ctx.fillRect(3 + level - 11, height - 4, 1, 1);
+                // This block adds vertical dots
+                this.ctx.fillRect(3 + level - 11, height - 14, 1, 11);
+
+                // This block adds horizontal dots
                 this.ctx.fillRect(3 + level - 9, height - 4, 1, 1);
                 this.ctx.fillRect(3 + level - 7, height - 4, 1, 1);
                 this.ctx.fillRect(3 + level - 5, height - 4, 1, 1);
                 this.ctx.fillRect(3 + level - 3, height - 4, 1, 1);
                 this.ctx.fillRect(3 + level - 1, height - 4, 1, 1);
                 const curFile = folder.files[i];
-                this.ctx.fillStyle = '#43c4ef';
+                this.ctx.fillStyle = 'rgb(255, 255, 255)';
                 this.ctx.fillText(curFile.fileName, 5 + level, height)
             }
             height += FILETREE_HEIGHT

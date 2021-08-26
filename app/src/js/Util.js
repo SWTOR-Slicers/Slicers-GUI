@@ -529,6 +529,23 @@ export function hashlittle2(k) {
     c -= (b << 24) | (b >>> 8) | 0;
     return [b >>> 0, c >>> 0]
 }
+/**
+ * Adjusts the dpi to remove halo affect from a canvas element.
+ * @param  {HTMLCanvasElement} canvas The HTML5 canvas to adjust the dpi of.
+ */
+export function fixDpi(canvas) {
+    //get DPI
+    let dpi = window.devicePixelRatio;
+    //get CSS height
+    //the + prefix casts it to an integer
+    //the slice method gets rid of "px"
+    let style_height = +getComputedStyle(canvas).getPropertyValue("height").slice(0, -2);
+    //get CSS width
+    let style_width = +getComputedStyle(canvas).getPropertyValue("width").slice(0, -2);
+    //scale the canvas
+    canvas.setAttribute('height', style_height * dpi);
+    canvas.setAttribute('width', style_width * dpi);
+}
 class BitReader {
     constructor(dv) {
         this.dv = dv;

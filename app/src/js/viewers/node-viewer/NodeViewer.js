@@ -75,7 +75,10 @@ function initWorker() {
                 GTree.nodeTree.redraw();
                 document.getElementById('numBucketsLeft').innerHTML = 500 - GTree.nodeTree.loadedBuckets;
                 if (GTree.nodeTree.loadedBuckets === 500) {
-                    document.getElementById('numBucketsLeft').innerHTML = "Finished Loading GOM";
+                    document.getElementById('numBucketsLeft').innerHTML = "Done";
+                    setTimeout(() => {
+                        document.getElementById('numBucketsLeft').innerHTML = "";
+                    }, 3000)
                 }
                 break;
         }

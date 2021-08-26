@@ -70,7 +70,7 @@ function initWorker() {
                     GTree.addNode(node);
                 }
                 GTree.nodeTree.loadedBuckets++;
-                nodesByFqn.files.sort(nodeFolderSort);
+                nodesByFqn.$F.sort(nodeFolderSort);
                 GTree.nodeTree.resizefull();
                 GTree.nodeTree.redraw();
                 document.getElementById('numBucketsLeft').innerHTML = 500 - GTree.nodeTree.loadedBuckets;

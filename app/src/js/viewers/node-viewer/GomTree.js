@@ -4,11 +4,11 @@ import {Node, NodeEntr} from "../../classes/Node.js";
 const FILETREE_HEIGHT = 16;
 const NUM_META_FOLDERS = 2;
 const nodesByFqn = {
-    "files": [], //files
-    "open": 2,
+    "$F": [], //files
+    "$O": 2,
     "_misc": {
-        "files": [], //files
-        "open": 0
+        "$F": [], //files
+        "$O": 0
     }
 };
 
@@ -36,8 +36,11 @@ class NodeTree {
     }
     
     redraw = (e) => {
-        this.canvas.width = this.scrollersize.offsetWidth;
-        this.canvas.height = this.scrollersize.offsetHeight;
+        this.canvas.width = this.scrollersize.offsetWidth * 4;
+        this.canvas.style.width = this.scrollersize.offsetWidth;
+        this.canvas.height = this.scrollersize.offsetHeight * 4;
+        this.canvas.style.height = this.scrollersize.offsetHeight;
+        //this.ctx.setTransform((this.canvas.width/this.canvas.style.width),0,0,(this.canvas.height/this.canvas.style.height),0,0);
         this.ctx.font = 'normal 10pt arial'; //'normal normal 200 10pt Eurofont';
         this.ctx.fillStyle = "#333"
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -55,7 +58,7 @@ class NodeTree {
     drawfolder = (folder,heightIn,level,maxHeight) => {
         let height = heightIn;
         const dirs = Object.keys(folder).sort();
-        const fl = folder.files.length;
+        const fl = folder.$F.length;
         for (let i = NUM_META_FOLDERS, l = dirs.length; i < l; i++) {
             if (height > 0 && height - FILETREE_HEIGHT < maxHeight) {
                 if (height === this.hoverEle) {
@@ -83,7 +86,7 @@ class NodeTree {
                 this.ctx.fillText(dirs[i], 5 + level, height)
             }
             const curDir = folder[dirs[i]];
-            if (curDir.open === 2) {
+            if (curDir.$O === 2) {
                 let prevHeight = height;
                 height = this.drawfolder(curDir, height + FILETREE_HEIGHT, level + FILETREE_HEIGHT, maxHeight);
                 if (i + 1 < l || fl > 0) {
@@ -125,7 +128,7 @@ class NodeTree {
                 this.ctx.fillRect(3 + level - 5, height - 4, 1, 1);
                 this.ctx.fillRect(3 + level - 3, height - 4, 1, 1);
                 this.ctx.fillRect(3 + level - 1, height - 4, 1, 1);
-                const curFile = folder.files[i];
+                const curFile = folder.$F[i];
                 this.ctx.fillStyle = 'rgb(255, 255, 255)';
                 this.ctx.fillText(curFile.fileName, 5 + level, height)
             }
@@ -142,18 +145,18 @@ class NodeTree {
     clickfolder = (folder,heightIn,level,target) => {
         let height = heightIn;
         const dirs = Object.keys(folder).sort();
-        const fl = folder.files.length;
+        const fl = folder.$F.length;
         for (let i = NUM_META_FOLDERS, l = dirs.length; i < l; i++) {
             const curDir = folder[dirs[i]];
             if (height === target) {
-                if (curDir.open === 0)
-                    curDir.files.sort(nodeFolderSort);
-                curDir.open = (curDir.open === 2) ? 1 : 2;
+                if (curDir.$O === 0)
+                    curDir.$F.sort(nodeFolderSort);
+                curDir.$O = (curDir.$O === 2) ? 1 : 2;
                 this.resizefull();
                 this.redraw();
                 return 0
             }
-            if (curDir.open === 2) {
+            if (curDir.$O === 2) {
                 height = this.clickfolder(curDir, height + FILETREE_HEIGHT, level + FILETREE_HEIGHT, target);
                 if (height === 0)
                     return 0
@@ -163,7 +166,7 @@ class NodeTree {
         }
         for (let i = 0; i < fl; i++) {
             if (height === target) {
-                folder.files[i].render(this.renderTarg);
+                folder.$F[i].render(this.renderTarg);
                 return 0
             }
             height += FILETREE_HEIGHT
@@ -181,11 +184,11 @@ class NodeTree {
         const dirs = Object.keys(folder);
         for (let i = NUM_META_FOLDERS, l = dirs.length; i < l; i++) {
             const dir = folder[dirs[i]];
-            if (dir.open === 2) {
+            if (dir.$O === 2) {
                 height += this.resizedir(dir)
             }
         }
-        height += (dirs.length - NUM_META_FOLDERS + folder.files.length) * FILETREE_HEIGHT;
+        height += (dirs.length - NUM_META_FOLDERS + folder.$F.length) * FILETREE_HEIGHT;
         return height
     }
 }
@@ -213,8 +216,8 @@ class GomTree {
                 let tmpFolder = curFolder[folderName];
                 if (!tmpFolder) {
                     tmpFolder = Object.create(null);
-                    tmpFolder.files = [];
-                    tmpFolder.open = 0;
+                    tmpFolder.$F = [];
+                    tmpFolder.$O = 0;
                     curFolder[folderName] = tmpFolder
                 }
                 curFolder = tmpFolder;
@@ -224,18 +227,18 @@ class GomTree {
         node.path = name.substr(0, folderStart);
         const fileName = name.substring(folderStart, i);
         node.fileName = fileName;
-        if (curFolder.open === 0) {
-            curFolder.files.push(node)
+        if (curFolder.$O === 0) {
+            curFolder.$F.push(node)
         } else {
             let insertIndex = 0;
-            for (let j = 0, l = curFolder.files.length; j < l; j++) {
-                if (curFolder.files[j].fileName <= fileName) {
+            for (let j = 0, l = curFolder.$F.length; j < l; j++) {
+                if (curFolder.$F[j].fileName <= fileName) {
                     insertIndex++
                 } else {
                     break
                 }
             }
-            curFolder.files.splice(insertIndex, 0, node)
+            curFolder.$F.splice(insertIndex, 0, node)
         }
     }
 }

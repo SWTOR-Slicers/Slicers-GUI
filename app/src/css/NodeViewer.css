@@ -175,3 +175,24 @@
 }
 
 /* Node data view styling */
+.node-header {
+    color: white;
+    font-size: 14px;
+    margin: 7px;
+}
+mark {
+    background-color: transparent;
+    color: white;
+}
+.node-table {
+    border: 1px solid var(--background-yellow-slicers);
+    border-collapse: collapse;
+    background-color: var(--grey-black);
+    color: white;
+    font-size: 14px;
+    margin: 7px;
+}
+.node-table th, .node-table tr, .node-table td {
+    border: 1px solid var(--background-yellow-slicers);
+    border-collapse: collapse;
+}

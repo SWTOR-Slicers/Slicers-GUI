@@ -15,6 +15,7 @@ const leftDrag = document.getElementById('leftDrag');
 let leftResize = false;
 
 const viewContainer = document.getElementById('viewContainer');
+const viewDisplay = viewContainer.firstElementChild;
 
 let rightResize = false;
 const rightDrag = document.getElementById('rightDrag');
@@ -22,7 +23,7 @@ const dataViewContainer = document.getElementById('dataViewContainer');
 const dataContainer = document.getElementById('dataContainer');
 
 // Constants
-const GTree = new GomTree(treeList, viewContainer);
+const GTree = new GomTree(treeList, viewDisplay);
 let worker;
 
 function init() {

@@ -1,4 +1,6 @@
 import { codebooks } from "./classes/util/Cookbooks.js";
+
+const fs = require("fs");
 /**
  * Shuffles a list using the modern Fisher-Yates shuffle algorithm
  * @param  {Array} a Array to be shuffled and returned.
@@ -545,6 +547,2779 @@ export function fixDpi(canvas) {
     //scale the canvas
     canvas.setAttribute('height', style_height * dpi);
     canvas.setAttribute('width', style_width * dpi);
+}
+/**
+ * Reads the int from the specified buffer at posIn.
+ * @param  {DataView} dv ArrayBuffer containing the data to read.
+ * @param  {Number} pos Position of the string data in the buffer.
+ */
+export function readVarInt(dv, pos) {
+    const firstChar = dv.getUint8(pos);
+    let intLo = 0;
+    let intHi = 0;
+    switch (firstChar) {
+    case 0xC0:
+        intLo = dv.getUint8(pos + 1);
+        return {
+            sign: -1,
+            intLo,
+            intHi: 0,
+            len: 2
+        };
+    case 0xC1:
+        intLo = dv.getUint16(pos + 1);
+        return {
+            sign: -1,
+            intLo,
+            intHi: 0,
+            len: 3
+        };
+    case 0xC2:
+        intLo = (dv.getUint16(pos + 1) << 8) | dv.getUint8(pos + 3);
+        return {
+            sign: -1,
+            intLo,
+            intHi: 0,
+            len: 4
+        };
+    case 0xC3:
+        intLo = dv.getUint32(pos + 1);
+        return {
+            sign: -1,
+            intLo,
+            intHi: 0,
+            len: 5
+        };
+    case 0xC4:
+        intHi = dv.getUint8(pos + 1);
+        intLo = dv.getUint32(pos + 2);
+        return {
+            sign: -1,
+            intLo,
+            intHi,
+            len: 6
+        };
+    case 0xC5:
+        intHi = dv.getUint16(pos + 1);
+        intLo = dv.getUint32(pos + 3);
+        return {
+            sign: -1,
+            intLo,
+            intHi,
+            len: 7
+        };
+    case 0xC6:
+        intHi = (dv.getUint8(pos + 1) << 16) | (dv.getUint8(pos + 2) << 8) | dv.getUint8(pos + 3);
+        intLo = dv.getUint32(pos + 4);
+        return {
+            sign: -1,
+            intLo,
+            intHi,
+            len: 8
+        };
+    case 0xC7:
+        intHi = dv.getUint32(pos + 1);
+        intLo = dv.getUint32(pos + 5);
+        return {
+            sign: -1,
+            intLo,
+            intHi,
+            len: 9
+        };
+    case 0xC8:
+        intLo = dv.getUint8(pos + 1);
+        return {
+            sign: +1,
+            intLo,
+            intHi: 0,
+            len: 2
+        };
+    case 0xC9:
+        intLo = dv.getUint16(pos + 1);
+        return {
+            sign: +1,
+            intLo,
+            intHi: 0,
+            len: 3
+        };
+    case 0xCA:
+        intLo = (dv.getUint8(pos + 1) << 16) | (dv.getUint8(pos + 2) << 8) | dv.getUint8(pos + 3);
+        return {
+            sign: +1,
+            intLo,
+            intHi: 0,
+            len: 4
+        };
+    case 0xCB:
+        intLo = dv.getUint32(pos + 1);
+        return {
+            sign: +1,
+            intLo,
+            intHi: 0,
+            len: 5
+        };
+    case 0xCC:
+        intHi = dv.getUint8(pos + 1);
+        intLo = dv.getUint32(pos + 2);
+        return {
+            sign: +1,
+            intLo,
+            intHi,
+            len: 6
+        };
+    case 0xCD:
+        intHi = dv.getUint16(pos + 1);
+        intLo = dv.getUint32(pos + 3);
+        return {
+            sign: +1,
+            intLo,
+            intHi,
+            len: 7
+        };
+    case 0xCE:
+        intHi = (dv.getUint8(pos + 1) << 16) | (dv.getUint8(pos + 2) << 8) | dv.getUint8(pos + 3);
+        intLo = dv.getUint32(pos + 4);
+        return {
+            sign: +1,
+            intLo,
+            intHi,
+            len: 8
+        };
+    case 0xCF:
+        intHi = dv.getUint32(pos + 1);
+        intLo = dv.getUint32(pos + 5);
+        return {
+            sign: +1,
+            intLo,
+            intHi,
+            len: 9
+        };
+    default:
+        return {
+            sign: +1,
+            intLo: firstChar,
+            intHi: 0,
+            len: 1
+        }
+    }
+}
+/**
+ * Converts 2 uitn32 values to a uint64
+ * @param  {int} intLo First uint32.
+ * @param  {int} intHi Second uint32.
+ */
+export function uint64(intLo, intHi) {
+    const tableLo = [new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 5, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 1, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 4, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 9, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1, 9, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6, 3, 8, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 7, 6, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 5, 5, 3, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 1, 0, 7, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 6, 2, 1, 4, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 2, 4, 2, 8, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 4, 8, 5, 7, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 9, 7, 1, 5, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1, 9, 4, 3, 0, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 3, 8, 8, 6, 0, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6, 7, 7, 7, 2, 1, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 5, 5, 4, 4, 3, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 7, 1, 0, 8, 8, 6, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 4, 2, 1, 7, 7, 2, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 6, 8, 4, 3, 5, 4, 5, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 3, 6, 8, 7, 0, 9, 1, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 7, 3, 7, 4, 1, 8, 2, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 4, 7, 4, 8, 3, 6, 4, 8]), ];
+    const tableHi = [new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 2, 9, 4, 9, 6, 7, 2, 9, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 5, 8, 9, 9, 3, 4, 5, 9, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 7, 1, 7, 9, 8, 6, 9, 1, 8, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 3, 5, 9, 7, 3, 8, 3, 6, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 8, 7, 1, 9, 4, 7, 6, 7, 3, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 7, 4, 3, 8, 9, 5, 3, 4, 7, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 2, 7, 4, 8, 7, 7, 9, 0, 6, 9, 4, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 5, 4, 9, 7, 5, 5, 8, 1, 3, 8, 8, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 1, 0, 9, 9, 5, 1, 1, 6, 2, 7, 7, 7, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 9, 9, 0, 2, 3, 2, 5, 5, 5, 5, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 4, 3, 9, 8, 0, 4, 6, 5, 1, 1, 1, 0, 4]), new Uint8Array([0, 0, 0, 0, 0, 0, 0, 8, 7, 9, 6, 0, 9, 3, 0, 2, 2, 2, 0, 8]), new Uint8Array([0, 0, 0, 0, 0, 0, 1, 7, 5, 9, 2, 1, 8, 6, 0, 4, 4, 4, 1, 6]), new Uint8Array([0, 0, 0, 0, 0, 0, 3, 5, 1, 8, 4, 3, 7, 2, 0, 8, 8, 8, 3, 2]), new Uint8Array([0, 0, 0, 0, 0, 0, 7, 0, 3, 6, 8, 7, 4, 4, 1, 7, 7, 6, 6, 4]), new Uint8Array([0, 0, 0, 0, 0, 1, 4, 0, 7, 3, 7, 4, 8, 8, 3, 5, 5, 3, 2, 8]), new Uint8Array([0, 0, 0, 0, 0, 2, 8, 1, 4, 7, 4, 9, 7, 6, 7, 1, 0, 6, 5, 6]), new Uint8Array([0, 0, 0, 0, 0, 5, 6, 2, 9, 4, 9, 9, 5, 3, 4, 2, 1, 3, 1, 2]), new Uint8Array([0, 0, 0, 0, 1, 1, 2, 5, 8, 9, 9, 9, 0, 6, 8, 4, 2, 6, 2, 4]), new Uint8Array([0, 0, 0, 0, 2, 2, 5, 1, 7, 9, 9, 8, 1, 3, 6, 8, 5, 2, 4, 8]), new Uint8Array([0, 0, 0, 0, 4, 5, 0, 3, 5, 9, 9, 6, 2, 7, 3, 7, 0, 4, 9, 6]), new Uint8Array([0, 0, 0, 0, 9, 0, 0, 7, 1, 9, 9, 2, 5, 4, 7, 4, 0, 9, 9, 2]), new Uint8Array([0, 0, 0, 1, 8, 0, 1, 4, 3, 9, 8, 5, 0, 9, 4, 8, 1, 9, 8, 4]), new Uint8Array([0, 0, 0, 3, 6, 0, 2, 8, 7, 9, 7, 0, 1, 8, 9, 6, 3, 9, 6, 8]), new Uint8Array([0, 0, 0, 7, 2, 0, 5, 7, 5, 9, 4, 0, 3, 7, 9, 2, 7, 9, 3, 6]), new Uint8Array([0, 0, 1, 4, 4, 1, 1, 5, 1, 8, 8, 0, 7, 5, 8, 5, 5, 8, 7, 2]), new Uint8Array([0, 0, 2, 8, 8, 2, 3, 0, 3, 7, 6, 1, 5, 1, 7, 1, 1, 7, 4, 4]), new Uint8Array([0, 0, 5, 7, 6, 4, 6, 0, 7, 5, 2, 3, 0, 3, 4, 2, 3, 4, 8, 8]), new Uint8Array([0, 1, 1, 5, 2, 9, 2, 1, 5, 0, 4, 6, 0, 6, 8, 4, 6, 9, 7, 6]), new Uint8Array([0, 2, 3, 0, 5, 8, 4, 3, 0, 0, 9, 2, 1, 3, 6, 9, 3, 9, 5, 2]), new Uint8Array([0, 4, 6, 1, 1, 6, 8, 6, 0, 1, 8, 4, 2, 7, 3, 8, 7, 9, 0, 4]), new Uint8Array([0, 9, 2, 2, 3, 3, 7, 2, 0, 3, 6, 8, 5, 4, 7, 7, 5, 8, 0, 8]), ];
+    const out = new Uint8Array(20);
+    const out32 = new Uint32Array(out.buffer);
+
+    if (intHi === 0) return (intLo === 0) ? '0' : String(intLo);
+    out32[0] = 0;
+    out32[1] = 0;
+    out32[2] = 0;
+    out32[3] = 0;
+    out32[4] = 0;
+    {
+        for (let i = 0; i < 32; i++) {
+            if ((intLo & 1) !== 0) {
+                const summand = tableLo[i];
+                for (let j = 19; j >= 10; j--) {
+                    out[j] += summand[j]
+                }
+            }
+            intLo >>>= 1
+        }
+        for (let j = 19; j >= 10; j--) {
+            if (out[j] > 9) {
+                const remainder = (out[j] % 10) | 0;
+                out[j - 1] += ((out[j] - remainder) / 10) | 0;
+                out[j] = remainder
+            }
+        }
+    }
+    for (let i = 0; i < 32; i++) {
+        if ((intHi & 1) !== 0) {
+            const summand = tableHi[i];
+            for (let j = 19; j >= 0; j--) {
+                out[j] += summand[j]
+            }
+        }
+        intHi >>>= 1
+    }
+    for (let j = 19; j >= 1; j--) {
+        if (out[j] > 9) {
+            const remainder = (out[j] % 10) | 0;
+            out[j - 1] += ((out[j] - remainder) / 10) | 0;
+            out[j] = remainder
+        }
+    }
+    return out.join('').replace(/^0+/, '')
+}
+/**
+ * Converts 2 uitn32 values to a uint64, taking an obj as the argument
+ * @param  {Object} obj Object wrapper for the uint32s.
+ */
+export function uint64C(obj) {
+    return uint64(obj.intLo, obj.intHi)
+}
+/**
+ * Adds 2 unit64 values
+ * @param  {int} x first uint64.
+ * @param  {int} y second uint64.
+ */
+export var uint64_add = (function() {
+    var addAsString = function(x, y) {
+        var s = '';
+        if (y.length > x.length) {
+            s = x;
+            x = y;
+            y = s
+        }
+        s = (parseInt(x.slice(-9), 10) + parseInt(y.slice(-9), 10)).toString();
+        x = x.slice(0, -9);
+        y = y.slice(0, -9);
+        if (s.length > 9) {
+            if (x === '')
+                return s;
+            x = addAsString(x, '1');
+            s = s.slice(1)
+        } else if (x.length) {
+            while (s.length < 9) {
+                s = '0' + s
+            }
+        }
+        if (y === '')
+            return x + s;
+        return addAsString(x, y) + s
+    };
+    var subtractAsString = function(x, y) {
+        var s;
+        s = (parseInt('1' + x.slice(-9), 10) - parseInt(y.slice(-9), 10)).toString();
+        x = x.slice(0, -9);
+        y = y.slice(0, -9);
+        if (s.length === 10 || x === '') {
+            s = s.slice(1)
+        } else {
+            if (y.length) {
+                y = addAsString(y, '1')
+            } else {
+                y = '1'
+            }
+            if (x.length) {
+                while (s.length < 9) {
+                    s = '0' + s
+                }
+            }
+        }
+        if (y === '') {
+            s = (x + s).replace(/^0+/, '');
+            return s
+        }
+        return subtractAsString(x, y) + s
+    };
+    return function(x, y) {
+        var s = '';
+        x = x.replace(/^(-)?0+/, '$1').replace(/^-?$/, '0');
+        y = y.replace(/^(-)?0+/, '$1').replace(/^-?$/, '0');
+        if (x[0] === '-') {
+            if (y[0] === '-') {
+                return '-' + addAsString(x.slice(1), y.slice(1))
+            }
+            return uint64_add(y, x)
+        }
+        if (y[0] === '-') {
+            s = y.slice(1);
+            if (s.length < x.length || (s.length === x.length && s < x))
+                return subtractAsString(x, s) || '0';
+            if (s === x)
+                return '0';
+            s = subtractAsString(s, x);
+            s = (s && '-' + s) || '0';
+            return s
+        }
+        return addAsString(x, y)
+    }
+}());
+/**
+ * Tests the given file name for validity.
+ * @param  {String} path The file path to test.
+ */
+export function testFilename(path) {
+    return fs.existsSync(path);
+}
+
+function readOpcode(dv, pos, offset) {
+    var o = Object.create(null);
+    o.len = 0;
+    var opcode = dv.getUint8(pos);
+    pos++;
+    var byte2, byte3, byte4;
+    switch (opcode) {
+    case 0x09:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC4:
+        case 0xC5:
+        case 0xC6:
+        case 0xC7:
+        case 0xC8:
+        case 0xC9:
+        case 0xCA:
+        case 0xCB:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0xCF:
+        case 0xD0:
+        case 0xD1:
+        case 0xD2:
+        case 0xD3:
+        case 0xD4:
+        case 0xD5:
+        case 0xD6:
+        case 0xD7:
+        case 0xD8:
+        case 0xD9:
+        case 0xDA:
+        case 0xDB:
+        case 0xDC:
+        case 0xDD:
+        case 0xDE:
+        case 0xDF:
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE4:
+        case 0xE5:
+        case 0xE6:
+        case 0xE7:
+        case 0xE8:
+        case 0xE9:
+        case 0xEA:
+        case 0xEB:
+        case 0xEC:
+        case 0xED:
+        case 0xEE:
+        case 0xEF:
+        case 0xF0:
+        case 0xF1:
+        case 0xF2:
+        case 0xF3:
+        case 0xF4:
+        case 0xF5:
+        case 0xF6:
+        case 0xF7:
+        case 0xF8:
+        case 0xF9:
+        case 0xFA:
+        case 0xFB:
+        case 0xFC:
+        case 0xFD:
+        case 0xFE:
+        case 0xFF:
+            o.op = 'or';
+            o.text = register[byte2 & 7] + ' |= ' + register[(byte2 - 0xC0) >>> 3];
+            o.len = 2;
+            break;
+        default:
+            console.log('Opcode 0x09 0x' + byte2.toString(16) + ' not recognized')
+        }
+        break;
+    case 0x0B:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x45:
+            o.op = 'or';
+            o.text = 'eax |= *(ebp' + dv.getInt8(pos) + ')';
+            o.len = 3;
+            break;
+        default:
+            console.log("Opcode 0x0B 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0x0F:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x1F:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x00:
+            case 0x01:
+            case 0x02:
+            case 0x03:
+            case 0x04:
+            case 0x05:
+            case 0x06:
+            case 0x07:
+                o.op = 'nop';
+                o.text = '// *' + register[byte3];
+                o.len = 3;
+                break;
+            case 0x40:
+            case 0x41:
+            case 0x42:
+            case 0x43:
+            case 0x45:
+            case 0x46:
+            case 0x47:
+                o.op = 'nop';
+                o.text = '// *(' + register[byte3 - 0x40] + '+' + dv.getInt8(pos) + ')';
+                o.len = 4;
+                break;
+            case 0x44:
+                byte4 = dv.getUint8(pos);
+                pos++;
+                switch (byte4) {
+                case 0x00:
+                case 0x01:
+                case 0x02:
+                case 0x03:
+                case 0x04:
+                case 0x05:
+                case 0x06:
+                case 0x07:
+                case 0x08:
+                case 0x09:
+                case 0x0A:
+                case 0x0B:
+                case 0x0C:
+                case 0x0D:
+                case 0x0E:
+                case 0x0F:
+                case 0x10:
+                case 0x11:
+                case 0x12:
+                case 0x13:
+                case 0x14:
+                case 0x15:
+                case 0x16:
+                case 0x17:
+                case 0x18:
+                case 0x19:
+                case 0x1A:
+                case 0x1B:
+                case 0x1C:
+                case 0x1D:
+                case 0x1E:
+                case 0x1F:
+                case 0x20:
+                case 0x21:
+                case 0x22:
+                case 0x23:
+                case 0x24:
+                case 0x25:
+                case 0x26:
+                case 0x27:
+                case 0x28:
+                case 0x29:
+                case 0x2A:
+                case 0x2B:
+                case 0x2C:
+                case 0x2D:
+                case 0x2E:
+                case 0x2F:
+                case 0x30:
+                case 0x31:
+                case 0x32:
+                case 0x33:
+                case 0x34:
+                case 0x35:
+                case 0x36:
+                case 0x37:
+                case 0x38:
+                case 0x39:
+                case 0x3A:
+                case 0x3B:
+                case 0x3C:
+                case 0x3D:
+                case 0x3E:
+                case 0x3F:
+                    o.op = 'nop';
+                    o.text = '// *(' + register[byte4 & 7] + '+' + register2[byte4 >>> 3] + '*1+' + dv.getInt8(pos) + ')';
+                    o.len = 5;
+                    break;
+                case 0x40:
+                case 0x41:
+                case 0x42:
+                case 0x43:
+                case 0x44:
+                case 0x45:
+                case 0x46:
+                case 0x47:
+                case 0x48:
+                case 0x49:
+                case 0x4A:
+                case 0x4B:
+                case 0x4C:
+                case 0x4D:
+                case 0x4E:
+                case 0x4F:
+                case 0x50:
+                case 0x51:
+                case 0x52:
+                case 0x53:
+                case 0x54:
+                case 0x55:
+                case 0x56:
+                case 0x57:
+                case 0x58:
+                case 0x59:
+                case 0x5A:
+                case 0x5B:
+                case 0x5C:
+                case 0x5D:
+                case 0x5E:
+                case 0x5F:
+                case 0x60:
+                case 0x61:
+                case 0x62:
+                case 0x63:
+                case 0x64:
+                case 0x65:
+                case 0x66:
+                case 0x67:
+                case 0x68:
+                case 0x69:
+                case 0x6A:
+                case 0x6B:
+                case 0x6C:
+                case 0x6D:
+                case 0x6E:
+                case 0x6F:
+                case 0x70:
+                case 0x71:
+                case 0x72:
+                case 0x73:
+                case 0x74:
+                case 0x75:
+                case 0x76:
+                case 0x77:
+                case 0x78:
+                case 0x79:
+                case 0x7A:
+                case 0x7B:
+                case 0x7C:
+                case 0x7D:
+                case 0x7E:
+                case 0x7F:
+                    o.op = 'nop';
+                    o.text = '// *(' + register[byte4 & 7] + '+' + register2[(byte4 - 0x40) >>> 3] + '*2+' + dv.getInt8(pos) + ')';
+                    o.len = 5;
+                    break;
+                case 0x80:
+                case 0x81:
+                case 0x82:
+                case 0x83:
+                case 0x84:
+                case 0x85:
+                case 0x86:
+                case 0x87:
+                case 0x88:
+                case 0x89:
+                case 0x8A:
+                case 0x8B:
+                case 0x8C:
+                case 0x8D:
+                case 0x8E:
+                case 0x8F:
+                case 0x90:
+                case 0x91:
+                case 0x92:
+                case 0x93:
+                case 0x94:
+                case 0x95:
+                case 0x96:
+                case 0x97:
+                case 0x98:
+                case 0x99:
+                case 0x9A:
+                case 0x9B:
+                case 0x9C:
+                case 0x9D:
+                case 0x9E:
+                case 0x9F:
+                case 0xA0:
+                case 0xA1:
+                case 0xA2:
+                case 0xA3:
+                case 0xA4:
+                case 0xA5:
+                case 0xA6:
+                case 0xA7:
+                case 0xA8:
+                case 0xA9:
+                case 0xAA:
+                case 0xAB:
+                case 0xAC:
+                case 0xAD:
+                case 0xAE:
+                case 0xAF:
+                case 0xB0:
+                case 0xB1:
+                case 0xB2:
+                case 0xB3:
+                case 0xB4:
+                case 0xB5:
+                case 0xB6:
+                case 0xB7:
+                case 0xB8:
+                case 0xB9:
+                case 0xBA:
+                case 0xBB:
+                case 0xBC:
+                case 0xBD:
+                case 0xBE:
+                case 0xBF:
+                    o.op = 'nop';
+                    o.text = '// *(' + register[byte4 & 7] + '+' + register2[(byte4 - 0x80) >>> 3] + '*4+' + dv.getInt8(pos) + ')';
+                    o.len = 5;
+                    break;
+                case 0xC0:
+                case 0xC1:
+                case 0xC2:
+                case 0xC3:
+                case 0xC4:
+                case 0xC5:
+                case 0xC6:
+                case 0xC7:
+                case 0xC8:
+                case 0xC9:
+                case 0xCA:
+                case 0xCB:
+                case 0xCC:
+                case 0xCD:
+                case 0xCE:
+                case 0xCF:
+                case 0xD0:
+                case 0xD1:
+                case 0xD2:
+                case 0xD3:
+                case 0xD4:
+                case 0xD5:
+                case 0xD6:
+                case 0xD7:
+                case 0xD8:
+                case 0xD9:
+                case 0xDA:
+                case 0xDB:
+                case 0xDC:
+                case 0xDD:
+                case 0xDE:
+                case 0xDF:
+                case 0xE0:
+                case 0xE1:
+                case 0xE2:
+                case 0xE3:
+                case 0xE4:
+                case 0xE5:
+                case 0xE6:
+                case 0xE7:
+                case 0xE8:
+                case 0xE9:
+                case 0xEA:
+                case 0xEB:
+                case 0xEC:
+                case 0xED:
+                case 0xEE:
+                case 0xEF:
+                case 0xF0:
+                case 0xF1:
+                case 0xF2:
+                case 0xF3:
+                case 0xF4:
+                case 0xF5:
+                case 0xF6:
+                case 0xF7:
+                case 0xF8:
+                case 0xF9:
+                case 0xFA:
+                case 0xFB:
+                case 0xFC:
+                case 0xFD:
+                case 0xFE:
+                case 0xFF:
+                    o.op = 'nop';
+                    o.text = '// *(' + register[byte4 & 7] + '+' + register2[(byte4 - 0xC0) >>> 3] + '*8+' + dv.getInt8(pos) + ')';
+                    o.len = 5;
+                    break;
+                default:
+                    console.log('Opcode 0x0F 0x1F 0x44 0x' + byte4.toString(16) + ' not recognized')
+                }
+                break;
+            case 0x80:
+            case 0x81:
+            case 0x82:
+            case 0x83:
+            case 0x85:
+            case 0x86:
+            case 0x87:
+                o.op = 'nop';
+                o.text = '// *(' + register[byte3 - 0x80] + '+' + dv.getInt32(pos, !0) + ')';
+                o.len = 7;
+                break;
+            case 0x84:
+                byte4 = dv.getUint8(pos);
+                pos++;
+                switch (byte4) {
+                case 0x00:
+                case 0x01:
+                case 0x02:
+                case 0x03:
+                case 0x04:
+                case 0x05:
+                case 0x06:
+                case 0x07:
+                case 0x08:
+                case 0x09:
+                case 0x0A:
+                case 0x0B:
+                case 0x0C:
+                case 0x0D:
+                case 0x0E:
+                case 0x0F:
+                case 0x10:
+                case 0x11:
+                case 0x12:
+                case 0x13:
+                case 0x14:
+                case 0x15:
+                case 0x16:
+                case 0x17:
+                case 0x18:
+                case 0x19:
+                case 0x1A:
+                case 0x1B:
+                case 0x1C:
+                case 0x1D:
+                case 0x1E:
+                case 0x1F:
+                case 0x20:
+                case 0x21:
+                case 0x22:
+                case 0x23:
+                case 0x24:
+                case 0x25:
+                case 0x26:
+                case 0x27:
+                case 0x28:
+                case 0x29:
+                case 0x2A:
+                case 0x2B:
+                case 0x2C:
+                case 0x2D:
+                case 0x2E:
+                case 0x2F:
+                case 0x30:
+                case 0x31:
+                case 0x32:
+                case 0x33:
+                case 0x34:
+                case 0x35:
+                case 0x36:
+                case 0x37:
+                case 0x38:
+                case 0x39:
+                case 0x3A:
+                case 0x3B:
+                case 0x3C:
+                case 0x3D:
+                case 0x3E:
+                case 0x3F:
+                    o.op = 'nop';
+                    o.text = '// *(' + register[byte4 & 7] + '+' + register2[byte4 >>> 3] + '*1+' + dv.getInt32(pos, !0) + ')';
+                    o.len = 8;
+                    break;
+                default:
+                    console.log("Opcode 0x0F 0x1F 0x84 0x" + byte4.toString(16) + " not recognized")
+                }
+                break;
+            default:
+                console.log("Opcode 0x0F 0x1F 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        case 0x84:
+            o.op = 'je';
+            o.text = 'je(' + pad((offset + 6 + dv.getInt32(pos, !0)).toString(16), 8) + ')';
+            o.len = 6;
+            break;
+        case 0x85:
+            o.op = 'jne';
+            o.text = 'jne(' + pad((offset + 6 + dv.getInt32(pos, !0)).toString(16), 8) + ')';
+            o.len = 6;
+            break;
+        case 0x94:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0xC0:
+            case 0xC1:
+            case 0xC2:
+            case 0xC3:
+            case 0xC4:
+            case 0xC5:
+            case 0xC6:
+            case 0xC7:
+                o.op = 'sete';
+                o.text = registerSm[byte3 - 0xC0] + ' = (ZERO_FLAG) ? 1 : 0';
+                o.len = 3;
+                break;
+            default:
+                console.log("Opcode 0x0F 0x94 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        case 0x95:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x44:
+                byte4 = dv.getUint8(pos);
+                pos++;
+                switch (byte4) {
+                case 0x24:
+                    o.op = 'setne';
+                    o.text = '*(esp+' + dv.getInt8(pos) + ') = (ZERO_FLAG) ? 0 : 1';
+                    o.len = 5;
+                    break;
+                default:
+                    console.log("Opcode 0x0F 0x95 0x44 0x" + byte4.toString(16) + " not recognized")
+                }
+                break;
+            case 0xC0:
+            case 0xC1:
+            case 0xC2:
+            case 0xC3:
+            case 0xC4:
+            case 0xC5:
+            case 0xC6:
+            case 0xC7:
+                o.op = 'setne';
+                o.text = registerSm[byte3 - 0xC0] + ' = (ZERO_FLAG) ? 0 : 1';
+                o.len = 3;
+                break;
+            default:
+                console.log("Opcode 0x0F 0x95 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        case 0xB6:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x44:
+                byte4 = dv.getUint8(pos);
+                pos++;
+                switch (byte4) {
+                case 0x24:
+                    o.op = 'movzx';
+                    o.text = 'movzx eax, *(esp+' + dv.getInt8(pos) + ')';
+                    o.len = 5;
+                    break;
+                default:
+                    console.log("Opcode 0x0F 0xB6 0x44 0x" + byte4.toString(16) + " not recognized")
+                }
+                break;
+            case 0xC0:
+            case 0xC1:
+            case 0xC2:
+            case 0xC3:
+            case 0xC4:
+            case 0xC5:
+            case 0xC6:
+            case 0xC7:
+            case 0xC8:
+            case 0xC9:
+            case 0xCA:
+            case 0xCB:
+            case 0xCC:
+            case 0xCD:
+            case 0xCE:
+            case 0xCF:
+            case 0xD0:
+            case 0xD1:
+            case 0xD2:
+            case 0xD3:
+            case 0xD4:
+            case 0xD5:
+            case 0xD6:
+            case 0xD7:
+            case 0xD8:
+            case 0xD9:
+            case 0xDA:
+            case 0xDB:
+            case 0xDC:
+            case 0xDD:
+            case 0xDE:
+            case 0xDF:
+            case 0xE0:
+            case 0xE1:
+            case 0xE2:
+            case 0xE3:
+            case 0xE4:
+            case 0xE5:
+            case 0xE6:
+            case 0xE7:
+            case 0xE8:
+            case 0xE9:
+            case 0xEA:
+            case 0xEB:
+            case 0xEC:
+            case 0xED:
+            case 0xEE:
+            case 0xEF:
+            case 0xF0:
+            case 0xF1:
+            case 0xF2:
+            case 0xF3:
+            case 0xF4:
+            case 0xF5:
+            case 0xF6:
+            case 0xF7:
+            case 0xF8:
+            case 0xF9:
+            case 0xFA:
+            case 0xFB:
+            case 0xFC:
+            case 0xFD:
+            case 0xFE:
+            case 0xFF:
+                o.op = 'movzx';
+                o.text = 'movzx ' + register[(byte3 - 0xC0) >>> 3] + ', ' + registerSm[byte3 & 7];
+                o.len = 3;
+                break;
+            default:
+                console.log("Opcode 0x0F 0xB6 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        default:
+            console.log("Opcode 0x0F 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0x30:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC4:
+        case 0xC5:
+        case 0xC6:
+        case 0xC7:
+        case 0xC8:
+        case 0xC9:
+        case 0xCA:
+        case 0xCB:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0xCF:
+        case 0xD0:
+        case 0xD1:
+        case 0xD2:
+        case 0xD3:
+        case 0xD4:
+        case 0xD5:
+        case 0xD6:
+        case 0xD7:
+        case 0xD8:
+        case 0xD9:
+        case 0xDA:
+        case 0xDB:
+        case 0xDC:
+        case 0xDD:
+        case 0xDE:
+        case 0xDF:
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE4:
+        case 0xE5:
+        case 0xE6:
+        case 0xE7:
+        case 0xE8:
+        case 0xE9:
+        case 0xEA:
+        case 0xEB:
+        case 0xEC:
+        case 0xED:
+        case 0xEE:
+        case 0xEF:
+        case 0xF0:
+        case 0xF1:
+        case 0xF2:
+        case 0xF3:
+        case 0xF4:
+        case 0xF5:
+        case 0xF6:
+        case 0xF7:
+        case 0xF8:
+        case 0xF9:
+        case 0xFA:
+        case 0xFB:
+        case 0xFC:
+        case 0xFD:
+        case 0xFE:
+        case 0xFF:
+            o.op = 'xor';
+            o.text = registerSm[byte2 & 7] + ' ^= ' + registerSm[(byte2 - 0xC0) >>> 3];
+            o.len = 2;
+            break;
+        default:
+            console.log("Opcode 0x30 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0x31:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC4:
+        case 0xC5:
+        case 0xC6:
+        case 0xC7:
+        case 0xC8:
+        case 0xC9:
+        case 0xCA:
+        case 0xCB:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0xCF:
+        case 0xD0:
+        case 0xD1:
+        case 0xD2:
+        case 0xD3:
+        case 0xD4:
+        case 0xD5:
+        case 0xD6:
+        case 0xD7:
+        case 0xD8:
+        case 0xD9:
+        case 0xDA:
+        case 0xDB:
+        case 0xDC:
+        case 0xDD:
+        case 0xDE:
+        case 0xDF:
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE4:
+        case 0xE5:
+        case 0xE6:
+        case 0xE7:
+        case 0xE8:
+        case 0xE9:
+        case 0xEA:
+        case 0xEB:
+        case 0xEC:
+        case 0xED:
+        case 0xEE:
+        case 0xEF:
+        case 0xF0:
+        case 0xF1:
+        case 0xF2:
+        case 0xF3:
+        case 0xF4:
+        case 0xF5:
+        case 0xF6:
+        case 0xF7:
+        case 0xF8:
+        case 0xF9:
+        case 0xFA:
+        case 0xFB:
+        case 0xFC:
+        case 0xFD:
+        case 0xFE:
+        case 0xFF:
+            o.op = 'xor';
+            o.text = register[byte2 & 7] + ' ^= ' + register[(byte2 - 0xC0) >>> 3];
+            o.len = 2;
+            break;
+        default:
+            console.log("Opcode 0x31 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0x35:
+        o.op = 'xor';
+        o.text = 'eax ^= ' + dv.getUint32(pos, !0);
+        o.len = 5;
+        break;
+    case 0x40:
+    case 0x41:
+    case 0x42:
+    case 0x43:
+    case 0x44:
+    case 0x45:
+    case 0x46:
+    case 0x47:
+        o.op = 'inc';
+        o.text = register[opcode - 0x40] + '++';
+        o.len = 1;
+        break;
+    case 0x48:
+    case 0x49:
+    case 0x4A:
+    case 0x4B:
+    case 0x4C:
+    case 0x4D:
+    case 0x4E:
+    case 0x4F:
+        o.op = 'dec';
+        o.text = register[opcode - 0x48] + '--';
+        o.len = 1;
+        break;
+    case 0x50:
+    case 0x51:
+    case 0x52:
+    case 0x53:
+    case 0x54:
+    case 0x55:
+    case 0x56:
+    case 0x57:
+        o.op = 'push';
+        o.text = 'push(' + register[opcode - 0x50] + ')';
+        o.len = 1;
+        break;
+    case 0x58:
+    case 0x59:
+    case 0x5A:
+    case 0x5B:
+    case 0x5C:
+    case 0x5D:
+    case 0x5E:
+    case 0x5F:
+        o.op = 'pop';
+        o.text = 'pop(' + register[opcode - 0x58] + ')';
+        o.len = 1;
+        break;
+    case 0x74:
+        o.op = 'je';
+        o.text = 'je(' + pad((offset + 2 + dv.getInt8(pos)).toString(16), 8) + ')';
+        o.len = 2;
+        break;
+    case 0x75:
+        o.op = 'jne';
+        o.text = 'jne(' + pad((offset + 2 + dv.getInt8(pos)).toString(16), 8) + ')';
+        o.len = 2;
+        break;
+    case 0x80:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x78:
+        case 0x79:
+        case 0x7A:
+        case 0x7B:
+        case 0x7D:
+        case 0x7E:
+        case 0x7F:
+            o.op = 'cmp';
+            o.text = '*(' + register[byte2 - 0x78] + '+' + dv.getInt8(pos) + ') == ' + dv.getUint8(pos + 1);
+            o.len = 4;
+            break;
+        case 0x7C:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x24:
+                o.op = 'cmp';
+                o.text = '*(' + register[byte2 - 0x78] + '+' + dv.getInt8(pos) + ') == ' + dv.getUint8(pos + 1);
+                o.len = 5;
+                break;
+            default:
+                console.log("Opcode 0x80 0x7C 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE4:
+        case 0xE5:
+        case 0xE6:
+        case 0xE7:
+            o.op = 'and';
+            o.text = registerSm[byte2 - 0xE0] + ' &= ' + dv.getInt8(pos);
+            o.len = 3;
+            break;
+        default:
+            console.log("Opcode 0x80 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0x81:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x00:
+        case 0x01:
+        case 0x02:
+        case 0x03:
+        case 0x04:
+        case 0x05:
+        case 0x06:
+        case 0x07:
+            o.op = 'add';
+            o.text = '*[' + register[byte2] + '] += ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0x08:
+        case 0x09:
+        case 0x0A:
+        case 0x0B:
+        case 0x0C:
+        case 0x0D:
+        case 0x0E:
+        case 0x0F:
+            o.op = 'or';
+            o.text = '*[' + register[byte2 - 0x08] + '] |= ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0x10:
+        case 0x11:
+        case 0x12:
+        case 0x13:
+        case 0x14:
+        case 0x15:
+        case 0x16:
+        case 0x17:
+            o.op = 'adc';
+            o.text = 'adc *[' + register[byte2 - 0x10] + '], ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0x18:
+        case 0x19:
+        case 0x1A:
+        case 0x1B:
+        case 0x1C:
+        case 0x1D:
+        case 0x1E:
+        case 0x1F:
+            o.op = 'sbb';
+            o.text = 'sbb *[' + register[byte2 - 0x18] + '], ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0x20:
+        case 0x21:
+        case 0x22:
+        case 0x23:
+        case 0x24:
+        case 0x25:
+        case 0x26:
+        case 0x27:
+            o.op = 'and';
+            o.text = '*[' + register[byte2 - 0x20] + '] &= ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0x28:
+        case 0x29:
+        case 0x2A:
+        case 0x2B:
+        case 0x2C:
+        case 0x2D:
+        case 0x2E:
+        case 0x2F:
+            o.op = 'sub';
+            o.text = '*[' + register[byte2 - 0x28] + '] -= ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0x30:
+        case 0x31:
+        case 0x32:
+        case 0x33:
+        case 0x34:
+        case 0x35:
+        case 0x36:
+        case 0x37:
+            o.op = 'xor';
+            o.text = '*[' + register[byte2 - 0x30] + '] ^= ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0x38:
+        case 0x39:
+        case 0x3A:
+        case 0x3B:
+        case 0x3C:
+        case 0x3D:
+        case 0x3E:
+        case 0x3F:
+            o.op = 'cmp';
+            o.text = 'cmp *[' + register[byte2 - 0x38] + '], ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0x40:
+        case 0x41:
+        case 0x42:
+        case 0x43:
+        case 0x44:
+        case 0x45:
+        case 0x46:
+        case 0x47:
+            o.text = 'add *[' + register[byte2 - 0x40] + '+' + dv.getInt8(pos) + '], ' + dv.getInt32(pos + 1, !0);
+            o.len = 7;
+            break;
+        case 0x48:
+        case 0x49:
+        case 0x4A:
+        case 0x4B:
+        case 0x4C:
+        case 0x4D:
+        case 0x4E:
+        case 0x4F:
+            o.text = 'or *[' + register[byte2 - 0x48] + '+' + dv.getInt8(pos) + '], ' + dv.getInt32(pos + 1, !0);
+            o.len = 7;
+            break;
+        case 0x50:
+        case 0x51:
+        case 0x52:
+        case 0x53:
+        case 0x54:
+        case 0x55:
+        case 0x56:
+        case 0x57:
+            o.text = 'adc *[' + register[byte2 - 0x50] + '+' + dv.getInt8(pos) + '], ' + dv.getInt32(pos + 1, !0);
+            o.len = 7;
+            break;
+        case 0x58:
+        case 0x59:
+        case 0x5A:
+        case 0x5B:
+        case 0x5C:
+        case 0x5D:
+        case 0x5E:
+        case 0x5F:
+            o.text = 'sbb *[' + register[byte2 - 0x58] + '+' + dv.getInt8(pos) + '], ' + dv.getInt32(pos + 1, !0);
+            o.len = 7;
+            break;
+        case 0x60:
+        case 0x61:
+        case 0x62:
+        case 0x63:
+        case 0x64:
+        case 0x65:
+        case 0x66:
+        case 0x67:
+            o.text = 'and *[' + register[byte2 - 0x60] + '+' + dv.getInt8(pos) + '], ' + dv.getInt32(pos + 1, !0);
+            o.len = 7;
+            break;
+        case 0x68:
+        case 0x69:
+        case 0x6A:
+        case 0x6B:
+        case 0x6C:
+        case 0x6D:
+        case 0x6E:
+        case 0x6F:
+            o.text = 'sub *[' + register[byte2 - 0x68] + '+' + dv.getInt8(pos) + '], ' + dv.getInt32(pos + 1, !0);
+            o.len = 7;
+            break;
+        case 0x70:
+        case 0x71:
+        case 0x72:
+        case 0x73:
+        case 0x74:
+        case 0x75:
+        case 0x76:
+        case 0x77:
+            o.text = 'xor *[' + register[byte2 - 0x70] + '+' + dv.getInt8(pos) + '], ' + dv.getInt32(pos + 1, !0);
+            o.len = 7;
+            break;
+        case 0x78:
+        case 0x79:
+        case 0x7A:
+        case 0x7B:
+        case 0x7C:
+        case 0x7D:
+        case 0x7E:
+        case 0x7F:
+            o.text = 'cmp *[' + register[byte2 - 0x78] + '+' + dv.getInt8(pos) + '], ' + dv.getInt32(pos + 1, !0);
+            o.len = 7;
+            break;
+        case 0x80:
+        case 0x81:
+        case 0x82:
+        case 0x83:
+        case 0x84:
+        case 0x85:
+        case 0x86:
+        case 0x87:
+            o.text = 'add *[' + register[byte2 - 0x80] + '+' + dv.getInt32(pos, !0) + '], ' + dv.getInt32(pos + 4, !0);
+            o.len = 10;
+            break;
+        case 0x88:
+        case 0x89:
+        case 0x8A:
+        case 0x8B:
+        case 0x8C:
+        case 0x8D:
+        case 0x8E:
+        case 0x8F:
+            o.text = 'or *[' + register[byte2 - 0x88] + '+' + dv.getInt32(pos, !0) + '], ' + dv.getInt32(pos + 4, !0);
+            o.len = 10;
+            break;
+        case 0x90:
+        case 0x91:
+        case 0x92:
+        case 0x93:
+        case 0x94:
+        case 0x95:
+        case 0x96:
+        case 0x97:
+            o.text = 'adc *[' + register[byte2 - 0x90] + '+' + dv.getInt32(pos, !0) + '], ' + dv.getInt32(pos + 4, !0);
+            o.len = 10;
+            break;
+        case 0x98:
+        case 0x99:
+        case 0x9A:
+        case 0x9B:
+        case 0x9C:
+        case 0x9D:
+        case 0x9E:
+        case 0x9F:
+            o.text = 'sbb *[' + register[byte2 - 0x98] + '+' + dv.getInt32(pos, !0) + '], ' + dv.getInt32(pos + 4, !0);
+            o.len = 10;
+            break;
+        case 0xA0:
+        case 0xA1:
+        case 0xA2:
+        case 0xA3:
+        case 0xA4:
+        case 0xA5:
+        case 0xA6:
+        case 0xA7:
+            o.text = 'and *[' + register[byte2 - 0xA0] + '+' + dv.getInt32(pos, !0) + '], ' + dv.getInt32(pos + 4, !0);
+            o.len = 10;
+            break;
+        case 0xA8:
+        case 0xA9:
+        case 0xAA:
+        case 0xAB:
+        case 0xAC:
+        case 0xAD:
+        case 0xAE:
+        case 0xAF:
+            o.text = 'sub *[' + register[byte2 - 0xA8] + '+' + dv.getInt32(pos, !0) + '], ' + dv.getInt32(pos + 4, !0);
+            o.len = 10;
+            break;
+        case 0xB0:
+        case 0xB1:
+        case 0xB2:
+        case 0xB3:
+        case 0xB4:
+        case 0xB5:
+        case 0xB6:
+        case 0xB7:
+            o.text = 'xor *[' + register[byte2 - 0xB0] + '+' + dv.getInt32(pos, !0) + '], ' + dv.getInt32(pos + 4, !0);
+            o.len = 10;
+            break;
+        case 0xB8:
+        case 0xB9:
+        case 0xBA:
+        case 0xBB:
+        case 0xBC:
+        case 0xBD:
+        case 0xBE:
+        case 0xBF:
+            o.text = 'cmp *[' + register[byte2 - 0xB8] + '+' + dv.getInt32(pos, !0) + '], ' + dv.getInt32(pos + 4, !0);
+            o.len = 10;
+            break;
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC4:
+        case 0xC5:
+        case 0xC6:
+        case 0xC7:
+            o.op = 'add';
+            o.text = register[byte2 - 0xC0] + ' += ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0xC8:
+        case 0xC9:
+        case 0xCA:
+        case 0xCB:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0xCF:
+            o.op = 'or';
+            o.text = register[byte2 - 0xC8] + ' |= ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0xD0:
+        case 0xD1:
+        case 0xD2:
+        case 0xD3:
+        case 0xD4:
+        case 0xD5:
+        case 0xD6:
+        case 0xD7:
+            o.op = 'adc';
+            o.text = 'adc ' + register[byte2 - 0xD0] + ', ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0xD8:
+        case 0xD9:
+        case 0xDA:
+        case 0xDB:
+        case 0xDC:
+        case 0xDD:
+        case 0xDE:
+        case 0xDF:
+            o.op = 'sbb';
+            o.text = 'sbb ' + register[byte2 - 0xD8] + ', ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE4:
+        case 0xE5:
+        case 0xE6:
+        case 0xE7:
+            o.op = 'and';
+            o.text = register[byte2 - 0xE0] + ' &= ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0xE8:
+        case 0xE9:
+        case 0xEA:
+        case 0xEB:
+        case 0xEC:
+        case 0xED:
+        case 0xEE:
+        case 0xEF:
+            o.op = 'sub';
+            o.text = register[byte2 - 0xE8] + ' -= ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0xF0:
+        case 0xF1:
+        case 0xF2:
+        case 0xF3:
+        case 0xF4:
+        case 0xF5:
+        case 0xF6:
+        case 0xF7:
+            o.op = 'xor';
+            o.text = register[byte2 - 0xF0] + ' ^= ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break;
+        case 0xF8:
+        case 0xF9:
+        case 0xFA:
+        case 0xFB:
+        case 0xFC:
+        case 0xFD:
+        case 0xFE:
+        case 0xFF:
+            o.op = 'cmp';
+            o.text = 'cmp ' + register[byte2 - 0xF8] + ', ' + dv.getInt32(pos, !0);
+            o.len = 6;
+            break
+        }
+        break;
+    case 0x83:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x78:
+        case 0x79:
+        case 0x7A:
+        case 0x7B:
+        case 0x7C:
+        case 0x7D:
+        case 0x7E:
+        case 0x7F:
+            o.op = 'cmp';
+            o.text = 'cmp *(' + register[byte2 - 0x78] + '+' + dv.getInt8(pos) + ') == ' + dv.getInt8(pos + 1);
+            o.len = 4;
+            break;
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC4:
+        case 0xC5:
+        case 0xC6:
+        case 0xC7:
+            o.op = 'add';
+            o.text = register[byte2 - 0xC0] + ' += ' + dv.getInt8(pos);
+            o.len = 3;
+            break;
+        case 0xC8:
+        case 0xC9:
+        case 0xCA:
+        case 0xCB:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0xCF:
+            o.op = 'or';
+            o.text = register[byte2 - 0xC8] + ' |= ' + dv.getInt8(pos);
+            o.len = 3;
+            break;
+        case 0xD0:
+        case 0xD1:
+        case 0xD2:
+        case 0xD3:
+        case 0xD4:
+        case 0xD5:
+        case 0xD6:
+        case 0xD7:
+            o.op = 'adc';
+            o.text = 'adc ' + register[byte2 - 0xD0] + ', ' + dv.getInt8(pos);
+            o.len = 3;
+            break;
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE4:
+        case 0xE5:
+        case 0xE6:
+        case 0xE7:
+            o.op = 'and';
+            o.text = register[byte2 - 0xE0] + ' &= ' + dv.getInt8(pos);
+            o.len = 3;
+            break;
+        case 0xE8:
+        case 0xE9:
+        case 0xEA:
+        case 0xEB:
+        case 0xEC:
+        case 0xED:
+        case 0xEE:
+        case 0xEF:
+            o.op = 'sub';
+            o.text = register[byte2 - 0xE8] + ' -= ' + dv.getInt8(pos);
+            o.len = 3;
+            break;
+        case 0xF8:
+        case 0xF9:
+        case 0xFA:
+        case 0xFB:
+        case 0xFC:
+        case 0xFD:
+        case 0xFE:
+        case 0xFF:
+            o.op = 'cmp';
+            o.text = 'cmp ' + register[byte2 - 0xF8] + ' == ' + dv.getInt8(pos);
+            o.len = 3;
+            break;
+        default:
+            console.log("Opcode 0x81 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0x84:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC4:
+        case 0xC5:
+        case 0xC6:
+        case 0xC7:
+        case 0xC8:
+        case 0xC9:
+        case 0xCA:
+        case 0xCB:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0xCF:
+        case 0xD0:
+        case 0xD1:
+        case 0xD2:
+        case 0xD3:
+        case 0xD4:
+        case 0xD5:
+        case 0xD6:
+        case 0xD7:
+        case 0xD8:
+        case 0xD9:
+        case 0xDA:
+        case 0xDB:
+        case 0xDC:
+        case 0xDD:
+        case 0xDE:
+        case 0xDF:
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE4:
+        case 0xE5:
+        case 0xE6:
+        case 0xE7:
+        case 0xE8:
+        case 0xE9:
+        case 0xEA:
+        case 0xEB:
+        case 0xEC:
+        case 0xED:
+        case 0xEE:
+        case 0xEF:
+        case 0xF0:
+        case 0xF1:
+        case 0xF2:
+        case 0xF3:
+        case 0xF4:
+        case 0xF5:
+        case 0xF6:
+        case 0xF7:
+        case 0xF8:
+        case 0xF9:
+        case 0xFA:
+        case 0xFB:
+        case 0xFC:
+        case 0xFD:
+        case 0xFE:
+        case 0xFF:
+            o.op = 'test';
+            o.text = registerSm[byte2 & 7] + ' == ' + registerSm[(byte2 - 0xC0) >>> 3];
+            o.len = 2;
+            break;
+        default:
+            console.log("Opcode 0x84 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0x85:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0xC0:
+            o.op = 'test';
+            o.text = 'eax == eax';
+            o.len = 2;
+            break;
+        case 0xD2:
+            o.op = 'test';
+            o.text = 'edx == edx';
+            o.len = 2;
+            break;
+        default:
+            console.log("Opcode 0x85 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0x88:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x44:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x24:
+                o.op = 'mov';
+                o.text = '*(esp+' + dv.getInt8(pos) + ') = al';
+                o.len = 4;
+                break;
+            default:
+                console.log("Opcode 0x88 0x44 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        case 0x5C:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x24:
+                o.op = 'mov';
+                o.text = '*(esp+' + dv.getInt8(pos) + ') = bl';
+                o.len = 4;
+                break;
+            default:
+                console.log("Opcode 0x88 0x5C 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC4:
+        case 0xC5:
+        case 0xC6:
+        case 0xC7:
+        case 0xC8:
+        case 0xC9:
+        case 0xCA:
+        case 0xCB:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0xCF:
+        case 0xD0:
+        case 0xD1:
+        case 0xD2:
+        case 0xD3:
+        case 0xD4:
+        case 0xD5:
+        case 0xD6:
+        case 0xD7:
+        case 0xD8:
+        case 0xD9:
+        case 0xDA:
+        case 0xDB:
+        case 0xDC:
+        case 0xDD:
+        case 0xDE:
+        case 0xDF:
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE4:
+        case 0xE5:
+        case 0xE6:
+        case 0xE7:
+        case 0xE8:
+        case 0xE9:
+        case 0xEA:
+        case 0xEB:
+        case 0xEC:
+        case 0xED:
+        case 0xEE:
+        case 0xEF:
+        case 0xF0:
+        case 0xF1:
+        case 0xF2:
+        case 0xF3:
+        case 0xF4:
+        case 0xF5:
+        case 0xF6:
+        case 0xF7:
+        case 0xF8:
+        case 0xF9:
+        case 0xFA:
+        case 0xFB:
+        case 0xFC:
+        case 0xFD:
+        case 0xFE:
+        case 0xFF:
+            o.op = 'mov';
+            o.text = registerSm[byte2 & 7] + ' = ' + registerSm[(byte2 - 0xC0) >>> 3];
+            o.len = 2;
+            break;
+        default:
+            console.log("Opcode 0x88 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0x89:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x04:
+        case 0x0C:
+        case 0x14:
+        case 0x1C:
+        case 0x24:
+        case 0x2C:
+        case 0x34:
+        case 0x3C:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x24:
+                o.op = 'mov';
+                o.text = '*esp = ' + register[(byte2 - 4) / 8];
+                o.len = 3;
+                break;
+            default:
+                console.log("Opcode 0x89 0x" + byte2.toString(16) + " 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        case 0x44:
+        case 0x4C:
+        case 0x54:
+        case 0x5C:
+        case 0x64:
+        case 0x6C:
+        case 0x74:
+        case 0x7C:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x24:
+                o.op = 'mov';
+                o.text = '*(esp+' + dv.getInt8(pos) + ') = ' + register[(byte2 - 0x44) / 8];
+                o.len = 4;
+                break;
+            default:
+                console.log("Opcode 0x89 0x" + byte2.toString(16) + " 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        case 0x84:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x24:
+                o.op = 'mov';
+                o.text = '*(esp+' + dv.getInt32(pos, !0) + ') = ' + register[(byte2 - 0x84) / 8];
+                o.len = 7;
+                break;
+            default:
+                console.log("Opcode 0x89 0x" + byte2.toString(16) + " 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC4:
+        case 0xC5:
+        case 0xC6:
+        case 0xC7:
+        case 0xC8:
+        case 0xC9:
+        case 0xCA:
+        case 0xCB:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0xCF:
+        case 0xD0:
+        case 0xD1:
+        case 0xD2:
+        case 0xD3:
+        case 0xD4:
+        case 0xD5:
+        case 0xD6:
+        case 0xD7:
+        case 0xD8:
+        case 0xD9:
+        case 0xDA:
+        case 0xDB:
+        case 0xDC:
+        case 0xDD:
+        case 0xDE:
+        case 0xDF:
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE4:
+        case 0xE5:
+        case 0xE6:
+        case 0xE7:
+        case 0xE8:
+        case 0xE9:
+        case 0xEA:
+        case 0xEB:
+        case 0xEC:
+        case 0xED:
+        case 0xEE:
+        case 0xEF:
+        case 0xF0:
+        case 0xF1:
+        case 0xF2:
+        case 0xF3:
+        case 0xF4:
+        case 0xF5:
+        case 0xF6:
+        case 0xF7:
+        case 0xF8:
+        case 0xF9:
+        case 0xFA:
+        case 0xFB:
+        case 0xFC:
+        case 0xFD:
+        case 0xFE:
+        case 0xFF:
+            o.op = 'mov';
+            o.text = register[byte2 & 7] + ' = ' + register[(byte2 - 0xC0) >>> 3];
+            o.len = 2;
+            break;
+        default:
+            console.log("Opcode 0x89 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0x8A:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x44:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x24:
+                o.op = 'mov';
+                o.text = 'al = *(esp+' + dv.getInt8(pos) + ')';
+                o.len = 4;
+                break;
+            default:
+                console.log("Opcode 0x8A 0x" + byte2.toString(16) + " 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        default:
+            console.log("Opcode 0x8A 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0x8B:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x00:
+        case 0x01:
+        case 0x02:
+        case 0x03:
+        case 0x04:
+        case 0x05:
+        case 0x06:
+        case 0x07:
+        case 0x08:
+        case 0x09:
+        case 0x0A:
+        case 0x0B:
+        case 0x0C:
+        case 0x0D:
+        case 0x0E:
+        case 0x0F:
+        case 0x10:
+        case 0x11:
+        case 0x12:
+        case 0x13:
+        case 0x14:
+        case 0x15:
+        case 0x16:
+        case 0x17:
+        case 0x18:
+        case 0x19:
+        case 0x1A:
+        case 0x1B:
+        case 0x1C:
+        case 0x1D:
+        case 0x1E:
+        case 0x1F:
+        case 0x20:
+        case 0x21:
+        case 0x22:
+        case 0x23:
+        case 0x24:
+        case 0x25:
+        case 0x26:
+        case 0x27:
+        case 0x28:
+        case 0x29:
+        case 0x2A:
+        case 0x2B:
+        case 0x2C:
+        case 0x2D:
+        case 0x2E:
+        case 0x2F:
+        case 0x30:
+        case 0x31:
+        case 0x32:
+        case 0x33:
+        case 0x34:
+        case 0x35:
+        case 0x36:
+        case 0x37:
+        case 0x38:
+        case 0x39:
+        case 0x3A:
+        case 0x3B:
+        case 0x3C:
+        case 0x3D:
+        case 0x3E:
+        case 0x3F:
+            if ((byte2 & 7) === 4) {
+                byte3 = dv.getUint8(pos);
+                pos++;
+                if (byte3 === 0x24) {
+                    o.op = 'mov';
+                    o.text = register[byte2 >>> 3] + ' = *' + register[byte2 & 7];
+                    o.len = 3
+                } else {
+                    console.log("Opcode 0x8B 0x" + byte2.toString(16) + " 0x" + byte3.toString(16) + " not recognized")
+                }
+            } else if ((byte2 & 7) === 5) {
+                o.op = 'mov';
+                o.text = register[byte2 >>> 3] + ' = ' + dv.getUint32(pos, !0);
+                o.len = 6
+            } else {
+                o.op = 'mov';
+                o.text = register[byte2 >>> 3] + ' = *' + register[byte2 & 7];
+                o.len = 2
+            }
+            break;
+        case 0x40:
+        case 0x41:
+        case 0x42:
+        case 0x43:
+        case 0x44:
+        case 0x45:
+        case 0x46:
+        case 0x47:
+        case 0x48:
+        case 0x49:
+        case 0x4A:
+        case 0x4B:
+        case 0x4C:
+        case 0x4D:
+        case 0x4E:
+        case 0x4F:
+        case 0x50:
+        case 0x51:
+        case 0x52:
+        case 0x53:
+        case 0x54:
+        case 0x55:
+        case 0x56:
+        case 0x57:
+        case 0x58:
+        case 0x59:
+        case 0x5A:
+        case 0x5B:
+        case 0x5C:
+        case 0x5D:
+        case 0x5E:
+        case 0x5F:
+        case 0x60:
+        case 0x61:
+        case 0x62:
+        case 0x63:
+        case 0x64:
+        case 0x65:
+        case 0x66:
+        case 0x67:
+        case 0x68:
+        case 0x69:
+        case 0x6A:
+        case 0x6B:
+        case 0x6C:
+        case 0x6D:
+        case 0x6E:
+        case 0x6F:
+        case 0x70:
+        case 0x71:
+        case 0x72:
+        case 0x73:
+        case 0x74:
+        case 0x75:
+        case 0x76:
+        case 0x77:
+        case 0x78:
+        case 0x79:
+        case 0x7A:
+        case 0x7B:
+        case 0x7C:
+        case 0x7D:
+        case 0x7E:
+        case 0x7F:
+            if ((byte2 & 7) === 4) {
+                byte3 = dv.getUint8(pos);
+                pos++;
+                if (byte3 === 0x24) {
+                    o.op = 'mov';
+                    o.text = register[(byte2 - 0x40) >>> 3] + ' = *(' + register[byte2 & 7] + '+' + dv.getInt8(pos) + ')';
+                    o.len = 4
+                } else {
+                    console.log("Opcode 0x8B 0x" + byte2.toString(16) + " 0x" + byte3.toString(16) + " not recognized")
+                }
+            } else {
+                o.op = 'mov';
+                o.text = register[(byte2 - 0x40) >>> 3] + ' = *(' + register[byte2 & 7] + '+' + dv.getInt8(pos) + ')';
+                o.len = 3
+            }
+            break;
+        case 0x80:
+        case 0x81:
+        case 0x82:
+        case 0x83:
+        case 0x84:
+        case 0x85:
+        case 0x86:
+        case 0x87:
+        case 0x88:
+        case 0x89:
+        case 0x8A:
+        case 0x8B:
+        case 0x8C:
+        case 0x8D:
+        case 0x8E:
+        case 0x8F:
+        case 0x90:
+        case 0x91:
+        case 0x92:
+        case 0x93:
+        case 0x94:
+        case 0x95:
+        case 0x96:
+        case 0x97:
+        case 0x98:
+        case 0x99:
+        case 0x9A:
+        case 0x9B:
+        case 0x9C:
+        case 0x9D:
+        case 0x9E:
+        case 0x9F:
+        case 0xA0:
+        case 0xA1:
+        case 0xA2:
+        case 0xA3:
+        case 0xA4:
+        case 0xA5:
+        case 0xA6:
+        case 0xA7:
+        case 0xA8:
+        case 0xA9:
+        case 0xAA:
+        case 0xAB:
+        case 0xAC:
+        case 0xAD:
+        case 0xAE:
+        case 0xAF:
+        case 0xB0:
+        case 0xB1:
+        case 0xB2:
+        case 0xB3:
+        case 0xB4:
+        case 0xB5:
+        case 0xB6:
+        case 0xB7:
+        case 0xB8:
+        case 0xB9:
+        case 0xBA:
+        case 0xBB:
+        case 0xBC:
+        case 0xBD:
+        case 0xBE:
+        case 0xBF:
+            if ((byte2 & 7) === 4) {
+                byte3 = dv.getUint8(pos);
+                pos++;
+                if (byte3 === 0x24) {
+                    o.op = 'mov';
+                    o.text = register[(byte2 - 0x80) >>> 3] + ' = *(' + register[byte2 & 7] + '+' + dv.getInt32(pos, !0) + ')';
+                    o.len = 7
+                } else {
+                    console.log("Opcode 0x8B 0x" + byte2.toString(16) + " 0x" + byte3.toString(16) + " not recognized")
+                }
+            } else {
+                o.op = 'mov';
+                o.text = register[(byte2 - 0x80) >>> 3] + ' = *(' + register[byte2 & 7] + '+' + dv.getInt32(pos, !0) + ')';
+                o.len = 6;
+                break
+            }
+            break;
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC4:
+        case 0xC5:
+        case 0xC6:
+        case 0xC7:
+        case 0xC8:
+        case 0xC9:
+        case 0xCA:
+        case 0xCB:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0xCF:
+        case 0xD0:
+        case 0xD1:
+        case 0xD2:
+        case 0xD3:
+        case 0xD4:
+        case 0xD5:
+        case 0xD6:
+        case 0xD7:
+        case 0xD8:
+        case 0xD9:
+        case 0xDA:
+        case 0xDB:
+        case 0xDC:
+        case 0xDD:
+        case 0xDE:
+        case 0xDF:
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE4:
+        case 0xE5:
+        case 0xE6:
+        case 0xE7:
+        case 0xE8:
+        case 0xE9:
+        case 0xEA:
+        case 0xEB:
+        case 0xEC:
+        case 0xED:
+        case 0xEE:
+        case 0xEF:
+        case 0xF0:
+        case 0xF1:
+        case 0xF2:
+        case 0xF3:
+        case 0xF4:
+        case 0xF5:
+        case 0xF6:
+        case 0xF7:
+        case 0xF8:
+        case 0xF9:
+        case 0xFA:
+        case 0xFB:
+        case 0xFC:
+        case 0xFD:
+        case 0xFE:
+        case 0xFF:
+            o.op = 'mov';
+            o.text = register[(byte2 - 0xC0) >>> 3] + ' = ' + register[byte2 & 7];
+            o.len = 2;
+            break
+        }
+        break;
+    case 0x8D:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x40:
+        case 0x41:
+        case 0x42:
+        case 0x43:
+        case 0x44:
+        case 0x45:
+        case 0x46:
+        case 0x47:
+        case 0x48:
+        case 0x49:
+        case 0x4A:
+        case 0x4B:
+        case 0x4C:
+        case 0x4D:
+        case 0x4E:
+        case 0x4F:
+        case 0x50:
+        case 0x51:
+        case 0x52:
+        case 0x53:
+        case 0x54:
+        case 0x55:
+        case 0x56:
+        case 0x57:
+        case 0x58:
+        case 0x59:
+        case 0x5A:
+        case 0x5B:
+        case 0x5C:
+        case 0x5D:
+        case 0x5E:
+        case 0x5F:
+        case 0x60:
+        case 0x61:
+        case 0x62:
+        case 0x63:
+        case 0x64:
+        case 0x65:
+        case 0x66:
+        case 0x67:
+        case 0x68:
+        case 0x69:
+        case 0x6A:
+        case 0x6B:
+        case 0x6C:
+        case 0x6D:
+        case 0x6E:
+        case 0x6F:
+        case 0x70:
+        case 0x71:
+        case 0x72:
+        case 0x73:
+        case 0x74:
+        case 0x75:
+        case 0x76:
+        case 0x77:
+        case 0x78:
+        case 0x79:
+        case 0x7A:
+        case 0x7B:
+        case 0x7C:
+        case 0x7D:
+        case 0x7E:
+        case 0x7F:
+            if ((byte2 & 7) === 4) {
+                byte3 = dv.getUint8(pos);
+                pos++;
+                if (byte3 === 0x24) {
+                    o.op = 'lea';
+                    o.text = 'lea ' + register[(byte2 - 0x40) >>> 3] + ', *(' + register[byte2 & 7] + '+' + dv.getInt8(pos) + ')';
+                    o.len = 4
+                } else {
+                    console.log("Opcode 0x8D 0x" + byte2.toString(16) + " 0x" + byte3.toString(16) + " not recognized")
+                }
+            } else {
+                o.op = 'lea';
+                o.text = 'lea ' + register[(byte2 - 0x40) >>> 3] + ', *(' + register[byte2 & 7] + '+' + dv.getInt8(pos) + ')';
+                o.len = 3
+            }
+            break;
+        case 0x80:
+        case 0x81:
+        case 0x82:
+        case 0x83:
+        case 0x84:
+        case 0x85:
+        case 0x86:
+        case 0x87:
+        case 0x88:
+        case 0x89:
+        case 0x8A:
+        case 0x8B:
+        case 0x8C:
+        case 0x8D:
+        case 0x8E:
+        case 0x8F:
+        case 0x90:
+        case 0x91:
+        case 0x92:
+        case 0x93:
+        case 0x94:
+        case 0x95:
+        case 0x96:
+        case 0x97:
+        case 0x98:
+        case 0x99:
+        case 0x9A:
+        case 0x9B:
+        case 0x9C:
+        case 0x9D:
+        case 0x9E:
+        case 0x9F:
+        case 0xA0:
+        case 0xA1:
+        case 0xA2:
+        case 0xA3:
+        case 0xA4:
+        case 0xA5:
+        case 0xA6:
+        case 0xA7:
+        case 0xA8:
+        case 0xA9:
+        case 0xAA:
+        case 0xAB:
+        case 0xAC:
+        case 0xAD:
+        case 0xAE:
+        case 0xAF:
+        case 0xB0:
+        case 0xB1:
+        case 0xB2:
+        case 0xB3:
+        case 0xB4:
+        case 0xB5:
+        case 0xB6:
+        case 0xB7:
+        case 0xB8:
+        case 0xB9:
+        case 0xBA:
+        case 0xBB:
+        case 0xBC:
+        case 0xBD:
+        case 0xBE:
+        case 0xBF:
+            if ((byte2 & 7) === 4) {
+                byte3 = dv.getUint8(pos);
+                pos++;
+                if (byte3 === 0x24) {
+                    o.op = 'lea';
+                    o.text = 'lea ' + register[(byte2 - 0x80) >>> 3] + ', *(' + register[byte2 & 7] + '+' + dv.getInt32(pos, !0) + ')';
+                    o.len = 7
+                } else {
+                    console.log("Opcode 0x8D 0x" + byte2.toString(16) + " 0x" + byte3.toString(16) + " not recognized")
+                }
+            } else {
+                o.op = 'lea';
+                o.text = 'lea ' + register[(byte2 - 0x80) >>> 3] + ', *(' + register[byte2 & 7] + '+' + dv.getInt32(pos, !0) + ')';
+                o.len = 6
+            }
+            break;
+        default:
+            console.log("Opcode 0x8D 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0xA0:
+        o.op = 'mov';
+        o.text = 'al = *(' + dv.getInt32(pos, !0) + ')';
+        o.len = 5;
+        break;
+    case 0xA1:
+        o.op = 'mov';
+        o.text = 'eax = *(' + dv.getInt32(pos, !0) + ')';
+        o.len = 5;
+        break;
+    case 0xA2:
+        o.op = 'mov';
+        o.text = '*(' + dv.getInt32(pos, !0) + ') = al';
+        o.len = 5;
+        break;
+    case 0xA3:
+        o.op = 'mov';
+        o.text = '*(' + dv.getInt32(pos, !0) + ') = eax';
+        o.len = 5;
+        break;
+    case 0xB0:
+    case 0xB1:
+    case 0xB2:
+    case 0xB3:
+    case 0xB4:
+    case 0xB5:
+    case 0xB6:
+    case 0xB7:
+        o.op = 'mov';
+        o.text = registerSm[opcode - 0xB0] + ' = ' + dv.getUint8(pos, !0);
+        o.len = 2;
+        break;
+    case 0xB8:
+    case 0xB9:
+    case 0xBA:
+    case 0xBB:
+    case 0xBC:
+    case 0xBD:
+    case 0xBE:
+    case 0xBF:
+        o.op = 'mov';
+        o.text = register[opcode - 0xB8] + ' = ' + dv.getInt32(pos, !0);
+        o.len = 5;
+        break;
+    case 0xC3:
+        o.op = 'ret';
+        o.text = '<b>return</b>';
+        o.len = 1;
+        break;
+    case 0xC6:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x44:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x24:
+                o.op = 'mov';
+                o.text = '*(esp+' + dv.getInt8(pos) + ') = ' + dv.getInt8(pos + 1);
+                o.len = 5;
+                break;
+            default:
+                console.log("Opcode 0xC6 0x" + byte2.toString(16) + " 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        default:
+            console.log("Opcode 0xC6 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0xC7:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x04:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x24:
+                o.op = 'mov';
+                o.text = '*esp = ' + dv.getInt32(pos, !0);
+                o.len = 7;
+                break;
+            default:
+                console.log("Opcode 0xC7 0x04 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        case 0x44:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x24:
+                o.op = 'mov';
+                o.text = '*(esp+' + dv.getInt8(pos) + ') = ' + dv.getInt32(pos + 1, !0);
+                o.len = 8;
+                break;
+            default:
+                console.log("Opcode 0xC7 0x44 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        default:
+            console.log("Opcode 0xC7 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0xE8:
+        o.op = 'call';
+        byte2 = dv.getInt32(pos, !0);
+        if (byte2 === -4) {
+            o.text = 'call(???)'
+        } else {
+            o.text = 'call(' + pad((offset + 5 + dv.getInt32(pos, !0)).toString(16), 8) + ')'
+        }
+        o.len = 5;
+        break;
+    case 0xE9:
+        o.op = 'jmp';
+        o.text = 'jmp(' + pad((offset + 5 + dv.getInt32(pos, !0)).toString(16), 8) + ')';
+        o.len = 5;
+        break;
+    case 0xeB:
+        o.op = 'jmp';
+        o.text = 'jmp(' + pad((offset + 2 + dv.getInt8(pos)).toString(16), 8) + ')';
+        o.len = 2;
+        break;
+    case 0xF6:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0x44:
+            byte3 = dv.getUint8(pos);
+            pos++;
+            switch (byte3) {
+            case 0x24:
+                o.op = 'test';
+                o.text = '*(esp+' + dv.getInt8(pos) + ')' + ' == ' + dv.getInt8(pos + 1);
+                o.len = 5;
+                break;
+            default:
+                console.log("Opcode 0xF6 0x" + byte2.toString(16) + " 0x" + byte3.toString(16) + " not recognized")
+            }
+            break;
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC4:
+        case 0xC5:
+        case 0xC6:
+        case 0xC7:
+            o.op = 'test';
+            o.text = registerSm[byte2 - 0xC0] + ' == ' + dv.getInt8(pos);
+            o.len = 3;
+            break;
+        default:
+            console.log("Opcode 0xF6 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    case 0xFF:
+        byte2 = dv.getUint8(pos);
+        pos++;
+        switch (byte2) {
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC4:
+        case 0xC5:
+        case 0xC6:
+        case 0xC7:
+            o.op = 'inc';
+            o.text = register[byte2 - 0xC0] + '++';
+            o.len = 2;
+            break;
+        case 0xC8:
+        case 0xC9:
+        case 0xCA:
+        case 0xCB:
+        case 0xCC:
+        case 0xCD:
+        case 0xCE:
+        case 0xCF:
+            o.op = 'dec';
+            o.text = register[byte2 - 0xC8] + '++';
+            o.len = 2;
+            break;
+        case 0xD0:
+        case 0xD1:
+        case 0xD2:
+        case 0xD3:
+        case 0xD4:
+        case 0xD5:
+        case 0xD6:
+        case 0xD7:
+            o.op = 'call';
+            o.text = 'call(' + register[byte2 - 0xD0] + ')';
+            o.len = 2;
+            break;
+        case 0xE0:
+        case 0xE1:
+        case 0xE2:
+        case 0xE3:
+        case 0xE4:
+        case 0xE5:
+        case 0xE6:
+        case 0xE7:
+            o.op = 'jmp';
+            o.text = 'jmp(' + register[byte2 - 0xE0] + ')';
+            o.len = 2;
+            break;
+        default:
+            console.log("Opcode 0xFF 0x" + byte2.toString(16) + " not recognized")
+        }
+        break;
+    default:
+        console.log("Opcode 0x" + opcode.toString(16) + " not recognized")
+    }
+    return o
+}
+function readULEB128(dv, pos) {
+    var initPos = pos;
+    var result = 0;
+    var shift = 0;
+    for (; ; ) {
+        let byte = dv.getUint8(pos);
+        pos++;
+        result |= (byte & 0x7F) << shift;
+        shift += 7;
+        if (byte < 0x80)
+            break
+    }
+    {
+        let out = Object.create(null);
+        out.num = result;
+        out.len = pos - initPos;
+        return out
+    }
+}
+function readSLEB128(dv, pos) {
+    var initPos = pos;
+    var result = 0;
+    var shift = 0;
+    var byte;
+    for (; ; ) {
+        byte = dv.getUint8(pos);
+        pos++;
+        result |= (byte & 0x7F) << shift;
+        shift += 7;
+        if (byte < 0x80)
+            break
+    }
+    if (byte & 0x40) {
+        result |= (-1) << shift
+    }
+    {
+        let out = Object.create(null);
+        out.num = result;
+        out.len = pos - initPos;
+        return out
+    }
 }
 class BitReader {
     constructor(dv) {

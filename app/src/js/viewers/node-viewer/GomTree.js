@@ -36,11 +36,12 @@ class NodeTree {
     }
     
     redraw = (e) => {
-        this.canvas.width = this.scrollersize.offsetWidth * 4;
-        this.canvas.style.width = this.scrollersize.offsetWidth;
-        this.canvas.height = this.scrollersize.offsetHeight * 4;
-        this.canvas.style.height = this.scrollersize.offsetHeight;
-        //this.ctx.setTransform((this.canvas.width/this.canvas.style.width),0,0,(this.canvas.height/this.canvas.style.height),0,0);
+        this.ctx.translate(0.5, 0.5);
+        this.canvas.width = this.scrollersize.offsetWidth * window.devicePixelRatio;
+        this.canvas.style.width = `${this.scrollersize.offsetWidth}px`;
+        this.canvas.height = this.scrollersize.offsetHeight * window.devicePixelRatio;
+        this.canvas.style.height = `${this.scrollersize.height}px`;
+        this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
         this.ctx.font = 'normal 10pt arial'; //'normal normal 200 10pt Eurofont';
         this.ctx.fillStyle = "#333"
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -53,6 +54,7 @@ class NodeTree {
         } else {
             this.drawfolder(nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, this.scrollersize.offsetHeight)
         }
+        this.ctx.translate(-0.5, -0.5);
     }
     
     drawfolder = (folder,heightIn,level,maxHeight) => {

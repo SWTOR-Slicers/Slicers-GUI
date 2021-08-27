@@ -40,7 +40,7 @@ class NodeTree {
         this.canvas.width = this.scrollersize.offsetWidth * window.devicePixelRatio;
         this.canvas.style.width = `${this.scrollersize.offsetWidth}px`;
         this.canvas.height = this.scrollersize.offsetHeight * window.devicePixelRatio;
-        this.canvas.style.height = `${this.scrollersize.height}px`;
+        this.canvas.style.height = `${this.scrollersize.offsetHeight}px`;
         this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
         this.ctx.font = 'normal 10pt arial'; //'normal normal 200 10pt Eurofont';
         this.ctx.fillStyle = "#333"

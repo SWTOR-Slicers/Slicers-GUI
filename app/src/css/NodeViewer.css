@@ -49,9 +49,11 @@
 
 .view-body {
     height: calc(100% - 20px);
-    width: calc(100%);
+    width: 100%;
     background-color: var(--medium-grey);
     border-radius: 6px;
+    overflow: auto;
+    position: relative;
 }
 
 .data-view-body {
@@ -178,7 +180,12 @@
 .node-header {
     color: white;
     font-size: 14px;
-    margin: 7px;
+    margin: 0px;
+    padding: 7px;
+    top: 0;
+    position: sticky;
+    background-color: var(--medium-grey);
+    border-radius: 4px;
 }
 mark {
     background-color: transparent;
@@ -195,4 +202,9 @@ mark {
 .node-table th, .node-table tr, .node-table td {
     border: 1px solid var(--background-yellow-slicers);
     border-collapse: collapse;
+}
+.node-table td > div {
+    display: flex;
+    flex-direction: row;
+    margin: 0px 10px;
 }

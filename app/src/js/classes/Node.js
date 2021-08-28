@@ -1,7 +1,6 @@
 import {GOM} from "./util/Gom.js";
 import { RawDeflate } from "../externals/Inflate.js";
-import { readVarInt, uint64_add, uint64C, assert, testFilename, hashlittle2 } from "../Util.js";
-import { STB } from "./STB.js";
+import { readVarInt, uint64_add, uint64C, assert, cleanString, readString } from "../Util.js";
 
 const fs = require('fs');
 
@@ -20,10 +19,6 @@ DOM_TYPES.NODEREF = 15;
 DOM_TYPES.VECTOR3 = 18;
 DOM_TYPES.TIMEINTERVAL = 20;
 DOM_TYPES.DATE = 21;
-
-const stb = {};
-const stbLoading = {};
-const filesByHash = {};
 
 function domTypeToString(type) {
     switch (type) {
@@ -58,15 +53,6 @@ function domTypeToString(type) {
     default:
         return 'Unknown (' + type + ')'
     }
-}
-
-function readString(dv, pos) {
-    let curChar = 0;
-    let outName = '';
-    while ((curChar = dv.getUint8(pos++)) !== 0) {
-        outName += String.fromCharCode(curChar)
-    }
-    return outName
 }
 
 function file_node_readfield(dv, pos, id, type) {
@@ -107,7 +93,7 @@ function file_node_readfield(dv, pos, id, type) {
     case DOM_TYPES.STRING:
         {
             const strLength = readVarInt(dv, pos);
-            out.val = readString(dv, pos + strLength.len, strLength.intLo);
+            out.val = readString(dv.buffer, pos + strLength.len, strLength.intLo);
             out.len = strLength.len + strLength.intLo;
             break
         }
@@ -229,15 +215,15 @@ function parseNode(node, obj) {
         const p = document.createElement('p');
         p.className = "node-header";
         let formatName = '';
-        formatName += node.path;
-        formatName += '<span style="var(--background-yellow-slicers)">' + node.fileName + '</span>';
-        p.innerHTML = '<b>Node FQN:</b> <mark>' + formatName + '</mark><br/><b>ID:</b> <mark>' + node.id + '</mark><b>base class:</b> <mark>' + node.baseClass + '</mark>';
+        formatName += '<span style="color: #ccc">' + node.path + '</span>';
+        formatName += '<span style="color: #fff">' + node.fileName + '</span>';
+        p.innerHTML = '<b style="color: var(--background-yellow-slicers);">Node FQN:</b> <mark>' + formatName + '</mark><br/><b style="color: var(--background-yellow-slicers);">ID:</b> <mark>' + node.id + '</mark><br/><b style="color: var(--background-yellow-slicers);">base class:</b> <mark>' + node.baseClass + '</mark>';
         frag.appendChild(p)
     }
     {
         const table = document.createElement('table');
         table.className = 'node-table';
-        table.style.marginTop = '10px';
+        table.style.marginTop = '0px';
         const thead = document.createElement('thead');
         thead.innerHTML = '<tr style="color: var(--background-yellow-slicers);"><th>Field name</th><th>Field ID</th><th>Type</th><th>Value</th></tr>';
         table.appendChild(thead);
@@ -246,9 +232,9 @@ function parseNode(node, obj) {
             const tr = document.createElement('tr');
             tr.childRows = [];
             const field = obj[i];
-            let html = '<td><span style="var(--background-yellow-slicers);font-family:monospace">-> </span><mark>' + (GOM.fields[field.id] || field.id) + '</mark></td>' + '<td style="color:#777"><mark>' + field.id + '</mark></td>' + '<td style="color:#ccc"><mark>' + domTypeToString(field.type) + '</mark></td><td><mark>';
+            let html = `<td><div><mark>` + (GOM.fields[field.id] || field.id) + '</mark></div></td>' + '<td style="color:#777"><div><mark>' + field.id + '</mark></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(field.type) + '</mark></div></td><td><div><mark>';
             html += node_fieldToHtml(field.type, field.value, tr, 2);
-            html += '</mark></td>';
+            html += '</mark></div></td>';
             tr.innerHTML = html;
             node_fieldAppendToTable(tbody, tr)
         }
@@ -294,7 +280,7 @@ function node_fieldToHtml(type, value, tr, level) {
     case DOM_TYPES.BOOLEAN:
     case DOM_TYPES.FLOAT:
     case DOM_TYPES.STRING:
-        return value.toString();
+        return cleanString(value.toString());
     case DOM_TYPES.DATE:
         {
             const milliseconds = uint64C(value);
@@ -307,35 +293,35 @@ function node_fieldToHtml(type, value, tr, level) {
         for (let i = 0, il = value.list.length; i < il; i++) {
             const curRow = document.createElement('tr');
             curRow.childRows = [];
-            let html = '<td><span style="color:#777;font-family:monospace">' + ('|-').repeat(level) + '</span><mark>' + i + '</mark></td>' + '<td></td>' + '<td style="color:#ccc"><mark>' + domTypeToString(value.type) + '</mark></td><td><mark>';
+            let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + i + '</mark></div></td>' + '<td><div></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value.type) + '</mark></div></td><td><div><mark>';
             html += node_fieldToHtml(value.type, value.list[i], curRow, level + 1);
-            html += '</mark></td>';
+            html += '</mark></div></td>';
             curRow.innerHTML = html;
             tr.childRows.push(curRow)
         }
-        return '<span style="color:#ccc">of type ' + domTypeToString(value.type) + ', length ' + value.list.length + '</span>';
+        return '<span style="color:#ccc">Type: ' + domTypeToString(value.type) + '  |  Length: ' + value.list.length + '</span>';
     case DOM_TYPES.LOOKUPLIST:
         for (let i = 0, l = value.list.length; i < l; i++) {
             const curRow = document.createElement('tr');
             curRow.childRows = [];
-            let html = '<td><span style="color:#777;font-family:monospace">' + ('|-').repeat(level) + '</span><mark>' + node_fieldTypeToHtml(value.indexType, value.list[i].key) + '</mark></td>' + '<td></td>' + '<td style="color:#ccc"><mark>' + domTypeToString(value.type) + '</mark></td><td><mark>';
+            let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + node_fieldTypeToHtml(value.indexType, value.list[i].key) + '</mark></div></td>' + '<td><div></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value.type) + '</mark></div></td><td><div><mark>';
             html += node_fieldToHtml(value.type, value.list[i].val, curRow, level + 1);
-            html += '</mark></td>';
+            html += '</mark></div></td>';
             curRow.innerHTML = html;
             tr.childRows.push(curRow)
         }
-        return '<span style="color:#ccc">indexed by ' + domTypeToString(value.indexType) + ' of type ' + domTypeToString(value.type) + ', length ' + value.list.length + '</span>';
+        return '<span style="color:#ccc">Key: ' + domTypeToString(value.indexType) + '  |  Value: ' + domTypeToString(value.type) + '  |  Length: ' + value.list.length + '</span>';
     case DOM_TYPES.CLASS:
         for (let i = 0, l = value.length; i < l; i++) {
             const curRow = document.createElement('tr');
             curRow.childRows = [];
-            let html = '<td><span style="color:#777;font-family:monospace">' + ('|-').repeat(level) + '</span><mark>' + (GOM.fields[value[i].id] || value[i].id) + '</mark></td>' + '<td style="color:#777"><mark>' + value[i].id + '</mark></td>' + '<td style="color:#ccc"><mark>' + domTypeToString(value[i].type) + '</mark></td><td><mark>';
+            let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + (GOM.fields[value[i].id] || value[i].id) + '</mark></div></td>' + '<td style="color:#777"><div><mark>' + value[i].id + '</mark></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value[i].type) + '</mark></div></td><td><div><mark>';
             html += node_fieldToHtml(value[i].type, value[i].val, curRow, level + 1);
-            html += '</mark></td>';
+            html += '</mark></div></td>';
             curRow.innerHTML = html;
             tr.childRows.push(curRow)
         }
-        return '<span style="color:#ccc">with ' + value.length + ' fields</span>';
+        return '<span style="color:#ccc">Num fields: ' + value.length + '</span>';
     case DOM_TYPES.VECTOR3:
         return value[0] + ', ' + value[1] + ', ' + value[2];
     default:
@@ -391,7 +377,6 @@ class Node {
 
     render(parent) {
         const data = parseNode(this.node, this.obj);
-        console.log(data);
         parent.appendChild(data);
     }
 }

@@ -848,6 +848,19 @@ export var uint64_add = (function() {
 export function testFilename(path) {
     return fs.existsSync(path);
 }
+/**
+ * Cleans the given string of all invalid characters.
+ * @param  {String} input The string to clean.
+ */
+export function cleanString(input) {
+    var output = "";
+    for (var i=0; i<input.length; i++) {
+        if (input.charCodeAt(i) <= 127) {
+            output += input.charAt(i);
+        }
+    }
+    return output;
+}
 
 function readOpcode(dv, pos, offset) {
     var o = Object.create(null);

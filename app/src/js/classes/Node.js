@@ -55,7 +55,7 @@ function domTypeToString(type) {
     }
 }
 
-function file_node_readfield(dv, pos, id, type) {
+function fileNodeReadfield(dv, pos, id, type) {
     const out = {};
     out.len = 0;
     out.val = null;
@@ -114,7 +114,7 @@ function file_node_readfield(dv, pos, id, type) {
                 const index = readVarInt(dv, pos + length);
                 length += index.len;
                 assert(index.intLo === i + 1, 'Expected list index to be identical to iterator but it was ' + index.intLo + ' instead of ' + (i + 1));
-                const ele = file_node_readfield(dv, pos + length, '0', listType);
+                const ele = fileNodeReadfield(dv, pos + length, '0', listType);
                 out.val.list[i] = ele.val;
                 length += ele.len
             }
@@ -140,10 +140,10 @@ function file_node_readfield(dv, pos, id, type) {
                 if (dv.getUint8(pos + length) === 0xD2)
                     length++;
                 out.val.list[i] = {};
-                const key = file_node_readfield(dv, pos + length, '0', indexerType);
+                const key = fileNodeReadfield(dv, pos + length, '0', indexerType);
                 out.val.list[i].key = key.val;
                 length += key.len;
-                const ele = file_node_readfield(dv, pos + length, '0', listType);
+                const ele = fileNodeReadfield(dv, pos + length, '0', listType);
                 out.val.list[i].val = ele.val;
                 length += ele.len
             }
@@ -166,7 +166,7 @@ function file_node_readfield(dv, pos, id, type) {
                 out.val[i].id = prevId;
                 out.val[i].type = dv.getUint8(pos + length);
                 length++;
-                const obj = file_node_readfield(dv, pos + length, prevId, out.val[i].type);
+                const obj = fileNodeReadfield(dv, pos + length, prevId, out.val[i].type);
                 out.val[i].val = obj.val;
                 length += obj.len
             }
@@ -233,17 +233,17 @@ function parseNode(node, obj) {
             tr.childRows = [];
             const field = obj[i];
             let html = `<td><div><mark>` + (GOM.fields[field.id] || field.id) + '</mark></div></td>' + '<td style="color:#777"><div><mark>' + field.id + '</mark></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(field.type) + '</mark></div></td><td><div><mark>';
-            html += node_fieldToHtml(field.type, field.value, tr, 2);
+            html += nodeFieldToHtml(field.type, field.value, tr, 2);
             html += '</mark></div></td>';
             tr.innerHTML = html;
-            node_fieldAppendToTable(tbody, tr)
+            nodeFieldAppendToTable(tbody, tr)
         }
         table.appendChild(tbody);
         frag.appendChild(table)
     }
     return frag;
 }
-function node_fieldTypeToHtml(type, value) {
+function nodeFieldTypeToHtml(type, value) {
     switch (type) {
     case DOM_TYPES.ID:
     case DOM_TYPES.INTEGER:
@@ -268,7 +268,7 @@ function node_fieldTypeToHtml(type, value) {
         return '[Type not recognized]'
     }
 }
-function node_fieldToHtml(type, value, tr, level) {
+function nodeFieldToHtml(type, value, tr, level) {
     switch (type) {
     case DOM_TYPES.ID:
     case DOM_TYPES.INTEGER:
@@ -294,7 +294,7 @@ function node_fieldToHtml(type, value, tr, level) {
             const curRow = document.createElement('tr');
             curRow.childRows = [];
             let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + i + '</mark></div></td>' + '<td><div></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value.type) + '</mark></div></td><td><div><mark>';
-            html += node_fieldToHtml(value.type, value.list[i], curRow, level + 1);
+            html += nodeFieldToHtml(value.type, value.list[i], curRow, level + 1);
             html += '</mark></div></td>';
             curRow.innerHTML = html;
             tr.childRows.push(curRow)
@@ -304,8 +304,8 @@ function node_fieldToHtml(type, value, tr, level) {
         for (let i = 0, l = value.list.length; i < l; i++) {
             const curRow = document.createElement('tr');
             curRow.childRows = [];
-            let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + node_fieldTypeToHtml(value.indexType, value.list[i].key) + '</mark></div></td>' + '<td><div></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value.type) + '</mark></div></td><td><div><mark>';
-            html += node_fieldToHtml(value.type, value.list[i].val, curRow, level + 1);
+            let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + nodeFieldTypeToHtml(value.indexType, value.list[i].key) + '</mark></div></td>' + '<td><div></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value.type) + '</mark></div></td><td><div><mark>';
+            html += nodeFieldToHtml(value.type, value.list[i].val, curRow, level + 1);
             html += '</mark></div></td>';
             curRow.innerHTML = html;
             tr.childRows.push(curRow)
@@ -316,7 +316,7 @@ function node_fieldToHtml(type, value, tr, level) {
             const curRow = document.createElement('tr');
             curRow.childRows = [];
             let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + (GOM.fields[value[i].id] || value[i].id) + '</mark></div></td>' + '<td style="color:#777"><div><mark>' + value[i].id + '</mark></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value[i].type) + '</mark></div></td><td><div><mark>';
-            html += node_fieldToHtml(value[i].type, value[i].val, curRow, level + 1);
+            html += nodeFieldToHtml(value[i].type, value[i].val, curRow, level + 1);
             html += '</mark></div></td>';
             curRow.innerHTML = html;
             tr.childRows.push(curRow)
@@ -328,10 +328,10 @@ function node_fieldToHtml(type, value, tr, level) {
         return '[Type not recognized]'
     }
 }
-function node_fieldAppendToTable(tbody, tr) {
+function nodeFieldAppendToTable(tbody, tr) {
     tbody.appendChild(tr);
     for (let i = 0, l = tr.childRows.length; i < l; i++) {
-        node_fieldAppendToTable(tbody, tr.childRows[i])
+        nodeFieldAppendToTable(tbody, tr.childRows[i])
     }
 }
 
@@ -365,7 +365,7 @@ class Node {
                 prevId = uint64_add(prevId, uint64C(idOffset));
                 field.id = prevId;
                 field.type = dv.getUint8(pos++);
-                const fieldRet = file_node_readfield(dv, pos, prevId, field.type);
+                const fieldRet = fileNodeReadfield(dv, pos, prevId, field.type);
                 pos += fieldRet.len;
                 field.value = fieldRet.val;
                 obj.push(field)

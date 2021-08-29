@@ -22,8 +22,10 @@ const rightDrag = document.getElementById('rightDrag');
 const dataViewContainer = document.getElementById('dataViewContainer');
 const dataContainer = document.getElementById('dataContainer');
 
+const fqnField = document.getElementById('fqnField');
+
 // Constants
-const GTree = new GomTree(treeList, viewDisplay);
+const GTree = new GomTree(treeList, viewDisplay, dataContainer);
 let worker;
 
 function init() {
@@ -57,6 +59,11 @@ function initListeners() {
             changePercent -= existingIncr;
             viewContainer.style.width = `${changePercent}%`;
             dataViewContainer.style.width = `${100 - changePercent - existingIncr}%`;
+        }
+    });
+    fqnField.addEventListener('change', (e) => {
+        if (fqnField.value != "") {
+            GTree.getNodeByFQN(fqnField.value);
         }
     });
 }

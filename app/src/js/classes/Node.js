@@ -398,7 +398,7 @@ class NodeEntr {
 
     render(parent) {
         if (!this.isBucket) return
-        parent.innerHtml = "";
+        parent.innerHTML = "";
 
         const data = fs.readFileSync(this.torPath);
 

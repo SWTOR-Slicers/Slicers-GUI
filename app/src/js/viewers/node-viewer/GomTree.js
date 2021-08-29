@@ -1,5 +1,6 @@
 import { fixDpi } from "../../Util.js";
-import {Node, NodeEntr} from "../../classes/Node.js";
+import {NodeEntr} from "../../classes/Node.js";
+import { log } from "../../universal/Logger.js";
 
 const FILETREE_HEIGHT = 16;
 const NUM_META_FOLDERS = 2;
@@ -13,8 +14,9 @@ const nodesByFqn = {
 };
 
 class NodeTree {
-    constructor(renderTarg, treeList) {
+    constructor(treeList, renderTarg, dataContainer) {
         this.renderTarg = renderTarg;
+        this.dataContainer = dataContainer;
 
         this.loadedBuckets = 0;
         this.hoverEle = -1;
@@ -168,7 +170,7 @@ class NodeTree {
         }
         for (let i = 0; i < fl; i++) {
             if (height === target) {
-                folder.$F[i].render(this.renderTarg);
+                folder.$F[i].render(this.renderTarg, this.dataContainer);
                 return 0
             }
             height += FILETREE_HEIGHT
@@ -196,8 +198,10 @@ class NodeTree {
 }
 
 class GomTree {
-    constructor (treeList, viewContainer) {
-        this.nodeTree = new NodeTree(viewContainer, treeList);
+    constructor (treeList, viewContainer, dataContainer) {
+        this.viewContainer = viewContainer;
+        this.dataContainer = dataContainer;
+        this.nodeTree = new NodeTree(treeList, viewContainer, dataContainer);
     }
 
     /**
@@ -241,6 +245,41 @@ class GomTree {
                 }
             }
             curFolder.$F.splice(insertIndex, 0, node)
+        }
+    }
+
+    getNodeByFQN(fqn) {
+        let hasFound = false;
+        console.log(nodesByFqn);
+        const tree = fqn.split(".");
+        if (tree.length > 0) {
+            let parent = nodesByFqn;
+            for (let i = 0; i < tree.length; i++) {
+                const elem = tree[i];
+                const fqnObj = parent[elem];
+                if (i + 1 == tree.length) {
+                    const tNode = parent.$F.find((val, idx) => { return val.fileName == elem; });
+                    if (tNode) {
+                        hasFound = true
+                        tNode.render(this.viewContainer, this.dataContainer);
+                    }
+                    break
+                } else if (fqnObj) {
+                    parent = fqnObj;
+                } else {
+                    break
+                }
+            }
+        } else {
+            const tNode = nodesByFqn.$F.find((val, idx) => { return val.fileName == tree[0]; });
+            if (tNode) {
+                hasFound = true;
+                tNode.render(this.viewContainer, this.dataContainer);
+            }
+        }
+    
+        if (!hasFound) {
+            log("Unable to find a node with the given fqn. Check your input for possible typos.", "alert");
         }
     }
 }

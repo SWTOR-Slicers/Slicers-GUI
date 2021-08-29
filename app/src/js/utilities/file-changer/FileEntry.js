@@ -45,7 +45,7 @@ export class FileEntry {
             fToChng.className = 'file-to-change';
             fToChng.innerHTML = `
                 <label class="test-label">Target: </label>
-                <input id="${this.id}-TargetInput" type="text" class="paths-field-input-alt" style="margin-right: 7px;" value="${this.target}">
+                <input id="${this.id}-TargetInput" type="text" class="paths-field-input-alt" spellcheck="false" style="margin-right: 7px;" value="${this.target}">
                 <button class="disabled browse-paths__button-alt">
                     <i class="fas fa-ellipsis-h"></i>
                 </button>
@@ -69,7 +69,7 @@ export class FileEntry {
             fToUse.className = 'file-to-use';
             fToUse.innerHTML = `
                 <label for="moddedInput" class="test-label">Modded: </label>
-                <input id="${this.id}-ModdedInput" type="text" name="moddedInput" class="paths-field-input-alt" style="margin-right: 7px;" value="${this.modded}">
+                <input id="${this.id}-ModdedInput" type="text" name="moddedInput" class="paths-field-input-alt" spellcheck="false" style="margin-right: 7px;" value="${this.modded}">
                 <button class="browse-paths__button-alt">
                     <i class="fas fa-ellipsis-h"></i>
                 </button>

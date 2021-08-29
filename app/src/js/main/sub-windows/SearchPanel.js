@@ -31,7 +31,7 @@ export class SearchPanel {
                 </button>
             </div>
             <div class="seg-cont" style="margin-top: 2px; margin-bottom: 4px;">
-                <input id="replaceInput" placeholder="Replace" type="text" class="paths-field-input-alt" style="margin-right: 34px;">
+                <input id="replaceInput" placeholder="Replace" type="text" class="paths-field-input-alt" spellcheck="false" style="margin-right: 34px;">
                 <button id="replaceOne" class="browse-paths__button-alt disabled">
                     <i class="fas fa-square"></i>
                 </button>

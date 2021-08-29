@@ -208,3 +208,20 @@ mark {
     flex-direction: row;
     margin: 0px 10px;
 }
+
+.data-entr-cont {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+
+    margin: 7px 0px 7px 7px;
+
+    width: calc(100% - 14px);
+}
+.data-entr-label {
+    margin-right: 7px;
+}
+.data-entr-val {
+    color: var(--background-yellow-slicers)
+}

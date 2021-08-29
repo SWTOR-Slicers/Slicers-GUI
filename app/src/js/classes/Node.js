@@ -342,7 +342,10 @@ class Node {
      * @param  {Uint8Array} data The sliced data represeting the node itself.
      */
     constructor(node, data) {
+        this.fqn = node.fqn;
+        this.uncompressedSize = node.uncomprLength
         const comprArray = new Uint8Array(data);
+        this.compressedSize = comprArray.length;
         node.uncomprLength = 0x500000;
         const uncomprBuffer = new ArrayBuffer(node.uncomprLength);
         RawDeflate.inflate(comprArray, uncomprBuffer);
@@ -375,9 +378,24 @@ class Node {
         }
     }
 
-    render(parent) {
+    render(parent, dataContainer) {
         const data = parseNode(this.node, this.obj);
         parent.appendChild(data);
+
+        dataContainer.innerHTML = `
+        <div class="data-entr-cont">
+            <div class="data-entr-label">Parent:</div>
+            <div class="data-entr-val">${(this.fqn.indexOf(".") > -1) ? this.fqn.substr(0, this.fqn.lastIndexOf(".")) : "none"}</div>
+        </div>
+        <div class="data-entr-cont">
+            <div class="data-entr-label">Compressed:</div>
+            <div class="data-entr-val">${this.compressedSize} B</div>
+        </div>
+        <div class="data-entr-cont">
+            <div class="data-entr-label">Uncompressed:</div>
+            <div class="data-entr-val">${this.uncompressedSize} B</div>
+        </div>
+        `;
     }
 }
 
@@ -396,7 +414,7 @@ class NodeEntr {
         this.torPath = torPath;
     }
 
-    render(parent) {
+    render(parent, dataContainer) {
         if (!this.isBucket) return
         parent.innerHTML = "";
 
@@ -404,7 +422,7 @@ class NodeEntr {
 
         const blob = data.buffer.slice(this.bkt.offset + this.dataOffset + 2, this.bkt.offset + this.dataOffset + this.dataLength - 4);
         const node = new Node(this, blob);
-        node.render(parent);
+        node.render(parent, dataContainer);
     }
 }
 

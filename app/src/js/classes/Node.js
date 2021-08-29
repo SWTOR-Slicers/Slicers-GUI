@@ -1,8 +1,10 @@
 import {GOM} from "./util/Gom.js";
 import { RawDeflate } from "../externals/Inflate.js";
 import { readVarInt, uint64_add, uint64C, assert, cleanString, readString } from "../Util.js";
+import { log } from "../universal/Logger.js";
 
 const fs = require('fs');
+const path = require('path');
 
 const DOM_TYPES = {};
 DOM_TYPES.ID = 1;
@@ -396,6 +398,30 @@ class Node {
             <div class="data-entr-val">${this.uncompressedSize} B</div>
         </div>
         `;
+    }
+
+    extract(dest, type) {
+        let data;
+        switch (type) {
+            case "raw":
+                const dat = fs.readFileSync(this.node.torPath);
+                data = dat.buffer.slice(this.node.bkt.offset + this.node.dataOffset + 2, this.node.bkt.offset + this.node.dataOffset + this.node.dataLength - 4);
+                break;
+            case "xml":
+                break;
+            case "json":
+                break;
+        }
+
+        if (fs.existsSync(dest)) {
+            if (data) {
+                fs.writeFileSync(path.join(dest, `${this.fqn}.${type == "raw" ? "node" : type}`), data);
+            } else {
+                log("Error reading the node data: data is null.", "error");
+            }
+        } else {
+            log("Invalid node extract path.", "error");
+        }
     }
 }
 

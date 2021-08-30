@@ -5,6 +5,7 @@ import { log } from "../universal/Logger.js";
 
 const fs = require('fs');
 const path = require('path');
+const xmlJS = require('xml-js');
 
 const DOM_TYPES = {};
 DOM_TYPES.ID = 1;
@@ -335,6 +336,85 @@ function nodeFieldAppendToTable(tbody, tr) {
     for (let i = 0, l = tr.childRows.length; i < l; i++) {
         nodeFieldAppendToTable(tbody, tr.childRows[i])
     }
+}
+
+function parseNodeFields(type, value) {
+    switch (type) {
+    case DOM_TYPES.ID:
+    case DOM_TYPES.INTEGER:
+    case DOM_TYPES.ENUM:
+    case DOM_TYPES.SCRIPTREF:
+    case DOM_TYPES.NODEREF:
+    case DOM_TYPES.TIMEINTERVAL:
+        return uint64C(value);
+    case DOM_TYPES.BOOLEAN:
+    case DOM_TYPES.FLOAT:
+    case DOM_TYPES.STRING:
+        return cleanString(value.toString());
+    case DOM_TYPES.DATE:
+        {
+            const milliseconds = uint64C(value);
+            const d = new Date(Number(milliseconds));
+            d.setFullYear(d.getFullYear() - 369);
+            const addZero = n=>(n < 10 ? '0' + n : '' + n);
+            return d.getUTCFullYear() + '-' + addZero(d.getUTCMonth() + 1) + '-' + addZero(d.getUTCDate()) + ' ' + addZero(d.getUTCHours()) + ':' + addZero(d.getUTCMinutes()) + ':' + addZero(d.getUTCMinutes())
+        }
+    case DOM_TYPES.LIST:
+        const retList = [];
+        for (let i = 0, il = value.list.length; i < il; i++) {
+            retList.push(parseNodeFields(value.type, value.list[i]));
+        }
+        return retList;
+    case DOM_TYPES.LOOKUPLIST:
+        const lutObj = {};
+        for (let i = 0, l = value.list.length; i < l; i++) {
+            lutObj[uint64C(value.list[i].key)] = parseNodeFields(value.type, value.list[i].val);
+        }
+        return lutObj;
+    case DOM_TYPES.CLASS:
+        const classObj = {};
+        for (let i = 0, l = value.length; i < l; i++) {
+            classObj[(GOM.fields[value[i].id] || value[i].id)] = {
+                "Id": value[i].id,
+                "value": parseNodeFields(value[i].type, value[i].val)
+            }
+        }
+        return classObj;
+    case DOM_TYPES.VECTOR3:
+        return {
+            "x": value[0],
+            "y": value[1],
+            "z": value[2]
+        };
+    default:
+        return '[Type not recognized]'
+    }
+}
+
+function convertToJSON(obj) {
+    const retJSON = {};
+    const formattedJSON = {};
+
+    for (const field of obj) {
+        retJSON[(GOM.fields[field.id] || field.id)] = {
+            "Id": field.id,
+            "value": parseNodeFields(field.type, field.value)
+        }
+    }
+
+
+
+    return formattedJSON;
+}
+
+function convertToXML(obj) {
+    const parsed = convertToJSON(obj);
+    const xmlStr = xmlJS.js2xml(parsed, {
+        compact: false,
+        spaces: 4
+    });
+
+    return xmlStr;
 }
 
 class Node {

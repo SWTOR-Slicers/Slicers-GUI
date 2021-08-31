@@ -366,9 +366,9 @@ function parseNodeFields(type, value) {
         }
         return retList;
     case DOM_TYPES.LOOKUPLIST:
-        const lutObj = {};
+        const lutObj = new Map();
         for (let i = 0, l = value.list.length; i < l; i++) {
-            lutObj[uint64C(value.list[i].key)] = parseNodeFields(value.type, value.list[i].val);
+            lutObj.set(uint64C(value.list[i].key), parseNodeFields(value.type, value.list[i].val));
         }
         return lutObj;
     case DOM_TYPES.CLASS:
@@ -393,7 +393,6 @@ function parseNodeFields(type, value) {
 }
 
 function convertToJSON(obj, node) {
-    console.log(obj);
     const retJSON = {};
     retJSON[GOM.classes[node.baseClass] || node.baseClass] = new Map();
 
@@ -410,10 +409,70 @@ function convertToJSON(obj, node) {
 }
 
 function formatEntr(obj) {
-    const retVal = {};
+    const retVal = {
+        "nodes": []
+    };
 
-    for (const key of Object.keys(obj)) {
-
+    if (obj instanceof Map) {
+        for (const [key, value] of obj) {
+            switch (value.type) {
+            case 'List':
+                return ;
+            case 'LookupList':
+                return ;
+            case 'Class':
+                return ;
+            case 'ID':
+            case 'Integer':
+            case 'Boolean':
+            case 'Float':
+            case 'Enum':
+            case 'String':
+            case 'ScriptRef':
+            case 'NodeRef':
+            case 'Vector3':
+            case 'TimeInterval':
+            case 'Date':
+            default:
+                retVal.nodes.push({
+                    "_text": value.value,
+                    "_attributes": {
+                        "Id": key,
+                        "type": value.type,
+                    }
+                });
+            }
+        }
+    } else {
+        for (const key of Object.keys(obj)) {
+            switch (obj[key].type) {
+            case 'List':
+                return ;
+            case 'LookupList':
+                return ;
+            case 'Class':
+                return ;
+            case 'ID':
+            case 'Integer':
+            case 'Boolean':
+            case 'Float':
+            case 'Enum':
+            case 'String':
+            case 'ScriptRef':
+            case 'NodeRef':
+            case 'Vector3':
+            case 'TimeInterval':
+            case 'Date':
+            default:
+                retVal.nodes.push({
+                    "_text": obj[key].value,
+                    "_attributes": {
+                        "Id": key,
+                        "type": obj[key].type,
+                    }
+                });
+            }
+        }
     }
 
     return retVal;
@@ -421,10 +480,12 @@ function formatEntr(obj) {
 
 function convertToXML(obj, node) {
     const parsed = convertToJSON(obj, node);
-    console.log(parsed);
-    const edited = formatEntr(parsed);
-    console.log(edited);
-    const xmlStr = xmlJS.js2xml(edited, {
+    const className = Object.keys(parsed)[0];
+    const prepObj = {};
+    const formattedEntr = formatEntr(parsed[className]);
+    prepObj[className] = formattedEntr;
+    console.log(prepObj);
+    const xmlStr = xmlJS.js2xml(prepObj, {
         spaces: 4
     });
 

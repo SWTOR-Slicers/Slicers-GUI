@@ -861,6 +861,19 @@ export function cleanString(input) {
     }
     return output;
 }
+/**
+ * Stringifies objects with Maps as values
+ * @param  {any} key The map key.
+ * @param  {any} value The map value.
+ */
+export function serializeMap(key, value) {
+    if(value instanceof Map) {
+        const ret = Object.fromEntries(value);
+        return ret;
+    } else {
+        return value;
+    }
+}
 
 function readOpcode(dv, pos, offset) {
     var o = Object.create(null);

@@ -1,6 +1,6 @@
 import {GOM} from "./util/Gom.js";
 import { RawDeflate } from "../externals/Inflate.js";
-import { readVarInt, uint64_add, uint64C, assert, cleanString, readString } from "../Util.js";
+import { readVarInt, uint64_add, uint64C, assert, cleanString, readString, serializeMap } from "../Util.js";
 import { log } from "../universal/Logger.js";
 
 const fs = require('fs');
@@ -220,7 +220,7 @@ function parseNode(node, obj) {
         let formatName = '';
         formatName += '<span style="color: #ccc">' + node.path + '</span>';
         formatName += '<span style="color: #fff">' + node.fileName + '</span>';
-        p.innerHTML = '<b style="color: var(--background-yellow-slicers);">Node FQN:</b> <mark>' + formatName + '</mark><br/><b style="color: var(--background-yellow-slicers);">ID:</b> <mark>' + node.id + '</mark><br/><b style="color: var(--background-yellow-slicers);">base class:</b> <mark>' + node.baseClass + '</mark>';
+        p.innerHTML = '<b style="color: var(--background-yellow-slicers);">Node FQN:</b> <mark>' + formatName + '</mark><br/><b style="color: var(--background-yellow-slicers);">ID:</b> <mark>' + node.id + '</mark><br/><b style="color: var(--background-yellow-slicers);">base class:</b> <mark>' + (GOM.classes[node.baseClass] || node.baseClass) + '</mark>';
         frag.appendChild(p)
     }
     {
@@ -372,12 +372,13 @@ function parseNodeFields(type, value) {
         }
         return lutObj;
     case DOM_TYPES.CLASS:
-        const classObj = {};
+        const classObj = new Map();
         for (let i = 0, l = value.length; i < l; i++) {
-            classObj[(GOM.fields[value[i].id] || value[i].id)] = {
+            classObj.set((GOM.fields[value[i].id] || value[i].id), {
                 "Id": value[i].id,
+                "type": domTypeToString(value[i].type),
                 "value": parseNodeFields(value[i].type, value[i].val)
-            }
+            });
         }
         return classObj;
     case DOM_TYPES.VECTOR3:
@@ -391,26 +392,39 @@ function parseNodeFields(type, value) {
     }
 }
 
-function convertToJSON(obj) {
+function convertToJSON(obj, node) {
+    console.log(obj);
     const retJSON = {};
-    const formattedJSON = {};
+    retJSON[GOM.classes[node.baseClass] || node.baseClass] = new Map();
 
-    for (const field of obj) {
-        retJSON[(GOM.fields[field.id] || field.id)] = {
+    for (let i = 0; i < obj.length; i++) {
+        const field = obj[i];
+        retJSON[GOM.classes[node.baseClass] || node.baseClass].set((GOM.fields[field.id] || field.id), {
             "Id": field.id,
+            "type": domTypeToString(field.type),
             "value": parseNodeFields(field.type, field.value)
-        }
+        });
     }
 
-
-
-    return formattedJSON;
+    return retJSON;
 }
 
-function convertToXML(obj) {
-    const parsed = convertToJSON(obj);
-    const xmlStr = xmlJS.js2xml(parsed, {
-        compact: false,
+function formatEntr(obj) {
+    const retVal = {};
+
+    for (const key of Object.keys(obj)) {
+
+    }
+
+    return retVal;
+}
+
+function convertToXML(obj, node) {
+    const parsed = convertToJSON(obj, node);
+    console.log(parsed);
+    const edited = formatEntr(parsed);
+    console.log(edited);
+    const xmlStr = xmlJS.js2xml(edited, {
         spaces: 4
     });
 
@@ -461,6 +475,7 @@ class Node {
     }
 
     render(parent, dataContainer) {
+        console.log(convertToXML(this.obj, this.node));
         const data = parseNode(this.node, this.obj);
         parent.appendChild(data);
 
@@ -488,8 +503,10 @@ class Node {
                 data = dat.buffer.slice(this.node.bkt.offset + this.node.dataOffset + 2, this.node.bkt.offset + this.node.dataOffset + this.node.dataLength - 4);
                 break;
             case "xml":
+                data = convertToXML(this.obj, this.node);
                 break;
             case "json":
+                data = JSON.stringify(convertToJSON(this.obj, this.node), serializeMap, '\t');
                 break;
         }
 

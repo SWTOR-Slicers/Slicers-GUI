@@ -236,7 +236,7 @@ function parseNode(node, obj) {
             tr.childRows = [];
             const field = obj[i];
             let html = `<td><div><mark>` + (GOM.fields[field.id] || field.id) + '</mark></div></td>' + '<td style="color:#777"><div><mark>' + field.id + '</mark></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(field.type) + '</mark></div></td><td><div><mark>';
-            html += nodeFieldToHtml(field.type, field.value, tr, 2);
+            html += nodeFieldToHtml(field.type, field.value, tr, 2, field);
             html += '</mark></div></td>';
             tr.innerHTML = html;
             nodeFieldAppendToTable(tbody, tr)
@@ -271,11 +271,10 @@ function nodeFieldTypeToHtml(type, value) {
         return '[Type not recognized]'
     }
 }
-function nodeFieldToHtml(type, value, tr, level) {
+function nodeFieldToHtml(type, value, tr, level, field) {
     switch (type) {
     case DOM_TYPES.ID:
     case DOM_TYPES.INTEGER:
-    case DOM_TYPES.ENUM:
     case DOM_TYPES.SCRIPTREF:
     case DOM_TYPES.NODEREF:
     case DOM_TYPES.TIMEINTERVAL:
@@ -297,7 +296,7 @@ function nodeFieldToHtml(type, value, tr, level) {
             const curRow = document.createElement('tr');
             curRow.childRows = [];
             let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + i + '</mark></div></td>' + '<td><div></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value.type) + '</mark></div></td><td><div><mark>';
-            html += nodeFieldToHtml(value.type, value.list[i], curRow, level + 1);
+            html += nodeFieldToHtml(value.type, value.list[i], curRow, level + 1, value[i]);
             html += '</mark></div></td>';
             curRow.innerHTML = html;
             tr.childRows.push(curRow)
@@ -308,7 +307,7 @@ function nodeFieldToHtml(type, value, tr, level) {
             const curRow = document.createElement('tr');
             curRow.childRows = [];
             let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + nodeFieldTypeToHtml(value.indexType, value.list[i].key) + '</mark></div></td>' + '<td><div></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value.type) + '</mark></div></td><td><div><mark>';
-            html += nodeFieldToHtml(value.type, value.list[i].val, curRow, level + 1);
+            html += nodeFieldToHtml(value.type, value.list[i].val, curRow, level + 1, value[i]);
             html += '</mark></div></td>';
             curRow.innerHTML = html;
             tr.childRows.push(curRow)
@@ -319,7 +318,7 @@ function nodeFieldToHtml(type, value, tr, level) {
             const curRow = document.createElement('tr');
             curRow.childRows = [];
             let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + (GOM.fields[value[i].id] || value[i].id) + '</mark></div></td>' + '<td style="color:#777"><div><mark>' + value[i].id + '</mark></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value[i].type) + '</mark></div></td><td><div><mark>';
-            html += nodeFieldToHtml(value[i].type, value[i].val, curRow, level + 1);
+            html += nodeFieldToHtml(value[i].type, value[i].val, curRow, level + 1, value[i]);
             html += '</mark></div></td>';
             curRow.innerHTML = html;
             tr.childRows.push(curRow)
@@ -327,6 +326,8 @@ function nodeFieldToHtml(type, value, tr, level) {
         return '<span style="color:#ccc">Num fields: ' + value.length + '</span>';
     case DOM_TYPES.VECTOR3:
         return value[0] + ', ' + value[1] + ', ' + value[2];
+    case DOM_TYPES.ENUM:
+        return uint64C(value);
     default:
         return '[Type not recognized]'
     }
@@ -410,18 +411,28 @@ function convertToJSON(obj, node) {
 
 function formatEntr(obj) {
     const retVal = {
-        "nodes": []
+        
     };
 
+    let numLists = 0;
+    let numLookupLists = 0;
+    let numNodes = 0;
     if (obj instanceof Map) {
         for (const [key, value] of obj) {
             switch (value.type) {
             case 'List':
-                return ;
+                break ;
             case 'LookupList':
-                return ;
+                break ;
             case 'Class':
-                return ;
+                retVal[key] = {
+                    "_text": formatEntr(value.value),
+                    "_attributes": {
+                        "Id": key,
+                        "type": value.type,
+                    }
+                }
+                break ;
             case 'ID':
             case 'Integer':
             case 'Boolean':
@@ -433,25 +444,41 @@ function formatEntr(obj) {
             case 'Vector3':
             case 'TimeInterval':
             case 'Date':
-            default:
-                retVal.nodes.push({
+            case 'Unknown (' + value.type + ')':
+                retVal[`Node${numNodes}`] = {
                     "_text": value.value,
                     "_attributes": {
                         "Id": key,
                         "type": value.type,
                     }
-                });
+                }
+                numNodes++;
             }
         }
     } else {
         for (const key of Object.keys(obj)) {
             switch (obj[key].type) {
             case 'List':
-                return ;
+                retVal[`Node${numNodes}`] = {
+                    "_text": obj[key].value,
+                    "_attributes": {
+                        "Id": key,
+                        "type": obj[key].type,
+                    }
+                }
+                numNodes++;
+                break ;
             case 'LookupList':
-                return ;
+                break ;
             case 'Class':
-                return ;
+                retVal[key] = {
+                    "_text": formatEntr(obj[key].value),
+                    "_attributes": {
+                        "Id": key,
+                        "type": obj[key].type,
+                    }
+                }
+                break;
             case 'ID':
             case 'Integer':
             case 'Boolean':
@@ -463,14 +490,15 @@ function formatEntr(obj) {
             case 'Vector3':
             case 'TimeInterval':
             case 'Date':
-            default:
-                retVal.nodes.push({
+            case 'Unknown (' + obj[key].type + ')':
+                retVal[`Node${numNodes}`] = {
                     "_text": obj[key].value,
                     "_attributes": {
                         "Id": key,
                         "type": obj[key].type,
                     }
-                });
+                }
+                numNodes++;
             }
         }
     }
@@ -486,10 +514,14 @@ function convertToXML(obj, node) {
     prepObj[className] = formattedEntr;
     console.log(prepObj);
     const xmlStr = xmlJS.js2xml(prepObj, {
-        spaces: 4
+        compact: true,
+        spaces: 4,
+        elementNameFn: function(n) {
+            return n.indexOf('Node') > -1 ? 'Node' : n;
+        }
     });
 
-    return xmlStr;
+    return '<?xml version="1.0" encoding="utf-8"?>\n' + xmlStr;
 }
 
 class Node {

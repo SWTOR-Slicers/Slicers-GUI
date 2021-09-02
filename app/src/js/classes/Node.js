@@ -339,7 +339,7 @@ function nodeFieldAppendToTable(tbody, tr) {
     }
 }
 
-function parseNodeFields(type, value, id=null) {
+function parseNodeFields(type, value) {
     switch (type) {
     case DOM_TYPES.ID:
     case DOM_TYPES.INTEGER:
@@ -372,17 +372,17 @@ function parseNodeFields(type, value, id=null) {
     case DOM_TYPES.LOOKUPLIST:
         const lutObj = new Map();
         for (let i = 0, l = value.list.length; i < l; i++) {
-            lutObj.set(uint64C(value.list[i].key), parseNodeFields(value.type, value.list[i].val, uint64C(value.list[i].key)));
+            lutObj.set(uint64C(value.list[i].key), {
+                "Id": uint64C(value.list[i].key),
+                "type": domTypeToString(value.type),
+                "value": parseNodeFields(value.type, value.list[i].val, uint64C(value.list[i].key))
+            });
         }
         return lutObj;
     case DOM_TYPES.CLASS:
-        const classObj = {
-            "Id": value.Id | id,
-            "type": domTypeToString(DOM_TYPES.CLASS),
-            "value": new Map()
-        };
+        const classObj = new Map()
         for (let i = 0, l = value.length; i < l; i++) {
-            classObj.value.set((GOM.fields[value[i].id] || value[i].id), {
+            classObj.set((GOM.fields[value[i].id] || value[i].id), {
                 "Id": value[i].id,
                 "type": domTypeToString(value[i].type),
                 "value": parseNodeFields(value[i].type, value[i].val)
@@ -519,78 +519,7 @@ function formatEntr(obj) {
             }
         }
     } else {
-        for (const key of Object.keys(obj)) {
-            switch (obj[key].type) {
-            case 'List':
-                incriments.reset();
-                retVal[`List${numLists}`] = {
-                    "_attributes": {
-                        "Id": key,
-                        "type": obj[key].type
-                    }
-                };
-                for (let i = 0; i < obj[key].value.list.length; i++) {
-                    const prepMap = new Map();
-                    prepMap.set(i, {
-                        "Id": i,
-                        "type": obj[key].value.type,
-                        "value": obj[key].value.list[i]
-                    });
-                    const res = formatEntr(prepMap);
-                    const resKeys = Object.keys(res);
-                    for (const key of resKeys) {
-                        retVal[`List${numLists}`][`${key}${incriments[key]}`] = res[key];
-                        incriments[key]++;
-                    }
-                }
-                numLists++;
-                break;
-            case 'LookupList':
-                retVal[`IList${numLookupLists}`] = {
-                    "_attributes": {
-                        "Id": key,
-                        "type": obj[key].type
-                    }
-                };
-                for (const [key2, value2] of obj[key].value) {
-                    const res = formatEntr(value2);
-                    const resKeys = Object.keys(res);
-                    for (const key of resKeys) {
-                        retVal[`IList${numLookupLists}`][key] = res[key];
-                    }
-                }
-                numLookupLists++;
-                break;
-            case 'Class':
-                retVal[`Class${numClasses}`] = formatEntr(obj[key].value);
-                retVal[`Class${numClasses}`]["_attributes"] = {
-                    "Id": key,
-                    "type": obj[key].type,
-                }
-                numClasses++;
-                break;
-            case 'ID':
-            case 'Integer':
-            case 'Boolean':
-            case 'Float':
-            case 'Enum':
-            case 'String':
-            case 'ScriptRef':
-            case 'NodeRef':
-            case 'Vector3':
-            case 'TimeInterval':
-            case 'Date':
-            case 'Unknown (' + obj[key].type + ')':
-                retVal[`Node${numNodes}`] = {
-                    "_text": obj[key].value,
-                    "_attributes": {
-                        "Id": key,
-                        "type": obj[key].type,
-                    }
-                }
-                numNodes++;
-            }
-        }
+        throw new Error('Expected type of map but recieved other.')
     }
 
     return retVal;
@@ -601,6 +530,10 @@ function convertToXML(obj, node) {
     const className = Object.keys(parsed)[0];
     const prepObj = {};
     prepObj[className] = formatEntr(parsed[className]);
+    prepObj["_attributes"] = {
+        "Id": node.Id,
+        "Name": node.fqn
+    }
     const xmlStr = xmlJS.js2xml(prepObj, {
         compact: true,
         spaces: 4,

@@ -339,7 +339,7 @@ function nodeFieldAppendToTable(tbody, tr) {
     }
 }
 
-function parseNodeFields(type, value) {
+function parseNodeFields(type, value, id=null) {
     switch (type) {
     case DOM_TYPES.ID:
     case DOM_TYPES.INTEGER:
@@ -361,21 +361,28 @@ function parseNodeFields(type, value) {
             return d.getUTCFullYear() + '-' + addZero(d.getUTCMonth() + 1) + '-' + addZero(d.getUTCDate()) + ' ' + addZero(d.getUTCHours()) + ':' + addZero(d.getUTCMinutes()) + ':' + addZero(d.getUTCMinutes())
         }
     case DOM_TYPES.LIST:
-        const retList = [];
+        const retList = {
+            "list": [],
+            "type": domTypeToString(value.type)
+        };
         for (let i = 0, il = value.list.length; i < il; i++) {
-            retList.push(parseNodeFields(value.type, value.list[i]));
+            retList.list.push(parseNodeFields(value.type, value.list[i], i));
         }
         return retList;
     case DOM_TYPES.LOOKUPLIST:
         const lutObj = new Map();
         for (let i = 0, l = value.list.length; i < l; i++) {
-            lutObj.set(uint64C(value.list[i].key), parseNodeFields(value.type, value.list[i].val));
+            lutObj.set(uint64C(value.list[i].key), parseNodeFields(value.type, value.list[i].val, uint64C(value.list[i].key)));
         }
         return lutObj;
     case DOM_TYPES.CLASS:
-        const classObj = new Map();
+        const classObj = {
+            "Id": value.Id | id,
+            "type": domTypeToString(DOM_TYPES.CLASS),
+            "value": new Map()
+        };
         for (let i = 0, l = value.length; i < l; i++) {
-            classObj.set((GOM.fields[value[i].id] || value[i].id), {
+            classObj.value.set((GOM.fields[value[i].id] || value[i].id), {
                 "Id": value[i].id,
                 "type": domTypeToString(value[i].type),
                 "value": parseNodeFields(value[i].type, value[i].val)
@@ -417,22 +424,78 @@ function formatEntr(obj) {
     let numLists = 0;
     let numLookupLists = 0;
     let numNodes = 0;
+    let numClasses = 0;
+    const incriments = {
+        "Node0": 0,
+        "Class0": 0,
+        "List0": 0,
+        "IList0": 0,
+        "reset": function() {
+            this.Node0 = 0;
+            this.Class0 = 0;
+            this.List0 = 0;
+            this.IList0 = 0;
+        }
+    }
     if (obj instanceof Map) {
         for (const [key, value] of obj) {
             switch (value.type) {
             case 'List':
-                break ;
-            case 'LookupList':
-                break ;
-            case 'Class':
-                retVal[key] = {
-                    "_text": formatEntr(value.value),
+                incriments.reset();
+                retVal[`List${numLists}`] = {
                     "_attributes": {
                         "Id": key,
-                        "type": value.type,
+                        "type": value.type
                     }
                 }
-                break ;
+                for (let i = 0; i < value.value.list.length; i++) {
+                    const prepMap = new Map();
+                    prepMap.set(i, {
+                        "Id": i,
+                        "type": value.value.type,
+                        "value": value.value.list[i]
+                    });
+                    const res = formatEntr(prepMap);
+                    const resKeys = Object.keys(res);
+                    for (const key of resKeys) {
+                        retVal[`List${numLists}`][`${key}${incriments[key]}`] = res[key];
+                        incriments[key]++;
+                    }
+                }
+                numLists++;
+                break;
+            case 'LookupList':
+                incriments.reset();
+                retVal[`IList${numLookupLists}`] = {
+                    "_attributes": {
+                        "Id": key,
+                        "type": value.type
+                    }
+                }
+                for (const [key2, value2] of value.value) {
+                    const prepMap = new Map();
+                    prepMap.set(key2, {
+                        "Id": key2,
+                        "type": value2.type,
+                        "value": value2.value
+                    });
+                    const res = formatEntr(prepMap);
+                    const resKeys = Object.keys(res);
+                    for (const key of resKeys) {
+                        retVal[`IList${numLookupLists}`][`${key}${incriments[key]}`] = res[key];
+                        incriments[key]++;
+                    }
+                }
+                numLookupLists++;
+                break;
+            case 'Class':
+                retVal[`Class${numClasses}`] = formatEntr(value.value);
+                retVal[`Class${numClasses}`]["_attributes"] = {
+                    "Id": key,
+                    "type": value.type,
+                }
+                numClasses++;
+                break;
             case 'ID':
             case 'Integer':
             case 'Boolean':
@@ -459,25 +522,52 @@ function formatEntr(obj) {
         for (const key of Object.keys(obj)) {
             switch (obj[key].type) {
             case 'List':
-                retVal[`Node${numNodes}`] = {
-                    "_text": obj[key].value,
+                incriments.reset();
+                retVal[`List${numLists}`] = {
                     "_attributes": {
                         "Id": key,
-                        "type": obj[key].type,
+                        "type": obj[key].type
+                    }
+                };
+                for (let i = 0; i < obj[key].value.list.length; i++) {
+                    const prepMap = new Map();
+                    prepMap.set(i, {
+                        "Id": i,
+                        "type": obj[key].value.type,
+                        "value": obj[key].value.list[i]
+                    });
+                    const res = formatEntr(prepMap);
+                    const resKeys = Object.keys(res);
+                    for (const key of resKeys) {
+                        retVal[`List${numLists}`][`${key}${incriments[key]}`] = res[key];
+                        incriments[key]++;
                     }
                 }
-                numNodes++;
-                break ;
+                numLists++;
+                break;
             case 'LookupList':
-                break ;
-            case 'Class':
-                retVal[key] = {
-                    "_text": formatEntr(obj[key].value),
+                retVal[`IList${numLookupLists}`] = {
                     "_attributes": {
                         "Id": key,
-                        "type": obj[key].type,
+                        "type": obj[key].type
+                    }
+                };
+                for (const [key2, value2] of obj[key].value) {
+                    const res = formatEntr(value2);
+                    const resKeys = Object.keys(res);
+                    for (const key of resKeys) {
+                        retVal[`IList${numLookupLists}`][key] = res[key];
                     }
                 }
+                numLookupLists++;
+                break;
+            case 'Class':
+                retVal[`Class${numClasses}`] = formatEntr(obj[key].value);
+                retVal[`Class${numClasses}`]["_attributes"] = {
+                    "Id": key,
+                    "type": obj[key].type,
+                }
+                numClasses++;
                 break;
             case 'ID':
             case 'Integer':
@@ -510,14 +600,22 @@ function convertToXML(obj, node) {
     const parsed = convertToJSON(obj, node);
     const className = Object.keys(parsed)[0];
     const prepObj = {};
-    const formattedEntr = formatEntr(parsed[className]);
-    prepObj[className] = formattedEntr;
-    console.log(prepObj);
+    prepObj[className] = formatEntr(parsed[className]);
     const xmlStr = xmlJS.js2xml(prepObj, {
         compact: true,
         spaces: 4,
         elementNameFn: function(n) {
-            return n.indexOf('Node') > -1 ? 'Node' : n;
+            if (n.indexOf('Node') == 0) {
+                return 'Node';
+            } else if (n.indexOf('List') == 0) {
+                return 'List';
+            } else if (n.indexOf('IList') == 0) {
+                return 'IList';
+            } else if (n.indexOf('Class') == 0) {
+                return 'Class';
+            } else {
+                return n;
+            }
         }
     });
 

@@ -530,8 +530,8 @@ function convertToXML(obj, node) {
     const className = Object.keys(parsed)[0];
     const prepObj = {};
     prepObj[className] = formatEntr(parsed[className]);
-    prepObj["_attributes"] = {
-        "Id": node.Id,
+    prepObj[className]["_attributes"] = {
+        "Id": GOM.fields[node.id] || node.id,
         "Name": node.fqn
     }
     const xmlStr = xmlJS.js2xml(prepObj, {
@@ -599,7 +599,6 @@ class Node {
     }
 
     render(parent, dataContainer) {
-        console.log(convertToXML(this.obj, this.node));
         const data = parseNode(this.node, this.obj);
         parent.appendChild(data);
 

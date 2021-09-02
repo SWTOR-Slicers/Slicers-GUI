@@ -566,12 +566,12 @@ class Node {
         this.uncompressedSize = node.uncomprLength
         const comprArray = new Uint8Array(data);
         this.compressedSize = comprArray.length;
-        node.uncomprLength = 0x500000;
-        const uncomprBuffer = new ArrayBuffer(node.uncomprLength);
+        node.uncomprBuffLength = 0x500000;
+        const uncomprBuffer = new ArrayBuffer(node.uncomprBuffLength);
         RawDeflate.inflate(comprArray, uncomprBuffer);
         const dv = new DataView(uncomprBuffer);
         let pos = node.contentOffset;
-        if (node.uncomprLength > 0) {
+        if (node.uncomprBuffLength > 0) {
             if (node.streamStyle >= 1 && node.streamStyle <= 6) {
                 const unkO = readVarInt(dv, pos);
                 pos += unkO.len

@@ -15,6 +15,11 @@
         "color": "#918276",
         "fov": 75
     },
+    "nodeViewer": {
+        "output": "",
+        "outputType": "raw",
+        "loadPrototypes": false
+    },
     "getPatch": {
         "devmode": false,
         "enviromentType": "live",

@@ -660,15 +660,19 @@ class NodeEntr {
         this.torPath = torPath;
     }
 
-    render(parent, dataContainer) {
+    render(parent, dataContainer, ref) {
+        ref = this;
         if (!this.isBucket) return
         parent.innerHTML = "";
 
-        const data = fs.readFileSync(this.torPath);
+        if (!this.node) {
+            const data = fs.readFileSync(this.torPath);
 
-        const blob = data.buffer.slice(this.bkt.offset + this.dataOffset + 2, this.bkt.offset + this.dataOffset + this.dataLength - 4);
-        const node = new Node(this, blob);
-        node.render(parent, dataContainer);
+            const blob = data.buffer.slice(this.bkt.offset + this.dataOffset + 2, this.bkt.offset + this.dataOffset + this.dataLength - 4);
+            const node = new Node(this, blob);
+            this.node = node;
+        }
+        this.node.render(parent, dataContainer);
     }
 }
 

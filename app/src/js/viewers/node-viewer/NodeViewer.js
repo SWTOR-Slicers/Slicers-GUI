@@ -1,10 +1,12 @@
-import { GomTree, nodesByFqn, nodeFolderSort } from "./GomTree.js";
+import { GomTree, nodesByFqn, nodeFolderSort, currentNode } from "./GomTree.js";
 import { log } from "../../universal/Logger.js";
-import { sourcePath } from "../../../api/config/resource-path/ResourcePath.js";
-import {NodeEntr} from "../../classes/Node.js";
+import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
+import { NodeEntr } from "../../classes/Node.js";
+import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 
 // Node.js imports
 const { ipcRenderer } = require("electron");
+const fs = require("fs");
 const path = require("path");
 
 // DOM Elements
@@ -23,21 +25,74 @@ const dataViewContainer = document.getElementById('dataViewContainer');
 const dataContainer = document.getElementById('dataContainer');
 
 const fqnField = document.getElementById('fqnField');
+const exportNode = document.getElementById('exportNode');
+const outputField = document.getElementById('outputField');
+const extrFormat = document.getElementById('extrFormat');
+const loadPrototypeNodes = document.getElementById('loadPrototypeNodes');
 
 // Constants
 const GTree = new GomTree(treeList, viewDisplay, dataContainer);
+const configPath = path.normalize(path.join(resourcePath, "config.json"));
+const cache = {
+    "output": "",
+    "loadPrototype": false,
+    "outputType": "raw"
+}
 let worker;
 
-function init() {
-    initCache();
+async function init() {
+    await loadCache();
+    outputField.value = cache['output'];
+    loadPrototypeNodes.checked = cache['loadPrototype'];
+    extrFormat.options[0].innerHTML = cache['outputType']
+    extrFormat.nextElementSibling.innerHTML = extrFormat.options[0].innerHTML;
+    extrFormat.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
+    extrFormat.nextElementSibling.nextElementSibling.querySelector(`#${ambientMusicSelect.options[0].innerHTML}`).classList.toggle('same-as-selected');
+    
     initListeners();
     initSubs();
     initWorker();
     initGomTree();
 }
 
-function initCache() {
+async function loadCache() {
+    let res = fs.readFileSync(configPath);
+    let jsonObj = await JSON.parse(res);
+    let json = jsonObj["nodeViewer"];
 
+    cache["loadPrototype"] = json["loadPrototype"];
+    cache["outputType"] = json["outputType"];
+
+    if (json["output"] == "" || !fs.existsSync(json["output"])) {
+        const defaultPath = path.join(jsonObj["outputFolder"], 'nodes');
+        if (!fs.existsSync(defaultPath)) {
+            fs.mkdirSync(defaultPath);
+        }
+        updateCache('output', defaultPath);
+        cache["output"] = defaultPath
+    } else {
+        cache["output"] = json["output"];
+    }
+}
+
+function updateCache(field, val) {
+    const shouldUpdate = (field == "output") ? fs.existsSync(val) : true; 
+    if (shouldUpdate) {
+        let res = fs.readFileSync(configPath);
+        let json = JSON.parse(res);
+        if (json["nodeViewer"][field] != val) {
+            json["nodeViewer"][field] = val;
+            cache[field] = val;
+        
+            fs.writeFileSync(configPath, JSON.stringify(json, null, '\t'), 'utf-8');
+        }
+
+        if (field == "output") {
+            outputField.dispatchEvent(updateTooltipEvent);
+        }
+    } else {
+        output.value = cache["output"];
+    }
 }
 
 function initListeners() {
@@ -61,11 +116,11 @@ function initListeners() {
             dataViewContainer.style.width = `${100 - changePercent - existingIncr}%`;
         }
     });
-    fqnField.addEventListener('change', (e) => {
-        if (fqnField.value != "") {
-            GTree.getNodeByFQN(fqnField.value);
-        }
-    });
+    fqnField.addEventListener('change', (e) => { if (fqnField.value != "") GTree.getNodeByFQN(fqnField.value); });
+    exportNode.addEventListener('click', (e) => { if (currentNode) currentNode.extract(cache['output'], cache['outputType']); });
+    extrFormat.clickCallback = (e) => { updateCache('outputType', e.currentTarget.innerHTML); }
+    loadPrototypeNodes.addEventListener('click', (e) => { updateCache('loadPrototype', loadPrototypeNodes.checked); });
+    outputField.addEventListener('change', (e) => { updateCache('output', outputField.value); });
 }
 
 function initWorker() {

@@ -12,6 +12,7 @@ const nodesByFqn = {
         "$O": 0
     }
 };
+let currentNode;
 
 class NodeTree {
     constructor(treeList, renderTarg, dataContainer) {
@@ -28,6 +29,7 @@ class NodeTree {
         this.scroller.onmousemove = this.redraw;
         this.scroller.onmouseout = this.redraw;
         this.scrollercon.onmousedown = this.click;
+        this.scrollercon.oncontextmenu = this.contextMenu;
         this.canvas = treeList;
         this.ctx = this.canvas.getContext('2d', {
             alpha: false
@@ -145,6 +147,12 @@ class NodeTree {
         const clickEle = 15 - this.scroller.scrollTop + (e.offsetY & 0xFFFFF0);
         this.clickfolder(nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, clickEle)
     }
+
+    contextMenu = (e) => {
+        e.preventDefault();
+
+
+    }
     
     clickfolder = (folder,heightIn,level,target) => {
         let height = heightIn;
@@ -170,7 +178,7 @@ class NodeTree {
         }
         for (let i = 0; i < fl; i++) {
             if (height === target) {
-                folder.$F[i].render(this.renderTarg, this.dataContainer);
+                folder.$F[i].render(this.renderTarg, this.dataContainer, currentNode);
                 return 0
             }
             height += FILETREE_HEIGHT
@@ -261,7 +269,7 @@ class GomTree {
                     const tNode = parent.$F.find((val, idx) => { return val.fileName == elem; });
                     if (tNode) {
                         hasFound = true
-                        tNode.render(this.viewContainer, this.dataContainer);
+                        tNode.render(this.viewContainer, this.dataContainer, currentNode);
                     }
                     break
                 } else if (fqnObj) {
@@ -274,7 +282,7 @@ class GomTree {
             const tNode = nodesByFqn.$F.find((val, idx) => { return val.fileName == tree[0]; });
             if (tNode) {
                 hasFound = true;
-                tNode.render(this.viewContainer, this.dataContainer);
+                tNode.render(this.viewContainer, this.dataContainer, currentNode);
             }
         }
     
@@ -292,4 +300,4 @@ function nodeFolderSort(a, b) {
     return 1
 }
 
-export {GomTree, nodesByFqn, nodeFolderSort};
+export {GomTree, nodesByFqn, nodeFolderSort, currentNode};

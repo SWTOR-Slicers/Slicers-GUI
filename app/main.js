@@ -1059,6 +1059,20 @@ function initNodeViewer () {
 }
 function initNodeViewerListeners(window) {
   ipcMain.on('readAllNodes', (event, data) => { readAllNodes(); })
+  ipcMain.on('decompressIonic', (event, data) => {
+    try {
+      const extrProc = child.spawn(path.join(resourcePath, "scripts", "IonicDecompress.exe"), [data[0]]);
+      let output = ""
+      extrProc.stdout.on('data', (data) => { output = data.toString(); });
+      extrProc.stderr.on('data', (data) => { console.log(`Error: ${data.toString()}`); });
+      extrProc.on('exit', (code) => {
+        console.log(`child process exited with status: ${code.toString()}`);
+        event.returnValue = output;
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  });
 }
 
 

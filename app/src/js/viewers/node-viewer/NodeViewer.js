@@ -127,6 +127,10 @@ function initWorker() {
     worker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "NodeWorker.js"), {
         type: "module"
     });
+    worker.postMessage({
+        "message": "init",
+        "data": resourcePath
+    });
     worker.onmessage = (e) => {
         switch (e.data.message) {
             case "NODES":
@@ -145,6 +149,13 @@ function initWorker() {
                         document.getElementById('numBucketsLeft').innerHTML = "";
                     }, 3000)
                 }
+                break;
+            case "decompressIonic":
+                const retPath = ipcRenderer.sendSync('decompressIonic', [e.data.data]);
+                worker.postMessage({
+                    "message": 'decompressCompl',
+                    "data": retPath
+                });
                 break;
         }
     }

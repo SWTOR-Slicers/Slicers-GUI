@@ -4,12 +4,47 @@ import { hashlittle2, uint64, readString as readStr } from "../../Util.js";
 const path = require('path');
 const { inflateRawSync } = require('zlib');
 const pako = require('pako');
-const { promises: { readFile } } = require('fs');
+const { promises: { readFile }, writeFileSync, readFileSync, existsSync, mkdirSync, unlinkSync } = require('fs');
+
+const cache = {
+    "configPath": "",
+    "tmpPath": "",
+    "dump": {}
+}
+const bucketNames = [];
+async function getTmpFilePath() {
+    let res = readFileSync(cache['configPath']);
+    let jsonObj = await JSON.parse(res);
+    const resPath = path.join(jsonObj['outputFolder'], 'tmp');
+    if (!existsSync(resPath)) {
+        mkdirSync(resPath, {
+            recursive: true
+        });
+    }
+    return resPath;
+}
+function ionicDecompress(path, data) {
+    writeFileSync(path, data);
+    postMessage({
+        "message": 'decompressIonic',
+        "data": path
+    });
+}
 
 onmessage = (e) => {
     switch (e.data.message) {
+        case "init":
+            cache['configPath'] = path.normalize(path.join(e.data.data, "config.json"));
+            break;
         case "loadNodes":
             loadNodes(e.data.data)
+            break;
+        case "decompressCompl":
+            const decompressedPath = e.data.data;
+            const resData = readFileSync(decompressedPath).buffer;
+            unlinkSync(decompressedPath);
+            const {gomArchive, data, torPath} = cache['dump'];
+            loadBuckets(gomArchive, data, torPath, new DataView(resData))
             break;
     }
 }
@@ -23,7 +58,8 @@ function readString(dv, pos) {
     return outName
 }
 
-function loadNodes(torPath) {
+async function loadNodes(torPath) {
+    cache['tmpPath'] = await getTmpFilePath();
     let ftOffset = 0;
     let firstLoop = true;
     const ftCapacity = 1000;
@@ -100,8 +136,7 @@ function loadClientGOM(gomArchive, data, torPath) {
 
 }
 
-function readNumber(dv, pos)
-{
+function readNumber(dv, pos) {
     function ReadByte() {
         return dv.buffer.slice(pos, pos++)[0];
     }
@@ -161,22 +196,7 @@ function readLengthPrefixString(dv, pos) {
     return readStr(dv.buffer, pos, len);
 }
 
-function loadGom(gomArchive, data, torPath) {
-    const bucketNames = [];
-    const bucketInfoHash = hashlittle2(`/resources/systemgenerated/buckets.info`);
-    const bucketInfoEntr = gomArchive.files[`${bucketInfoHash[1]}|${bucketInfoHash[0]}`];
-
-    const dat = data.slice(bucketInfoEntr.offset, bucketInfoEntr.offset + (bucketInfoEntr.isCompressed ? bucketInfoEntr.comprSize : bucketInfoEntr.size));
-    let blob = new ArrayBuffer(bucketInfoEntr.size);
-    if (bucketInfoEntr.isCompressed) {
-        blob = pako.inflateRaw(dat);
-        //let num = RawDeflate.inflate(new Uint8Array(dat), blob);
-        //console.log(num);
-    } else {
-        blob = dat;
-    }
-    const infoDV = new DataView(blob);
-
+function loadBuckets(gomArchive, data, torPath, infoDV) {
     {
         let pos = 0x8;
         // br.ReadBytes(8); // Skip 8 header bytes
@@ -205,6 +225,25 @@ function loadGom(gomArchive, data, torPath) {
             const blob = data.slice(file.offset, file.offset + file.size);
             loadBucket(i, new DataView(blob), torPath, file);
         }
+    }
+}
+
+
+function loadGom(gomArchive, data, torPath) {
+    const bucketInfoHash = hashlittle2(`/resources/systemgenerated/buckets.info`);
+    const bucketInfoEntr = gomArchive.files[`${bucketInfoHash[1]}|${bucketInfoHash[0]}`];
+
+    const dat = data.slice(bucketInfoEntr.offset, bucketInfoEntr.offset + (bucketInfoEntr.isCompressed ? bucketInfoEntr.comprSize : bucketInfoEntr.size));
+    let blob = null;
+    if (bucketInfoEntr.isCompressed) {
+        cache['dump']['gomArchive'] = gomArchive;
+        cache['dump']['data'] = data;
+        cache['dump']['torPath'] = torPath;
+        ionicDecompress(path.join(cache['tmpPath'], 'buckets.info'), new Uint8Array(dat));
+    } else {
+        blob = dat;
+        const infoDV = new DataView(blob);
+        loadBuckets(gomArchive, data, torPath, infoDV);
     }
 }
 

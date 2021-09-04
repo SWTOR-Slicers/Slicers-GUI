@@ -47,7 +47,7 @@ async function init() {
     extrFormat.options[0].innerHTML = cache['outputType']
     extrFormat.nextElementSibling.innerHTML = extrFormat.options[0].innerHTML;
     extrFormat.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
-    extrFormat.nextElementSibling.nextElementSibling.querySelector(`#${ambientMusicSelect.options[0].innerHTML}`).classList.toggle('same-as-selected');
+    extrFormat.nextElementSibling.nextElementSibling.querySelector(`#${extrFormat.options[0].innerHTML}`).classList.toggle('same-as-selected');
     
     initListeners();
     initSubs();

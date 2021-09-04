@@ -178,6 +178,7 @@
 
 /* Node data view styling */
 .node-header {
+    width: 100%;
     color: white;
     font-size: 14px;
     margin: 0px;

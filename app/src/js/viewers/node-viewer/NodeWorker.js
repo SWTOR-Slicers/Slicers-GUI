@@ -1,6 +1,9 @@
-import { hashlittle2, uint64 } from "../../Util.js";
+import { RawDeflate } from "../../externals/Inflate.js";
+import { hashlittle2, uint64, readString as readStr } from "../../Util.js";
 
 const path = require('path');
+const { inflateRawSync } = require('zlib');
+const pako = require('pako');
 const { promises: { readFile } } = require('fs');
 
 onmessage = (e) => {
@@ -75,6 +78,7 @@ function loadNodes(torPath) {
                 fileObj.offset = offset;
                 fileObj.size = uncomprSize;
                 fileObj.comprSize = (compression !== 0) ? comprSize : 0;
+                fileObj.isCompressed = compression !== 0;
                 fileObj.name = undefined;
                 const hash = sh + '|' + ph;
                 
@@ -83,14 +87,116 @@ function loadNodes(torPath) {
         }
 
         if (Object.keys(gomArchive.files).length > 0) {
+            loadClientGOM(gomArchive, data, torPath);
             loadGom(gomArchive, data, torPath);
+            loadPrototypes(gomArchive, data, torPath);
         }
     }).catch(err => {
         throw err;
     });
 }
 
+function loadClientGOM(gomArchive, data, torPath) {
+
+}
+
+function readNumber(dv, pos)
+{
+    function ReadByte() {
+        return dv.buffer.slice(pos, pos++)[0];
+    }
+    function Read(buffer, offset, length) {
+        return buffer.slice(offset, offset+length);
+    }
+
+    let val = 0;
+    let b0 = ReadByte();
+    if (b0 == 0xD2) { b0 = ReadByte(); } //flag on lookup lists. Unsure of function.
+    if (b0 < 0xC0) { return b0, pos; }
+    if (b0 < 0xC8) {
+        let byteBuffer = new Uint8Array(b0 - 0xBF);
+        byteBuffer = Read(dv.buffer, 0, byteBuffer.length);
+
+        for (let i = 0; i < byteBuffer.length; i++)
+        {
+            val <<= 8;
+            val += byteBuffer[i];
+        }
+
+        return val, pos;
+    } else if (b0 < 0xD0) {
+        let byteBuffer = new Uint8Array(b0 - 0xC7);
+        byteBuffer = Read(dv.buffer, 0, byteBuffer.length);
+
+        for (let i = 0; i < byteBuffer.length; i++) {
+            val <<= 8;
+            val += byteBuffer[i];
+        }
+
+        return val, pos;
+    } else if (b0 == 0xD0) {
+        return ReadByte(), pos;
+    } else if (b0 == 0xEF) { //this is likely a bug due to not having a GomTypeId.RawData reader
+        let byteBuffer = new Uint8Array(4); //this is wrong, but it avoids the exception for now.
+        byteBuffer = Read(dv.buffer, 0, byteBuffer.length); // it's almost right, but the ctlCoverMovementDirection_c value isn't being read right, which throws the following values off.
+
+        for (let i = 0; i < byteBuffer.length; i++) {
+            val <<= 8;
+            val += byteBuffer[i];
+        }
+
+        //var bs = this.ReadByte();
+        return val, pos;
+    } else {
+        throw new Error(`Unknown Number Prefix: ${b0}`);
+    }
+}
+
+function readLengthPrefixString(dv, pos) {
+    let len = 0;
+    const res = readNumber(dv, pos);
+    len = res[0];
+    pos = res[1];
+
+    return readStr(dv.buffer, pos, len);
+}
+
 function loadGom(gomArchive, data, torPath) {
+    const bucketNames = [];
+    const bucketInfoHash = hashlittle2(`/resources/systemgenerated/buckets.info`);
+    const bucketInfoEntr = gomArchive.files[`${bucketInfoHash[1]}|${bucketInfoHash[0]}`];
+
+    const dat = data.slice(bucketInfoEntr.offset, bucketInfoEntr.offset + (bucketInfoEntr.isCompressed ? bucketInfoEntr.comprSize : bucketInfoEntr.size));
+    let blob = new ArrayBuffer(bucketInfoEntr.size);
+    if (bucketInfoEntr.isCompressed) {
+        blob = pako.inflateRaw(dat);
+        //let num = RawDeflate.inflate(new Uint8Array(dat), blob);
+        //console.log(num);
+    } else {
+        blob = dat;
+    }
+    const infoDV = new DataView(blob);
+
+    {
+        let pos = 0x8;
+        // br.ReadBytes(8); // Skip 8 header bytes
+
+        const c9 = new Uint8Array(infoDV.buffer, pos, 1)[0]; // br.ReadByte();
+        pos++;
+        if (c9 != 0xC9)
+        {
+            throw new Error(`Unexpected character in buckets.info @ offset 0x8 - expected 0xC9 found ${c9}`);
+        }
+
+        let numEntries = infoDV.getInt16(pos, false);
+
+        for (var i = 0; i < numEntries; i++)
+        {
+            let fileName = readLengthPrefixString(dv, pos);
+            bucketNames.push(fileName);
+        }
+    }
+
     for (let i = 0; i < 500; i++) {
         const hashArr = hashlittle2(`/resources/systemgenerated/buckets/${i}.bkt`);
         const file = gomArchive.files[`${hashArr[1]}|${hashArr[0]}`];
@@ -100,6 +206,10 @@ function loadGom(gomArchive, data, torPath) {
             loadBucket(i, new DataView(blob), torPath, file);
         }
     }
+}
+
+function loadPrototypes(gomArchive, data, torPath) {
+
 }
 
 function loadBucket(bktIdx, dv, torPath, bktFile) {

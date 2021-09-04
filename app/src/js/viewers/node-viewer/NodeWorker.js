@@ -9,26 +9,8 @@ const { promises: { readFile }, writeFileSync, readFileSync, existsSync, mkdirSy
 const cache = {
     "configPath": "",
     "tmpPath": "",
-    "dump": {}
-}
-const bucketNames = [];
-async function getTmpFilePath() {
-    let res = readFileSync(cache['configPath']);
-    let jsonObj = await JSON.parse(res);
-    const resPath = path.join(jsonObj['outputFolder'], 'tmp');
-    if (!existsSync(resPath)) {
-        mkdirSync(resPath, {
-            recursive: true
-        });
-    }
-    return resPath;
-}
-function ionicDecompress(path, data) {
-    writeFileSync(path, data);
-    postMessage({
-        "message": 'decompressIonic',
-        "data": path
-    });
+    "dump": {},
+    "store": {}
 }
 
 onmessage = (e) => {
@@ -44,21 +26,13 @@ onmessage = (e) => {
             const resData = readFileSync(decompressedPath).buffer;
             unlinkSync(decompressedPath);
             const {gomArchive, data, torPath} = cache['dump'];
+            cache['dump'] = {};
             loadBuckets(gomArchive, data, torPath, new DataView(resData))
             break;
     }
 }
 
-function readString(dv, pos) {
-    let curChar = 0;
-    let outName = '';
-    while ((curChar = dv.getUint8(pos++)) !== 0) {
-        outName += String.fromCharCode(curChar)
-    }
-    return outName
-}
-
-async function loadNodes(torPath) {
+async function loadNodes(torPath, loadPrototypes) {
     cache['tmpPath'] = await getTmpFilePath();
     let ftOffset = 0;
     let firstLoop = true;
@@ -125,7 +99,13 @@ async function loadNodes(torPath) {
         if (Object.keys(gomArchive.files).length > 0) {
             loadClientGOM(gomArchive, data, torPath);
             loadGom(gomArchive, data, torPath);
-            loadPrototypes(gomArchive, data, torPath);
+            if (loadPrototypes) {
+                loadPrototypes(gomArchive, data, torPath);
+            } else {
+                cache['store']['gomArchive'] = gomArchive;
+                cache['store']['data'] = data;
+                cache['store']['torPath'] = torPath;
+            }
         }
     }).catch(err => {
         throw err;
@@ -136,13 +116,25 @@ function loadClientGOM(gomArchive, data, torPath) {
 
 }
 
-function readLengthPrefixString(dv, pos) {
-    const strLength = readVarInt(dv, pos);
+function loadGom(gomArchive, data, torPath) {
+    const bucketInfoHash = hashlittle2(`/resources/systemgenerated/buckets.info`);
+    const bucketInfoEntr = gomArchive.files[`${bucketInfoHash[1]}|${bucketInfoHash[0]}`];
 
-    return [readStr(dv.buffer, pos + strLength.len, strLength.intLo), strLength.len + strLength.intLo];
+    const dat = data.slice(bucketInfoEntr.offset, bucketInfoEntr.offset + (bucketInfoEntr.isCompressed ? bucketInfoEntr.comprSize : bucketInfoEntr.size));
+    let blob = null;
+    if (bucketInfoEntr.isCompressed) {
+        cache['dump']['gomArchive'] = gomArchive;
+        cache['dump']['data'] = data;
+        cache['dump']['torPath'] = torPath;
+        ionicDecompress(path.join(cache['tmpPath'], 'buckets.info'), new Uint8Array(dat));
+    } else {
+        blob = dat;
+        const infoDV = new DataView(blob);
+        loadBuckets(gomArchive, data, torPath, infoDV);
+    }
 }
-
 function loadBuckets(gomArchive, data, torPath, infoDV) {
+    const bucketNames = [];
     let pos = 0x8;
 
     const c9 = new Uint8Array(infoDV.buffer, pos, 1)[0];
@@ -171,34 +163,6 @@ function loadBuckets(gomArchive, data, torPath, infoDV) {
         }
     }
 }
-
-
-function loadGom(gomArchive, data, torPath) {
-    const bucketInfoHash = hashlittle2(`/resources/systemgenerated/buckets.info`);
-    const bucketInfoEntr = gomArchive.files[`${bucketInfoHash[1]}|${bucketInfoHash[0]}`];
-
-    const dat = data.slice(bucketInfoEntr.offset, bucketInfoEntr.offset + (bucketInfoEntr.isCompressed ? bucketInfoEntr.comprSize : bucketInfoEntr.size));
-    let blob = null;
-    if (bucketInfoEntr.isCompressed) {
-        cache['dump']['gomArchive'] = gomArchive;
-        cache['dump']['data'] = data;
-        cache['dump']['torPath'] = torPath;
-        ionicDecompress(path.join(cache['tmpPath'], 'buckets.info'), new Uint8Array(dat));
-    } else {
-        blob = dat;
-        const infoDV = new DataView(blob);
-        loadBuckets(gomArchive, data, torPath, infoDV);
-    }
-}
-
-function loadPrototypes(gomArchive, data, torPath) {
-
-}
-
-function loadPrototype() {
-
-}
-
 function loadBucket(bktIdx, dv, torPath, bktFile) {
     const magic = dv.getUint32(0, !0);
     if (magic !== 0x4B554250)
@@ -280,4 +244,45 @@ function loadBucket(bktIdx, dv, torPath, bktFile) {
         "message": 'NODES',
         "data": nodes
     })
+}
+
+function loadPrototypes(gomArchive, data, torPath) {
+
+}
+
+function loadPrototype() {
+
+}
+
+//Utility functions
+
+function readString(dv, pos) {
+    let curChar = 0;
+    let outName = '';
+    while ((curChar = dv.getUint8(pos++)) !== 0) {
+        outName += String.fromCharCode(curChar)
+    }
+    return outName
+}
+function readLengthPrefixString(dv, pos) {
+    const strLength = readVarInt(dv, pos);
+    return [readStr(dv.buffer, pos + strLength.len, strLength.intLo), strLength.len + strLength.intLo];
+}
+async function getTmpFilePath() {
+    let res = readFileSync(cache['configPath']);
+    let jsonObj = await JSON.parse(res);
+    const resPath = path.join(jsonObj['outputFolder'], 'tmp');
+    if (!existsSync(resPath)) {
+        mkdirSync(resPath, {
+            recursive: true
+        });
+    }
+    return resPath;
+}
+function ionicDecompress(path, data) {
+    writeFileSync(path, data);
+    postMessage({
+        "message": 'decompressIonic',
+        "data": path
+    });
 }

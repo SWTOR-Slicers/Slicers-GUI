@@ -1,5 +1,5 @@
 import { RawDeflate } from "../../externals/Inflate.js";
-import { hashlittle2, uint64, readString as readStr, readVarInt } from "../../Util.js";
+import { hashlittle2, uint64, readString as readStr, readVarInt, uint64C } from "../../Util.js";
 
 const path = require('path');
 const { inflateRawSync } = require('zlib');
@@ -19,21 +19,31 @@ onmessage = (e) => {
             cache['configPath'] = path.normalize(path.join(e.data.data, "config.json"));
             break;
         case "loadNodes":
-            loadNodes(e.data.data)
+            loadNodes(e.data.data.torFiles[0], false);
+            loadNodes(e.data.data.torFiles[1], e.data.data.loadProts);
             break;
         case "decompressCompl":
-            const decompressedPath = e.data.data;
+            const decompressedPath = e.data.data[1];
             const resData = readFileSync(decompressedPath).buffer;
             unlinkSync(decompressedPath);
             const {gomArchive, data, torPath} = cache['dump'];
             cache['dump'] = {};
-            loadBuckets(gomArchive, data, torPath, new DataView(resData))
+            switch (e.data.data[0]) {
+                case "clientGOM":
+                    loadClientGOM(gomArchive, data, torPath, new DataView(resData));
+                    break;
+                case "buckets":
+                    loadBuckets(gomArchive, data, torPath, new DataView(resData));
+                    break;
+                case "protos":
+                    break;
+            }
             break;
     }
 }
 
-async function loadNodes(torPath, loadPrototypes) {
-    cache['tmpPath'] = await getTmpFilePath();
+async function loadNodes(torPath, loadProts) {
+    cache['tmpPath'] = cache['tmpPath'] == "" ? await getTmpFilePath() : cache['tmpPath'];
     let ftOffset = 0;
     let firstLoop = true;
     const ftCapacity = 1000;
@@ -97,14 +107,17 @@ async function loadNodes(torPath, loadPrototypes) {
         }
 
         if (Object.keys(gomArchive.files).length > 0) {
-            loadClientGOM(gomArchive, data, torPath);
-            loadGom(gomArchive, data, torPath);
-            if (loadPrototypes) {
-                loadPrototypes(gomArchive, data, torPath);
+            if (path.basename(torPath).indexOf('systemgenerated_gom_1') > -1) {
+                findClientGOM(gomArchive, data, torPath);
             } else {
-                cache['store']['gomArchive'] = gomArchive;
-                cache['store']['data'] = data;
-                cache['store']['torPath'] = torPath;
+                findGom(gomArchive, data, torPath);
+                if (loadProts) {
+                    findPrototypes(gomArchive, data, torPath);
+                } else {
+                    cache['store']['gomArchive'] = gomArchive;
+                    cache['store']['data'] = data;
+                    cache['store']['torPath'] = torPath;
+                }
             }
         }
     }).catch(err => {
@@ -112,11 +125,99 @@ async function loadNodes(torPath, loadPrototypes) {
     });
 }
 
-function loadClientGOM(gomArchive, data, torPath) {
+function findClientGOM(gomArchive, data, torPath) {
+    const gomFileHash = hashlittle2("/resources/systemgenerated/client.gom");
+    const gomFileEntr = gomArchive.files[`${gomFileHash[1]}|${gomFileHash[0]}`];
 
+    const dat = data.slice(gomFileEntr.offset, gomFileEntr.offset + (gomFileEntr.isCompressed ? gomFileEntr.comprSize : gomFileEntr.size));
+    let blob = null;
+    if (gomFileEntr.isCompressed) {
+        cache['dump']['gomArchive'] = gomArchive;
+        cache['dump']['data'] = data;
+        cache['dump']['torPath'] = torPath;
+        ionicDecompress(path.join(cache['tmpPath'], 'buckets.info'), new Uint8Array(dat), 'clientGOM');
+    } else {
+        blob = dat;
+        const infoDV = new DataView(blob);
+        loadClientGOM(gomArchive, data, torPath, infoDV);
+    }
 }
 
-function loadGom(gomArchive, data, torPath) {
+/**
+ * Loads the client gom nodes.
+ * @param {Object} gomArchive An object representing the gom archive file table.
+ * @param {ArrayBuffer} data Raw arraybuffer representing the gom archive .tor file.
+ * @param {String} torPath File path of the gom archive .tor file.
+ * @param {DataView} infoDV DataView representing the gom archive .tor file.
+ */
+function loadClientGOM(gomArchive, data, torPath, infoDV) {
+    const nodes = [];
+
+    let pos = 0
+    // Check DBLB
+    const magicNum = infoDV.readInt32()
+    pos += 4;
+    if (magicNum != 0x424C4244)
+    {
+        throw new Error("client.gom does not begin with DBLB");
+    }
+
+    pos += 4;
+
+    while (true) {
+        const iniPos = pos;
+        // Begin Reading Gom Definitions
+
+        const defLength = infoDV.getInt32();
+        pos += 4;
+
+        // Length == 0 means we've read them all!
+        if (defLength == 0) {
+            break;
+        }
+
+        const defBuffer = new Uint8Array(defLength);
+        pos += 4; // 4 blank bytes
+        const defId = uint64C(readVarInt(infoDV, pos)); // 8-byte type ID
+        pos += 8;
+        const defFlags = infoDV.getInt32(); // 16-bit flag field
+        pos += 4;
+        const defType = (defFlags >> 3) & 0x7;
+
+        const defData = new Uint8Array(infoDV.buffer, pos, defLength - 18);
+        defBuffer.set(defData, 18);
+
+
+        // if (typeLoaderMap.TryGetValue(defType, out DomTypeLoaders.IDomTypeLoader loader)) {
+        //     var domType = loader.Load(defReader);
+        //     domType.Dom_ = this;
+        //     domType.Id = defId;
+        //     if (!DomTypeMap.ContainsKey(domType.Id)) {
+        //         const type = domType.GetType().ToString();
+
+        //         if (string.IsNullOrEmpty(domType.Name)) {
+        //             if (StoredIdMap.TryGetValue(domType.Id, out string storedTypeName)) {
+        //                 domType.Name = storedTypeName;
+        //             }
+        //         }
+        //     }
+        // } else {
+        //     throw new Error(`No loader for DomType 0x${offset} as offset 0x${defType}`);
+        // }
+
+        // Read the required number of padding bytes
+        const padding = ((8 - (defLength & 0x7)) & 0x7);
+
+        pos = iniPos + defLength + padding;
+    }
+
+    postMessage({
+        "message": 'NODES',
+        "data": nodes
+    })
+}
+
+function findGom(gomArchive, data, torPath) {
     const bucketInfoHash = hashlittle2(`/resources/systemgenerated/buckets.info`);
     const bucketInfoEntr = gomArchive.files[`${bucketInfoHash[1]}|${bucketInfoHash[0]}`];
 
@@ -126,7 +227,7 @@ function loadGom(gomArchive, data, torPath) {
         cache['dump']['gomArchive'] = gomArchive;
         cache['dump']['data'] = data;
         cache['dump']['torPath'] = torPath;
-        ionicDecompress(path.join(cache['tmpPath'], 'buckets.info'), new Uint8Array(dat));
+        ionicDecompress(path.join(cache['tmpPath'], 'buckets.info'), new Uint8Array(dat), 'buckets');
     } else {
         blob = dat;
         const infoDV = new DataView(blob);
@@ -246,8 +347,8 @@ function loadBucket(bktIdx, dv, torPath, bktFile) {
     })
 }
 
-function loadPrototypes(gomArchive, data, torPath) {
-
+function findPrototypes(gomArchive, data, torPath) {
+    
 }
 
 function loadPrototype() {
@@ -279,10 +380,10 @@ async function getTmpFilePath() {
     }
     return resPath;
 }
-function ionicDecompress(path, data) {
+function ionicDecompress(path, data, type) {
     writeFileSync(path, data);
     postMessage({
         "message": 'decompressIonic',
-        "data": path
+        "data": [type, path]
     });
 }

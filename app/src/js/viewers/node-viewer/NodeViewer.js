@@ -151,10 +151,10 @@ function initWorker() {
                 }
                 break;
             case "decompressIonic":
-                const retPath = ipcRenderer.sendSync('decompressIonic', [e.data.data]);
+                const res = ipcRenderer.sendSync('decompressIonic', [e.data.data]);
                 worker.postMessage({
                     "message": 'decompressCompl',
-                    "data": retPath
+                    "data": res
                 });
                 break;
         }
@@ -165,7 +165,10 @@ function initSubs() {
     ipcRenderer.on('nodeTorPath', (event, data) => {
         worker.postMessage({
             "message": 'loadNodes',
-            "data": data[0]
+            "data": {
+                "torFiles": data,
+                "loadProts": loadPrototypeNodes.checked
+            }
         });
     });
     ipcRenderer.on('errorPathNotExist', (event, data) => { log("The required .tor file is not in your assets directory.", "error"); });

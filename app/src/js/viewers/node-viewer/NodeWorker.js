@@ -1,9 +1,8 @@
-import { RawDeflate } from "../../externals/Inflate.js";
-import { hashlittle2, uint64, readString as readStr, readVarInt, uint64C } from "../../Util.js";
+import { hashlittle2, uint64, readString as readStr, readVarInt } from "../../Util.js";
+import { GOM } from "../../classes/util/Gom.js";
+import { DomLoader } from "../../classes/DomLoaders.js";
 
 const path = require('path');
-const { inflateRawSync } = require('zlib');
-const pako = require('pako');
 const { promises: { readFile }, writeFileSync, readFileSync, existsSync, mkdirSync, unlinkSync } = require('fs');
 
 const cache = {
@@ -155,10 +154,9 @@ function loadClientGOM(gomArchive, data, torPath, infoDV) {
 
     let pos = 0
     // Check DBLB
-    const magicNum = infoDV.readInt32()
+    const magicNum = infoDV.getInt32(pos, true)
     pos += 4;
-    if (magicNum != 0x424C4244)
-    {
+    if (magicNum != 0x424C4244) {
         throw new Error("client.gom does not begin with DBLB");
     }
 
@@ -168,7 +166,7 @@ function loadClientGOM(gomArchive, data, torPath, infoDV) {
         const iniPos = pos;
         // Begin Reading Gom Definitions
 
-        const defLength = infoDV.getInt32();
+        const defLength = infoDV.getInt32(pos, true);
         pos += 4;
 
         // Length == 0 means we've read them all!
@@ -178,32 +176,28 @@ function loadClientGOM(gomArchive, data, torPath, infoDV) {
 
         const defBuffer = new Uint8Array(defLength);
         pos += 4; // 4 blank bytes
-        const defId = uint64C(readVarInt(infoDV, pos)); // 8-byte type ID
+        const defId = infoDV.getBigUint64(pos, true); // 8-byte type ID
         pos += 8;
-        const defFlags = infoDV.getInt32(); // 16-bit flag field
+        const defFlags = infoDV.getInt32(pos, true); // 16-bit flag field
         pos += 4;
         const defType = (defFlags >> 3) & 0x7;
 
         const defData = new Uint8Array(infoDV.buffer, pos, defLength - 18);
         defBuffer.set(defData, 18);
 
+        const DomElem = new DomLoader(defType, new DataView(defBuffer), 0).load();
 
-        // if (typeLoaderMap.TryGetValue(defType, out DomTypeLoaders.IDomTypeLoader loader)) {
-        //     var domType = loader.Load(defReader);
-        //     domType.Dom_ = this;
-        //     domType.Id = defId;
-        //     if (!DomTypeMap.ContainsKey(domType.Id)) {
-        //         const type = domType.GetType().ToString();
-
-        //         if (string.IsNullOrEmpty(domType.Name)) {
-        //             if (StoredIdMap.TryGetValue(domType.Id, out string storedTypeName)) {
-        //                 domType.Name = storedTypeName;
-        //             }
-        //         }
-        //     }
-        // } else {
-        //     throw new Error(`No loader for DomType 0x${offset} as offset 0x${defType}`);
-        // }
+        const node = {};
+        node.id = defId;
+        node.fqn = GOM.fields[node.id];
+        node.baseClass = null;
+        node.bkt = null;
+        node.isBucket = !0;
+        node.dataOffset = pos;
+        node.dataLength = defLength;
+        node.contentOffset = uncomprOffset - dataOffset;
+        node.uncomprLength = uncomprLength;
+        node.streamStyle = streamStyle;
 
         // Read the required number of padding bytes
         const padding = ((8 - (defLength & 0x7)) & 0x7);

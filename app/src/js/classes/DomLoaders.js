@@ -30,7 +30,7 @@ class DomLoader {
         }
     }
 
-    parsedShared(dv, pos) {
+    parseShared(dv, pos) {
         const out = {};
         const offset = pos;
 

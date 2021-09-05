@@ -18,8 +18,10 @@ onmessage = (e) => {
             cache['configPath'] = path.normalize(path.join(e.data.data, "config.json"));
             break;
         case "loadNodes":
-            loadNodes(e.data.data.torFiles[0], false);
-            loadNodes(e.data.data.torFiles[1], e.data.data.loadProts);
+            loadNodes(e.data.data.torFiles[1], false);
+            // setTimeout(() => {
+            //     loadNodes(e.data.data.torFiles[0], e.data.data.loadProts);
+            // }, 100);
             break;
         case "decompressCompl":
             const decompressedPath = e.data.data[1];
@@ -134,7 +136,7 @@ function findClientGOM(gomArchive, data, torPath) {
         cache['dump']['gomArchive'] = gomArchive;
         cache['dump']['data'] = data;
         cache['dump']['torPath'] = torPath;
-        ionicDecompress(path.join(cache['tmpPath'], 'buckets.info'), new Uint8Array(dat), 'clientGOM');
+        ionicDecompress(path.join(cache['tmpPath'], 'client.gom'), new Uint8Array(dat), 'clientGOM');
     } else {
         blob = dat;
         const infoDV = new DataView(blob);
@@ -185,7 +187,7 @@ function loadClientGOM(gomArchive, data, torPath, infoDV) {
         const defData = new Uint8Array(infoDV.buffer, pos, defLength - 18);
         defBuffer.set(defData, 18);
 
-        const DomElem = new DomLoader(defType, new DataView(defBuffer), 0).load();
+        const DomElem = new DomLoader(defType, new DataView(new ArrayBuffer(defBuffer)), 0).load().load();
 
         const node = {};
         node.id = defId;

@@ -1,4 +1,4 @@
-import {GOM} from "./util/Gom.js";
+import { GOM } from "./util/Gom.js";
 import { RawDeflate } from "../externals/Inflate.js";
 import { readVarInt, uint64_add, uint64C, assert, cleanString, readString, serializeMap } from "../Util.js";
 import { log } from "../universal/Logger.js";
@@ -676,4 +676,4 @@ class NodeEntr {
     }
 }
 
-export {Node, NodeEntr}
+export {Node, NodeEntr, DOM_TYPES}

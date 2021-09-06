@@ -152,7 +152,7 @@ function findClientGOM(gomArchive, data, torPath) {
  * @param {DataView} infoDV DataView representing the gom archive .tor file.
  */
 function loadClientGOM(gomArchive, data, torPath, infoDV) {
-    const nodes = [];
+    const DomElements = [];
 
     let pos = 0
     // Check DBLB
@@ -180,26 +180,22 @@ function loadClientGOM(gomArchive, data, torPath, infoDV) {
         pos += 4; // 4 blank bytes
         const defId = infoDV.getBigUint64(pos, true); // 8-byte type ID
         pos += 8;
-        const defFlags = infoDV.getInt32(pos, true); // 16-bit flag field
-        pos += 4;
+        const defFlags = infoDV.getInt16(pos, true); // 16-bit flag field
+        pos += 2;
         const defType = (defFlags >> 3) & 0x7;
 
         const defData = new Uint8Array(infoDV.buffer, pos, defLength - 18);
         defBuffer.set(defData, 18);
 
-        const DomElem = new DomLoader(defType, new DataView(new ArrayBuffer(defBuffer)), 0).load().load();
+        const DomElem = new DomLoader(defType, new DataView(defBuffer.buffer), 0).getLoader().load();
+        delete DomElem.Name;
+        delete DomElem.Description;
 
-        const node = {};
-        node.id = defId;
-        node.fqn = GOM.fields[node.id];
-        node.baseClass = null;
-        node.bkt = null;
-        node.isBucket = !0;
-        node.dataOffset = pos;
-        node.dataLength = defLength;
-        node.contentOffset = uncomprOffset - dataOffset;
-        node.uncomprLength = uncomprLength;
-        node.streamStyle = streamStyle;
+        const DElem = DomElem;
+        DElem.id = defId;
+        DElem.fqn = GOM.fields[DElem.id];
+        
+        DomElements.push(DElem)
 
         // Read the required number of padding bytes
         const padding = ((8 - (defLength & 0x7)) & 0x7);
@@ -208,8 +204,8 @@ function loadClientGOM(gomArchive, data, torPath, infoDV) {
     }
 
     postMessage({
-        "message": 'NODES',
-        "data": nodes
+        "message": 'DomElements',
+        "data": DomElements
     })
 }
 

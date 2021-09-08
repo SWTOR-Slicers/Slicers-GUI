@@ -264,7 +264,7 @@ class DomAssociationLoader extends DomLoader {
 function getGomType(dv, pos) {
     const type = new Uint8Array(dv.buffer, pos, 1)[0];
     pos += 1;
-    const res = fileNodeReadfield(dv, pos, type);
+    const res = {}; // fileNodeReadfield(dv, pos, type); // this is bugged
     return res.val;
 }
 

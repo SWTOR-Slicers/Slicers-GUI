@@ -35,7 +35,7 @@ const GTree = new GomTree(treeList, viewDisplay, dataContainer);
 const configPath = path.normalize(path.join(resourcePath, "config.json"));
 const cache = {
     "output": "",
-    "loadPrototype": false,
+    "loadPrototypes": false,
     "outputType": "raw"
 }
 let worker;
@@ -43,15 +43,15 @@ let worker;
 async function init() {
     await loadCache();
     outputField.value = cache['output'];
-    loadPrototypeNodes.checked = cache['loadPrototype'];
+    loadPrototypeNodes.checked = cache['loadPrototypes'];
     extrFormat.options[0].innerHTML = cache['outputType']
     extrFormat.nextElementSibling.innerHTML = extrFormat.options[0].innerHTML;
     extrFormat.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
     extrFormat.nextElementSibling.nextElementSibling.querySelector(`#${extrFormat.options[0].innerHTML}`).classList.toggle('same-as-selected');
     
+    initWorker();
     initListeners();
     initSubs();
-    initWorker();
     initGomTree();
 }
 
@@ -60,7 +60,7 @@ async function loadCache() {
     let jsonObj = await JSON.parse(res);
     let json = jsonObj["nodeViewer"];
 
-    cache["loadPrototype"] = json["loadPrototype"];
+    cache["loadPrototypes"] = json["loadPrototypes"];
     cache["outputType"] = json["outputType"];
 
     if (json["output"] == "" || !fs.existsSync(json["output"])) {
@@ -119,7 +119,7 @@ function initListeners() {
     fqnField.addEventListener('change', (e) => { if (fqnField.value != "") GTree.getNodeByFQN(fqnField.value); });
     exportNode.addEventListener('click', (e) => { if (currentNode) currentNode.extract(cache['output'], cache['outputType']); });
     extrFormat.clickCallback = (e) => { updateCache('outputType', e.currentTarget.innerHTML); }
-    loadPrototypeNodes.addEventListener('click', (e) => { updateCache('loadPrototype', loadPrototypeNodes.checked); });
+    loadPrototypeNodes.addEventListener('click', (e) => { updateCache('loadPrototypes', loadPrototypeNodes.checked); });
     outputField.addEventListener('change', (e) => { updateCache('output', outputField.value); });
 }
 
@@ -127,13 +127,18 @@ function initWorker() {
     worker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "NodeWorker.js"), {
         type: "module"
     });
-    worker.postMessage({
-        "message": "init",
-        "data": resourcePath
-    });
+    worker.onerror = (e) => {
+        console.log(e);
+        throw new Error(`${e.message} on line ${e.lineno}`);
+    }
+    worker.onmessageerror = (e) => {
+        console.log(e);
+        throw new Error(`${e.message} on line ${e.lineno}`);
+    }
     worker.onmessage = (e) => {
         switch (e.data.message) {
             case "NODES":
+                console.log('hit nodes in worker');
                 for (const n of e.data.data) {
                     const node = new NodeEntr(n.node, n.torPath);
                     GTree.addNode(node);
@@ -151,6 +156,7 @@ function initWorker() {
                 }
                 break;
             case "decompressIonic":
+                console.log('decompressing Ionic');
                 const res = ipcRenderer.sendSync('decompressIonic', [e.data.data]);
                 worker.postMessage({
                     "message": 'decompressCompl',
@@ -159,6 +165,11 @@ function initWorker() {
                 break;
         }
     }
+
+    worker.postMessage({
+        "message": "init",
+        "data": resourcePath
+    });
 }
 
 function initSubs() {

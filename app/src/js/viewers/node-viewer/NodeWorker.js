@@ -420,7 +420,6 @@ function loadPrototypes(gomArchive, data, torPath, dv) {
                 const decompressed = decompressZlib({
                     buffer: blob.buffer
                 }, true);
-                console.log(new Int32Array(blob));
                 const node = loadPrototype(protId, new DataView(blob), torPath, file);
                 prototypes.push(node);
                 protoLoaded++;

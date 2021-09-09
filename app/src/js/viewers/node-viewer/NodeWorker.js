@@ -1,11 +1,10 @@
 import { hashlittle2, uint64, readString as readStr, readVarInt, uint64C } from "../../Util.js";
 import { GOM } from "../../classes/util/Gom.js";
 import { DomLoader } from "../../classes/DomLoaders.js";
-import { RawDeflate } from "../../externals/Inflate.js";;
 
 const path = require('path');
 const { promises: { readFile }, writeFileSync, readFileSync, existsSync, mkdirSync, unlinkSync } = require('fs');
-const edge = require('edge-js');
+const edge = require('electron-edge-js');
 
 const cache = {
     "configPath": "",

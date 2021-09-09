@@ -16,27 +16,7 @@ const cache = {
     },
     "store": {}
 }
-const decompressZlib = edge.func({
-    source: function() {/*
-        using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
-    
-        public class Startup
-        {
-            public async Task<object> Invoke(object input)
-            {
-                byte[] buffer = (byte[])input.buffer;
-                Stream stream = new Stream(buffer);
-                var inflaterStream = new InflaterInputStream(archiveStream);
-
-                byte[] decompressed = new byte[inflaterStream.Length];
-                inflaterStream.Read(decompressed, 0, inflaterStream.Length);
-
-                return decompressed;
-            }
-        }
-    */},
-    references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
-});
+let decompressZlib = function(){};
 
 onmessage = (e) => {
     console.log(e);
@@ -44,6 +24,24 @@ onmessage = (e) => {
         case "init":
             console.log('worker created.');
             cache['configPath'] = path.normalize(path.join(e.data.data, "config.json"));
+            decompressZlib = edge.func({
+                source: function() {/*
+                    using System.IO;
+                    using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+                
+                    async (dynamic input) => {
+                        byte[] buffer = (byte[])input.buffer;
+                        MemoryStream stream = new MemoryStream(buffer);
+                        InflaterInputStream inflaterStream = new InflaterInputStream(stream);
+        
+                        byte[] decompressed = new byte[(int)inflaterStream.Length];
+                        inflaterStream.Read(decompressed, 0, (int)inflaterStream.Length);
+        
+                        return decompressed;
+                    }
+                */},
+                references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
+            });
             break;
         case "loadNodes":
             // loadNodes(e.data.data.torFiles[1], false);

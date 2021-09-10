@@ -138,7 +138,6 @@ function initWorker() {
     worker.onmessage = (e) => {
         switch (e.data.message) {
             case "NODES":
-                console.log('hit nodes in worker');
                 for (const n of e.data.data) {
                     const node = new NodeEntr(n.node, n.torPath);
                     GTree.addNode(node);
@@ -155,13 +154,7 @@ function initWorker() {
                     }, 3000)
                 }
                 break;
-            case "decompressIonic":
-                console.log('decompressing Ionic');
-                const res = ipcRenderer.sendSync('decompressIonic', [e.data.data]);
-                worker.postMessage({
-                    "message": 'decompressCompl',
-                    "data": res
-                });
+            case "PROTO":
                 break;
         }
     }

@@ -9,11 +9,6 @@ const edge = require('electron-edge-js');
 const cache = {
     "configPath": "",
     "tmpPath": "",
-    "dump": {
-        "client": {},
-        "buckets": {},
-        "prototypes": {}
-    },
     "store": {}
 }
 let decompressZlib = function(){};
@@ -46,34 +41,11 @@ onmessage = (e) => {
             });
             break;
         case "loadNodes":
-            // loadNodes(e.data.data.torFiles[1], false);
-            loadNodes(e.data.data.torFiles[0], e.data.data.loadProts);
-            // if (e.data.data.loadProts) {
-            //     loadNodes(e.data.data.torFiles[0], false);
-            // }
-            // setTimeout(() => {
-            //     loadNodes(e.data.data.torFiles[0], e.data.data.loadProts);
-            // }, 100);
-            break;
-        case "decompressCompl":
-            const decompressedPath = e.data.data[1];
-            const resData = readFileSync(decompressedPath).buffer;
-            unlinkSync(decompressedPath);
-            if (e.data.data[0] == "clientGOM") {
-                const {gomArchive, data, torPath} = cache['dump']['client'];
-                cache['dump']['client'] = {};
-                loadClientGOM(gomArchive, data, torPath, new DataView(resData));
-            } else if (e.data.data[0] == "buckets") {
-                const {gomArchive, data, torPath} = cache['dump']['buckets'];
-                cache['dump']['buckets'] = {};
-                loadBuckets(gomArchive, data, torPath, new DataView(resData));
-            } else if (e.data.data[0] == "prototypes") {
-                const {gomArchive, data, torPath} = cache['dump']['prototypes'];
-                cache['dump']['prototypes'] = {};
-                loadPrototypes(gomArchive, data, torPath, new DataView(resData));
-            } else {
-                throw new Error("Unexpected compressed name");
+            loadNodes(e.data.data.torFiles[1], false);
+            if (e.data.data.loadProts) {
+                loadNodes(e.data.data.torFiles[0], false);
             }
+            loadNodes(e.data.data.torFiles[0], e.data.data.loadProts);
             break;
     }
 }
@@ -164,15 +136,12 @@ function findClientGOM(gomArchive, data, torPath) {
     const gomFileEntr = gomArchive.files[`${gomFileHash[1]}|${gomFileHash[0]}`];
 
     const dat = data.slice(gomFileEntr.offset, gomFileEntr.offset + (gomFileEntr.isCompressed ? gomFileEntr.comprSize : gomFileEntr.size));
-    let blob = null;
     if (gomFileEntr.isCompressed) {
-        cache['dump']['client']['gomArchive'] = gomArchive;
-        cache['dump']['client']['data'] = data;
-        cache['dump']['client']['torPath'] = torPath;
-        ionicDecompress(path.join(cache['tmpPath'], 'client.gom'), new Uint8Array(dat), 'clientGOM');
-    } else {
-        blob = dat;
-        const infoDV = new DataView(blob);
+        const decompressed = decompressZlib({
+            buffer: Buffer.from(dat),
+            dataLength: gomFileEntr.size
+        }, true);
+        const infoDV = new DataView(decompressed.buffer);
         loadClientGOM(gomArchive, data, torPath, infoDV);
     }
 }
@@ -246,15 +215,12 @@ function findGom(gomArchive, data, torPath) {
     const bucketInfoEntr = gomArchive.files[`${bucketInfoHash[1]}|${bucketInfoHash[0]}`];
 
     const dat = data.slice(bucketInfoEntr.offset, bucketInfoEntr.offset + (bucketInfoEntr.isCompressed ? bucketInfoEntr.comprSize : bucketInfoEntr.size));
-    let blob = null;
     if (bucketInfoEntr.isCompressed) {
-        cache['dump']['buckets']['gomArchive'] = gomArchive;
-        cache['dump']['buckets']['data'] = data;
-        cache['dump']['buckets']['torPath'] = torPath;
-        ionicDecompress(path.join(cache['tmpPath'], 'buckets.info'), new Uint8Array(dat), 'buckets');
-    } else {
-        blob = dat;
-        const infoDV = new DataView(blob);
+        const decompressed = decompressZlib({
+            buffer: Buffer.from(dat),
+            dataLength: bucketInfoEntr.size
+        }, true);
+        const infoDV = new DataView(decompressed.buffer);
         loadBuckets(gomArchive, data, torPath, infoDV);
     }
 }
@@ -304,6 +270,10 @@ function loadBucket(bktIdx, dv, torPath, bktFile) {
         });
     let pos = 8;
     const length = dv.byteLength - 12;
+    readAllItems(dv, pos, length, torPath, bktIdx, bktFile, true);
+}
+
+function readAllItems(dv, pos, length, torPath, bktIdx, bktFile, isBucket) {
     const nodes = [];
     while (pos < length) {
         const dblbLength = dv.getUint32(pos, !0);
@@ -351,7 +321,11 @@ function loadBucket(bktIdx, dv, torPath, bktFile) {
             node.id = id;
             node.fqn = name;
             node.baseClass = baseClass;
-            node.bkt = {...bktFile, "bktIdx": bktIdx};
+            if (isBucket) {
+                node.bkt = {...bktFile, "bktIdx": bktIdx};
+            } else {
+                node.client = {...bktFile, "clientIdx": bktIdx};
+            }
             node.isBucket = !0;
             node.dataOffset = startOffset + dataOffset;
             node.dataLength = dataLength;
@@ -376,15 +350,12 @@ function findPrototypes(gomArchive, data, torPath) {
     const protInfoEntr = gomArchive.files[`${protInfoHash[1]}|${protInfoHash[0]}`];
 
     const dat = data.slice(protInfoEntr.offset, protInfoEntr.offset + (protInfoEntr.isCompressed ? protInfoEntr.comprSize : protInfoEntr.size));
-    let blob = null;
     if (protInfoEntr.isCompressed) {
-        cache['dump']['prototypes']['gomArchive'] = gomArchive;
-        cache['dump']['prototypes']['data'] = data;
-        cache['dump']['prototypes']['torPath'] = torPath;
-        ionicDecompress(path.join(cache['tmpPath'], 'prototypes.info'), new Uint8Array(dat), 'prototypes');
-    } else {
-        blob = dat;
-        const infoDV = new DataView(blob);
+        const decompressed = decompressZlib({
+            buffer: Buffer.from(dat),
+            dataLength: protInfoEntr.size
+        }, true);
+        const infoDV = new DataView(decompressed.buffer);
         loadPrototypes(gomArchive, data, torPath, infoDV);
     }
 }
@@ -506,8 +477,8 @@ function readString(dv, pos) {
     }
     return outName
 }
-function readLengthPrefixString(dv, pos, length) {
-    const strLength = length | readVarInt(dv, pos);
+function readLengthPrefixString(dv, pos) {
+    const strLength = readVarInt(dv, pos);
     return [readStr(dv.buffer, pos + strLength.len, strLength.intLo), strLength.len + strLength.intLo];
 }
 async function getTmpFilePath() {

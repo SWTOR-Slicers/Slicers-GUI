@@ -34,8 +34,10 @@ onmessage = (e) => {
                         MemoryStream stream = new MemoryStream(buffer);
                         InflaterInputStream inflaterStream = new InflaterInputStream(stream);
         
-                        byte[] decompressed = new byte[(int)inflaterStream.Length];
-                        inflaterStream.Read(decompressed, 0, (int)inflaterStream.Length);
+                        byte[] decompressed = new byte[(int)input.dataLength];
+                        inflaterStream.Read(decompressed, 0, (int)input.dataLength);
+                        inflaterStream.Dispose();
+                        stream.Close();
         
                         return decompressed;
                     }
@@ -416,11 +418,19 @@ function loadPrototypes(gomArchive, data, torPath, dv) {
             const file = gomArchive.files[`${hashArr[1]}|${hashArr[0]}`];
 
             if (file) {
-                const blob = data.slice(file.offset, file.offset + file.comprSize);
-                const decompressed = decompressZlib({
-                    buffer: blob.buffer
-                }, true);
-                const node = loadPrototype(protId, new DataView(blob), torPath, file);
+                let fData = null;
+                if (file.isCompressed) {
+                    const blob = data.slice(file.offset, file.offset + file.comprSize);
+                    const decompressed = decompressZlib({
+                        buffer: Buffer.from(blob),
+                        dataLength: file.size
+                    }, true);
+                    fData = decompressed.buffer;
+                } else {
+                    const blob = data.slice(file.offset, file.offset + file.size);
+                    fData = blob;
+                }
+                const node = loadPrototype(protId, new DataView(fData), torPath, file);
                 prototypes.push(node);
                 protoLoaded++;
             }
@@ -449,29 +459,26 @@ function loadPrototype(id, dv, torPath, prototype) {
     pos += 8;
     const nameLen = dv.getInt32(pos, true);
     pos += 4;
-    node.fqn = GOM.fields[node.Id];
-    node.Name = readString(dv, pos);
+    node.fqn = readStr(dv.buffer, pos, nameLen-1); //readString(dv, pos)
+    pos += nameLen-1;
     pos++;
 
     pos++;
 
-    // reader.ReadInt32();
     pos += 4;
 
-    // reader.ReadInt32();
     pos += 4;
     
-    // reader.ReadInt32();
     pos += 4;
 
-    const baseClassRes = readVarInt(dv, pos);
-    node.baseClass = uint64C(baseClassRes);
-    pos += baseClassRes.len;
+    node.baseClass = dv.getBigUint64(pos, true);
+    pos += 8;
 
-    // reader.ReadBytes(0x8);
     pos += 8;
 
     node.ObjectSizeInFile = dv.getInt32(pos, true); // 0x24
+    pos += 4;
+
     node.IsCompressed = false;
     node.dataOffset = 20 + nameLen + 33; // 8 byte file header + node ID + nameLen + node name + 33 byte node header
 
@@ -481,50 +488,10 @@ function loadPrototype(id, dv, torPath, prototype) {
         node.dataLength = 0;
     }
 
-    // const startOffset = pos;
-    // const tmpLength = dv.getUint32(pos, !0);
-    // pos += 4;
-    // if (tmpLength === 0)
-    //     break;
-    // pos += 4;
-    // const idLo = dv.getUint32(pos, !0);
-    // pos += 4;
-    // const idHi = dv.getUint32(pos, !0);
-    // pos += 4;
-    // const id = uint64(idLo, idHi);
-    // const type = dv.getUint16(pos, !0);
-    // pos += 2;
-    // const dataOffset = dv.getUint16(pos, !0);
-    // pos += 2;
-    // const nameOffset = dv.getUint16(pos, !0);
-    // pos += 2;
-    // pos += 2;
-    // const baseClassLo = dv.getUint32(pos, !0);
-    // pos += 4;
-    // const baseClassHi = dv.getUint32(pos, !0);
-    // pos += 4;
-    // const baseClass = uint64(baseClassLo, baseClassHi);
-    // pos += 8;
-    // const uncomprLength = dv.getUint16(pos, !0);
-    // pos += 2;
-    // pos += 2;
-    // const uncomprOffset = dv.getUint16(pos, !0);
-    // pos += 2;
-    // pos += 2;
-    // const streamStyle = dv.getUint8(pos++);
-    // const name = readString(dv, startOffset + nameOffset);
-    // const dataLength = tmpLength - dataOffset;
-    // const node = {};
-    // node.id = id;
-    // node.fqn = name;
-    // node.baseClass = baseClass;
-    // node.bkt = {...bktFile, "bktIdx": bktIdx};
-    // node.isBucket = !0;
-    // node.dataOffset = startOffset + dataOffset;
-    // node.dataLength = dataLength;
-    // node.contentOffset = uncomprOffset - dataOffset;
-    // node.uncomprLength = uncomprLength;
-    // node.streamStyle = streamStyle;
+    node.proto = {
+        "id": id,
+        "data": prototype
+    }
     node.torPath = torPath;
 
     return node;

@@ -2,6 +2,7 @@ import { GOM } from "./util/Gom.js";
 import { RawDeflate } from "../externals/Inflate.js";
 import { readVarInt, uint64_add, uint64C, assert, cleanString, readString, serializeMap } from "../Util.js";
 import { log } from "../universal/Logger.js";
+import { DomLoader } from "./DomLoaders.js";
 
 const fs = require('fs');
 const path = require('path');
@@ -588,6 +589,9 @@ class Node {
                 prevId = uint64_add(prevId, uint64C(idOffset));
                 field.id = prevId;
                 field.type = dv.getUint8(pos++);
+                if (field.type == 5) {
+                    console.log("yeet");
+                }
                 const fieldRet = fileNodeReadfield(dv, pos, prevId, field.type);
                 pos += fieldRet.len;
                 field.value = fieldRet.val;

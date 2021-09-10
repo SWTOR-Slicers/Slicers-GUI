@@ -14,10 +14,8 @@ const cache = {
 let decompressZlib = function(){};
 
 onmessage = (e) => {
-    console.log(e);
     switch (e.data.message) {
         case "init":
-            console.log('worker created.');
             cache['configPath'] = path.normalize(path.join(e.data.data, "config.json"));
             decompressZlib = edge.func({
                 source: function() {/*
@@ -41,7 +39,7 @@ onmessage = (e) => {
             });
             break;
         case "loadNodes":
-            loadNodes(e.data.data.torFiles[1], false);
+            // loadNodes(e.data.data.torFiles[1], false);
             if (e.data.data.loadProts) {
                 loadNodes(e.data.data.torFiles[0], false);
             }
@@ -142,7 +140,7 @@ function findClientGOM(gomArchive, data, torPath) {
             dataLength: gomFileEntr.size
         }, true);
         const infoDV = new DataView(decompressed.buffer);
-        loadClientGOM(gomArchive, data, torPath, infoDV);
+        loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr);
     }
 }
 /**
@@ -152,7 +150,7 @@ function findClientGOM(gomArchive, data, torPath) {
  * @param {String} torPath File path of the gom archive .tor file.
  * @param {DataView} infoDV DataView representing the gom archive .tor file.
  */
-function loadClientGOM(gomArchive, data, torPath, infoDV) {
+function loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr) {
     const DomElements = [];
 
     let pos = 0
@@ -204,6 +202,7 @@ function loadClientGOM(gomArchive, data, torPath, infoDV) {
         pos = iniPos + defLength + padding;
     }
 
+    console.log(DomElements);
     postMessage({
         "message": 'DomElements',
         "data": DomElements
@@ -491,11 +490,4 @@ async function getTmpFilePath() {
         });
     }
     return resPath;
-}
-function ionicDecompress(path, data, type) {
-    writeFileSync(path, data);
-    postMessage({
-        "message": 'decompressIonic',
-        "data": [type, path]
-    });
 }

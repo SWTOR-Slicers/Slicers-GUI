@@ -3,7 +3,7 @@ import { GOM } from "../../classes/util/Gom.js";
 import { DomLoader } from "../../classes/DomLoaders.js";
 
 const path = require('path');
-const { promises: { readFile }, writeFileSync, readFileSync, existsSync, mkdirSync, unlinkSync } = require('fs');
+const { promises: { readFile }, readFileSync, existsSync, mkdirSync } = require('fs');
 const edge = require('electron-edge-js');
 
 const cache = {
@@ -400,17 +400,25 @@ function loadPrototypes(gomArchive, data, torPath, dv) {
                     const blob = data.slice(file.offset, file.offset + file.size);
                     fData = blob;
                 }
-                const node = loadPrototype(protId, new DataView(fData), torPath, file);
-                prototypes.push(node);
+                const node = loadPrototype(protId, new DataView(fData), file);
+                prototypes.push({
+                    "node": node,
+                    "torPath": torPath
+                });
                 protoLoaded++;
             }
         }
     }
 
-    console.log(prototypes);
-    console.log(protoLoaded);
+    postMessage({
+        "message": 'PROTO',
+        "data": {
+            "nodes": prototypes,
+            "numLoaded": protoLoaded
+        }
+    });
 }
-function loadPrototype(id, dv, torPath, prototype) {
+function loadPrototype(id, dv, prototype) {
     let pos = 0;
 
     // Check PROT
@@ -425,7 +433,7 @@ function loadPrototype(id, dv, torPath, prototype) {
     pos += 4; // Skip 4 bytes
 
     const node = {};
-    node.Id = dv.getBigUint64(pos, true);
+    node.id = dv.getBigUint64(pos, true);
     pos += 8;
     const nameLen = dv.getInt32(pos, true);
     pos += 4;
@@ -446,23 +454,23 @@ function loadPrototype(id, dv, torPath, prototype) {
 
     pos += 8;
 
-    node.ObjectSizeInFile = dv.getInt32(pos, true); // 0x24
+    node.objectSizeInFile = dv.getInt32(pos, true); // 0x24
     pos += 4;
 
-    node.IsCompressed = false;
+    node.isCompressed = false;
     node.dataOffset = 20 + nameLen + 33; // 8 byte file header + node ID + nameLen + node name + 33 byte node header
 
-    if (node.ObjectSizeInFile > 0) {
-        node.dataLength = node.ObjectSizeInFile;
+    if (node.objectSizeInFile > 0) {
+        node.dataLength = node.objectSizeInFile;
     } else {
         node.dataLength = 0;
     }
 
     node.proto = {
         "id": id,
-        "data": prototype
+        "data": prototype,
+        "decomprFunc": decompressZlib
     }
-    node.torPath = torPath;
 
     return node;
 }

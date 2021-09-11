@@ -2,7 +2,6 @@ import { GOM } from "./util/Gom.js";
 import { RawDeflate } from "../externals/Inflate.js";
 import { readVarInt, uint64_add, uint64C, assert, cleanString, readString, serializeMap } from "../Util.js";
 import { log } from "../universal/Logger.js";
-import { DomLoader } from "./DomLoaders.js";
 
 const fs = require('fs');
 const path = require('path');
@@ -564,6 +563,103 @@ class Node {
      */
     constructor(node, data) {
         this.fqn = node.fqn;
+        this.uncompressedSize = node.uncomprLength;
+        const comprArray = new Uint8Array(data);
+        this.compressedSize = comprArray.length;
+        node.uncomprBuffLength = 0x500000;
+        const uncomprBuffer = new ArrayBuffer(node.uncomprBuffLength);
+        RawDeflate.inflate(comprArray, uncomprBuffer);
+        const dv = new DataView(uncomprBuffer.buffer);
+        let pos = node.contentOffset;
+        if (node.uncomprBuffLength > 0) {
+            if (node.streamStyle >= 1 && node.streamStyle <= 6) {
+                const unkO = readVarInt(dv, pos);
+                pos += unkO.len
+            }
+            const numFieldsO = readVarInt(dv, pos);
+            pos += numFieldsO.len;
+            const numFields = numFieldsO.intLo;
+            const obj = [];
+            let prevId = '0';
+            for (let i = 0; i < numFields; i++) {
+                const field = {};
+                const idOffset = readVarInt(dv, pos);
+                pos += idOffset.len;
+                prevId = uint64_add(prevId, uint64C(idOffset));
+                field.id = prevId;
+                field.type = dv.getUint8(pos++);
+                if (field.type == 5) {
+                    console.log("yeet");
+                }
+                const fieldRet = fileNodeReadfield(dv, pos, prevId, field.type);
+                pos += fieldRet.len;
+                field.value = fieldRet.val;
+                obj.push(field)
+            }
+            this.node = node;
+            this.obj = obj;
+        }
+    }
+
+    render(parent, dataContainer) {
+        const data = parseNode(this.node, this.obj);
+        parent.appendChild(data);
+
+        dataContainer.innerHTML = `
+        <div class="data-entr-cont">
+            <div class="data-entr-label">Parent:</div>
+            <div class="data-entr-val">${(this.fqn.indexOf(".") > -1) ? this.fqn.substr(0, this.fqn.lastIndexOf(".")) : "none"}</div>
+        </div>
+        <div class="data-entr-cont">
+            <div class="data-entr-label">Compressed:</div>
+            <div class="data-entr-val">${this.compressedSize} B</div>
+        </div>
+        <div class="data-entr-cont">
+            <div class="data-entr-label">Uncompressed:</div>
+            <div class="data-entr-val">${this.uncompressedSize} B</div>
+        </div>
+        <div class="data-entr-cont">
+            <div class="data-entr-label">Node Type:</div>
+            <div class="data-entr-val">Bucket</div>
+        </div>
+        `;
+    }
+
+    extract(dest, type) {
+        let data;
+        switch (type) {
+            case "raw":
+                const dat = fs.readFileSync(this.node.torPath);
+                data = dat.buffer.slice(this.node.bkt.offset + this.node.dataOffset + 2, this.node.bkt.offset + this.node.dataOffset + this.node.dataLength - 4);
+                break;
+            case "xml":
+                data = convertToXML(this.obj, this.node);
+                break;
+            case "json":
+                data = JSON.stringify(convertToJSON(this.obj, this.node), serializeMap, '\t');
+                break;
+        }
+
+        if (fs.existsSync(dest)) {
+            if (data) {
+                fs.writeFileSync(path.join(dest, `${this.fqn}.${type == "raw" ? "node" : type}`), data);
+            } else {
+                log("Error reading the node data: data is null.", "error");
+            }
+        } else {
+            log("Invalid node extract path.", "error");
+        }
+    }
+}
+
+class ProtoNode {
+    /**
+     * An object wrapper for the TOR GOM Node type.
+     * @param  {NodeEntr} node Node entry representing the table entry for this node.
+     * @param  {Uint8Array} data The sliced data represeting the node itself.
+     */
+    constructor(node, data) {
+        this.fqn = node.fqn;
         this.uncompressedSize = node.uncomprLength
         const comprArray = new Uint8Array(data);
         this.compressedSize = comprArray.length;
@@ -619,6 +715,10 @@ class Node {
             <div class="data-entr-label">Uncompressed:</div>
             <div class="data-entr-val">${this.uncompressedSize} B</div>
         </div>
+        <div class="data-entr-cont">
+            <div class="data-entr-label">Node Type:</div>
+            <div class="data-entr-val">Prototype</div>
+        </div>
         `;
     }
 
@@ -627,7 +727,20 @@ class Node {
         switch (type) {
             case "raw":
                 const dat = fs.readFileSync(this.node.torPath);
-                data = dat.buffer.slice(this.node.bkt.offset + this.node.dataOffset + 2, this.node.bkt.offset + this.node.dataOffset + this.node.dataLength - 4);
+                let torData = null;
+                if (this.node.proto.data.isCompressed) {
+                    const blob = dat.slice(this.node.proto.data.offset, this.node.proto.data.offset + this.node.proto.data.comprSize);
+                    const decompressed = this.node.proto.decomprFunc({
+                        buffer: Buffer.from(blob),
+                        dataLength: this.node.proto.data.size
+                    }, true);
+                    torData = decompressed.buffer;
+                } else {
+                    const blob = dat.slice(this.node.proto.data.offset, this.node.proto.data.offset + this.node.proto.data.size);
+                    torData = blob;
+                }
+
+                data = torData.buffer.slice(this.dataOffset + 2, this.dataOffset + this.dataLength - 4);
                 break;
             case "xml":
                 data = convertToXML(this.obj, this.node);
@@ -654,7 +767,7 @@ class NodeEntr {
         this.id = nodeJson.id;
         this.fqn = nodeJson.fqn;
         this.baseClass = nodeJson.baseClass;
-        this.bkt = nodeJson.bkt
+        this[nodeJson.isBucket ? 'bkt' : 'proto'] = nodeJson.isBucket ? nodeJson.bkt : nodeJson.proto;
         this.isBucket = nodeJson.isBucket;
         this.dataOffset = nodeJson.dataOffset;
         this.dataLength = nodeJson.dataLength;
@@ -666,17 +779,41 @@ class NodeEntr {
 
     render(parent, dataContainer, ref) {
         ref = this;
-        if (!this.isBucket) return
-        parent.innerHTML = "";
+        if (this.isBucket) {
+            parent.innerHTML = "";
 
-        if (!this.node) {
-            const data = fs.readFileSync(this.torPath);
+            if (!this.node) {
+                const data = fs.readFileSync(this.torPath);
 
-            const blob = data.buffer.slice(this.bkt.offset + this.dataOffset + 2, this.bkt.offset + this.dataOffset + this.dataLength - 4);
-            const node = new Node(this, blob);
-            this.node = node;
+                const blob = data.buffer.slice(this.bkt.offset + this.dataOffset + 2, this.bkt.offset + this.dataOffset + this.dataLength - 4);
+                const node = new Node(this, blob);
+                this.node = node;
+            }
+            this.node.render(parent, dataContainer);
+        } else {
+            parent.innerHTML = "";
+
+            if (!this.node) {
+                const data = fs.readFileSync(this.torPath);
+                let torData = null;
+                if (this.proto.data.isCompressed) {
+                    const blob = data.slice(this.proto.data.offset, this.proto.data.offset + this.proto.data.comprSize);
+                    const decompressed = this.proto.decomprFunc({
+                        buffer: Buffer.from(blob),
+                        dataLength: this.proto.data.size
+                    }, true);
+                    torData = decompressed.buffer;
+                } else {
+                    const blob = data.slice(this.proto.data.offset, this.proto.data.offset + this.proto.data.size);
+                    torData = blob;
+                }
+
+                const blob = torData.buffer.slice(this.dataOffset + 2, this.dataOffset + this.dataLength - 4);
+                const node = new ProtoNode(this, blob);
+                this.node = node;
+            }
+            this.node.render(parent, dataContainer);
         }
-        this.node.render(parent, dataContainer);
     }
 }
 

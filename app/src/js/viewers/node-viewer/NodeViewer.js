@@ -155,6 +155,10 @@ function initWorker() {
                 }
                 break;
             case "PROTO":
+                for (const n of e.data.data.nodes) {
+                    const node = new NodeEntr(n.node, n.torPath);
+                    GTree.addNode(node);
+                }
                 break;
         }
     }

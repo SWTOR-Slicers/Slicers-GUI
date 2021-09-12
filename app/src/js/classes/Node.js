@@ -656,19 +656,13 @@ class ProtoNode {
     /**
      * An object wrapper for the TOR GOM Node type.
      * @param  {NodeEntr} node Node entry representing the table entry for this node.
-     * @param  {Uint8Array} data The sliced data represeting the node itself.
+     * @param  {ArrayBuffer} data The sliced data represeting the node itself.
      */
     constructor(node, data) {
         this.fqn = node.fqn;
-        this.uncompressedSize = node.uncomprLength
-        const comprArray = new Uint8Array(data);
-        this.compressedSize = comprArray.length;
-        node.uncomprBuffLength = 0x500000;
-        const uncomprBuffer = new ArrayBuffer(node.uncomprBuffLength);
-        RawDeflate.inflate(comprArray, uncomprBuffer);
-        const dv = new DataView(uncomprBuffer);
-        let pos = node.contentOffset;
-        if (node.uncomprBuffLength > 0) {
+        const dv = new DataView(data);
+        let pos = node.dataOffset;
+        if (node.dataLength > 0) {
             if (node.streamStyle >= 1 && node.streamStyle <= 6) {
                 const unkO = readVarInt(dv, pos);
                 pos += unkO.len
@@ -709,11 +703,11 @@ class ProtoNode {
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Compressed:</div>
-            <div class="data-entr-val">${this.compressedSize} B</div>
+            <div class="data-entr-val">${this.node.proto.comprSize} B</div>
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Uncompressed:</div>
-            <div class="data-entr-val">${this.uncompressedSize} B</div>
+            <div class="data-entr-val">${this.node.proto.size} B</div>
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Node Type:</div>
@@ -730,17 +724,17 @@ class ProtoNode {
                 let torData = null;
                 if (this.node.proto.data.isCompressed) {
                     const blob = dat.slice(this.node.proto.data.offset, this.node.proto.data.offset + this.node.proto.data.comprSize);
-                    const decompressed = this.node.proto.decomprFunc({
+                    const decompressed = this.node.decomprFunc({
                         buffer: Buffer.from(blob),
                         dataLength: this.node.proto.data.size
-                    }, true);
+                    });
                     torData = decompressed.buffer;
                 } else {
                     const blob = dat.slice(this.node.proto.data.offset, this.node.proto.data.offset + this.node.proto.data.size);
                     torData = blob;
                 }
 
-                data = torData.buffer.slice(this.dataOffset + 2, this.dataOffset + this.dataLength - 4);
+                data = torData.slice(this.dataOffset + 2, this.dataOffset + this.dataLength - 4);
                 break;
             case "xml":
                 data = convertToXML(this.obj, this.node);
@@ -763,7 +757,7 @@ class ProtoNode {
 }
 
 class NodeEntr {
-    constructor(nodeJson, torPath) {
+    constructor(nodeJson, torPath, decomprFunc) {
         this.id = nodeJson.id;
         this.fqn = nodeJson.fqn;
         this.baseClass = nodeJson.baseClass;
@@ -775,6 +769,9 @@ class NodeEntr {
         this.uncomprLength = nodeJson.uncomprLength;
         this.streamStyle = nodeJson.streamStyle;
         this.torPath = torPath;
+        if (decomprFunc) {
+            this.decomprFunc = decomprFunc;
+        }
     }
 
     render(parent, dataContainer, ref) {
@@ -798,17 +795,17 @@ class NodeEntr {
                 let torData = null;
                 if (this.proto.data.isCompressed) {
                     const blob = data.slice(this.proto.data.offset, this.proto.data.offset + this.proto.data.comprSize);
-                    const decompressed = this.proto.decomprFunc({
+                    const decompressed = this.decomprFunc({
                         buffer: Buffer.from(blob),
                         dataLength: this.proto.data.size
-                    }, true);
+                    });
                     torData = decompressed.buffer;
                 } else {
                     const blob = data.slice(this.proto.data.offset, this.proto.data.offset + this.proto.data.size);
                     torData = blob;
                 }
 
-                const blob = torData.buffer.slice(this.dataOffset + 2, this.dataOffset + this.dataLength - 4);
+                const blob = torData.slice(this.dataOffset + 2, this.dataOffset + this.dataLength - 4);
                 const node = new ProtoNode(this, blob);
                 this.node = node;
             }

@@ -3,6 +3,7 @@
 
 const {app, BrowserWindow, dialog, ipcMain, screen, shell} = require('electron');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+process.env.ELECTRON_ENABLE_LOGGING = true;
 
 const fs = require('fs');
 const ChildProcess = require('child_process');
@@ -10,6 +11,7 @@ const path = require('path');
 const child = require('child_process');
 const dateTime = require('node-datetime');
 const UUID = require('uuid');
+const edge = require('electron-edge-js');
 const uuidV4 = UUID.v4;
 
 if (handleSquirrelEvent()) {
@@ -1059,6 +1061,9 @@ function initNodeViewer () {
 }
 function initNodeViewerListeners(window) {
   ipcMain.on('readAllNodes', (event, data) => { readAllNodes(); });
+  ipcMain.on('decompressZlib', async (event, data) => {
+    event.returnValue = await decompressZlib(data[0], data[1]);
+  });
 }
 
 
@@ -1343,4 +1348,29 @@ async function copyFileViaStream(progBarId, tPath, dPath, cSize, tSize) {
       reject([500, cSize]);
     });
   });
+}
+async function decompressZlib(srcPath, params) {
+  const decomprFunc = edge.func({
+      source: function() {/*
+          using System.IO;
+          using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+      
+          async (dynamic input) => {
+              byte[] buffer = (byte[])input.buffer;
+              MemoryStream stream = new MemoryStream(buffer);
+              InflaterInputStream inflaterStream = new InflaterInputStream(stream);
+
+              byte[] decompressed = new byte[(int)input.dataLength];
+              inflaterStream.Read(decompressed, 0, (int)input.dataLength);
+              inflaterStream.Dispose();
+              stream.Close();
+
+              return decompressed;
+          }
+      */},
+      references: [ `${path.join(srcPath, 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
+  });
+  const data = decomprFunc(params, true);
+  
+  return data;
 }

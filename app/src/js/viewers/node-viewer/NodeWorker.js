@@ -41,7 +41,7 @@ onmessage = (e) => {
         case "loadNodes":
             // loadNodes(e.data.data.torFiles[1], false);
             if (e.data.data.loadProts) {
-                loadNodes(e.data.data.torFiles[0], false);
+                // loadNodes(e.data.data.torFiles[0], false);
             }
             loadNodes(e.data.data.torFiles[0], e.data.data.loadProts);
             break;
@@ -143,13 +143,6 @@ function findClientGOM(gomArchive, data, torPath) {
         loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr);
     }
 }
-/**
- * Loads the client gom nodes.
- * @param {Object} gomArchive An object representing the gom archive file table.
- * @param {ArrayBuffer} data Raw arraybuffer representing the gom archive .tor file.
- * @param {String} torPath File path of the gom archive .tor file.
- * @param {DataView} infoDV DataView representing the gom archive .tor file.
- */
 function loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr) {
     const DomElements = [];
 
@@ -271,7 +264,6 @@ function loadBucket(bktIdx, dv, torPath, bktFile) {
     const length = dv.byteLength - 12;
     readAllItems(dv, pos, length, torPath, bktIdx, bktFile, true);
 }
-
 function readAllItems(dv, pos, length, torPath, bktIdx, bktFile, isBucket) {
     const nodes = [];
     while (pos < length) {
@@ -468,9 +460,9 @@ function loadPrototype(id, dv, prototype) {
 
     node.proto = {
         "id": id,
-        "data": prototype,
-        "decomprFunc": decompressZlib
+        "data": prototype
     }
+    node.isBucket = false;
 
     return node;
 }

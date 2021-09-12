@@ -123,6 +123,10 @@ function initListeners() {
     outputField.addEventListener('change', (e) => { updateCache('output', outputField.value); });
 }
 
+const decomprFunc = (params) => {
+    return ipcRenderer.sendSync('decompressZlib', [resourcePath, params]);
+}
+
 function initWorker() {
     worker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "NodeWorker.js"), {
         type: "module"
@@ -155,10 +159,14 @@ function initWorker() {
                 }
                 break;
             case "PROTO":
-                for (const n of e.data.data.nodes) {
-                    const node = new NodeEntr(n.node, n.torPath);
-                    GTree.addNode(node);
-                }
+                const testProto = new NodeEntr(e.data.data.nodes[0].node, e.data.data.nodes[0].torPath, decomprFunc);
+                testProto.render(viewDisplay, dataContainer, {
+                    "val": "placeholder"
+                });
+                // for (const n of e.data.data.nodes) {
+                //     const node = new NodeEntr(n.node, n.torPath);
+                //     GTree.addNode(node);
+                // }
                 break;
         }
     }
@@ -193,4 +201,4 @@ function initGomTree() {
     ipcRenderer.send('readAllNodes');
 }
 
-init()
+init();

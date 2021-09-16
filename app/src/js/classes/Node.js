@@ -560,8 +560,9 @@ class Node {
      * An object wrapper for the TOR GOM Node type.
      * @param  {NodeEntr} node Node entry representing the table entry for this node.
      * @param  {Uint8Array} data The sliced data represeting the node itself.
+     * @param  {Object} _dom Representation of the ClientGOM that is used to look up info.
      */
-    constructor(node, data) {
+    constructor(node, data, _dom) {
         this.fqn = node.fqn;
         this.uncompressedSize = node.uncomprLength;
         const comprArray = new Uint8Array(data);
@@ -621,7 +622,7 @@ class Node {
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Num Fields:</div>
-            <div class="data-entr-val">${this.numFields} B</div>
+            <div class="data-entr-val">${this.numFields}</div>
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Node Type:</div>
@@ -686,7 +687,6 @@ class ProtoNode {
                 fieldId = fieldId + BigInt(fieldIdComp);
 
                 let field = _dom['3'][fieldId];
-                field.id = fieldId;
                 let fieldType;
                 if (!field) {
                     field = {};
@@ -705,14 +705,17 @@ class ProtoNode {
 
                 const fieldValue = fileNodeReadfield(dv, pos, fieldId, fieldType);
                 pos += fieldValue.len;
-                field.value = fieldValue.val;
 
                 // Save data to resulting script object
                 const fieldName = field.name || GOM.fields[fieldId] || field.id;
-                field.name = fieldName;
-                delete field.fqn;
 
-                obj.push(field);
+                const fieldRet = {};
+                fieldRet.id = fieldId;
+                fieldRet.name = fieldName;
+                fieldRet.type = fieldType;
+                fieldRet.value = fieldValue.val;
+
+                obj.push(fieldRet);
             }
 
             this.node = node;
@@ -739,7 +742,7 @@ class ProtoNode {
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Num Fields:</div>
-            <div class="data-entr-val">${this.numFields} B</div>
+            <div class="data-entr-val">${this.numFields}</div>
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Node Type:</div>
@@ -821,7 +824,7 @@ class NodeEntr {
                 const data = fs.readFileSync(this.torPath);
 
                 const blob = data.buffer.slice(this.bkt.offset + this.dataOffset + 2, this.bkt.offset + this.dataOffset + this.dataLength - 4);
-                const node = new Node(this, blob);
+                const node = new Node(this, blob, this._dom);
                 this.node = node;
             }
             this.node.render(parent, dataContainer);

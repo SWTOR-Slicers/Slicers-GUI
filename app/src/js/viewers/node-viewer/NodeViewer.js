@@ -147,7 +147,7 @@ function initWorker() {
                 break;
             case "NODES":
                 for (const n of e.data.data) {
-                    const node = new NodeEntr(n.node, n.torPath, decomprFunc);
+                    const node = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
                     GTree.addNode(node);
                 }
                 GTree.nodeTree.loadedBuckets++;
@@ -163,15 +163,13 @@ function initWorker() {
                 }
                 break;
             case "PROTO":
-                const testProto = new NodeEntr(e.data.data.nodes[0].node, e.data.data.nodes[0].torPath, _dom, decomprFunc);
-                GTree.addNode(testProto);
-                testProto.render(viewDisplay, dataContainer, {
-                    "val": "placeholder"
-                });
-                // for (const n of e.data.data.nodes) {
-                //     const node = new NodeEntr(n.node, n.torPath);
-                //     GTree.addNode(node);
-                // }
+                for (const n of e.data.data.nodes) {
+                    const testProto = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
+                    GTree.addNode(testProto);
+                }
+                nodesByFqn.$F.sort(nodeFolderSort);
+                GTree.nodeTree.resizefull();
+                GTree.nodeTree.redraw();
                 break;
         }
     }

@@ -39,7 +39,7 @@ onmessage = (e) => {
             });
             break;
         case "loadNodes":
-            loadNodes(e.data.data.torFiles[1], false); // This works but it is disabled since I dont have a use for it and it makes loading time slower. I believe it is a lookup for all the GOM Node field ids, to get their name, value, and type.
+            loadNodes(e.data.data.torFiles[1], false);
             if (e.data.data.loadProts) {
                 loadNodes(e.data.data.torFiles[0], false);
             }

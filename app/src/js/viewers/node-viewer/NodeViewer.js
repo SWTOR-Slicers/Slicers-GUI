@@ -39,6 +39,7 @@ const cache = {
     "outputType": "raw"
 }
 let worker;
+let _dom = null;
 
 async function init() {
     await loadCache();
@@ -141,9 +142,12 @@ function initWorker() {
     }
     worker.onmessage = (e) => {
         switch (e.data.message) {
+            case "DomElements":
+                _dom = e.data.data;
+                break;
             case "NODES":
                 for (const n of e.data.data) {
-                    const node = new NodeEntr(n.node, n.torPath);
+                    const node = new NodeEntr(n.node, n.torPath, decomprFunc);
                     GTree.addNode(node);
                 }
                 GTree.nodeTree.loadedBuckets++;
@@ -155,11 +159,11 @@ function initWorker() {
                     document.getElementById('numBucketsLeft').innerHTML = "Done";
                     setTimeout(() => {
                         document.getElementById('numBucketsLeft').innerHTML = "";
-                    }, 3000)
+                    }, 2000);
                 }
                 break;
             case "PROTO":
-                const testProto = new NodeEntr(e.data.data.nodes[0].node, e.data.data.nodes[0].torPath, decomprFunc);
+                const testProto = new NodeEntr(e.data.data.nodes[0].node, e.data.data.nodes[0].torPath, _dom, decomprFunc);
                 testProto.render(viewDisplay, dataContainer, {
                     "val": "placeholder"
                 });

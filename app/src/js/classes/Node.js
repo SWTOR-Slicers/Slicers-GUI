@@ -569,7 +569,7 @@ class Node {
         node.uncomprBuffLength = 0x500000;
         const uncomprBuffer = new ArrayBuffer(node.uncomprBuffLength);
         RawDeflate.inflate(comprArray, uncomprBuffer);
-        const dv = new DataView(uncomprBuffer.buffer);
+        const dv = new DataView(uncomprBuffer);
         let pos = node.contentOffset;
         if (node.uncomprBuffLength > 0) {
             if (node.streamStyle >= 1 && node.streamStyle <= 6) {
@@ -657,35 +657,57 @@ class ProtoNode {
      * An object wrapper for the TOR GOM Node type.
      * @param  {NodeEntr} node Node entry representing the table entry for this node.
      * @param  {ArrayBuffer} data The sliced data represeting the node itself.
+     * @param  {Object} _dom Representation of the ClientGOM that is used to look up info.
      */
-    constructor(node, data) {
+    constructor(node, data, _dom) {
         this.fqn = node.fqn;
         const dv = new DataView(data);
-        let pos = node.dataOffset;
-        if (node.dataLength > 0) {
-            if (node.streamStyle >= 1 && node.streamStyle <= 6) {
-                const unkO = readVarInt(dv, pos);
-                pos += unkO.len
-            }
-            const numFieldsO = readVarInt(dv, pos);
-            pos += numFieldsO.len;
-            const numFields = numFieldsO.intLo;
+        let pos = 0;
+        if (data.byteLength > 0) {
+            const scriptTypeRes = readVarInt(dv, pos);
+            pos += scriptTypeRes.len;
+
+            const numFieldsRes = readVarInt(dv, pos);
+            pos += numFieldsRes.len;
+            const numFields = uint64C(numFieldsRes);
+            this.numFields = numFields;
             const obj = [];
-            let prevId = '0';
+
+            let fieldId = BigInt(0);
             for (let i = 0; i < numFields; i++) {
-                const field = {};
-                const idOffset = readVarInt(dv, pos);
-                pos += idOffset.len;
-                prevId = uint64_add(prevId, uint64C(idOffset));
-                field.id = prevId;
-                field.type = dv.getUint8(pos++);
-                if (field.type == 5) {
-                    console.log("yeet");
+                const fieldIdRes = readVarInt(dv, pos);
+                pos += fieldIdRes.len;
+                const fieldIdComp = uint64C(fieldIdRes);
+                fieldId = fieldId + BigInt(fieldIdComp);
+
+                let field = _dom['3'][fieldId];
+                field.id = fieldId;
+                let fieldType;
+                if (!field) {
+                    field = {};
+                    // No idea what kind of field this is, so we'll skip it but we still need to read the data..
+                    fieldType = new Uint8Array(dv.buffer, pos, 1)[0];
+                    if (fieldType == null) continue;
+                } else {
+                    fieldType = field.gomType;
+
+                    // Confirm the type matches
+                    if (!confirmType(dv, pos, field.gomType)) {
+                        throw new Error("Unexpected field type for field " + field.Name);
+                    }
                 }
-                const fieldRet = fileNodeReadfield(dv, pos, prevId, field.type);
-                pos += fieldRet.len;
-                field.value = fieldRet.val;
-                obj.push(field)
+                pos++;
+
+                const fieldValue = fileNodeReadfield(dv, pos, fieldId, fieldType);
+                pos += fieldValue.len;
+                field.value = fieldValue.val;
+
+                // Save data to resulting script object
+                const fieldName = field.name || GOM.fields[fieldId] || field.id;
+                field.name = fieldName;
+                delete field.fqn;
+
+                obj.push(field);
             }
             this.node = node;
             this.obj = obj;
@@ -756,8 +778,13 @@ class ProtoNode {
     }
 }
 
+function confirmType(dv, pos, exType) {
+    const type = new Uint8Array(dv.buffer, pos, 1)[0];
+    return type == exType;
+}
+
 class NodeEntr {
-    constructor(nodeJson, torPath, decomprFunc) {
+    constructor(nodeJson, torPath, _dom, decomprFunc) {
         this.id = nodeJson.id;
         this.fqn = nodeJson.fqn;
         this.baseClass = nodeJson.baseClass;
@@ -769,6 +796,7 @@ class NodeEntr {
         this.uncomprLength = nodeJson.uncomprLength;
         this.streamStyle = nodeJson.streamStyle;
         this.torPath = torPath;
+        this._dom = _dom;
         if (decomprFunc) {
             this.decomprFunc = decomprFunc;
         }
@@ -805,8 +833,8 @@ class NodeEntr {
                     torData = blob;
                 }
 
-                const blob = torData.slice(this.dataOffset + 2, this.dataOffset + this.dataLength - 4);
-                const node = new ProtoNode(this, blob);
+                const blob = torData.slice(this.dataOffset, this.dataOffset + this.dataLength);
+                const node = new ProtoNode(this, blob, this._dom);
                 this.node = node;
             }
             this.node.render(parent, dataContainer);

@@ -39,7 +39,7 @@ onmessage = (e) => {
             });
             break;
         case "loadNodes":
-            // loadNodes(e.data.data.torFiles[1], false);
+            loadNodes(e.data.data.torFiles[1], false); // This works but it is disabled since I dont have a use for it and it makes loading time slower. I believe it is a lookup for all the GOM Node field ids, to get their name, value, and type.
             if (e.data.data.loadProts) {
                 // loadNodes(e.data.data.torFiles[0], false);
             }
@@ -144,7 +144,7 @@ function findClientGOM(gomArchive, data, torPath) {
     }
 }
 function loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr) {
-    const DomElements = [];
+    const DomElements = {};
 
     let pos = 0
     // Check DBLB
@@ -187,7 +187,8 @@ function loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr) {
         DElem.id = defId;
         DElem.fqn = GOM.fields[DElem.id];
         
-        DomElements.push(DElem)
+        if (!DomElements[defType]) DomElements[defType] = {};
+        DomElements[defType][DElem.id] = DElem;
 
         // Read the required number of padding bytes
         const padding = ((8 - (defLength & 0x7)) & 0x7);
@@ -200,7 +201,7 @@ function loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr) {
         "message": 'DomElements',
         "data": DomElements
     })
-}
+};
 
 function findGom(gomArchive, data, torPath) {
     const bucketInfoHash = hashlittle2(`/resources/systemgenerated/buckets.info`);

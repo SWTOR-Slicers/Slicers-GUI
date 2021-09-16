@@ -164,6 +164,7 @@ function initWorker() {
                 break;
             case "PROTO":
                 const testProto = new NodeEntr(e.data.data.nodes[0].node, e.data.data.nodes[0].torPath, _dom, decomprFunc);
+                GTree.addNode(testProto);
                 testProto.render(viewDisplay, dataContainer, {
                     "val": "placeholder"
                 });

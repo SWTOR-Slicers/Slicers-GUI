@@ -579,6 +579,7 @@ class Node {
             const numFieldsO = readVarInt(dv, pos);
             pos += numFieldsO.len;
             const numFields = numFieldsO.intLo;
+            this.numFields = numFields;
             const obj = [];
             let prevId = '0';
             for (let i = 0; i < numFields; i++) {
@@ -617,6 +618,10 @@ class Node {
         <div class="data-entr-cont">
             <div class="data-entr-label">Uncompressed:</div>
             <div class="data-entr-val">${this.uncompressedSize} B</div>
+        </div>
+        <div class="data-entr-cont">
+            <div class="data-entr-label">Num Fields:</div>
+            <div class="data-entr-val">${this.numFields} B</div>
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Node Type:</div>
@@ -709,6 +714,7 @@ class ProtoNode {
 
                 obj.push(field);
             }
+
             this.node = node;
             this.obj = obj;
         }
@@ -725,11 +731,15 @@ class ProtoNode {
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Compressed:</div>
-            <div class="data-entr-val">${this.node.proto.comprSize} B</div>
+            <div class="data-entr-val">${this.node.proto.data.comprSize} B</div>
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Uncompressed:</div>
-            <div class="data-entr-val">${this.node.proto.size} B</div>
+            <div class="data-entr-val">${this.node.proto.data.size} B</div>
+        </div>
+        <div class="data-entr-cont">
+            <div class="data-entr-label">Num Fields:</div>
+            <div class="data-entr-val">${this.numFields} B</div>
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Node Type:</div>

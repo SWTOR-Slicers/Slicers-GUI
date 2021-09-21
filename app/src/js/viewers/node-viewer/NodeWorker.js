@@ -39,37 +39,16 @@ onmessage = (e) => {
             });
             break;
         case "loadNodes":
-            loadNodes(e.data.data.torFiles[1], false, () => {
-                postMessage({
-                    "message": "updateStat",
-                    "data": {
-                        "status": `finished loading client GOM`
-                    }
-                });
-            });
+            loadNodes(e.data.data.torFiles[1], false);
             if (e.data.data.loadProts) {
-                loadNodes(e.data.data.torFiles[0], false, () => {
-                    postMessage({
-                        "message": "updateStat",
-                        "data": {
-                            "status": `finished loading buket nodes`
-                        }
-                    });
-                });
+                loadNodes(e.data.data.torFiles[0], false);
             }
-            loadNodes(e.data.data.torFiles[0], e.data.data.loadProts, () => {
-                postMessage({
-                    "message": "updateStat",
-                    "data": {
-                        "status": `finished loading ${e.data.data.loadProts ? "prototype " : "buket "} nodes`
-                    }
-                });
-            });
+            loadNodes(e.data.data.torFiles[0], e.data.data.loadProts);
             break;
     }
 }
 
-async function loadNodes(torPath, loadProts, callback) {
+async function loadNodes(torPath, loadProts) {
     cache['tmpPath'] = cache['tmpPath'] == "" ? await getTmpFilePath() : cache['tmpPath'];
     let ftOffset = 0;
     let firstLoop = true;
@@ -364,7 +343,6 @@ function findPrototypes(gomArchive, data, torPath) {
     }
 }
 function loadPrototypes(gomArchive, data, torPath, dv) {
-    const prototypes = [];
     let pos = 0;
 
     const magicNum = dv.getInt32(pos, true);
@@ -379,6 +357,7 @@ function loadPrototypes(gomArchive, data, torPath, dv) {
     const numPrototypes = uint64C(res);
     pos += res.len;
 
+    let prototypes = [];
     let protoLoaded = 0;
     for (let i = 0; i < numPrototypes; i++) {
         const res = readVarInt(dv, pos);
@@ -411,17 +390,21 @@ function loadPrototypes(gomArchive, data, torPath, dv) {
                     "torPath": torPath
                 });
                 protoLoaded++;
+
+                // This batches together prototype nodes so that we dont lag out the app by batching 16 thousand at once
+                if (protoLoaded % 100 == 0 || protoLoaded == numPrototypes) {
+                    postMessage({
+                        "message": 'PROTO',
+                        "data": {
+                            "nodes": prototypes,
+                            "numLoaded": protoLoaded
+                        }
+                    });
+                    prototypes = [];
+                }
             }
         }
     }
-
-    postMessage({
-        "message": 'PROTO',
-        "data": {
-            "nodes": prototypes,
-            "numLoaded": protoLoaded
-        }
-    });
 }
 function loadPrototype(id, dv, prototype) {
     let pos = 0;

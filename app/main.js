@@ -1040,7 +1040,6 @@ function initNodeViewer () {
   nodeViewerWin.once('ready-to-show', () => nodeViewerWin.show());
   
   nodeViewerWin.removeMenu();
-  nodeViewerWin.webContents.openDevTools();
   nodeViewerWin.loadFile(`${__dirname}/src/html/NodeViewer.html`);
   
   

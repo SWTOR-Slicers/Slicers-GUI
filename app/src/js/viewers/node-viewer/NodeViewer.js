@@ -171,9 +171,6 @@ function initWorker() {
                 GTree.nodeTree.resizefull();
                 GTree.nodeTree.redraw();
                 break;
-            case "updateLoadStat":
-                console.log(e.data.data.status);
-                break;
         }
     }
 

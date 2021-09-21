@@ -39,16 +39,37 @@ onmessage = (e) => {
             });
             break;
         case "loadNodes":
-            loadNodes(e.data.data.torFiles[1], false);
+            loadNodes(e.data.data.torFiles[1], false, () => {
+                postMessage({
+                    "message": "updateStat",
+                    "data": {
+                        "status": `finished loading client GOM`
+                    }
+                });
+            });
             if (e.data.data.loadProts) {
-                loadNodes(e.data.data.torFiles[0], false);
+                loadNodes(e.data.data.torFiles[0], false, () => {
+                    postMessage({
+                        "message": "updateStat",
+                        "data": {
+                            "status": `finished loading buket nodes`
+                        }
+                    });
+                });
             }
-            loadNodes(e.data.data.torFiles[0], e.data.data.loadProts);
+            loadNodes(e.data.data.torFiles[0], e.data.data.loadProts, () => {
+                postMessage({
+                    "message": "updateStat",
+                    "data": {
+                        "status": `finished loading ${e.data.data.loadProts ? "prototype " : "buket "} nodes`
+                    }
+                });
+            });
             break;
     }
 }
 
-async function loadNodes(torPath, loadProts) {
+async function loadNodes(torPath, loadProts, callback) {
     cache['tmpPath'] = cache['tmpPath'] == "" ? await getTmpFilePath() : cache['tmpPath'];
     let ftOffset = 0;
     let firstLoop = true;
@@ -196,12 +217,11 @@ function loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr) {
         pos = iniPos + defLength + padding;
     }
 
-    console.log(DomElements);
     postMessage({
         "message": 'DomElements',
         "data": DomElements
     })
-};
+}
 
 function findGom(gomArchive, data, torPath) {
     const bucketInfoHash = hashlittle2(`/resources/systemgenerated/buckets.info`);
@@ -249,18 +269,10 @@ function loadBuckets(gomArchive, data, torPath, infoDV) {
 }
 function loadBucket(bktIdx, dv, torPath, bktFile) {
     const magic = dv.getUint32(0, !0);
-    if (magic !== 0x4B554250)
-        return postMessage({
-            "message": 'NODES',
-            "data": []
-        });
+    if (magic !== 0x4B554250) return postMessage({ "message": 'NODES', "data": [] });
     const versionMajor = dv.getUint16(4, !0);
     const versionMinor = dv.getUint16(6, !0);
-    if (versionMajor !== 2 || versionMinor !== 5)
-        return postMessage({
-            "message": 'NODES',
-            "data": []
-        });
+    if (versionMajor !== 2 || versionMinor !== 5) return postMessage({ "message": 'NODES', "data": [] });
     let pos = 8;
     const length = dv.byteLength - 12;
     readAllItems(dv, pos, length, torPath, bktIdx, bktFile, true);

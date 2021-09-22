@@ -118,7 +118,7 @@ function initListeners() {
         }
     });
     fqnField.addEventListener('change', (e) => { if (fqnField.value != "") GTree.getNodeByFQN(fqnField.value); });
-    exportNode.addEventListener('click', (e) => { if (currentNode) currentNode.extract(cache['output'], cache['outputType']); });
+    exportNode.addEventListener('click', (e) => { if (currentNode) currentNode.node.extract(cache['output'], cache['outputType']); });
     extrFormat.clickCallback = (e) => { updateCache('outputType', e.currentTarget.innerHTML); }
     loadPrototypeNodes.addEventListener('click', (e) => { updateCache('loadPrototypes', loadPrototypeNodes.checked); });
     outputField.addEventListener('change', (e) => { updateCache('output', outputField.value); });

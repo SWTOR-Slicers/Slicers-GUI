@@ -178,7 +178,9 @@ class NodeTree {
         }
         for (let i = 0; i < fl; i++) {
             if (height === target) {
-                folder.$F[i].render(this.renderTarg, this.dataContainer, currentNode);
+                folder.$F[i].render(this.renderTarg, this.dataContainer, (val) => {
+                    currentNode = val;
+                });
                 return 0
             }
             height += FILETREE_HEIGHT
@@ -269,7 +271,9 @@ class GomTree {
                     const tNode = parent.$F.find((val, idx) => { return val.fileName == elem; });
                     if (tNode) {
                         hasFound = true
-                        tNode.render(this.viewContainer, this.dataContainer, currentNode);
+                        tNode.render(this.viewContainer, this.dataContainer, (val) => {
+                            currentNode = val;
+                        });
                     }
                     break
                 } else if (fqnObj) {
@@ -282,7 +286,9 @@ class GomTree {
             const tNode = nodesByFqn.$F.find((val, idx) => { return val.fileName == tree[0]; });
             if (tNode) {
                 hasFound = true;
-                tNode.render(this.viewContainer, this.dataContainer, currentNode);
+                tNode.render(this.viewContainer, this.dataContainer, (val) => {
+                    currentNode = val;
+                });
             }
         }
     

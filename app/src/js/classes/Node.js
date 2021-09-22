@@ -649,6 +649,7 @@ class Node {
         if (fs.existsSync(dest)) {
             if (data) {
                 fs.writeFileSync(path.join(dest, `${this.fqn}.${type == "raw" ? "node" : type}`), data);
+                log(`Sucessfully extracted node to a .${type == "raw" ? "node" : type} file`, 'info');
             } else {
                 log("Error reading the node data: data is null.", "error");
             }
@@ -782,6 +783,7 @@ class ProtoNode {
         if (fs.existsSync(dest)) {
             if (data) {
                 fs.writeFileSync(path.join(dest, `${this.fqn}.${type == "raw" ? "node" : type}`), data);
+                log(`Sucessfully extracted node to a .${type == "raw" ? "node" : type} file`, 'info');
             } else {
                 log("Error reading the node data: data is null.", "error");
             }
@@ -815,8 +817,8 @@ class NodeEntr {
         }
     }
 
-    render(parent, dataContainer, ref) {
-        ref = this;
+    render(parent, dataContainer, refSet) {
+        refSet(this);
         if (this.isBucket) {
             parent.innerHTML = "";
 

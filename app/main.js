@@ -748,6 +748,7 @@ function initFileChanger () {
   fileChangerWin.once('ready-to-show', () => fileChangerWin.show());
   
   fileChangerWin.removeMenu();
+  fileChangerWin.webContents.openDevTools();
   fileChangerWin.loadFile(`${__dirname}/src/html/FileChanger.html`);
   
   fileChangerWin.on('close', (e) => {

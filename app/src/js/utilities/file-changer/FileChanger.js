@@ -7,7 +7,7 @@ import { log, updateAlertType } from "../../universal/Logger.js";
 import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { FileEntry } from "./FileEntry.js";
 import * as MOD from "./Mod.js";
-import { readString } from "../../Util.js";
+import { hashlittle2, readString } from "../../Util.js";
 
 class HashChange {
     constructor(oldName, newName, ph, sh, crc) {
@@ -541,7 +541,8 @@ function fileNameToHash(name) {
         ph = parseInt(name.substr(0, 8), 16);
         sh = parseInt(name.substr(9, 8), 16);
     } else {
-        [ph, sh] = hashDict.getHashByFileName(name);
+        [sh, ph] = hashlittle2(name);
+        const res = hashDict.getHashByFileName(name);
     }
 
     return [ph, sh];

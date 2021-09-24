@@ -1,9 +1,5 @@
-// Modules to control application life and create native browser window
-//TODO: make a sources list/window
-
 const {app, BrowserWindow, dialog, ipcMain, screen, shell} = require('electron');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
-process.env.ELECTRON_ENABLE_LOGGING = true;
 
 const fs = require('fs');
 const ChildProcess = require('child_process');
@@ -19,6 +15,7 @@ if (handleSquirrelEvent()) {
 }
 
 const devBuild = true;
+process.env.ELECTRON_ENABLE_LOGGING = devBuild;
 
 const sourceResourceDir = (devBuild) ? path.join(__dirname, "resources") : process.resourcesPath;
 
@@ -1070,7 +1067,7 @@ function initNodeViewerListeners(window) {
 //utility methods
 async function extractSingleFile(progBarId, params) {
   try {
-    const extrProc = child.spawn(path.join(resourcePath, "scripts", "fileExtractor.exe"), params);
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "SlicersFileExtractor.exe"), params);
     let len = 0;
     extrProc.stdout.on('data', (data) => {
       const lDat = data.toString().split(' ');
@@ -1089,7 +1086,7 @@ async function extractSingleFile(progBarId, params) {
 }
 async function extractSingleNode(progBarId, params) {
   try {
-    const extrProc = child.spawn(path.join(resourcePath, "scripts", "nodeExtractor.exe"), params);
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "SlicersNodeExtractor.exe"), params);
     let len = 0;
     extrProc.stdout.on('data', (data) => {
       const lDat = data.toString().split(' ');
@@ -1108,7 +1105,7 @@ async function extractSingleNode(progBarId, params) {
 }
 async function changeFiles(progBarId, params) {
   try {
-    const extrProc = child.spawn(path.join(resourcePath, "scripts", "fileChanger.exe"), params);
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "SlicersFileChanger.exe"), params);
     let len = 0;
     extrProc.stdout.on('data', (data) => {
       const lDat = data.toString().split(' ');
@@ -1199,7 +1196,7 @@ async function extract(progBarId) {
     fs.writeFileSync(torsName, JSON.stringify(values))
 
     const params = [torsName, output, hashPath, (cache['extraction']['extractionPreset'] == 'Unnamed') ? "true" : "false"];
-    const extrProc = child.spawn(path.join(resourcePath, "scripts", "extraction.exe"), params);
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "SlicersExtraction.exe"), params);
     extrProc.stdout.on('data', (data) => {
       const lDat = data.toString().split(' ');
       const percent = `${lDat[0] / lDat[1] * 100}%`;
@@ -1222,7 +1219,7 @@ async function extractNodes(progBarId, nodeFamilies) {
     let tor = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_global_1.tor' : 'swtor_test_main_global_1.tor');
 
     const params = [tor, output, JSON.stringify(nodeFamilies)];
-    const extrProc = child.spawn(path.join(resourcePath, "scripts", "nodeExtraction.exe"), params);
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "SlicersNodeExtraction.exe"), params);
     extrProc.stdout.on('data', (data) => {
       const lDat = data.toString().split(' ');
       const percent = `${lDat[0] / lDat[1] * 100}%`;
@@ -1243,7 +1240,7 @@ async function locate() {
   try {
     const temp = cache.dataFolder;
     const params = [temp, path.join(cache.outputFolder, "resources")];
-    child.execFileSync(path.join(resourcePath, "scripts", "locator.exe"), params);
+    child.execFileSync(path.join(resourcePath, "scripts", "SlicersLocator.exe"), params);
   } catch (err) {
     console.log(err);
   } finally {

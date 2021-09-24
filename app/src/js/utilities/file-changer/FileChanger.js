@@ -1,23 +1,10 @@
 import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { getSetting } from "../../../api/config/settings/Settings.js";
-import { RawDeflate } from "../../externals/Inflate.js";
-import { Archive } from "../../classes/Archive.js";
-import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 import { log, updateAlertType } from "../../universal/Logger.js";
 import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { FileEntry } from "./FileEntry.js";
 import * as MOD from "./Mod.js";
-import { hashlittle2, readString } from "../../Util.js";
-
-class HashChange {
-    constructor(oldName, newName, ph, sh, crc) {
-        this.oldName = oldName;
-        this.newName = newName;
-        this.ph = ph;
-        this.sh = sh;
-        this.crc = crc;
-    }
-}
+import { hashlittle2 } from "../../Util.js";
 
 //consts
 const { ipcRenderer } = require("electron");
@@ -37,7 +24,6 @@ const cache = {
     "backup": true,
     "version": "Live"
 }
-const hashDict = new HashDictionary('hash/hashes_filename.txt');
 
 
 //globals
@@ -192,7 +178,6 @@ function initTooltips() {
 }
 
 async function init() {
-    await hashDict.loadHashList(progBar);
     await loadCache();
     setupFolders();
     initListeners();
@@ -542,7 +527,8 @@ function fileNameToHash(name) {
         sh = parseInt(name.substr(9, 8), 16);
     } else {
         [sh, ph] = hashlittle2(name);
-        const res = hashDict.getHashByFileName(name);
+        sh = sh.toString(16).toUpperCase();
+        ph = ph.toString(16).toUpperCase();
     }
 
     return [ph, sh];

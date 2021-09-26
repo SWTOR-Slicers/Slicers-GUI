@@ -1208,7 +1208,6 @@ async function extract(progBarId) {
     });
     extrProc.on('exit', (code) => {
       console.log(`child process exited with status: ${code.toString()}`);
-      fs.unlinkSync(torsName);
       mainWindow.webContents.send("extrCompl", "");
     });
   } catch (err) {

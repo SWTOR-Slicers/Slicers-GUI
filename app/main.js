@@ -1196,6 +1196,7 @@ async function extract(progBarId) {
     fs.writeFileSync(torsName, JSON.stringify(values))
 
     const params = [torsName, output, hashPath, (cache['extraction']['extractionPreset'] == 'Unnamed') ? "true" : "false"];
+    console.log(params);
     const extrProc = child.spawn(path.join(resourcePath, "scripts", "SlicersExtraction.exe"), params);
     extrProc.stdout.on('data', (data) => {
       const lDat = data.toString().split(' ');
@@ -1207,6 +1208,7 @@ async function extract(progBarId) {
     });
     extrProc.on('exit', (code) => {
       console.log(`child process exited with status: ${code.toString()}`);
+      fs.unlinkSync(torsName);
       mainWindow.webContents.send("extrCompl", "");
     });
   } catch (err) {

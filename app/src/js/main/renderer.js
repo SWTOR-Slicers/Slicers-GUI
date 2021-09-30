@@ -184,7 +184,6 @@ function setupListeners() {
     });
     genHashBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'genHash');
-        log(`Extraction: Generate Hash started, please stand by.`, 'info');
     });
 
     //viewers
@@ -520,6 +519,15 @@ function initSubscribes() {
     ipcRenderer.on('genHashCompl', (event, data) => {
         log(`Extraction: Generate Hash finished.`, 'info');
     });
+    ipcRenderer.on('genHashClosed', (event, data) => {
+        log(`Extraction: Generate Hash closed.`, 'info');
+    });
+    ipcRenderer.on('genHashStarted', (event, data) => {
+        log(`Extraction: Generate Hash started, please stand by.`, 'info');
+        log(`<div class="prog-bar-container"><div id="extractProgBar" class="prog-bar__bar"></div></div>`);
+
+        addTooltip('top', document.getElementById('extractProgBar').parentElement, false, (element) => { return 'Gen Hash progress...'});
+    });
     ipcRenderer.on('gr2ViewClosed', (event, data) => {
         log(`Viewer: GR2 closed.`, 'info');
     });
@@ -581,7 +589,7 @@ function initSubscribes() {
         log(`<div class="prog-bar-container"><div id="extractProgBar" class="prog-bar__bar"></div></div>`);
 
         addTooltip('top', document.getElementById('extractProgBar').parentElement, false, (element) => { return 'Extraction progress...'});
-    })
+    });
     ipcRenderer.on('extrCanceled', (event, data) => {
         extrBtn.classList.remove('disabled');
         log('Node Extraction Canceled.', 'info');

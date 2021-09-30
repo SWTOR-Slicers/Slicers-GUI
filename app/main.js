@@ -37,7 +37,8 @@ let creditsWindow;
 let editorWindow;
 let nodeSelectWin;
 let nodeViewerWin;
-const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin, creditsWindow, editorWindow, nodeSelectWin, nodeViewerWin];
+let genHashWin;
+const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin, creditsWindow, editorWindow, nodeSelectWin, nodeViewerWin, genHashWin];
 
 let appQuiting = false;
 const cache = {
@@ -125,6 +126,9 @@ function getWindowFromArg(arg) {
       break;
     case "Node Viewer":
       win = nodeViewerWin;
+      break;
+    case "Generate Hash":
+      win = genHashWin;
       break;
   }
   return win;
@@ -299,7 +303,11 @@ function initMainListeners() {
           locate();
           break;
         case "genHash":
-          //generate new hash
+          if (!genHashWin) {
+            initGenHash();
+          } else {
+            genHashWin.show();
+          }
           break;
         case "unpack":
           if (unpackerWindow) {
@@ -1062,6 +1070,44 @@ function initNodeViewerListeners(window) {
     event.returnValue = await decompressZlib(data[0], data[1]);
   });
 }
+//Gen Hash
+function initGenHash () {
+  genHashWin = new BrowserWindow({
+    width: 300,
+    height: 500,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    },
+    icon: 'src/img/SlicersLogo.ico',
+    show: false
+  });
+  genHashWin.once('ready-to-show', () => genHashWin.show());
+  
+  genHashWin.removeMenu();
+  genHashWin.webContents.openDevTools();
+  genHashWin.loadFile(`${__dirname}/src/html/GenHash.html`);
+  
+  
+  genHashWin.on('close', (e) => {
+    if (!appQuiting) {
+      e.preventDefault();
+      genHashWin.hide();
+    }
+    if (mainWindow) {
+      if (mainWindow.webContents) {
+        mainWindow.webContents.send('genHashClosed', '');
+      }
+    }
+  });
+  
+  initGenHashListeners(genHashWin);
+}
+function initGenHashListeners(window) {
+  ipcMain.on('genHash', (event, data) => { genHashes('extractProgBar', data[0]); });
+  ipcMain.on('cancelHashGen', (event, data) => { window.close(); });
+}
 
 
 //utility methods
@@ -1118,6 +1164,26 @@ async function changeFiles(progBarId, params) {
       console.log(`child process exited with status: ${code.toString()}`);
       fileChangerWin.webContents.send("changerChangedFiles", [code == 0]);
     });
+  } catch (err) {
+    console.log(err);
+  }
+}
+async function genHashes(progBarId, dat) {
+  mainWindow.webContents.send('genHashStarted');
+
+  try {
+    const hashTypes = dat[0];
+    const DOM = dat[1];
+
+    const output = path.join(cache.outputFolder, 'resources', 'nodes');
+    const domObjTmpPath = path.join(cache.outputFolder, 'tmp', 'DOMObject.json');
+    fs.writeFileSync(domObjTmpPath, JSON.stringify(DOM));
+
+    const params = [output, domObjTmpPath, hashTypes];
+    const extrProc = child.spawn(path.join(resourcePath, "scripts", "SlicersGenHashes.exe"), params);
+    extrProc.stdout.on('data', (data) => { const lDat = data.toString().split(' '); const percent = `${lDat[0] / lDat[1] * 100}%`; mainWindow.webContents.send('updateProgBar', [progBarId, percent]); });
+    extrProc.stderr.on('data', (data) => { console.log(`Error: ${data.toString()}`); });
+    extrProc.on('exit', (code) => { console.log(`child process exited with status: ${code.toString()}`); mainWindow.webContents.send("genHashCompl", ""); });
   } catch (err) {
     console.log(err);
   }

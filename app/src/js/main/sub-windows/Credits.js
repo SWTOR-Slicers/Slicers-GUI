@@ -56,6 +56,13 @@ const credits = [
         notes: "A replication of The Old Republic's in game font. It is used throughout the app."
     },
     {
+        ir: "Node Enum Field Fixes",
+        collabs: [
+            "Pazaz"
+        ],
+        notes: "A replication of The Old Republic's in game font. It is used throughout the app."
+    },
+    {
         ir: `<img src="../img/GR2 Icon.svg" alt="GR2" width="40px">`,
         collabs: [
             "Tormak"

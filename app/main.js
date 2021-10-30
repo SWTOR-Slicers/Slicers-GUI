@@ -894,6 +894,7 @@ function initGetPatchGUI() {
   getPatchWindow.once('ready-to-show', () => getPatchWindow.show());
 
   getPatchWindow.removeMenu();
+  getPatchWindow.webContents.openDevTools();
   getPatchWindow.loadURL(`${__dirname}/src/html/GetPatch.html`);
 
   getPatchWindow.on('close', (e) => {
@@ -1038,7 +1039,6 @@ function initNodeViewer () {
   nodeViewerWin.once('ready-to-show', () => nodeViewerWin.show());
   
   nodeViewerWin.removeMenu();
-  nodeViewerWin.webContents.openDevTools();
   nodeViewerWin.loadFile(`${__dirname}/src/html/NodeViewer.html`);
   
   

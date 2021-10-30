@@ -212,7 +212,7 @@ function fileNodeReadfield(dv, pos, id, type) {
     return out
 }
 
-function parseNode(node, obj) {
+function parseNode(node, obj, _dom) {
     const frag = document.createDocumentFragment();
     {
         const p = document.createElement('p');
@@ -236,7 +236,7 @@ function parseNode(node, obj) {
             tr.childRows = [];
             const field = obj[i];
             let html = `<td><div><mark>` + (GOM.fields[field.id] || field.id) + '</mark></div></td>' + '<td style="color:#777"><div><mark>' + field.id + '</mark></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(field.type) + '</mark></div></td><td><div><mark>';
-            html += nodeFieldToHtml(field.type, field.value, tr, 2, field);
+            html += nodeFieldToHtml(field.type, field.value, tr, 2, field, _dom, node.id);
             html += '</mark></div></td>';
             tr.innerHTML = html;
             nodeFieldAppendToTable(tbody, tr)
@@ -246,14 +246,15 @@ function parseNode(node, obj) {
     }
     return frag;
 }
-function nodeFieldTypeToHtml(type, value) {
+function nodeFieldTypeToHtml(type, value, _dom) {
     switch (type) {
     case DOM_TYPES.ID:
     case DOM_TYPES.INTEGER:
-    case DOM_TYPES.ENUM:
     case DOM_TYPES.SCRIPTREF:
     case DOM_TYPES.NODEREF:
     case DOM_TYPES.TIMEINTERVAL:
+        return uint64C(value);
+    case DOM_TYPES.ENUM:
         return uint64C(value);
     case DOM_TYPES.DATE:
         {
@@ -271,7 +272,7 @@ function nodeFieldTypeToHtml(type, value) {
         return '[Type not recognized]'
     }
 }
-function nodeFieldToHtml(type, value, tr, level, field) {
+function nodeFieldToHtml(type, value, tr, level, field, _dom) {
     switch (type) {
     case DOM_TYPES.ID:
     case DOM_TYPES.INTEGER:
@@ -296,7 +297,7 @@ function nodeFieldToHtml(type, value, tr, level, field) {
             const curRow = document.createElement('tr');
             curRow.childRows = [];
             let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + i + '</mark></div></td>' + '<td><div></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value.type) + '</mark></div></td><td><div><mark>';
-            html += nodeFieldToHtml(value.type, value.list[i], curRow, level + 1, value[i]);
+            html += nodeFieldToHtml(value.type, value.list[i], curRow, level + 1, value[i], _dom);
             html += '</mark></div></td>';
             curRow.innerHTML = html;
             tr.childRows.push(curRow)
@@ -306,8 +307,8 @@ function nodeFieldToHtml(type, value, tr, level, field) {
         for (let i = 0, l = value.list.length; i < l; i++) {
             const curRow = document.createElement('tr');
             curRow.childRows = [];
-            let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + nodeFieldTypeToHtml(value.indexType, value.list[i].key) + '</mark></div></td>' + '<td><div></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value.type) + '</mark></div></td><td><div><mark>';
-            html += nodeFieldToHtml(value.type, value.list[i].val, curRow, level + 1, value[i]);
+            let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + nodeFieldTypeToHtml(value.indexType, value.list[i].key, _dom) + '</mark></div></td>' + '<td><div></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value.type) + '</mark></div></td><td><div><mark>';
+            html += nodeFieldToHtml(value.type, value.list[i].val, curRow, level + 1, value[i], _dom);
             html += '</mark></div></td>';
             curRow.innerHTML = html;
             tr.childRows.push(curRow)
@@ -318,7 +319,7 @@ function nodeFieldToHtml(type, value, tr, level, field) {
             const curRow = document.createElement('tr');
             curRow.childRows = [];
             let html = `<td><div><div style="height: 1px;width: ${10 * level}px;"></div><mark>` + (GOM.fields[value[i].id] || value[i].id) + '</mark></div></td>' + '<td style="color:#777"><div><mark>' + value[i].id + '</mark></div></td>' + '<td style="color:#ccc"><div><mark>' + domTypeToString(value[i].type) + '</mark></div></td><td><div><mark>';
-            html += nodeFieldToHtml(value[i].type, value[i].val, curRow, level + 1, value[i]);
+            html += nodeFieldToHtml(value[i].type, value[i].val, curRow, level + 1, value[i], _dom);
             html += '</mark></div></td>';
             curRow.innerHTML = html;
             tr.childRows.push(curRow)
@@ -327,7 +328,7 @@ function nodeFieldToHtml(type, value, tr, level, field) {
     case DOM_TYPES.VECTOR3:
         return value[0] + ', ' + value[1] + ', ' + value[2];
     case DOM_TYPES.ENUM:
-        return uint64C(value);
+        return _dom[2][_dom[3][field.id].data].values[uint64C(value)-1];
     default:
         return '[Type not recognized]'
     }
@@ -599,12 +600,13 @@ class Node {
                 obj.push(field)
             }
             this.node = node;
+            this._dom = _dom;
             this.obj = obj;
         }
     }
 
     render(parent, dataContainer) {
-        const data = parseNode(this.node, this.obj);
+        const data = parseNode(this.node, this.obj, this._dom);
         parent.appendChild(data);
 
         dataContainer.innerHTML = `
@@ -725,7 +727,7 @@ class ProtoNode {
     }
 
     render(parent, dataContainer) {
-        const data = parseNode(this.node, this.obj);
+        const data = parseNode(this.node, this.obj, this._dom);
         parent.appendChild(data);
 
         dataContainer.innerHTML = `

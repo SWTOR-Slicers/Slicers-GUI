@@ -1,3 +1,4 @@
+import { uint64C } from "../../../out/Slicers GUI-win32-x64/resources/app/src/js/Util.js";
 import { readString } from "../Util.js";
 
 const DomTypes = {
@@ -148,26 +149,15 @@ class DomEnumLoader extends DomLoader {
         this.pos = 0x18;
         result.numVals = this.dv.getInt16(this.pos, true);
         this.pos += 2;
-        result.valsOffset = this.dv.getInt16(this.pos, true);
-        this.pos += 2;
 
         // Read in names
         this.pos = result.namesOffset;
-        result.names = [];
-        for (let i = 0; i < result.numVals; i++) {
-            const res2 = readNullString(this.dv.buffer, this.pos);
-            const name = res2[0];
-            this.pos = res2[1];
-
-            result.names.push(name);
-        }
-
-        // Read in values
-        this.pos = result.valsOffset;
         result.values = [];
         for (let i = 0; i < result.numVals; i++) {
-            let val = this.dv.getInt16(this.pos, true);
-            this.pos += 2;
+            const res2 = readNullString(this.dv.buffer, this.pos);
+            const val = res2[0];
+            this.pos = res2[1];
+
             result.values.push(val);
         }
 
@@ -193,7 +183,16 @@ class DomFieldLoader extends DomLoader {
         this.pos += 2;
 
         this.pos = result.typeOffset;
-        result.gomType = getGomType(this.dv, this.pos);
+        result.gomType = new Uint8Array(this.dv.buffer, this.pos, 1)[0];
+        this.pos++;
+
+        switch (result.gomType) {
+            case 5:
+                result.data = this.dv.getBigUint64(this.pos, true);
+                break;
+            default:
+                break;
+        }
 
         return result;
     }
@@ -259,12 +258,6 @@ class DomAssociationLoader extends DomLoader {
 
         return result;
     }
-}
-
-function getGomType(dv, pos) {
-    const type = new Uint8Array(dv.buffer, pos, 1)[0];
-    pos += 1;
-    return type;
 }
 
 function calcAdler32(buffer) {

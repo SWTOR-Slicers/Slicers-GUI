@@ -1,5 +1,4 @@
-import { uint64C } from "../../../out/Slicers GUI-win32-x64/resources/app/src/js/Util.js";
-import { readString } from "../Util.js";
+import { readVarInt, uint64_add, uint64C, assert, readString } from "../Util.js";
 
 const DomTypes = {
     "1": "Instance",
@@ -186,13 +185,7 @@ class DomFieldLoader extends DomLoader {
         result.gomType = new Uint8Array(this.dv.buffer, this.pos, 1)[0];
         this.pos++;
 
-        switch (result.gomType) {
-            case 5:
-                result.data = this.dv.getBigUint64(this.pos, true);
-                break;
-            default:
-                break;
-        }
+        if (result.gomType == 5) { result.data = this.dv.getBigUint64(this.pos, true); }
 
         return result;
     }

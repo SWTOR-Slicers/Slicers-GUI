@@ -57,3 +57,33 @@
 .buttons-container {
     margin: 15px 0px;
 }
+
+
+.spinner-cont {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.hidden { display: none; }
+
+.loading-cont {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+.loading-cont > label { margin-right: 14px; }
+.progress-bar-container {
+    height: 23px;
+    width: 128px;
+    pointer-events: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+.progress-bar {
+    height: 100%;
+    background-color: var(--background-yellow-slicers);
+}

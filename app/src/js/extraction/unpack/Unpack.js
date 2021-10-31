@@ -199,21 +199,24 @@ async function unpack(outputDir, patchPath) {
         const dirContents = fs.readdirSync(patchPath);
         for (let i = 0; i < dirContents.length; i++) {
             const patchElem = dirContents[i];
-            await handleFile(outputDir, patchElem);
+            if (!path.extname(patchElem).includes('0')) {
+                await handleFile(outputDir, patchElem, patchPath);
+            }
         }
     } else {
         const patchElem = patchPath;
         await handleFile(outputDir, patchElem);
     }
 }
-async function handleFile(outputDir, patchFile) {
+async function handleFile(outputDir, patchFile, patchPath) {
+    const filePath = patchPath ? path.join(patchPath, patchFile) : patchFile;
     const fileType = path.extname(patchFile);
     if (fileType === ".solidpkg") {
-        await unpackSolidpkg(outputDir, patchFile);
+        await unpackSolidpkg(outputDir, filePath);
     } else if (fileType === ".patchmanifest") {
-        await unpackManifest(outputDir, patchFile);
+        await unpackManifest(outputDir, filePath);
     } else if (fileType.substr(0, 2) === ".z") {
-        await unpackZip(outputDir, patchFile);
+        await unpackZip(outputDir, filePath);
     }
 }
 

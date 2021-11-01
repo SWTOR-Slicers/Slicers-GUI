@@ -298,6 +298,54 @@ class GomTree {
     }
 }
 
+class StaticGomTree {
+    constructor () {}
+
+    /**
+     * Adds a node to the Gom tree, and saves the created nodeElem to a dictionary
+     * @param {NodeEntr} node A Node object representing the node entry data from the node reader.
+     */
+    addNode(node) {
+        let name = node.fqn;
+        let curFolder = nodesByFqn;
+        let folderStart = 0;
+        let i = 0;
+        for (; i < name.length; i++) {
+            if (name[i] === '.') {
+                const folderName = name.substring(folderStart, i);
+                if (folderStart === 0 && i > 8) {
+                    curFolder = curFolder._misc
+                }
+                let tmpFolder = curFolder[folderName];
+                if (!tmpFolder) {
+                    tmpFolder = Object.create(null);
+                    tmpFolder.$F = [];
+                    tmpFolder.$O = 0;
+                    curFolder[folderName] = tmpFolder
+                }
+                curFolder = tmpFolder;
+                folderStart = i + 1
+            }
+        }
+        node.path = name.substr(0, folderStart);
+        const fileName = name.substring(folderStart, i);
+        node.fileName = fileName;
+        if (curFolder.$O === 0) {
+            curFolder.$F.push(node)
+        } else {
+            let insertIndex = 0;
+            for (let j = 0, l = curFolder.$F.length; j < l; j++) {
+                if (curFolder.$F[j].fileName <= fileName) {
+                    insertIndex++
+                } else {
+                    break
+                }
+            }
+            curFolder.$F.splice(insertIndex, 0, node)
+        }
+    }
+}
+
 function nodeFolderSort(a, b) {
     if (a.fileName < b.fileName)
         return -1;
@@ -306,4 +354,4 @@ function nodeFolderSort(a, b) {
     return 1
 }
 
-export {GomTree, nodesByFqn, nodeFolderSort, currentNode};
+export {GomTree, StaticGomTree, nodesByFqn, nodeFolderSort, currentNode};

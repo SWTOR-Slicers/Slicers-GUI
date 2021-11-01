@@ -591,9 +591,6 @@ class Node {
                 prevId = uint64_add(prevId, uint64C(idOffset));
                 field.id = prevId;
                 field.type = dv.getUint8(pos++);
-                if (field.type == 5) {
-                    console.log("yeet");
-                }
                 const fieldRet = fileNodeReadfield(dv, pos, prevId, field.type);
                 pos += fieldRet.len;
                 field.value = fieldRet.val;

@@ -1,6 +1,9 @@
-import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath";
+import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
+import { nodesByFqn, nodeFolderSort, StaticGomTree } from "../../viewers/node-viewer/GomTree.js";
 
 const { ipcRenderer } = require("electron");
+const fs = require("fs");
+const path = require("path");
 
 //DOM Variables
 const hashTypeCont = document.getElementById('hashTypeCont');
@@ -36,9 +39,9 @@ const hashTypes = [
     "XML"
 ];
 const checkedTypes = {};
-const worker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "NodeWorker.js"), {
-    type: "module"
-});
+let worker;
+let _dom = null;
+const GTree = new StaticGomTree();
 
 const decomprFunc = (params) => {
     return ipcRenderer.sendSync('decompressZlib', [resourcePath, params]);
@@ -50,19 +53,21 @@ function init() {
         hashTypeCont.appendChild(typeCont);
     }
     initListeners();
+    initWorker();
+}
 
-    worker.onerror = (e) => {
-        console.log(e);
-        throw new Error(`${e.message} on line ${e.lineno}`);
-    }
-    worker.onmessageerror = (e) => {
-        console.log(e);
-        throw new Error(`${e.message} on line ${e.lineno}`);
-    }
+function initWorker() {
+    worker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "NodeWorker.js"), {
+        type: "module"
+    });
+
+    worker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    worker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
     worker.onmessage = (e) => {
         switch (e.data.message) {
             case "DomElements":
                 _dom = e.data.data;
+                progressBar__clientGOM.style.width = '100%';
                 break;
             case "NODES":
                 for (const n of e.data.data) {
@@ -71,24 +76,15 @@ function init() {
                 }
                 GTree.nodeTree.loadedBuckets++;
                 nodesByFqn.$F.sort(nodeFolderSort);
-                GTree.nodeTree.resizefull();
-                GTree.nodeTree.redraw();
-                document.getElementById('numBucketsLeft').innerHTML = 500 - GTree.nodeTree.loadedBuckets;
-                if (GTree.nodeTree.loadedBuckets === 500) {
-                    document.getElementById('numBucketsLeft').innerHTML = "Done";
-                    setTimeout(() => {
-                        document.getElementById('numBucketsLeft').innerHTML = "";
-                    }, 2000);
-                }
+                progressBar__baseNodes.style.width = `${GTree.nodeTree.loadedBuckets / 500 * 100}%`;
                 break;
             case "PROTO":
                 for (const n of e.data.data.nodes) {
                     const testProto = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
                     GTree.addNode(testProto);
                 }
+                progressBar__protoNodes.style.width = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
                 nodesByFqn.$F.sort(nodeFolderSort);
-                GTree.nodeTree.resizefull();
-                GTree.nodeTree.redraw();
                 break;
         }
     }

@@ -397,7 +397,8 @@ function loadPrototypes(gomArchive, data, torPath, dv) {
                         "message": 'PROTO',
                         "data": {
                             "nodes": prototypes,
-                            "numLoaded": protoLoaded
+                            "numLoaded": protoLoaded,
+                            "total": numPrototypes
                         }
                     });
                     prototypes = [];

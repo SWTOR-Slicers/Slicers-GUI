@@ -1046,6 +1046,7 @@ function initNodeViewer () {
   nodeViewerWin.once('ready-to-show', () => nodeViewerWin.show());
   
   nodeViewerWin.removeMenu();
+  nodeViewerWin.webContents.openDevTools();
   nodeViewerWin.loadFile(`${__dirname}/src/html/NodeViewer.html`);
   
   
@@ -1078,7 +1079,8 @@ function initGenHash () {
     frame: false,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      nodeIntegrationInWorker: true
     },
     icon: 'src/img/SlicersLogo.ico',
     show: false

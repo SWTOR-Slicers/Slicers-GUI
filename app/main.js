@@ -1109,7 +1109,7 @@ function initGenHash () {
 function initGenHashListeners(window) {
   ipcMain.on('readAllNodesHashPrep', (event, data) => { readAllNodes(window); });
   ipcMain.on('genHash', (event, data) => {
-    window.close();
+    // window.close();
     mainWindow.webContents.send('genHashStarted');
   });
   ipcMain.on('hashProgress', (event, data) => {

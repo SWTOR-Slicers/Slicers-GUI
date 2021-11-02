@@ -109,9 +109,9 @@ function initHashWorker() {
         type: "module"
     });
 
-    nodeWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    nodeWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    nodeWorker.onmessage = (e) => {
+    hashWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    hashWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    hashWorker.onmessage = (e) => {
         switch (e.data.message) {
             case "complete":
                 break;
@@ -121,7 +121,7 @@ function initHashWorker() {
         }
     }
 
-    nodeWorker.postMessage({
+    hashWorker.postMessage({
         "message": "init",
         "data": resourcePath
     });
@@ -169,6 +169,7 @@ function initListeners() {
     cancelGen.addEventListener('click', (e) => {
         ipcRenderer.send('cancelHashGen', '');
         document.querySelector('.header-container').innerHTML = 'Select file types to generate';
+        spinner.classList.add('hidden');
         hashTypeCont.classList.toggle('hidden');
         genHashes.innerHTML = 'Load Nodes';
     });
@@ -181,6 +182,8 @@ function initListeners() {
         
             ipcRenderer.send('readAllNodesHashPrep');
         } else {
+            ipcRenderer.send('genHashes');
+
             hashWorker.postMessage({
                 "message": 'genHash',
                 "data": {
@@ -188,7 +191,6 @@ function initListeners() {
                     "nodesByFqn": nodesByFqn
                 }
             });
-            ipcRenderer.send('genHashes');
             document.querySelector('.header-container').innerHTML = 'Select file types to generate';
             hashTypeCont.classList.toggle('hidden');
             genHashes.innerHTML = 'Load Nodes';

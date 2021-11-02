@@ -38,11 +38,11 @@ onmessage = (e) => {
             });
             break;
         case "genHash":
-            generateHash(e.data.data.nodesByFqn);
+            generateHash(e.data.data.nodesByFqn, e.data.data.checked);
             break;
     }
 }
 
-function generateHash(nodesByFqn) {
+function generateHash(nodesByFqn, checked) {
 
 }

@@ -299,7 +299,9 @@ class GomTree {
 }
 
 class StaticGomTree {
-    constructor () {}
+    constructor () {
+        this.loadedBuckets = 0;
+    }
 
     /**
      * Adds a node to the Gom tree, and saves the created nodeElem to a dictionary

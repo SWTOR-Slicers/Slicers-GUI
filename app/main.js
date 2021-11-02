@@ -442,6 +442,9 @@ function initMainListeners() {
     fs.writeFileSync(path.join(resourcePath, 'config.json'), JSON.stringify(json, null, '\t'), 'utf-8');
   });
   ipcMain.on('openLink', (event, data) => { shell.openExternal(data[0]); });
+  ipcMain.on('decompressZlib', async (event, data) => {
+    event.returnValue = await decompressZlib(data[0], data[1]);
+  });
 }
 //boot config
 function initSetupUI() {
@@ -1066,10 +1069,7 @@ function initNodeViewer () {
   initNodeViewerListeners(nodeViewerWin);
 }
 function initNodeViewerListeners(window) {
-  ipcMain.on('readAllNodes', (event, data) => { readAllNodes(); });
-  ipcMain.on('decompressZlib', async (event, data) => {
-    event.returnValue = await decompressZlib(data[0], data[1]);
-  });
+  ipcMain.on('readAllNodes', (event, data) => { readAllNodes(window); });
 }
 //Gen Hash
 function initGenHash () {
@@ -1107,7 +1107,17 @@ function initGenHash () {
   initGenHashListeners(genHashWin);
 }
 function initGenHashListeners(window) {
-  ipcMain.on('genHash', (event, data) => { genHashes('extractProgBar', data[0]); });
+  ipcMain.on('readAllNodesHashPrep', (event, data) => { readAllNodes(window); });
+  ipcMain.on('genHash', (event, data) => {
+    window.close();
+    mainWindow.webContents.send('genHashStarted');
+  });
+  ipcMain.on('hashProgress', (event, data) => {
+    mainWindow.webContents.send('updateProgBar', ['extractionBarId', data[0]]);
+  });
+  ipcMain.on('hashComplete', (event, data) => {
+    mainWindow.webContents.send("genHashCompl", "");
+  });
   ipcMain.on('cancelHashGen', (event, data) => { window.close(); });
 }
 
@@ -1166,26 +1176,6 @@ async function changeFiles(progBarId, params) {
       console.log(`child process exited with status: ${code.toString()}`);
       fileChangerWin.webContents.send("changerChangedFiles", [code == 0]);
     });
-  } catch (err) {
-    console.log(err);
-  }
-}
-async function genHashes(progBarId, dat) {
-  mainWindow.webContents.send('genHashStarted');
-
-  try {
-    const hashTypes = dat[0];
-    const DOM = dat[1];
-
-    const output = path.join(cache.outputFolder, 'resources', 'nodes');
-    const domObjTmpPath = path.join(cache.outputFolder, 'tmp', 'DOMObject.json');
-    fs.writeFileSync(domObjTmpPath, JSON.stringify(DOM));
-
-    const params = [output, domObjTmpPath, hashTypes];
-    const extrProc = child.spawn(path.join(resourcePath, "scripts", "SlicersGenHashes.exe"), params);
-    extrProc.stdout.on('data', (data) => { const lDat = data.toString().split(' '); const percent = `${lDat[0] / lDat[1] * 100}%`; mainWindow.webContents.send('updateProgBar', [progBarId, percent]); });
-    extrProc.stderr.on('data', (data) => { console.log(`Error: ${data.toString()}`); });
-    extrProc.on('exit', (code) => { console.log(`child process exited with status: ${code.toString()}`); mainWindow.webContents.send("genHashCompl", ""); });
   } catch (err) {
     console.log(err);
   }
@@ -1325,12 +1315,12 @@ async function updateJSON(param, val) {
   fs.writeFileSync(path.join(resourcePath, "config.json"), JSON.stringify(json, null, '\t'), 'utf-8');
 }
 
-async function readAllNodes() {
+async function readAllNodes(window) {
   try {
     let torFile = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_global_1.tor' : 'swtor_test_main_global_1.tor');
     let torFile2 = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_systemgenerated_gom_1.tor' : 'swtor_test_main_systemgenerated_gom_1.tor');
 
-    nodeViewerWin.webContents.send('nodeTorPath', [torFile, torFile2]);
+    window.webContents.send('nodeTorPath', [torFile, torFile2]);
   } catch (err) {
     console.log(err);
   }

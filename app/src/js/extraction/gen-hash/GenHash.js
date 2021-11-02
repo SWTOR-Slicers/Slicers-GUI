@@ -1,5 +1,6 @@
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { nodesByFqn, nodeFolderSort, StaticGomTree } from "../../viewers/node-viewer/GomTree.js";
+import { NodeEntr } from "../../classes/Node.js";
 
 const { ipcRenderer } = require("electron");
 const fs = require("fs");
@@ -39,7 +40,8 @@ const hashTypes = [
     "XML"
 ];
 const checkedTypes = {};
-let worker;
+let nodeWorker;
+let hashWorker;
 let _dom = null;
 const GTree = new StaticGomTree();
 
@@ -53,17 +55,19 @@ function init() {
         hashTypeCont.appendChild(typeCont);
     }
     initListeners();
-    initWorker();
+    initSubs();
+    initNodeWorker();
+    initHashWorker();
 }
 
-function initWorker() {
-    worker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "NodeWorker.js"), {
+function initNodeWorker() {
+    nodeWorker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "NodeWorker.js"), {
         type: "module"
     });
 
-    worker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    worker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    worker.onmessage = (e) => {
+    nodeWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    nodeWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    nodeWorker.onmessage = (e) => {
         switch (e.data.message) {
             case "DomElements":
                 _dom = e.data.data;
@@ -74,9 +78,9 @@ function initWorker() {
                     const node = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
                     GTree.addNode(node);
                 }
-                GTree.nodeTree.loadedBuckets++;
+                GTree.loadedBuckets++;
                 nodesByFqn.$F.sort(nodeFolderSort);
-                progressBar__baseNodes.style.width = `${GTree.nodeTree.loadedBuckets / 500 * 100}%`;
+                progressBar__baseNodes.style.width = `${GTree.loadedBuckets / 500 * 100}%`;
                 break;
             case "PROTO":
                 for (const n of e.data.data.nodes) {
@@ -85,9 +89,42 @@ function initWorker() {
                 }
                 progressBar__protoNodes.style.width = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
                 nodesByFqn.$F.sort(nodeFolderSort);
+                if (progressBar__protoNodes.style.width == '100%') {
+                    document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+                    spinner.classList.toggle('hidden');
+                    genHashes.innerHTML = 'Generate';
+                    genHashes.classList.toggle('disabled');
+                }
                 break;
         }
     }
+
+    nodeWorker.postMessage({
+        "message": "init",
+        "data": resourcePath
+    });
+}
+function initHashWorker() {
+    hashWorker = new Worker(path.join(sourcePath, "js", "extraction", "gen-hash", "HashWorker.js"), {
+        type: "module"
+    });
+
+    nodeWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    nodeWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    nodeWorker.onmessage = (e) => {
+        switch (e.data.message) {
+            case "complete":
+                break;
+            case "progress":
+                ipcRenderer.send('hashProgress', [e.data.data.progress]);
+                break;
+        }
+    }
+
+    nodeWorker.postMessage({
+        "message": "init",
+        "data": resourcePath
+    });
 }
 
 function initListeners() {
@@ -142,24 +179,32 @@ function initListeners() {
             document.querySelector('.header-container').innerHTML = 'Loading Nodes...';
             genHashes.classList.toggle('disabled');
         
-            worker.postMessage({
-                "message": "init",
-                "data": resourcePath
-            });
-
-            // this is to simulate it completing
-            setTimeout(() => {
-                document.querySelector('.header-container').innerHTML = 'Loading Complete!';
-                spinner.classList.toggle('hidden');
-                genHashes.innerHTML = 'Generate';
-                genHashes.classList.toggle('disabled');
-            }, 5000);
+            ipcRenderer.send('readAllNodesHashPrep');
         } else {
-            ipcRenderer.send('genHashes', [getChecked()]);
+            hashWorker.postMessage({
+                "message": 'genHash',
+                "data": {
+                    "checked": getChecked(),
+                    "nodesByFqn": nodesByFqn
+                }
+            });
+            ipcRenderer.send('genHashes');
             document.querySelector('.header-container').innerHTML = 'Select file types to generate';
             hashTypeCont.classList.toggle('hidden');
             genHashes.innerHTML = 'Load Nodes';
         }
+    });
+}
+
+function initSubs() {
+    ipcRenderer.on('nodeTorPath', (event, data) => {
+        nodeWorker.postMessage({
+            "message": 'loadNodes',
+            "data": {
+                "torFiles": data,
+                "loadProts": true
+            }
+        });
     });
 }
 

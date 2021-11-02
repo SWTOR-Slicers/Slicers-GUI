@@ -392,13 +392,13 @@ function loadPrototypes(gomArchive, data, torPath, dv) {
                 protoLoaded++;
 
                 // This batches together prototype nodes so that we dont lag out the app by batching 16 thousand at once
-                if (protoLoaded % 100 == 0 || protoLoaded == numPrototypes) {
+                if (protoLoaded % 500 == 0 || protoLoaded == 16650) {
                     postMessage({
                         "message": 'PROTO',
                         "data": {
                             "nodes": prototypes,
                             "numLoaded": protoLoaded,
-                            "total": numPrototypes
+                            "total": 16650
                         }
                     });
                     prototypes = [];
@@ -406,6 +406,7 @@ function loadPrototypes(gomArchive, data, torPath, dv) {
             }
         }
     }
+    console.log(`broke prots after ${protoLoaded} of ${numPrototypes}`);
 }
 function loadPrototype(id, dv, prototype) {
     let pos = 0;

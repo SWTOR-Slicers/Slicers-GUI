@@ -3,7 +3,6 @@ import { nodesByFqn, nodeFolderSort, StaticGomTree } from "../../viewers/node-vi
 import { NodeEntr } from "../../classes/Node.js";
 
 const { ipcRenderer } = require("electron");
-const fs = require("fs");
 const path = require("path");
 
 //DOM Variables
@@ -12,6 +11,7 @@ const spinner = document.getElementById('spinner');
 const progressBar__clientGOM = document.getElementById('progressBar__clientGOM');
 const progressBar__baseNodes = document.getElementById('progressBar__baseNodes');
 const progressBar__protoNodes = document.getElementById('progressBar__protoNodes');
+const progressBar__assets = document.getElementById('progressBar__assets');
 
 //buttons
 const genHashes = document.getElementById('genHashes');
@@ -41,13 +41,12 @@ const hashTypes = [
 ];
 const checkedTypes = {};
 let nodeWorker;
+let assetWorker;
 let hashWorker;
 let _dom = null;
 const GTree = new StaticGomTree();
 
-const decomprFunc = (params) => {
-    return ipcRenderer.sendSync('decompressZlib', [resourcePath, params]);
-}
+const decomprFunc = (params) => { return ipcRenderer.sendSync('decompressZlib', [resourcePath, params]); }
 
 function init() {
     for (const hType of hashTypes) {
@@ -57,6 +56,7 @@ function init() {
     initListeners();
     initSubs();
     initNodeWorker();
+    initAssetWorker();
     initHashWorker();
 }
 
@@ -104,6 +104,9 @@ function initNodeWorker() {
         "data": resourcePath
     });
 }
+function initAssetWorker() {
+
+}
 function initHashWorker() {
     hashWorker = new Worker(path.join(sourcePath, "js", "extraction", "gen-hash", "HashWorker.js"), {
         type: "module"
@@ -114,9 +117,11 @@ function initHashWorker() {
     hashWorker.onmessage = (e) => {
         switch (e.data.message) {
             case "complete":
+                const names = e.data.data;
+                console.log(names);
                 break;
             case "progress":
-                ipcRenderer.send('hashProgress', [e.data.data.progress]);
+                
                 break;
         }
     }
@@ -174,13 +179,13 @@ function initListeners() {
         genHashes.innerHTML = 'Load Nodes';
     });
     genHashes.addEventListener('click', (e) => {
-        if (genHashes.innerHTML == 'Load Nodes') {
+        if (genHashes.innerHTML == 'Load Data') {
             hashTypeCont.classList.toggle('hidden');
             spinner.classList.toggle('hidden');
-            document.querySelector('.header-container').innerHTML = 'Loading Nodes...';
+            document.querySelector('.header-container').innerHTML = 'Loading Data...';
             genHashes.classList.toggle('disabled');
         
-            ipcRenderer.send('readAllNodesHashPrep');
+            ipcRenderer.send('readAllDataHashPrep');
         } else {
             ipcRenderer.send('genHashes');
 
@@ -188,23 +193,30 @@ function initListeners() {
                 "message": 'genHash',
                 "data": {
                     "checked": getChecked(),
-                    "nodesByFqn": nodesByFqn
+                    "nodesByFqn": nodesByFqn,
+                    "assets": assets
                 }
             });
             document.querySelector('.header-container').innerHTML = 'Select file types to generate';
             hashTypeCont.classList.toggle('hidden');
-            genHashes.innerHTML = 'Load Nodes';
+            genHashes.innerHTML = 'Load Data';
         }
     });
 }
 
 function initSubs() {
-    ipcRenderer.on('nodeTorPath', (event, data) => {
+    ipcRenderer.on('dataTorPaths', (event, data) => {
         nodeWorker.postMessage({
             "message": 'loadNodes',
             "data": {
-                "torFiles": data,
+                "torFiles": data[0],
                 "loadProts": true
+            }
+        });
+        assetWorker.postMessage({
+            "message": 'loadAssets',
+            "data": {
+                "torFiles": data[1]
             }
         });
     });

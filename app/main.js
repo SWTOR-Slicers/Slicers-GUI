@@ -1107,15 +1107,12 @@ function initGenHash () {
   initGenHashListeners(genHashWin);
 }
 function initGenHashListeners(window) {
-  ipcMain.on('readAllNodesHashPrep', (event, data) => { readAllNodes(window); });
+  ipcMain.on('readAllDataHashPrep', (event, data) => { readAllDataPrep(window); });
   ipcMain.on('genHash', (event, data) => {
-    // window.close();
     mainWindow.webContents.send('genHashStarted');
   });
-  ipcMain.on('hashProgress', (event, data) => {
-    mainWindow.webContents.send('updateProgBar', ['extractionBarId', data[0]]);
-  });
   ipcMain.on('hashComplete', (event, data) => {
+    window.close();
     mainWindow.webContents.send("genHashCompl", "");
   });
   ipcMain.on('cancelHashGen', (event, data) => { window.close(); });
@@ -1321,6 +1318,29 @@ async function readAllNodes(window) {
     let torFile2 = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_systemgenerated_gom_1.tor' : 'swtor_test_main_systemgenerated_gom_1.tor');
 
     window.webContents.send('nodeTorPath', [torFile, torFile2]);
+  } catch (err) {
+    console.log(err);
+  }
+}
+async function readAllDataPrep(window) {
+  try {
+    let torFile = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_global_1.tor' : 'swtor_test_main_global_1.tor');
+    let torFile2 = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_systemgenerated_gom_1.tor' : 'swtor_test_main_systemgenerated_gom_1.tor');
+
+    let values = [];
+    const lastPath = path.normalize(path.join(cache.assetsFolder, `../${cache.extraction.version == 'Live' ? 'swtor' : 'publictest'}/retailclient/main_gfx_1.tor`));
+    const tors = extractionPresetConsts[cache.extraction.version]["names"];
+    for (const tor of tors) {
+      values.push(path.join(cache.assetsFolder, tor));
+    }
+    if (fs.existsSync(lastPath)) {
+      values.push(lastPath);
+    }
+
+    window.webContents.send('dataTorPath', [
+      [torFile, torFile2],
+      values
+    ]);
   } catch (err) {
     console.log(err);
   }

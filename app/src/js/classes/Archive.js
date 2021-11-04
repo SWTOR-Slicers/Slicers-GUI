@@ -66,12 +66,14 @@ class Archive {
                 for (let i = 12, c = 12 + ftCapacity * 34; i < c; i += 34) {
                     let offset = dv.getUint32(i, !0);
                     if (offset === 0) continue;
+                    const headerSize = dv.getUint32(i+4, true);
                     offset += dv.getUint32(i + 8, !0);
 
                     const comprSize = dv.getUint32(i + 12, !0);
                     const uncomprSize = dv.getUint32(i + 16, !0);
                     const sh = dv.getUint32(i + 20, !0);
                     const ph = dv.getUint32(i + 24, !0);
+                    const crc = dv.getUint32(i + 28, true);
 
                     if (sh === 0xC75A71E6 && ph === 0xE4B96113) continue;
                     if (sh === 0xCB34F836 && ph === 0x8478D2E1) continue;
@@ -82,9 +84,11 @@ class Archive {
                     fileObj.sh = sh;
                     fileObj.ph = ph;
                     fileObj.offset = offset;
+                    fileObj.metaDataSize = headerSize;
                     fileObj.uncomprSize = uncomprSize;
                     fileObj.comprSize = (compression !== 0) ? comprSize : 0;
                     fileObj.isCompressed = compression !== 0;
+                    fileObj.metaDataCheckSum = crc;
                     fileObj.name = undefined;
                     fileObj.fileTableNum = tableIdx;
                     fileObj.fileTableFileIdx = (i - 12) / 34;

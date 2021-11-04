@@ -49,6 +49,7 @@ let assetWorker;
 let hashWorker;
 let _dom = null;
 const GTree = new StaticGomTree();
+let archives = [];
 
 const decomprFunc = (params) => { return ipcRenderer.sendSync('decompressZlib', [resourcePath, params]); }
 
@@ -61,7 +62,7 @@ function init() {
     initSubs();
     initNodeWorker();
     initAssetWorker();
-    initHashWorker();
+    // initHashWorker();
 }
 
 function initNodeWorker() {
@@ -112,10 +113,11 @@ function initAssetWorker() {
     assetWorker.onmessage = (e) => {
         switch (e.data.message) {
             case "progress":
-                
+                progressBar__assets.style.width = e.data.data;
                 break;
             case "complete":
-                if (progressBar__protoNodes.style.width == '100%') {
+                archives = e.data.data.archives;
+                if (progressBar__assets.style.width == '100%') {
                     document.querySelector('.header-container').innerHTML = 'Loading Complete!';
                     spinner.classList.toggle('hidden');
                     generate.classList.toggle('hidden');

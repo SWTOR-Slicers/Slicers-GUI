@@ -1,6 +1,7 @@
 import { hashlittle2, uint64, readString as readStr, readVarInt, uint64C } from "../../Util.js";
 import { GOM } from "../../classes/util/Gom.js";
 import { DomLoader } from "../../classes/DomLoaders.js";
+import { Archive } from "../../classes/Archive.js";
 
 const path = require('path');
 const fs = require('fs');
@@ -45,11 +46,26 @@ onmessage = (e) => {
 }
 
 async function loadArchives(torFiles) {
-    const loadedArchives = Promise.all()
+    let numLoaded = 0;
+    const loadedArchives = await Promise.all(torFiles.map(tf => loadArchive(tf, numLoaded, torFiles.length)));
+    postMessage({
+        "message": "",
+        "data": {
+            "archives": loadedArchives
+        }
+    })
 }
 
-function loadArchive(torPath) {
+async function loadArchive(torPath, numLoaded, totalTors) {
+    const archive = new Archive(torPath);
+    await archive.load();
 
+    numLoaded++;
+
+    postMessage({
+        "message": "progress",
+        "data": `${numLoaded / totalTors * 100}%`
+    })
 }
 
 // Utility functions

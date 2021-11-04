@@ -406,7 +406,6 @@ function loadPrototypes(gomArchive, data, torPath, dv) {
             }
         }
     }
-    console.log(`broke prots after ${protoLoaded} of ${numPrototypes}`);
 }
 function loadPrototype(id, dv, prototype) {
     let pos = 0;

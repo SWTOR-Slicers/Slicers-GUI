@@ -1337,7 +1337,7 @@ async function readAllDataPrep(window) {
       values.push(lastPath);
     }
 
-    window.webContents.send('dataTorPath', [
+    window.webContents.send('dataTorPaths', [
       [torFile, torFile2],
       values
     ]);

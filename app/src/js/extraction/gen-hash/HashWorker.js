@@ -13,6 +13,7 @@ const cache = {
 let decompressZlib = function(){};
 let totalFilesSearched;
 let totalNamesFound;
+let hash;
 
 onmessage = (e) => {
     switch (e.data.message) {
@@ -38,6 +39,8 @@ onmessage = (e) => {
                 */},
                 references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
             });
+            hash = new HashDictionary(path.join(path.dirname(cache['configPath']), 'hash', 'hashes_filename.txt'));
+            hash.loadHashList();
             break;
         case "genHash":
             totalFilesSearched = 0;

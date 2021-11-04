@@ -52,8 +52,9 @@ class HashDictionary {
         }).on('data', (chunk) => {
             downloaded += chunk.length;
             const percentage = (100.0 * downloaded / len).toFixed(2);
-            progressBarElem.style.width = `${percentage}%`;
-
+            if (progressBarElem) {
+                progressBarElem.style.width = `${percentage}%`;
+            }
         }));
     }
 

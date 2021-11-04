@@ -344,10 +344,11 @@ function parseNodeFields(type, value) {
     switch (type) {
     case DOM_TYPES.ID:
     case DOM_TYPES.INTEGER:
-    case DOM_TYPES.ENUM:
     case DOM_TYPES.SCRIPTREF:
     case DOM_TYPES.NODEREF:
     case DOM_TYPES.TIMEINTERVAL:
+        return uint64C(value);
+    case DOM_TYPES.ENUM:
         return uint64C(value);
     case DOM_TYPES.BOOLEAN:
     case DOM_TYPES.FLOAT:
@@ -401,16 +402,17 @@ function parseNodeFields(type, value) {
     }
 }
 
-function convertToJSON(obj, node) {
+function convertToJSON(obj, node, _dom) {
     const retJSON = {};
     retJSON[GOM.classes[node.baseClass] || node.baseClass] = new Map();
 
     for (let i = 0; i < obj.length; i++) {
         const field = obj[i];
+        const type = domTypeToString(field.type);
         retJSON[GOM.classes[node.baseClass] || node.baseClass].set((GOM.fields[field.id] || field.id), {
             "Id": field.id,
-            "type": domTypeToString(field.type),
-            "value": parseNodeFields(field.type, field.value)
+            "type": type,
+            "value": type == 'Enum' ? _dom[2][_dom[3][field.id].data].values[uint64C(field.value)-1] : parseNodeFields(field.type, field.value)
         });
     }
 
@@ -526,7 +528,7 @@ function formatEntr(obj) {
     return retVal;
 }
 
-function convertToXML(obj, node) {
+function convertToXML(obj, node, _dom) {
     const parsed = convertToJSON(obj, node);
     const className = Object.keys(parsed)[0];
     const prepObj = {};
@@ -638,10 +640,10 @@ class Node {
                 data = dat.buffer.slice(this.node.bkt.offset + this.node.dataOffset + 2, this.node.bkt.offset + this.node.dataOffset + this.node.dataLength - 4);
                 break;
             case "xml":
-                data = convertToXML(this.obj, this.node);
+                data = convertToXML(this.obj, this.node, this._dom);
                 break;
             case "json":
-                data = JSON.stringify(convertToJSON(this.obj, this.node), serializeMap, '\t');
+                data = JSON.stringify(convertToJSON(this.obj, this.node, this._dom), serializeMap, '\t');
                 break;
         }
 
@@ -719,6 +721,7 @@ class ProtoNode {
             }
 
             this.node = node;
+            this._dom = _dom;
             this.obj = obj;
         }
     }
@@ -772,10 +775,10 @@ class ProtoNode {
                 data = torData.slice(this.dataOffset + 2, this.dataOffset + this.dataLength - 4);
                 break;
             case "xml":
-                data = convertToXML(this.obj, this.node);
+                data = convertToXML(this.obj, this.node, this._dom);
                 break;
             case "json":
-                data = JSON.stringify(convertToJSON(this.obj, this.node), serializeMap, '\t');
+                data = JSON.stringify(convertToJSON(this.obj, this.node, this._dom), serializeMap, '\t');
                 break;
         }
 

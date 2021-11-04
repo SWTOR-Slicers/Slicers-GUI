@@ -8,11 +8,15 @@ const path = require("path");
 //DOM Variables
 const hashTypeCont = document.getElementById('hashTypeCont');
 const spinner = document.getElementById('spinner');
+const generate = document.getElementById('generate');
+
 const progressBar__clientGOM = document.getElementById('progressBar__clientGOM');
 const progressBar__baseNodes = document.getElementById('progressBar__baseNodes');
 const progressBar__protoNodes = document.getElementById('progressBar__protoNodes');
 const progressBar__assets = document.getElementById('progressBar__assets');
 
+const namesFound = document.getElementById('namesFound');
+const numSearched = document.getElementById('numSearched');
 //buttons
 const genHashes = document.getElementById('genHashes');
 const cancelGen = document.getElementById('cancelHashGen');
@@ -89,12 +93,6 @@ function initNodeWorker() {
                 }
                 progressBar__protoNodes.style.width = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
                 nodesByFqn.$F.sort(nodeFolderSort);
-                if (progressBar__protoNodes.style.width == '100%') {
-                    document.querySelector('.header-container').innerHTML = 'Loading Complete!';
-                    spinner.classList.toggle('hidden');
-                    genHashes.innerHTML = 'Generate';
-                    genHashes.classList.toggle('disabled');
-                }
                 break;
         }
     }
@@ -105,7 +103,33 @@ function initNodeWorker() {
     });
 }
 function initAssetWorker() {
+    assetWorker = new Worker(path.join(sourcePath, "js", "viewers", "asset-viewer", "AssetWorker.js"), {
+        type: "module"
+    });
 
+    assetWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    assetWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    assetWorker.onmessage = (e) => {
+        switch (e.data.message) {
+            case "progress":
+                
+                break;
+            case "complete":
+                if (progressBar__protoNodes.style.width == '100%') {
+                    document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+                    spinner.classList.toggle('hidden');
+                    generate.classList.toggle('hidden');
+                    genHashes.innerHTML = 'Generate';
+                    genHashes.classList.toggle('disabled');
+                }
+                break;
+        }
+    }
+
+    assetWorker.postMessage({
+        "message": "init",
+        "data": resourcePath
+    });
 }
 function initHashWorker() {
     hashWorker = new Worker(path.join(sourcePath, "js", "extraction", "gen-hash", "HashWorker.js"), {
@@ -121,7 +145,8 @@ function initHashWorker() {
                 console.log(names);
                 break;
             case "progress":
-                
+                namesFound.innerHTML = e.data.data.totalNamesFound;
+                numSearched.innerHTML = e.data.data.totalFilesSearched;
                 break;
         }
     }
@@ -174,9 +199,19 @@ function initListeners() {
     cancelGen.addEventListener('click', (e) => {
         ipcRenderer.send('cancelHashGen', '');
         document.querySelector('.header-container').innerHTML = 'Select file types to generate';
+        genHashes.innerHTML = 'Load Data';
+
+        hashTypeCont.classList.remove('hidden');
         spinner.classList.add('hidden');
-        hashTypeCont.classList.toggle('hidden');
-        genHashes.innerHTML = 'Load Nodes';
+        generate.classList.add('hidden');
+
+        progressBar__baseNodes.style.width = '0%';
+        progressBar__clientGOM.style.width = '0%';
+        progressBar__protoNodes.style.width = '0%';
+        progressBar__assets.style.width = '0%';
+
+        namesFound.innerHTML = 0;
+        numSearched.innerHTML = 0;
     });
     genHashes.addEventListener('click', (e) => {
         if (genHashes.innerHTML == 'Load Data') {

@@ -4,6 +4,7 @@ import { NodeEntr } from "../../classes/Node.js";
 
 const { ipcRenderer } = require("electron");
 const path = require("path");
+const fs = require("fs");
 
 //DOM Variables
 const hashTypeCont = document.getElementById('hashTypeCont');
@@ -243,17 +244,20 @@ function initListeners() {
 
 function initSubs() {
     ipcRenderer.on('dataTorPaths', (event, data) => {
+        const dat = fs.readFileSync(data[0]);
+        const json = JSON.parse(dat);
+        console.log(json);
         nodeWorker.postMessage({
             "message": 'loadNodes',
             "data": {
-                "torFiles": data[0],
+                "torFiles": json.nodeTors,
                 "loadProts": true
             }
         });
         assetWorker.postMessage({
             "message": 'loadAssets',
             "data": {
-                "torFiles": data[1]
+                "torFiles": json.torFiles
             }
         });
     });

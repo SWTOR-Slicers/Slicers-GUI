@@ -1337,10 +1337,17 @@ async function readAllDataPrep(window) {
       values.push(lastPath);
     }
 
-    window.webContents.send('dataTorPaths', [
-      [torFile, torFile2],
-      values
-    ]);
+    const torsName = path.join(cache['outputFolder'], 'tmp', `${uuidV4()}-dataPrep.json`);
+    fs.mkdirSync(path.dirname(torsName), { recursive: true });
+    fs.writeFileSync(torsName, JSON.stringify({
+      "nodeTors": [
+        torFile,
+        torFile2
+      ],
+      "torFiles": values
+    }));
+
+    window.webContents.send('dataTorPaths', [torsName]);
   } catch (err) {
     console.log(err);
   }

@@ -1,10 +1,7 @@
-import { hashlittle2, uint64, readString as readStr, readVarInt, uint64C } from "../../Util.js";
-import { GOM } from "../../classes/util/Gom.js";
-import { DomLoader } from "../../classes/DomLoaders.js";
+import { readString as readStr, readVarInt } from "../../Util.js";
 import { Archive } from "../../classes/Archive.js";
 
 const path = require('path');
-const fs = require('fs');
 const edge = require('electron-edge-js');
 
 const cache = {

@@ -1,4 +1,6 @@
-const { promises: { readFile }, readFileSync, existsSync, mkdirSync } = require('fs');
+import { FileWrapper } from './FileWrapper.js';
+
+const { promises: { readFile }, readFileSync, open, read } = require('fs');
 const path = require('path');
 
 class ArchiveEntryTable {
@@ -24,80 +26,84 @@ class ArchiveEntry {
 }
 
 class Archive {
-    constructor(file, idx) {
+    constructor(file, idx, loadTables = false) {
         this.file = file;
         this.idx = idx;
-        this.tables = {};
+        this.tables = [];
         this.entries = {};
+
+        this.data = new FileWrapper(this.file);
+
+        let mypHeader = this.data.read(0x24);
+        if (mypHeader.readUint32() !== 0x50594d) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Not a .tor file (Wrong file header)`);
+        
+        this.version = mypHeader.readUint32();
+        if (this.version !== 5) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Only version 5 is supported, file has ${datView.getUint32(4, true)}`);
+        
+        this.bom = mypHeader.readUint32()
+        if (this.bom !== 0xFD23EC43) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Unexpected byte order`);
+
+        this.tableOffset = mypHeader.readUint64();
+        if (this.tableOffset === 0) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. File is empty`);
+
+        this.tableCapacity = mypHeader.readUint32();
+        this.totalFiles = mypHeader.readUint32();
+        if (loadTables) {
+            this.#readFileTables();
+        }
     }
 
-    async load() {
-        readFile(this.file).then(buff => {
-            const fileName = path.basename(this.file);
-            const data = buff.buffer;
-            const dv = new DataView(data);
-                
-            let ftOffset = 0;
-            let ftCapacity = 1000;
-            if (dv.getUint32(0, !0) !== 0x50594d) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Not a .tor file (Wrong file header)`);
-            if (dv.getUint32(4, !0) !== 5) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Only version 5 is supported, file has ${dv.getUint32(4, true)}`);
-            if (dv.getUint32(8, !0) !== 0xFD23EC43) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Unexpected byte order`);
+    async #readFileTables() {
+        console.log('loading archive line 37');
+        const fileName = path.basename(this.file);
 
-            ftOffset = datView.getUint32(12, !0);
-            if (ftOffset === 0) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. File is empty`);
+        this.entries = {};
+        while (this.tableOffset > 0n) {
+            this.data.seek(this.tableOffset, 0);
+            let fileTableHeader = this.data.read(0xC);
+            this.tableCapacity = fileTableHeader.readUint32();
+            this.tableOffset = fileTableHeader.readUint64(); // not sure if this is correct, or line after is
 
-            while (ftOffset != 0) {
-                const blob = data.slice(ftOffset, ftOffset + 12 + ftCapacity * 34);
-                const dv = new DataView(blob);
+            // this.tableOffset = dv.getUint32(4, !0); // not sure if this is correct, or line before is
 
-                const newCapacity = dv.getUint32(0, !0);
-                if (newCapacity !== ftCapacity) {
-                    console.error('Expected capacity of' + ftCapacity + 'but saw capacity' + newCapacity + 'in' + fileName);
-                    ftCapacity = newCapacity;
-                    break;
-                }
+            let fileTable = this.data.read(this.tableCapacity * 0x22);
+            const table = new ArchiveEntryTable(this.tableCapacity, this.tableOffset);
+            const tableIdx = this.tables.length;
+            this.tables.push(table);
 
-                const table = new ArchiveEntryTable(ftCapacity, ftOffset);
-                const tableIdx = Object.values().length;
-                this.tables[tableIdx] = table;
+            for (let i = 0; i < this.tableCapacity; ++i) {
+                let offset = fileTable.readUint64();
+                if (offset === 0) continue;
+                const headerSize = fileTable.readUint32();
 
-                ftOffset = dv.getUint32(4, !0);
+                const comprSize = fileTable.readUint32();
+                const uncomprSize = fileTable.readUint32();
+                const sh = fileTable.readUint32();
+                const ph = fileTable.readUint32();
+                const crc = fileTable.readUint32();
 
-                for (let i = 12, c = 12 + ftCapacity * 34; i < c; i += 34) {
-                    let offset = dv.getUint32(i, !0);
-                    if (offset === 0) continue;
-                    const headerSize = dv.getUint32(i+4, true);
-                    offset += dv.getUint32(i + 8, !0);
+                if (sh === 0xC75A71E6 && ph === 0xE4B96113) continue;
+                if (sh === 0xCB34F836 && ph === 0x8478D2E1) continue;
+                if (sh === 0x02C9CF77 && ph === 0xF077E262) continue;
 
-                    const comprSize = dv.getUint32(i + 12, !0);
-                    const uncomprSize = dv.getUint32(i + 16, !0);
-                    const sh = dv.getUint32(i + 20, !0);
-                    const ph = dv.getUint32(i + 24, !0);
-                    const crc = dv.getUint32(i + 28, true);
+                const compression = fileTable.readUint8();
+                const fileObj = new ArchiveEntry(
+                    offset,
+                    headerSize,
+                    (compression !== 0) ? comprSize : 0,
+                    uncomprSize,
+                    crc,
+                    compression !== 0,
+                    ph,
+                    sh,
+                    tableIdx,
+                    i
+                );
 
-                    if (sh === 0xC75A71E6 && ph === 0xE4B96113) continue;
-                    if (sh === 0xCB34F836 && ph === 0x8478D2E1) continue;
-                    if (sh === 0x02C9CF77 && ph === 0xF077E262) continue;
-
-                    const compression = dv.getUint8(i + 32);
-                    const fileObj = new ArchiveEntry();
-                    fileObj.sh = sh;
-                    fileObj.ph = ph;
-                    fileObj.offset = offset;
-                    fileObj.metaDataSize = headerSize;
-                    fileObj.uncomprSize = uncomprSize;
-                    fileObj.comprSize = (compression !== 0) ? comprSize : 0;
-                    fileObj.isCompressed = compression !== 0;
-                    fileObj.metaDataCheckSum = crc;
-                    fileObj.name = undefined;
-                    fileObj.fileTableNum = tableIdx;
-                    fileObj.fileTableFileIdx = (i - 12) / 34;
-
-                    const hash = sh + '|' + ph;
-                    this.entries[hash] = fileObj;
-                }
+                const hash = fileObj.sh + '|' + fileObj.ph;
+                this.entries[hash] = fileObj;
             }
-        });
+        }
     }
 }
 

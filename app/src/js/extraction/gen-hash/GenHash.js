@@ -63,7 +63,7 @@ function init() {
     initSubs();
     initNodeWorker();
     initAssetWorker();
-    // initHashWorker();
+    initHashWorker();
 }
 
 function initNodeWorker() {
@@ -114,7 +114,7 @@ function initAssetWorker() {
     assetWorker.onmessage = (e) => {
         switch (e.data.message) {
             case "progress":
-                progressBar__assets.style.width = e.data.data;
+                progressBar__assets.style.width = `${e.data.data.numLoaded / e.data.data.totalTors * 100}%`;
                 break;
             case "complete":
                 archives = e.data.data.archives;

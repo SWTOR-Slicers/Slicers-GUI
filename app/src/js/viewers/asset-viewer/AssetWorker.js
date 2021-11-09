@@ -22,7 +22,10 @@ onmessage = (e) => {
 
 async function loadArchives(torFiles) {
     let numLoaded = 0;
-    const loadedArchives = await Promise.all(torFiles.map((tf, idx) => loadArchive(tf, numLoaded, torFiles.length, idx)));
+    const loadedArchives = await Promise.all(torFiles.map((tf, idx) => {
+        numLoaded++;
+        loadArchive(tf, numLoaded, torFiles.length, idx);
+    }));
     postMessage({
         "message": "",
         "data": {
@@ -34,11 +37,12 @@ async function loadArchives(torFiles) {
 async function loadArchive(torPath, numLoaded, totalTors, idx) {
     const archive = new Archive(torPath, idx, true);
 
-    numLoaded++;
-
     postMessage({
         "message": "progress",
-        "data": `${numLoaded / totalTors * 100}%`
+        "data": {
+            "numLoaded": numLoaded,
+            "totalTors": totalTors
+        }
     });
 
     return archive;

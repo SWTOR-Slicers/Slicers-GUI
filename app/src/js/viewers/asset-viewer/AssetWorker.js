@@ -1,4 +1,4 @@
-import { Archive } from "../../classes/Archive.js";
+import { Archive } from "../../classes/formats/Archive.js";
 
 const path = require('path');
 

@@ -1,4 +1,4 @@
-import { FileWrapper } from './FileWrapper.js';
+import { FileWrapper } from '../util/FileWrapper.js';
 
 const { promises: { readFile }, readFileSync, open, read } = require('fs');
 const path = require('path');
@@ -54,17 +54,12 @@ class Archive {
     }
 
     async #readFileTables() {
-        console.log('loading archive line 37');
-        const fileName = path.basename(this.file);
-
         this.entries = {};
         while (this.tableOffset > 0n) {
             this.data.seek(this.tableOffset, 0);
             let fileTableHeader = this.data.read(0xC);
             this.tableCapacity = fileTableHeader.readUint32();
-            this.tableOffset = fileTableHeader.readUint64(); // not sure if this is correct, or line after is
-
-            // this.tableOffset = dv.getUint32(4, !0); // not sure if this is correct, or line before is
+            this.tableOffset = fileTableHeader.readUint64();
 
             let fileTable = this.data.read(this.tableCapacity * 0x22);
             const table = new ArchiveEntryTable(this.tableCapacity, this.tableOffset);

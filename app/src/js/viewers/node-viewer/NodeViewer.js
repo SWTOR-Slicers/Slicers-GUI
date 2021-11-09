@@ -1,7 +1,7 @@
 import { GomTree, nodesByFqn, nodeFolderSort, currentNode } from "./GomTree.js";
 import { log } from "../../universal/Logger.js";
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
-import { NodeEntr } from "../../classes/Node.js";
+import { NodeEntr } from "../../classes/formats/Node.js";
 import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 
 // Node.js imports

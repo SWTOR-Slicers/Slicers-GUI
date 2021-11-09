@@ -1,4 +1,4 @@
-import { readString, assert } from "../Util.js";
+import { readString, assert } from "../../Util.js";
 export class BNK {
     constructor (buffer) {
         const dv = new DataView(buffer);

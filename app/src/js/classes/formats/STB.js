@@ -1,4 +1,4 @@
-import { assert } from "../Util.js";
+import { assert } from "../../Util.js";
 
 const Decoder = new TextDecoder('utf-8');
 

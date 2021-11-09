@@ -1,5 +1,5 @@
 import { fixDpi } from "../../Util.js";
-import { NodeEntr } from "../../classes/Node.js";
+import { NodeEntr } from "../../classes/formats/Node.js";
 import { log } from "../../universal/Logger.js";
 
 const FILETREE_HEIGHT = 16;

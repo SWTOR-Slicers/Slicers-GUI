@@ -1,4 +1,4 @@
-import { ww2ogg } from "../Util.js";
+import { ww2ogg } from "../../Util.js";
 
 export class WEM {
     constructor (buffer) {

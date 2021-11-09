@@ -1,5 +1,5 @@
-import { WEM } from '../../classes/WEM.js';
-import { BNK } from '../../classes/BNK.js';
+import { WEM } from '../../classes/formats/WEM.js';
+import { BNK } from '../../classes/formats/BNK.js';
 import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { log, updateAlertType } from "../../universal/Logger.js";
 import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";

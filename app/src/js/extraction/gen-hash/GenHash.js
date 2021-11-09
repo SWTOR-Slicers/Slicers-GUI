@@ -1,6 +1,6 @@
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { nodesByFqn, nodeFolderSort, StaticGomTree } from "../../viewers/node-viewer/GomTree.js";
-import { NodeEntr } from "../../classes/Node.js";
+import { NodeEntr } from "../../classes/formats/Node.js";
 
 const { ipcRenderer } = require("electron");
 const path = require("path");

@@ -3,7 +3,7 @@ import { OrbitControls } from "../../externals/ModOrbitControls.js";
 import { Resizer } from "../../externals/Resizer.js";
 import { BufferGeometryUtils } from "../../externals/BufferGeometryUtils.js";
 import { WEBGL } from "../../externals/WedGL.js";
-import { GR2 } from "../../classes/GR2.js";
+import { GR2 } from "../../classes/formats/GR2.js";
 import { exportObj } from "../../export/ExportObj.js";
 import { exportJSON } from "../../export/ExportJSON.js";
 import { exportFBX } from "../../export/ExportFBX.js";

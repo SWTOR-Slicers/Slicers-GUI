@@ -1,7 +1,4 @@
 const fs = require('fs');
-const Parser = require('node-xml-stream');
-
-let parser = new Parser();
 
 class XML_MAT {
     constructor(dest, ext) {
@@ -12,35 +9,31 @@ class XML_MAT {
         this.errors = [];
     }
 
-    parseXML(fileStream, fullFileName, baseFolder = null) {
-        const fileName = fullFileName.Substring(fullFileName.LastIndexOf('\\') + 1);
-        const directory = fullFileName.Substring(0, fullFileName.LastIndexOf('/'));
+    parseXML(doc, fullFileName, baseFolder = null) {
+        const fileName = fullFileName.substr(fullFileName.lastIndexOf('\\') + 1);
+        const directory = fullFileName.substr(0, fullFileName.lastIndexOf('/'));
 
         try {
-            if (fileName.contains("am_")) {
-                const doc = XDocument.Load(fileStream);
-
-                const temp = fileName.Split('/').Last();
-                const fileNameNoExtension = temp.Substring(3, (temp.IndexOf('.') - 3));
+            if (fileName.includes("am_")) {
+                const temp = fileName.split('/').at(-1);
+                const fileNameNoExtension = temp.substr(3, (temp.indexOf('.') - 3));
                 let fullDirectory = "";
-                if (baseFolder != null)
-                    fullDirectory = string.Format("/resources/{0}", baseFolder);
-                else {
+                if (baseFolder != null) {
+                    fullDirectory = `/resources/${baseFolder}`;
+                } else {
                     fullDirectory = directory + '/' + fileNameNoExtension + '/';
                 }
                 const aamElement = doc.getElementsByTagName("aam")[0];
-                if (aamElement == null) {
-                    return;
-                }
+                if (aamElement == null) return;
                 const actionElement = aamElement.getElementsByTagName("actions")[0];
                 if (actionElement != null) {
-                    const actionList = actionElement.Elements("action");
+                    const actionList = actionElement.getElementsByTagName("action")[0];
 
                     for (const action of actionList) {
                         let actionName = action.getAttribute("name").childNodes[0].nodeValue;
                         if (action.getAttribute("actionProvider") != null) {
                             const actionProvider = action.getAttribute("actionProvider").childNodes[0].nodeValue + ".mph";
-                            if (fullDirectory.contains("/humanoid/humanoid/")) {
+                            if (fullDirectory.includes("/humanoid/humanoid/")) {
                                 animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfanew/") + actionProvider);
                                 animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfanew/") + actionProvider + ".amx");
                                 animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfbnew/") + actionProvider);
@@ -66,7 +59,7 @@ class XML_MAT {
                             const animationName = action.getAttribute("animName").childNodes[0].nodeValue;
                             if (actionName != animationName) {
                                 animationName += ".jba";
-                                if (fullDirectory.contains("/humanoid/humanoid/")) {
+                                if (fullDirectory.includes("/humanoid/humanoid/")) {
                                     animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfanew/") + animationName);
                                     animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfbnew/") + animationName);
                                     animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfnnew/") + animationName);
@@ -82,7 +75,7 @@ class XML_MAT {
                             }
                         }
                         actionName += ".jba";
-                        if (fullDirectory.contains("/humanoid/humanoid/")) {
+                        if (fullDirectory.includes("/humanoid/humanoid/")) {
                             animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfanew/") + actionName);
                             animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfbnew/") + actionName);
                             animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfnnew/") + actionName);
@@ -100,11 +93,11 @@ class XML_MAT {
 
                 const networkElem = aamElement.getElementsByTagName("networks")[0];
                 if (networkElem != null) {
-                    const networkList = networkElem.Descendants("literal");
+                    const networkList = networkElem.getElementsByTagName("literal")[0]; //was .decendents
                     for (const network of networkList) {
                         const fqnName = network.getAttribute("fqn").childNodes[0].nodeValue;
                         if (fqnName != null) {
-                            if (fullDirectory.contains("/humanoid/humanoid/")) {
+                            if (fullDirectory.includes("/humanoid/humanoid/")) {
                                 animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfanew/") + fqnName);
                                 animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfanew/") + fqnName + ".amx");
                                 animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfbnew/") + fqnName);
@@ -130,10 +123,8 @@ class XML_MAT {
                     }
                 }
             } else {
-                //! find equivilent to XDocument
-                const doc = XDocument.Load(fileStream);
                 for (const node of doc.childElements) {
-                    NodeChecker(node);
+                    this.nodeChecker(node);
                 }
             }
         } catch (e) {
@@ -145,11 +136,9 @@ class XML_MAT {
     }
 
     nodeChecker(node) {
-        //! Need to figure out equivilant method to hasElements
-        if (node.HasElements) {
+        if (node.childElements.length > 0) {
             for (const childnode of node.childElements) {
-                //! Need to figure out equivilant property to Name
-                if (childnode.Name == "input" && childnode.getElementsByTagName("type")[0] != null) {
+                if (childnode.tagName == "input" && childnode.getElementsByTagName("type")[0] != null) {
                     const type = childnode.getElementsByTagName("type")[0].childNodes[0].nodeValue; //new way of searching for texture file names
                     if (type == "texture") {
                         const textureName = childnode.getElementsByTagName("value")[0].childNodes[0].nodeValue;
@@ -160,30 +149,26 @@ class XML_MAT {
                             fileNames.push("\\resources\\" + scrubbedName + ".tiny.dds");
                             const fileName = scrubbedName.split('\\');
                             let startPosition = 0;
-                            if (scrubbedName.contains('\\')) startPosition = scrubbedName.LastIndexOf('\\') + 1;
+                            if (scrubbedName.includes('\\')) startPosition = scrubbedName.lastIndexOf('\\') + 1;
                             let length = scrubbedName.Length - startPosition;
                             const tagsToRemove = ["_d", "_n", "_s" ];
-                            if (tagsToRemove.Any(name => scrubbedName.EndsWith(name.ToString()))) { length -= 2; }
-                            const primaryName = scrubbedName.Substring(startPosition, length);
+
+                            if (tagsToRemove.some(name => scrubbedName.endsWith(name))) length -= 2;
+
+                            const primaryName = scrubbedName.substr(startPosition, length);
                             fileNames.push(`\\resources\\art\\shaders\\materials\\${primaryName}.mat`);
                         }
                     }
-                    /*else //catch types for analysis. Caught the following types: bool, uvscale, float, rgba, vector4
-                    {
-                        System.IO.StreamWriter file3 = new System.IO.StreamWriter("c:\\swtor\\types.txt", true);
-                        file3.WriteLine(type);
-                        file3.Close();
-                    }*/
                 }
-                const fxSpecList = childnode.Elements("fxSpecString");
-                if (childnode.Name == "AppearanceAction" && fxSpecList.Count() > 0) {
+                const fxSpecList = childnode.getElementsByTagName("fxSpecString")[0];
+                if (childnode.tagName == "AppearanceAction" && fxSpecList.length > 0) {
                     for (const fxSpec of fxSpecList) {
                         const fxSpecName = "\\resources\\art\\fx\\fxspec\\" + fxSpec.childNodes[0].nodeValue;
                         if (!fxSpec.childNodes[0].nodeValue.ToLower().EndsWith(".fxspec")) fxSpecName += ".fxspec";
                         fileNames.push(fxSpecName);
                     }
                 }
-                if (childnode.Name == "Asset") {
+                if (childnode.tagName == "Asset") {
                     const assetFilenames = this.#assetReader(childnode);
                     for (const name of assetFilenames) {
                         const scrubbedName = name.replace("////", "//").replace(" #", "").replace("#", "").replace("+", "/").replace(" ", "_");
@@ -234,7 +219,7 @@ class XML_MAT {
 
     /**
      * Searches through provided xml element and generates a file list.
-     * @param  {Document} childnode the xml element
+     * @param  {Node} childnode the xml element
      */
     #assetReader(childnode) {
         const fileList = [];
@@ -244,10 +229,10 @@ class XML_MAT {
          * @param  {boolean} hasBodyTypes whether or not there are body types
          */
         function checkAndAdd(elem, hasBodyTypes) {
-            if (elem.contains("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
+            if (elem.includes("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
                 fileList.concat(this.#bodyType(bodyTypeList, elem));
             } else {
-                if (elem.contains("[gen]")) { // Checking for gender specific file names
+                if (elem.includes("[gen]")) { // Checking for gender specific file names
                     fileList.concat(this.#genderize(elem));
                 } else {
                     fileList.push("/resources" + elem);
@@ -271,10 +256,10 @@ class XML_MAT {
                     bodyTypeList = childnode.getElementsByTagName("Bodytypes")[0].childElements.map(c => c.childNodes[0].nodeValue);
                 }
                 if (childnode.getElementsByTagName("BaseFile")[0].childNodes[0].nodeValue != "") {
-                    if (basefile.contains("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
+                    if (basefile.includes("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
                         fileList.concat(this.#bodyType(bodyTypeList, basefile));
                     } else {
-                        if (basefile.contains("[gen]")) { // Checking for gender specific file names
+                        if (basefile.includes("[gen]")) { // Checking for gender specific file names
                             fileList.concat(this.#genderize(basefile));
                         } else {
                             fileList.push("/resources" + basefile);
@@ -286,10 +271,10 @@ class XML_MAT {
                 if (materials != null) { //check for material file names.
                     for (const material of materials) {
                         const filename = material.getAttribute("filename").childNodes[0].nodeValue;
-                        if (filename.contains("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
+                        if (filename.includes("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
                             fileList.concat(this.#bodyType(bodyTypeList, filename));
                         } else {
-                            if (filename.contains("[gen]")) { // Checking for gender specific file names
+                            if (filename.includes("[gen]")) { // Checking for gender specific file names
                                 fileList.concat(this.#genderize(filename));
                             }
                             else {
@@ -301,10 +286,10 @@ class XML_MAT {
                         if (matoverrides != null) {
                             for (const over of matoverrides) {
                                 const override_filename = over.getAttribute("filename").childNodes[0].nodeValue;
-                                if (override_filename.contains("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
+                                if (override_filename.includes("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
                                     fileList.concat(this.#bodyType(bodyTypeList, override_filename));
                                 } else {
-                                    if (override_filename.contains("[gen]")) {
+                                    if (override_filename.includes("[gen]")) {
                                         fileList.concat(this.#genderize(override_filename)); // Checking for gender specific file names
                                     } else {
                                         fileList.push("/resources" + override_filename);
@@ -319,10 +304,10 @@ class XML_MAT {
                 if (attachments != null) { //check for attachment model file names.
                     for (const attachment of attachments) {
                         const filename = attachment.getAttribute("filename").childNodes[0].nodeValue;
-                        if (filename.contains("[bt]")) { //Checking if we need to create file names for each bodytype.
+                        if (filename.includes("[bt]")) { //Checking if we need to create file names for each bodytype.
                             fileList.concat(this.#bodyType(bodyTypeList, filename));
                         } else {
-                            if (filename.contains("[gen]")) { // Checking for gender specific file names
+                            if (filename.includes("[gen]")) { // Checking for gender specific file names
                                 fileList.concat(this.#genderize(filename));
                             } else {
                                 fileList.push("/resources" + filename);
@@ -332,7 +317,7 @@ class XML_MAT {
                 }
             } else {
                 if (childnode.getElementsByTagName("BaseFile")[0].childNodes[0].nodeValue != "") {
-                    if (basefile.contains("[gen]")) { // Checking for gender specific file names
+                    if (basefile.includes("[gen]")) { // Checking for gender specific file names
                         fileList.concat(this.#genderize(basefile));
                     } else {
                         fileList.push("/resources" + basefile);
@@ -344,7 +329,7 @@ class XML_MAT {
                 if (materials != null) { //check for material file names.
                     for (const material of materials) {
                         const filename = material.getAttribute("filename").childNodes[0].nodeValue;
-                        if (filename.contains("[gen]")) { // Checking for gender specific file names
+                        if (filename.includes("[gen]")) { // Checking for gender specific file names
                             fileList.concat(this.#genderize(filename));
                         } else {
                             fileList.push("/resources" + filename);
@@ -356,7 +341,7 @@ class XML_MAT {
                 if (attachments != null) { //check for attachment model file names.
                     for (const attachment of attachments) {
                         const filename = attachment.getAttribute("filename").childNodes[0].nodeValue;
-                        if (filename.contains("[gen]")) { // Checking for gender specific file names
+                        if (filename.includes("[gen]")) { // Checking for gender specific file names
                             fileList.concat(this.#genderize(filename));
                         } else {
                             fileList.push("/resources" + filename);

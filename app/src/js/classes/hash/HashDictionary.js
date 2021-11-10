@@ -1,5 +1,3 @@
-import { resourcePath } from '../../../api/config/resource-path/ResourcePath.js';
-
 const fs = require('fs');
 const path = require('path');
 const es = require('event-stream');
@@ -18,7 +16,7 @@ class HashDictionary {
     constructor(fPath) {
         this.hashList = {};
 
-        this.fPath = path.join(resourcePath, fPath);
+        this.fPath = fPath;
     }
 
     /**
@@ -28,9 +26,7 @@ class HashDictionary {
      * @param  {String} name the file's name
      * @param  {int} crc the content redundancy check number
      */
-    loadHash(ph, sh, name, crc) {
-        this.hashList[name] = new HashData(ph, sh, name, crc);
-    }
+    loadHash(ph, sh, name, crc) { this.hashList[name] = new HashData(ph, sh, name, crc); }
 
     async loadHashList(progressBarElem) {
         const hashData = fs.createReadStream(this.fPath)
@@ -64,10 +60,16 @@ class HashDictionary {
      * 
      * @returns {Array} Array containing primary and secondary hashes.
      */
-    getHashByFileName(name) {
-        const entry = this.hashList[name];
-        return [entry.ph, entry.sh];
-    }
+    getHashByFileName(name) { const entry = this.hashList[name]; return [entry.ph, entry.sh]; }
+
+    /**
+     * gets the file name based on the provided hashes
+     * @param  {String} ph the file's primary hash
+     * @param  {String} sh the file's secondary hash
+     * 
+     * @returns {HashData} HashData instance for the provided hashes.
+     */
+    getFileNameByHash(ph, sh) { const entry = Object.values(this.hashList).find((hash, idx) => { return hash.ph === ph && hash.sh === sh; }); return entry; }
 }
 
 export {HashDictionary};

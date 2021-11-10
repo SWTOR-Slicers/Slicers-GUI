@@ -1,7 +1,8 @@
 import { FileWrapper } from '../util/FileWrapper.js';
 
-const { promises: { readFile }, readFileSync, open, read } = require('fs');
-const path = require('path');
+const fs = require('fs');
+const zlib = require('zlib');
+
 
 class ArchiveEntryTable {
     constructor(capacity, offset) {
@@ -11,7 +12,7 @@ class ArchiveEntryTable {
 }
 
 class ArchiveEntry {
-    constructor(offset, metaDataSize, comprSize, uncomprSize, metaDataCheckSum, comprType, ph, sh, fileTableNum, fileTableFileIdx) {
+    constructor(offset, metaDataSize, comprSize, uncomprSize, metaDataCheckSum, comprType, ph, sh, fileTableNum, fileTableFileIdx, torPath) {
         this.offset = offset;
         this.metaDataSize = metaDataSize;
         this.comprSize = comprSize;
@@ -22,6 +23,20 @@ class ArchiveEntry {
         this.sh = sh;
         this.fileTableNum = fileTableNum;
         this.fileTableFileIdx = fileTableFileIdx;
+        this.torPath = torPath;
+    }
+
+    getReadStream() {
+        const wrapper = new FileWrapper(this.file);
+
+        wrapper.seek(this.offset, 0);
+        const data = wrapper.read(this.comprSize);
+
+        const decompr = zlib.inflateRawSync(data, {
+            level: zlib.constants.Z_BEST_COMPRESSION
+        });
+
+        console.log(decompr);
     }
 }
 
@@ -92,7 +107,8 @@ class Archive {
                     ph,
                     sh,
                     tableIdx,
-                    i
+                    i,
+                    this.file
                 );
 
                 const hash = fileObj.sh + '|' + fileObj.ph;

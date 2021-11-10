@@ -156,7 +156,10 @@ function initHashWorker() {
 
     hashWorker.postMessage({
         "message": "init",
-        "data": resourcePath
+        "data": {
+            "resourcePath": resourcePath,
+            "hashPath": path.join(resourcePath, 'hash')
+        }
     });
 }
 

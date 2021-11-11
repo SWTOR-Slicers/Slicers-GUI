@@ -1,8 +1,14 @@
+import { XDocument } from '../util/XDocument';
+
 const fs = require('fs');
 
 class XML_MAT {
     #dest;
-
+    /**
+     * XML_MAT reader class
+     * @param  {string} dest destination for ouputted hashes
+     * @param  {string} ext extentions to search
+     */
     constructor(dest, ext) {
         this.#dest = dest;
         this.extension = ext;
@@ -10,7 +16,12 @@ class XML_MAT {
         this.animFileNames = {}
         this.errors = [];
     }
-
+    /**
+     * parses an XML material file
+     * @param  {XDocument} doc
+     * @param  {string} fullFileName
+     * @param  {string} baseFolder
+     */
     parseXML(doc, fullFileName, baseFolder = null) {
         const fileName = fullFileName.substr(fullFileName.lastIndexOf('\\') + 1);
         const directory = fullFileName.substr(0, fullFileName.lastIndexOf('/'));
@@ -25,16 +36,16 @@ class XML_MAT {
                 } else {
                     fullDirectory = directory + '/' + fileNameNoExtension + '/';
                 }
-                const aamElement = doc.getElementsByTagName("aam")[0];
+                const aamElement = doc.element("aam");
                 if (aamElement == null) return;
-                const actionElement = aamElement.getElementsByTagName("actions")[0];
+                const actionElement = aamElement.element("actions");
                 if (actionElement != null) {
-                    const actionList = actionElement.getElementsByTagName("action")[0];
+                    const actionList = actionElement.elements("action");
 
                     for (const action of actionList) {
-                        let actionName = action.getAttribute("name").childNodes[0].nodeValue;
-                        if (action.getAttribute("actionProvider") != null) {
-                            const actionProvider = action.getAttribute("actionProvider").childNodes[0].nodeValue + ".mph";
+                        let actionName = action.name;
+                        if (action.attribute("actionProvider") != null) {
+                            const actionProvider = action.attribute("actionProvider") + ".mph";
                             if (fullDirectory.includes("/humanoid/humanoid/")) {
                                 animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfanew/") + actionProvider);
                                 animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfanew/") + actionProvider + ".amx");
@@ -57,8 +68,8 @@ class XML_MAT {
                                 animFileNames.push(fullDirectory + actionProvider + ".amx");
                             }
                         }
-                        if (action.getAttribute("animName") != null) {
-                            const animationName = action.getAttribute("animName").childNodes[0].nodeValue;
+                        if (action.attribute("animName") != null) {
+                            const animationName = action.attribute("animName");
                             if (actionName != animationName) {
                                 animationName += ".jba";
                                 if (fullDirectory.includes("/humanoid/humanoid/")) {
@@ -93,11 +104,11 @@ class XML_MAT {
                     }
                 }
 
-                const networkElem = aamElement.getElementsByTagName("networks")[0];
+                const networkElem = aamElement.element("networks");
                 if (networkElem != null) {
-                    const networkList = networkElem.getElementsByTagName("literal")[0]; //was .decendents
+                    const networkList = networkElem.descendents("literal");
                     for (const network of networkList) {
-                        const fqnName = network.getAttribute("fqn").childNodes[0].nodeValue;
+                        const fqnName = network.attribute("fqn");
                         if (fqnName != null) {
                             if (fullDirectory.includes("/humanoid/humanoid/")) {
                                 animFileNames.push(fullDirectory.replace("/humanoid/humanoid/", "/humanoid/bfanew/") + fqnName);
@@ -141,9 +152,9 @@ class XML_MAT {
         if (node.childElements.length > 0) {
             for (const childnode of node.childElements) {
                 if (childnode.tagName == "input" && childnode.getElementsByTagName("type")[0] != null) {
-                    const type = childnode.getElementsByTagName("type")[0].childNodes[0].nodeValue; //new way of searching for texture file names
+                    const type = childnode.getElementsByTagName("type")[0]; //new way of searching for texture file names
                     if (type == "texture") {
-                        const textureName = childnode.getElementsByTagName("value")[0].childNodes[0].nodeValue;
+                        const textureName = childnode.getElementsByTagName("value")[0];
                         if (textureName != null && textureName != "") {
                             const scrubbedName = textureName.replace("////", "//").replace("\\art", "art").replace(" #", "").replace("#", "").replace("+", "/").replace(" ", "_");
                             fileNames.push("\\resources\\" + scrubbedName + ".dds");
@@ -165,8 +176,8 @@ class XML_MAT {
                 const fxSpecList = childnode.getElementsByTagName("fxSpecString")[0];
                 if (childnode.tagName == "AppearanceAction" && fxSpecList.length > 0) {
                     for (const fxSpec of fxSpecList) {
-                        const fxSpecName = "\\resources\\art\\fx\\fxspec\\" + fxSpec.childNodes[0].nodeValue;
-                        if (!fxSpec.childNodes[0].nodeValue.ToLower().EndsWith(".fxspec")) fxSpecName += ".fxspec";
+                        const fxSpecName = "\\resources\\art\\fx\\fxspec\\" + fxSpec;
+                        if (!fxSpec.ToLower().EndsWith(".fxspec")) fxSpecName += ".fxspec";
                         fileNames.push(fxSpecName);
                     }
                 }
@@ -242,8 +253,8 @@ class XML_MAT {
             }
         }
 
-        if (childnode.getElementsByTagName("BaseFile")[0].childNodes[0].nodeValue != null) {
-            const basefile = childnode.getElementsByTagName("BaseFile")[0].childNodes[0].nodeValue;
+        if (childnode.getElementsByTagName("BaseFile")[0] != null) {
+            const basefile = childnode.getElementsByTagName("BaseFile")[0];
             let hasBodyTypes = false;
             let bodyTypeT = (childnode.getElementsByTagName("BodyTypes")[0] != null);
             let bodyTypet = (childnode.getElementsByTagName("Bodytypes")[0] != null);
@@ -253,11 +264,11 @@ class XML_MAT {
             if (hasBodyTypes) {
                 let bodyTypeList = [];
                 if (bodyTypeT) {
-                    bodyTypeList = childnode.getElementsByTagName("BodyTypes")[0].childElements.map(c => c.childNodes[0].nodeValue);
+                    bodyTypeList = childnode.getElementsByTagName("BodyTypes")[0].childElements.map(c => c);
                 } else {
-                    bodyTypeList = childnode.getElementsByTagName("Bodytypes")[0].childElements.map(c => c.childNodes[0].nodeValue);
+                    bodyTypeList = childnode.getElementsByTagName("Bodytypes")[0].childElements.map(c => c);
                 }
-                if (childnode.getElementsByTagName("BaseFile")[0].childNodes[0].nodeValue != "") {
+                if (childnode.getElementsByTagName("BaseFile")[0] != "") {
                     if (basefile.includes("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
                         fileList.concat(this.#bodyType(bodyTypeList, basefile));
                     } else {
@@ -272,7 +283,7 @@ class XML_MAT {
                 const materials = childnode.getElementsByTagName("Materials")[0].childElements;
                 if (materials != null) { //check for material file names.
                     for (const material of materials) {
-                        const filename = material.getAttribute("filename").childNodes[0].nodeValue;
+                        const filename = material.getAttribute("filename");
                         if (filename.includes("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
                             fileList.concat(this.#bodyType(bodyTypeList, filename));
                         } else {
@@ -287,7 +298,7 @@ class XML_MAT {
                         const matoverrides = material.getElementsByTagName("MaterialOverrides")[0].childElements;
                         if (matoverrides != null) {
                             for (const over of matoverrides) {
-                                const override_filename = over.getAttribute("filename").childNodes[0].nodeValue;
+                                const override_filename = over.getAttribute("filename");
                                 if (override_filename.includes("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
                                     fileList.concat(this.#bodyType(bodyTypeList, override_filename));
                                 } else {
@@ -305,7 +316,7 @@ class XML_MAT {
                 const attachments = childnode.getElementsByTagName("Attachments")[0].childElements;
                 if (attachments != null) { //check for attachment model file names.
                     for (const attachment of attachments) {
-                        const filename = attachment.getAttribute("filename").childNodes[0].nodeValue;
+                        const filename = attachment.getAttribute("filename");
                         if (filename.includes("[bt]")) { //Checking if we need to create file names for each bodytype.
                             fileList.concat(this.#bodyType(bodyTypeList, filename));
                         } else {
@@ -318,19 +329,18 @@ class XML_MAT {
                     }
                 }
             } else {
-                if (childnode.getElementsByTagName("BaseFile")[0].childNodes[0].nodeValue != "") {
+                if (childnode.getElementsByTagName("BaseFile")[0] != "") {
                     if (basefile.includes("[gen]")) { // Checking for gender specific file names
                         fileList.concat(this.#genderize(basefile));
                     } else {
                         fileList.push("/resources" + basefile);
                     }
-
                 }
 
                 const materials = childnode.getElementsByTagName("Materials")[0].childElements;
                 if (materials != null) { //check for material file names.
                     for (const material of materials) {
-                        const filename = material.getAttribute("filename").childNodes[0].nodeValue;
+                        const filename = material.getAttribute("filename");
                         if (filename.includes("[gen]")) { // Checking for gender specific file names
                             fileList.concat(this.#genderize(filename));
                         } else {
@@ -342,7 +352,7 @@ class XML_MAT {
                 const attachments = childnode.getElementsByTagName("Attachments")[0].childElements;
                 if (attachments != null) { //check for attachment model file names.
                     for (const attachment of attachments) {
-                        const filename = attachment.getAttribute("filename").childNodes[0].nodeValue;
+                        const filename = attachment.getAttribute("filename");
                         if (filename.includes("[gen]")) { // Checking for gender specific file names
                             fileList.concat(this.#genderize(filename));
                         } else {

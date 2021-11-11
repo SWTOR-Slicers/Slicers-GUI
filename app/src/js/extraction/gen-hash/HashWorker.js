@@ -1,3 +1,4 @@
+import { XDocument } from "../../classes/util/XDocument.js";
 import { XML_MAT } from "../../classes/formats/XML_MAT.js";
 import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 
@@ -70,7 +71,7 @@ async function parseFiles(extension, assets, nodesByFqn) {
             for (const asset of matches) {
                 filesSearched++;
                 const assetStream = asset.getReadStream();
-                const doc = xmlJs.xml2json(xmlBuffString(assetStream), {compact: false, spaces: 4});
+                const doc = new XDocument(xmlJs.xml2json(xmlBuffString(assetStream), {compact: false, spaces: 4}));
                 // xml_mat_reader.ParseXML(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
             }
             namesFound = xml_mat_reader.fileNames.length + xml_mat_reader.animFileNames.length;

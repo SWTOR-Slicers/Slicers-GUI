@@ -3,6 +3,8 @@ import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 
 const path = require('path');
 const fs = require('fs');
+const xmlJs = require('xml-js');
+const xmlBuffString = require('xml-buffer-tostring');
 
 const cache = {
     "configPath": "",
@@ -68,6 +70,7 @@ async function parseFiles(extension, assets, nodesByFqn) {
             for (const asset of matches) {
                 filesSearched++;
                 const assetStream = asset.getReadStream();
+                const doc = xmlJs.xml2json(xmlBuffString(assetStream), {compact: false, spaces: 4});
                 // xml_mat_reader.ParseXML(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
             }
             namesFound = xml_mat_reader.fileNames.length + xml_mat_reader.animFileNames.length;

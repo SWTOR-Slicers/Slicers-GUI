@@ -97,6 +97,16 @@ function initNodeWorker() {
                 nodesByFqn.$F.sort(nodeFolderSort);
                 break;
         }
+        if (progressBar__assets.style.width == '100%' &&
+            progressBar__baseNodes.style.width == '100%' &&
+            progressBar__clientGOM.style.width == '100%' &&
+            progressBar__protoNodes.style.width == '100%') {
+            document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+            spinner.classList.toggle('hidden');
+            generate.classList.toggle('hidden');
+            genHashes.innerHTML = 'Generate';
+            genHashes.classList.toggle('disabled');
+        }
     }
 
     nodeWorker.postMessage({
@@ -118,7 +128,10 @@ function initAssetWorker() {
                 break;
             case "complete":
                 archives = e.data.data.archives;
-                if (progressBar__assets.style.width == '100%') {
+                if (progressBar__assets.style.width == '100%' &&
+                    progressBar__baseNodes.style.width == '100%' &&
+                    progressBar__clientGOM.style.width == '100%' &&
+                    progressBar__protoNodes.style.width == '100%') {
                     document.querySelector('.header-container').innerHTML = 'Loading Complete!';
                     spinner.classList.toggle('hidden');
                     generate.classList.toggle('hidden');
@@ -228,19 +241,20 @@ function initListeners() {
         
             ipcRenderer.send('readAllDataHashPrep');
         } else {
-            ipcRenderer.send('genHashes');
+            // ipcRenderer.send('genHashes');
 
             hashWorker.postMessage({
                 "message": 'genHash',
                 "data": {
                     "checked": getChecked(),
                     "nodesByFqn": nodesByFqn,
-                    "assets": assets
+                    "assets": archives
                 }
             });
-            document.querySelector('.header-container').innerHTML = 'Select file types to generate';
-            hashTypeCont.classList.toggle('hidden');
-            genHashes.innerHTML = 'Load Data';
+            
+            // document.querySelector('.header-container').innerHTML = 'Select file types to generate';
+            // hashTypeCont.classList.toggle('hidden');
+            // genHashes.innerHTML = 'Load Data';
         }
     });
 }

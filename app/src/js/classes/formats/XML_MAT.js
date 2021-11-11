@@ -1,6 +1,8 @@
 const fs = require('fs');
 
 class XML_MAT {
+    #dest;
+
     constructor(dest, ext) {
         this.#dest = dest;
         this.extension = ext;
@@ -182,9 +184,9 @@ class XML_MAT {
     }
 
     writeFile() {
-        if (!fs.existsSync(`${dest}\\File_Names`)) fs.mkdirSync(`${dest}\\File_Names`);
+        if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
         if (fileNames.length > 0) {
-            const outputNames = fs.createWriteStream(`${dest}\\File_Names\\${extension}_file_names.txt.txt`, {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt.txt`, {
                 flags: 'a'
             });
             for (const file of fileNames) {
@@ -195,7 +197,7 @@ class XML_MAT {
         }
 
         if (animFileNames.length > 0) {
-            const outputAnimNames = fs.createWriteStream(`${dest}\\File_Names\\${extension}_anim_file_names.txt`, {
+            const outputAnimNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_anim_file_names.txt`, {
                 flags: 'a'
             });
             for (const file of animFileNames) {
@@ -206,7 +208,7 @@ class XML_MAT {
         }
 
         if (errors.length > 0) {
-            const outputErrors = fs.createWriteStream(`${dest}\\File_Names\\${extension}_error_list.txt`, {
+            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
                 flags: 'a'
             });
             for (const error of errors) {

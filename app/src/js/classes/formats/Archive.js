@@ -37,6 +37,8 @@ class ArchiveEntry {
         });
 
         console.log(decompr);
+
+        return decompr;
     }
 }
 

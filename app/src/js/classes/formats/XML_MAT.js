@@ -147,14 +147,16 @@ class XML_MAT {
             errors.push("");
         }
     }
-
+    /**
+     * @param  {XDocument} node
+     */
     nodeChecker(node) {
-        if (node.childElements.length > 0) {
-            for (const childnode of node.childElements) {
-                if (childnode.tagName == "input" && childnode.getElementsByTagName("type")[0] != null) {
-                    const type = childnode.getElementsByTagName("type")[0]; //new way of searching for texture file names
+        if (node.hasElements) {
+            for (const childnode of node.elems) {
+                if (childnode.name == "input" && childnode.element("type") != null) {
+                    const type = childnode.element("type").value; //new way of searching for texture file names
                     if (type == "texture") {
-                        const textureName = childnode.getElementsByTagName("value")[0];
+                        const textureName = childnode.element("value").value;
                         if (textureName != null && textureName != "") {
                             const scrubbedName = textureName.replace("////", "//").replace("\\art", "art").replace(" #", "").replace("#", "").replace("+", "/").replace(" ", "_");
                             fileNames.push("\\resources\\" + scrubbedName + ".dds");
@@ -163,7 +165,7 @@ class XML_MAT {
                             const fileName = scrubbedName.split('\\');
                             let startPosition = 0;
                             if (scrubbedName.includes('\\')) startPosition = scrubbedName.lastIndexOf('\\') + 1;
-                            let length = scrubbedName.Length - startPosition;
+                            let length = scrubbedName.length - startPosition;
                             const tagsToRemove = ["_d", "_n", "_s" ];
 
                             if (tagsToRemove.some(name => scrubbedName.endsWith(name))) length -= 2;
@@ -173,15 +175,15 @@ class XML_MAT {
                         }
                     }
                 }
-                const fxSpecList = childnode.getElementsByTagName("fxSpecString")[0];
-                if (childnode.tagName == "AppearanceAction" && fxSpecList.length > 0) {
+                const fxSpecList = childnode.elements("fxSpecString");
+                if (childnode.name == "AppearanceAction" && fxSpecList.length > 0) {
                     for (const fxSpec of fxSpecList) {
                         const fxSpecName = "\\resources\\art\\fx\\fxspec\\" + fxSpec;
-                        if (!fxSpec.ToLower().EndsWith(".fxspec")) fxSpecName += ".fxspec";
+                        if (!fxSpec.toLowerCase().endsWith(".fxspec")) fxSpecName += ".fxspec";
                         fileNames.push(fxSpecName);
                     }
                 }
-                if (childnode.tagName == "Asset") {
+                if (childnode.name == "Asset") {
                     const assetFilenames = this.#assetReader(childnode);
                     for (const name of assetFilenames) {
                         const scrubbedName = name.replace("////", "//").replace(" #", "").replace("#", "").replace("+", "/").replace(" ", "_");
@@ -241,123 +243,85 @@ class XML_MAT {
          * @param  {string} elem string to check
          * @param  {boolean} hasBodyTypes whether or not there are body types
          */
-        function checkAndAdd(elem, hasBodyTypes) {
+        function btUtil(elem, hasBodyTypes) {
             if (elem.includes("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
                 fileList.concat(this.#bodyType(bodyTypeList, elem));
             } else {
-                if (elem.includes("[gen]")) { // Checking for gender specific file names
-                    fileList.concat(this.#genderize(elem));
-                } else {
-                    fileList.push("/resources" + elem);
-                }
+                genUtil(elem);
+            }
+        }
+        /**
+         * Util function to increase code readability
+         * @param  {string} elem string to check
+         */
+        function genUtil(elem) {
+            if (elem.includes("[gen]")) { // Checking for gender specific file names
+                fileList.concat(this.#genderize(elem));
+            } else {
+                fileList.push("/resources" + elem);
             }
         }
 
-        if (childnode.getElementsByTagName("BaseFile")[0] != null) {
-            const basefile = childnode.getElementsByTagName("BaseFile")[0];
+        if (childnode.element("BaseFile") != null) {
+            const basefile = childnode.element("BaseFile");
             let hasBodyTypes = false;
-            let bodyTypeT = (childnode.getElementsByTagName("BodyTypes")[0] != null);
-            let bodyTypet = (childnode.getElementsByTagName("Bodytypes")[0] != null);
+            let bodyTypeT = (childnode.element("BodyTypes") != null);
+            let bodyTypet = (childnode.element("Bodytypes") != null);
 
-            if (bodyTypeT) { hasBodyTypes = childnode.getElementsByTagName("BodyTypes")[0].HasElements; }
-            if (bodyTypet) { hasBodyTypes = childnode.getElementsByTagName("Bodytypes")[0].HasElements; }
+            if (bodyTypeT) { hasBodyTypes = childnode.element("BodyTypes").hasElements; }
+            if (bodyTypet) { hasBodyTypes = childnode.element("Bodytypes").hasElements; }
             if (hasBodyTypes) {
                 let bodyTypeList = [];
                 if (bodyTypeT) {
-                    bodyTypeList = childnode.getElementsByTagName("BodyTypes")[0].childElements.map(c => c);
+                    bodyTypeList = childnode.element("BodyTypes").elems.map(c => c.value);
                 } else {
-                    bodyTypeList = childnode.getElementsByTagName("Bodytypes")[0].childElements.map(c => c);
+                    bodyTypeList = childnode.element("Bodytypes").elems.map(c => c.value);
                 }
-                if (childnode.getElementsByTagName("BaseFile")[0] != "") {
-                    if (basefile.includes("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
-                        fileList.concat(this.#bodyType(bodyTypeList, basefile));
-                    } else {
-                        if (basefile.includes("[gen]")) { // Checking for gender specific file names
-                            fileList.concat(this.#genderize(basefile));
-                        } else {
-                            fileList.push("/resources" + basefile);
-                        }
-                    }
+                if (childnode.element("BaseFile") != "") {
+                    btUtil(basefile, hasBodyTypes);
                 }
 
-                const materials = childnode.getElementsByTagName("Materials")[0].childElements;
+                const materials = childnode.element("Materials").elems;
                 if (materials != null) { //check for material file names.
                     for (const material of materials) {
                         const filename = material.getAttribute("filename");
-                        if (filename.includes("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
-                            fileList.concat(this.#bodyType(bodyTypeList, filename));
-                        } else {
-                            if (filename.includes("[gen]")) { // Checking for gender specific file names
-                                fileList.concat(this.#genderize(filename));
-                            }
-                            else {
-                                fileList.push("/resources" + filename);
-                            }
-                        }
+                        btUtil(filename, hasBodyTypes);
 
-                        const matoverrides = material.getElementsByTagName("MaterialOverrides")[0].childElements;
+                        const matoverrides = material.element("MaterialOverrides").childElements;
                         if (matoverrides != null) {
                             for (const over of matoverrides) {
                                 const override_filename = over.getAttribute("filename");
-                                if (override_filename.includes("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
-                                    fileList.concat(this.#bodyType(bodyTypeList, override_filename));
-                                } else {
-                                    if (override_filename.includes("[gen]")) {
-                                        fileList.concat(this.#genderize(override_filename)); // Checking for gender specific file names
-                                    } else {
-                                        fileList.push("/resources" + override_filename);
-                                    }
-                                }
+                                btUtil(override_filename, hasBodyTypes);
                             }
                         }
                     }
                 }
 
-                const attachments = childnode.getElementsByTagName("Attachments")[0].childElements;
+                const attachments = childnode.element("Attachments").elems;
                 if (attachments != null) { //check for attachment model file names.
                     for (const attachment of attachments) {
                         const filename = attachment.getAttribute("filename");
-                        if (filename.includes("[bt]")) { //Checking if we need to create file names for each bodytype.
-                            fileList.concat(this.#bodyType(bodyTypeList, filename));
-                        } else {
-                            if (filename.includes("[gen]")) { // Checking for gender specific file names
-                                fileList.concat(this.#genderize(filename));
-                            } else {
-                                fileList.push("/resources" + filename);
-                            }
-                        }
+                        btUtil(filename, hasBodyTypes);
                     }
                 }
             } else {
-                if (childnode.getElementsByTagName("BaseFile")[0] != "") {
-                    if (basefile.includes("[gen]")) { // Checking for gender specific file names
-                        fileList.concat(this.#genderize(basefile));
-                    } else {
-                        fileList.push("/resources" + basefile);
-                    }
+                if (childnode.element("BaseFile") != "") {
+                    genUtil(basefile);
                 }
 
-                const materials = childnode.getElementsByTagName("Materials")[0].childElements;
+                const materials = childnode.element("Materials").elems;
                 if (materials != null) { //check for material file names.
                     for (const material of materials) {
                         const filename = material.getAttribute("filename");
-                        if (filename.includes("[gen]")) { // Checking for gender specific file names
-                            fileList.concat(this.#genderize(filename));
-                        } else {
-                            fileList.push("/resources" + filename);
-                        }
+                        genUtil(filename);
                     }
                 }
 
-                const attachments = childnode.getElementsByTagName("Attachments")[0].childElements;
+                const attachments = childnode.element("Attachments").elems;
                 if (attachments != null) { //check for attachment model file names.
                     for (const attachment of attachments) {
                         const filename = attachment.getAttribute("filename");
-                        if (filename.includes("[gen]")) { // Checking for gender specific file names
-                            fileList.concat(this.#genderize(filename));
-                        } else {
-                            fileList.push("/resources" + filename);
-                        }
+                        genUtil(filename);
                     }
                 }
             }

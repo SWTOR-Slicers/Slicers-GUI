@@ -72,10 +72,10 @@ async function parseFiles(extension, assets, nodesByFqn) {
                 filesSearched++;
                 const assetStream = asset.getReadStream();
                 const doc = new XDocument(xmlJs.xml2json(xmlBuffString(assetStream), {compact: false, spaces: 4}));
-                // xml_mat_reader.ParseXML(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
+                xml_mat_reader.parseXML(doc, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
             }
             namesFound = xml_mat_reader.fileNames.length + xml_mat_reader.animFileNames.length;
-            // xml_mat_reader.WriteFile();
+            xml_mat_reader.writeFile();
             break;
     //     case "EPP":
     //         Format_EPP epp_reader = new Format_EPP(extractPath, extension);

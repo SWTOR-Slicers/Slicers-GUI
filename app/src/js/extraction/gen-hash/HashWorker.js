@@ -228,14 +228,14 @@ async function parseFiles(extension, assets, nodesByFqn) {
     //         filesSearched += plcNodes.Count();
     //         plc_parser.WriteFile();
     //         break;
-    //     case "STB":
-    //         Format_STB stb_parser = new Format_STB(extractPath, extension);
-    //         TorLib.File manifest = AssetHandler.Instance.GetCurrentAssets().FindFile("/resources/gamedata/str/stb.manifest");
-    //         stb_parser.ParseSTBManifest(manifest.OpenCopyInMemory());
-    //         namesFound = stb_parser.fileNames.Count;
-    //         filesSearched += 1;
-    //         stb_parser.WriteFile();
-    //         break;
+        case "STB":
+            Format_STB stb_parser = new Format_STB(extractPath, extension);
+            TorLib.File manifest = AssetHandler.Instance.GetCurrentAssets().FindFile("/resources/gamedata/str/stb.manifest");
+            stb_parser.ParseSTBManifest(manifest.OpenCopyInMemory());
+            namesFound = stb_parser.fileNames.Count;
+            filesSearched += 1;
+            stb_parser.WriteFile();
+            break;
     //     default:
     //         break;
     }

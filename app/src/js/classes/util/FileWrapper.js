@@ -222,4 +222,4 @@ class FileWrapper {
     }
 }
 
-export {FileWrapper};
+export {FileWrapper, Reader};

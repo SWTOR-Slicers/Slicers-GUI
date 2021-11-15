@@ -1,36 +1,41 @@
-import { assert } from "../../Util.js";
+import { Reader } from "../util/FileWrapper.js";
 
 const Decoder = new TextDecoder('utf-8');
 
+class StringEntry {
+    constructor(id, type1, type2, len, offset) {
+        this.id = id;
+        this.type1 = type1;
+        this.type2 = type2;
+        this.len = len;
+        this.offset = offset;
+        this.val = "";
+    }
+}
+
 class STB {
-    constructor(dv) {
-        const numStrings = dv.getUint32(3, !0);
-        const strings = [];
-        for (let i = 0, pos = 7; i < numStrings; i++) {
-            const curString = {};
-            curString.id = dv.getUint32(pos, !0);
-            pos += 4;
-            curString.id2 = dv.getUint32(pos, !0);
-            pos += 4;
-            curString.bitflag = dv.getUint16(pos, !0);
-            pos += 2;
-            const version = dv.getFloat32(pos, !0);
-            pos += 4;
-            assert(version === 1.0, 'Expected version 1.0 but saw ' + version);
-            curString.len = dv.getUint32(pos, !0);
-            pos += 4;
-            curString.offset = dv.getUint32(pos, !0);
-            pos += 4;
-            const len2 = dv.getUint32(pos, !0);
-            pos += 4;
-            assert(len2 === curString.len, 'Expected both string lengths to match in stb file but they didn\'t.');
-            strings[i] = curString
+    constructor(data) {
+        this.strings = {};
+        this.reader = new Reader(data);
+        this.numStrings = this.reader.readUint32();
+    }
+
+    parseSTB() {
+        for (let i = 0; i < this.numStrings; i++) {
+            const id = this.reader.readUint64();
+            const t1 = this.reader.readUint8();
+            const t2 = this.reader.readUint8();
+            this.reader.readFloat32(); // read speed float. always 00 00 80 3F = 1.0
+            const len = this.reader.readUint32();
+            const dataOffset = this.reader.readUint32();
+            this.reader.readUint32(); // repeat of len
+
+            const entr = new StringEntry(id, t1, t2, len, dataOffset);
+
+            entr.val = Decoder.decode(new DataView(data, entr.offset, entr.len));
+
+            this.strings[id] = entr;
         }
-        for (let i = 0, buffer = dv.buffer; i < numStrings; i++) {
-            const curString = strings[i];
-            curString.name = Decoder.decode(new DataView(buffer,curString.offset,curString.len))
-        }
-        this.strings = strings;
     }
 }
 

@@ -1,6 +1,9 @@
 import { XDocument } from "../../classes/util/XDocument.js";
-import { XML_MAT } from "../../classes/formats/XML_MAT.js";
+import { XML_MAT } from "../../classes/parsers/XML_MAT.js";
 import { HashDictionary } from "../../classes/hash/HashDictionary.js";
+import { STBParser } from "../../classes/parsers/STB.js";
+import { hashlittle2 } from "../../Util.js";
+import { EPPParser } from "src/js/classes/parsers/EPP.js";
 
 const path = require('path');
 const fs = require('fs');
@@ -49,9 +52,10 @@ async function generateHash(nodesByFqn, assets, checked) {
  * @param  {Object} nodesByFqn GOM Node object
  */
 async function parseFiles(extension, assets, nodesByFqn) {
-    const assetsDict = Object.assign(...Object.values(assets));
+    const assetsDict = Object.assign({}, ...Object.values(assets));
     const assetDictKeys = Object.keys(assetsDict)
-        .map(d => hash.getFileNameByHash(d.ph, d.sh)?.contains("." + extension.toLowerCase()));
+        .map(d => hash.getFileNameByHash(...d.split('|').reverse())?.contains("." + extension.toLowerCase()));
+    
     const matches = [];
     const dom = nodesByFqn;
 
@@ -60,7 +64,11 @@ async function parseFiles(extension, assets, nodesByFqn) {
     for (const assetKey in assetDictKeys) {
         if (assetKey.split('.').at(-1).toUpperCase() !== extension) continue;
         if (assets[assetKey]) {
-            matches.push(asset);
+            const asset = assets[assetKey];
+            matches.push({
+                ...asset,
+                "hash": hash.getFileNameByHash(...d.split('|').reverse())
+            });
         }
     }
 
@@ -72,54 +80,55 @@ async function parseFiles(extension, assets, nodesByFqn) {
                 filesSearched++;
                 const assetStream = asset.getReadStream();
                 const doc = new XDocument(xmlJs.xml2json(xmlBuffString(assetStream), {compact: false, spaces: 4}));
-                xml_mat_reader.parseXML(doc, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
+                xml_mat_reader.parseXML(doc, asset.hash);
             }
             namesFound = xml_mat_reader.fileNames.length + xml_mat_reader.animFileNames.length;
             xml_mat_reader.writeFile();
             break;
-    //     case "EPP":
-    //         Format_EPP epp_reader = new Format_EPP(extractPath, extension);
-    //         List<GomObject> eppNodes = dom.GetObjectsStartingWith("epp.");
-    //         for (const asset of matches) {
-    //             filesSearched++;
-    //             Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
-    //             epp_reader.ParseEPP(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
-    //         }
-    //         epp_reader.ParseEPPNodes(eppNodes);
-    //         namesFound = epp_reader.fileNames.Count;
-    //         epp_reader.WriteFile();
-    //         break;
-    //     case "PRT":
-    //         Format_PRT prt_reader = new Format_PRT(extractPath, extension);
-    //         for (const asset of matches) {
-    //             filesSearched++;
-    //             Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
-    //             prt_reader.ParsePRT(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
-    //         }
-    //         namesFound = prt_reader.fileNames.Count;
-    //         prt_reader.WriteFile();
-    //         break;
-    //     case "GR2":
-    //         Format_GR2 gr2_reader = new Format_GR2(extractPath, extension);
-    //         for (const asset of matches) {
-    //             if (asset.hashInfo.IsNamed) continue;
-    //             filesSearched++;
-    //             Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
-    //             gr2_reader.ParseGR2(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName, asset.hashInfo.File.Archive);
-    //         }
-    //         namesFound = gr2_reader.matNames.Count + gr2_reader.meshNames.Count;
-    //         gr2_reader.WriteFile(true);
-    //         break;
-    //     case "BNK":
-    //         Format_BNK bnk_reader = new Format_BNK(extractPath, extension);
-    //         for (const asset of matches) {
-    //             filesSearched++;
-    //             Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
-    //             bnk_reader.ParseBNK(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
-    //         }
-    //         namesFound = bnk_reader.found;
-    //         bnk_reader.WriteFile();
-    //         break;
+        case "EPP":
+            const epp_reader = new EPPParser(extractPath, extension);
+            const eppNodes = dom.GetObjectsStartingWith("epp.");
+            for (const asset of matches) {
+                filesSearched++;
+                const assetStream = asset.getReadStream();
+                const doc = new XDocument(xmlJs.xml2json(xmlBuffString(assetStream), {compact: false, spaces: 4}));
+                epp_reader.parseEPP(doc, asset.hash);
+            }
+            epp_reader.parseEPPNodes(eppNodes);
+            namesFound = epp_reader.fileNames.length;
+            epp_reader.writeFile();
+            break;
+        case "PRT":
+            Format_PRT prt_reader = new Format_PRT(extractPath, extension);
+            for (const asset of matches) {
+                filesSearched++;
+                Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
+                prt_reader.ParsePRT(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
+            }
+            namesFound = prt_reader.fileNames.Count;
+            prt_reader.WriteFile();
+            break;
+        case "GR2":
+            Format_GR2 gr2_reader = new Format_GR2(extractPath, extension);
+            for (const asset of matches) {
+                if (asset.hashInfo.IsNamed) continue;
+                filesSearched++;
+                Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
+                gr2_reader.ParseGR2(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName, asset.hashInfo.File.Archive);
+            }
+            namesFound = gr2_reader.matNames.Count + gr2_reader.meshNames.Count;
+            gr2_reader.WriteFile(true);
+            break;
+        case "BNK":
+            Format_BNK bnk_reader = new Format_BNK(extractPath, extension);
+            for (const asset of matches) {
+                filesSearched++;
+                Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
+                bnk_reader.ParseBNK(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
+            }
+            namesFound = bnk_reader.found;
+            bnk_reader.WriteFile();
+            break;
     //     case "DAT":
     //         Format_DAT dat_reader = new Format_DAT(extractPath, extension);
     //         for (const asset of matches) {
@@ -229,15 +238,17 @@ async function parseFiles(extension, assets, nodesByFqn) {
     //         plc_parser.WriteFile();
     //         break;
         case "STB":
-            Format_STB stb_parser = new Format_STB(extractPath, extension);
-            TorLib.File manifest = AssetHandler.Instance.GetCurrentAssets().FindFile("/resources/gamedata/str/stb.manifest");
-            stb_parser.ParseSTBManifest(manifest.OpenCopyInMemory());
-            namesFound = stb_parser.fileNames.Count;
+            const stbParser = new STBParser(cache['hashPath'], extension);
+            const manifest = assetsDict[hashlittle2("/resources/gamedata/str/stb.manifest").join('|')];
+            const assetStream = manifest.getReadStream();
+            const doc = new XDocument(xmlJs.xml2json(xmlBuffString(assetStream), {compact: false, spaces: 4}));
+            stbParser.parseSTBManifest(doc);
+            namesFound = stbParser.fileNames.length;
             filesSearched += 1;
-            stb_parser.WriteFile();
+            stbParser.writeFile();
             break;
-    //     default:
-    //         break;
+        default:
+            break;
     }
     totalFilesSearched += filesSearched;
     totalNamesFound += namesFound;

@@ -15,12 +15,21 @@ class StringEntry {
 
 class STB {
     constructor(data) {
-        this.strings = {};
+        this.strings = [];
         this.reader = new Reader(data);
+
+        // Parse Header. Not important for our purposes
+        this.reader.readUint8();
+        this.reader.readUint8();
+        this.reader.readUint8();
+
+        // Number of strings in this STB file
         this.numStrings = this.reader.readUint32();
+
+        this.#parseSTB();
     }
 
-    parseSTB() {
+    #parseSTB() {
         for (let i = 0; i < this.numStrings; i++) {
             const id = this.reader.readUint64();
             const t1 = this.reader.readUint8();
@@ -34,7 +43,7 @@ class STB {
 
             entr.val = Decoder.decode(new DataView(data, entr.offset, entr.len));
 
-            this.strings[id] = entr;
+            this.strings.push(entr);
         }
     }
 }

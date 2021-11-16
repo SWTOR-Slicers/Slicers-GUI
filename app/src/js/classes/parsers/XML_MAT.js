@@ -5,15 +5,15 @@ const fs = require('fs');
 class XML_MAT {
     #dest;
     /**
-     * XML_MAT reader class
+     * XML_MAT parser class
      * @param  {string} dest destination for ouputted hashes
      * @param  {string} ext extentions to search
      */
     constructor(dest, ext) {
         this.#dest = dest;
         this.extension = ext;
-        this.fileNames = {};
-        this.animFileNames = {}
+        this.fileNames = [];
+        this.animFileNames = [];
         this.errors = [];
     }
     /**
@@ -243,7 +243,7 @@ class XML_MAT {
          * @param  {string} elem string to check
          * @param  {boolean} hasBodyTypes whether or not there are body types
          */
-        function btUtil(elem, hasBodyTypes) {
+        const btUtil = (elem, hasBodyTypes) => {
             if (elem.includes("[bt]") && hasBodyTypes) { //Checking if we need to create file names for each bodytype.
                 fileList.concat(this.#bodyType(bodyTypeList, elem));
             } else {
@@ -254,7 +254,7 @@ class XML_MAT {
          * Util function to increase code readability
          * @param  {string} elem string to check
          */
-        function genUtil(elem) {
+        const genUtil = (elem) => {
             if (elem.includes("[gen]")) { // Checking for gender specific file names
                 fileList.concat(this.#genderize(elem));
             } else {

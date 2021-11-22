@@ -1,6 +1,7 @@
 import { FileWrapper } from '../util/FileWrapper.js';
 
 const fs = require('fs');
+const path = require('path');
 const zlib = require('zlib');
 
 
@@ -12,22 +13,29 @@ class ArchiveEntryTable {
 }
 
 class ArchiveEntry {
-    constructor(offset, metaDataSize, comprSize, uncomprSize, metaDataCheckSum, comprType, ph, sh, fileTableNum, fileTableFileIdx, torPath) {
+    constructor(offset, metaDataSize, comprSize, uncomprSize, metaDataCheckSum, comprType, ph, sh, fileId, fileTableNum, fileTableFileIdx, torPath) {
         this.offset = offset;
+
         this.metaDataSize = metaDataSize;
+        this.metaDataCheckSum = metaDataCheckSum;
+
         this.comprSize = comprSize;
         this.uncomprSize = uncomprSize;
-        this.metaDataCheckSum = metaDataCheckSum;
         this.comprType = comprType;
+
+        this.fileId = fileId;
         this.ph = ph;
         this.sh = sh;
+
         this.fileTableNum = fileTableNum;
         this.fileTableFileIdx = fileTableFileIdx;
+
         this.torPath = torPath;
+        this.tor = path.basename(this.torPath);
     }
 
     getReadStream() {
-        const wrapper = new FileWrapper(this.file);
+        const wrapper = new FileWrapper(this.torPath);
 
         wrapper.seek(this.offset, 0);
         const data = wrapper.read(this.comprSize);
@@ -35,8 +43,6 @@ class ArchiveEntry {
         const decompr = zlib.inflateRawSync(data, {
             level: zlib.constants.Z_BEST_COMPRESSION
         });
-
-        console.log(decompr);
 
         return decompr;
     }
@@ -90,6 +96,11 @@ class Archive {
 
                 const comprSize = fileTable.readUint32();
                 const uncomprSize = fileTable.readUint32();
+
+                const reOff = fileTable.offset;
+                const fileId = fileTable.readUint64();
+                fileTable.offset = reOff;
+
                 const sh = fileTable.readUint32();
                 const ph = fileTable.readUint32();
                 const crc = fileTable.readUint32();
@@ -108,6 +119,7 @@ class Archive {
                     compression !== 0,
                     ph,
                     sh,
+                    fileId,
                     tableIdx,
                     i,
                     this.file

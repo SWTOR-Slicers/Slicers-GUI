@@ -3,7 +3,10 @@ import { XML_MAT } from "../../classes/parsers/XML_MAT.js";
 import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 import { STBParser } from "../../classes/parsers/STB.js";
 import { hashlittle2 } from "../../Util.js";
-import { EPPParser } from "src/js/classes/parsers/EPP.js";
+import { EPPParser } from "../../classes/parsers/EPP.js";
+import { PRTParser } from "../../classes/parsers/PRT.js";
+import { GR2Parser } from "../../classes/parsers/GR2.js";
+import { BNKParser } from "../../classes/parsers/BNK.js";
 
 const path = require('path');
 const fs = require('fs');
@@ -65,9 +68,11 @@ async function parseFiles(extension, assets, nodesByFqn) {
         if (assetKey.split('.').at(-1).toUpperCase() !== extension) continue;
         if (assets[assetKey]) {
             const asset = assets[assetKey];
+            const fileH = hash.getFileNameByHash(...d.split('|').reverse());
             matches.push({
                 ...asset,
-                "hash": hash.getFileNameByHash(...d.split('|').reverse())
+                "isNamed": fileH !== null,
+                "hash": (fileH !== null) ? fileH : `${asset.crc}_${asset.fileId}`
             });
         }
     }
@@ -99,46 +104,54 @@ async function parseFiles(extension, assets, nodesByFqn) {
             epp_reader.writeFile();
             break;
         case "PRT":
-            Format_PRT prt_reader = new Format_PRT(extractPath, extension);
+            const prt_reader = new PRTParser(extractPath, extension);
             for (const asset of matches) {
                 filesSearched++;
-                Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
-                prt_reader.ParsePRT(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
+                const assetStream = asset.getReadStream();
+                prt_reader.parsePRT(assetStream, asset.hash);
             }
-            namesFound = prt_reader.fileNames.Count;
-            prt_reader.WriteFile();
+            namesFound = prt_reader.fileNames.length;
+            prt_reader.writeFile();
             break;
         case "GR2":
-            Format_GR2 gr2_reader = new Format_GR2(extractPath, extension);
+            const gr2_reader = new GR2Parser(extractPath, extension);
             for (const asset of matches) {
-                if (asset.hashInfo.IsNamed) continue;
+                if (asset.isNamed) { // if the hash is already included, then skip
+                    newHash.push({
+                        "name": asset.hash,
+                        "crc": asset.crc,
+                        "ph": asset.ph,
+                        "sh": asset.sh
+                    });
+                    continue;
+                }
                 filesSearched++;
-                Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
-                gr2_reader.ParseGR2(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName, asset.hashInfo.File.Archive);
+                const assetStream = asset.getReadStream();
+                gr2_reader.parseGR2(assetStream, asset.hash, asset.tor);
             }
-            namesFound = gr2_reader.matNames.Count + gr2_reader.meshNames.Count;
-            gr2_reader.WriteFile(true);
+            namesFound = gr2_reader.matNames.length + gr2_reader.meshNames.size;
+            gr2_reader.writeFile();
             break;
         case "BNK":
-            Format_BNK bnk_reader = new Format_BNK(extractPath, extension);
+            const bnk_reader = new BNKParser(extractPath, extension);
+            for (const asset of matches) {
+                filesSearched++;
+                const assetStream = asset.getReadStream();
+                bnk_reader.parseBNK(assetStream, asset.hash);
+            }
+            namesFound = bnk_reader.fileNames.length;
+            bnk_reader.writeFile();
+            break;
+        case "DAT":
+            Format_DAT dat_reader = new Format_DAT(extractPath, extension);
             for (const asset of matches) {
                 filesSearched++;
                 Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
-                bnk_reader.ParseBNK(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
+                dat_reader.ParseDAT(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName, this);
             }
-            namesFound = bnk_reader.found;
-            bnk_reader.WriteFile();
+            namesFound = dat_reader.fileNames.Count;
+            dat_reader.WriteFile();
             break;
-    //     case "DAT":
-    //         Format_DAT dat_reader = new Format_DAT(extractPath, extension);
-    //         for (const asset of matches) {
-    //             filesSearched++;
-    //             Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
-    //             dat_reader.ParseDAT(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName, this);
-    //         }
-    //         namesFound = dat_reader.fileNames.Count;
-    //         dat_reader.WriteFile();
-    //         break;
     //     case "CNV":
     //         List<GomObject> cnvNodes = dom.GetObjectsStartingWith("cnv.");
     //         Format_CNV cnv_node_parser = new Format_CNV(extractPath, extension);

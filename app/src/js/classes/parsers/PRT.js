@@ -1,6 +1,6 @@
-import { XDocument } from '../util/XDocument';
-
 const fs = require('fs');
+const stream = require('stream');
+const readLine = require('readline');
 
 class PRTParser {
     #dest;
@@ -16,10 +16,16 @@ class PRTParser {
         this.errors = [];
     }
 
-    parsePRT(fileStream, _) {
-        const reader = new StreamReader(fileStream);
-        let line;
-        while ((line = reader.ReadLine()) != null) {
+    async parsePRT(data, _) {
+        const reader = new stream.PassThrough();
+        reader.end(data);
+
+        const rl = readLine.createInterface({
+            input: reader,
+            crlfDelay: Infinity
+        });
+
+        for await (const line of rl) {
             let test = line.replace("  .", "");
             test = test.replace("Name=", "");
             test = test.replace("EmitSpec=", "");
@@ -40,18 +46,19 @@ class PRTParser {
             test = test.replace("//", "/");
             test = test.toLowerCase();
 
-            if (test.contains(".prt")) {
-                if (!test.contains("/art/fx/particles/"))
+            if (test.includes(".prt")) {
+                if (!test.includes("/art/fx/particles/")) {
                     fileNames.push("/resources/art/fx/particles/" + test);
-                else
+                } else {
                     fileNames.push("/resources" + test);
-            } else if (test.contains(".dds")) {
+                }
+            } else if (test.includes(".dds")) {
                 fileNames.push("/resources" + test);
                 fileNames.push("/resources" + test.replace(".dds", ".tiny.dds"));
                 fileNames.push("/resources" + test.replace(".dds", ".tex"));
-            } else if (test.contains(".fxspec")) {
+            } else if (test.includes(".fxspec")) {
                 fileNames.push("/resources" + test);
-            } else if (test.contains(".gr2")) {
+            } else if (test.includes(".gr2")) {
                 fileNames.push("/resources" + test);
             }
         }

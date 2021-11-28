@@ -12,10 +12,29 @@ class Reader {
     }
 
     /**
+     * read the next byte and return a Uint8 array.
+     */
+    readByte() {
+        const res = new Uint8Array(this.data, this.offset, 1);
+        this.offset += length;
+        return endianness ? res[0] : res.reverse()[0];
+    }
+
+    /**
+     * reads the next (length) bytes and returns a Uint8 array.
+     * @param  {number} length the number of bytes to read
+     */
+    readBytes(length) {
+        const res = new Uint8Array(this.data, this.offset, length);
+        this.offset += length;
+        return endianness ? res[0] : res.reverse()[0];
+    }
+
+    /**
      * reads the next Uint of length 1
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-    readUint8(endianness = true) {
+     readUint8(endianness = true) {
         const res = new Uint8Array(this.data, this.offset, 1);
         this.offset++;
         return endianness ? res[0] : res.reverse()[0];

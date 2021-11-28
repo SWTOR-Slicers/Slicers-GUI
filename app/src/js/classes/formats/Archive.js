@@ -132,4 +132,4 @@ class Archive {
     }
 }
 
-export {Archive};
+export {Archive, ArchiveEntry};

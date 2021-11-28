@@ -141,10 +141,10 @@ class XML_MAT {
                 }
             }
         } catch (e) {
-            errors.push("File: " + e.name);
-            errors.push(e.message + ":");
-            errors.push(e.stack);
-            errors.push("");
+            this.errors.push("File: " + e.name);
+            this.errors.push(e.message + ":");
+            this.errors.push(e.stack);
+            this.errors.push("");
         }
     }
     /**
@@ -198,33 +198,33 @@ class XML_MAT {
 
     writeFile() {
         if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
-        if (fileNames.length > 0) {
-            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt.txt`, {
+        if (this.fileNames.length > 0) {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt`, {
                 flags: 'a'
             });
-            for (const file of fileNames) {
+            for (const file of this.fileNames) {
                 outputNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputNames.end();
             this.fileNames = [];
         }
 
-        if (animFileNames.length > 0) {
+        if (this.animFileNames.length > 0) {
             const outputAnimNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_anim_file_names.txt`, {
                 flags: 'a'
             });
-            for (const file of animFileNames) {
+            for (const file of this.animFileNames) {
                 outputAnimNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputAnimNames.end();
             this.animFileNames = [];
         }
 
-        if (errors.length > 0) {
+        if (this.errors.length > 0) {
             const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
                 flags: 'a'
             });
-            for (const error of errors) {
+            for (const error of this.errors) {
                 outputErrors.write(`${error}\r\n`);
             }
             outputErrors.end();

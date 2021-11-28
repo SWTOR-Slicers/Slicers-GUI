@@ -79,22 +79,22 @@ class EPPParser {
 
     writeFile() {
         if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
-        if (fileNames.length > 0) {
-            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt.txt`, {
+        if (this.fileNames.length > 0) {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt`, {
                 flags: 'a'
             });
-            for (const file of fileNames) {
+            for (const file of this.fileNames) {
                 outputNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputNames.end();
             this.fileNames = [];
         }
 
-        if (animFileNames.length > 0) {
+        if (this.animFileNames.length > 0) {
             const outputAnimNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_anim_file_names.txt`, {
                 flags: 'a'
             });
-            for (const file of animFileNames) {
+            for (const file of this.animFileNames) {
                 outputAnimNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputAnimNames.end();

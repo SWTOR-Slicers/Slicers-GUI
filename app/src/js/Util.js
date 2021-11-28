@@ -874,6 +874,14 @@ export function serializeMap(key, value) {
         return value;
     }
 }
+/**
+ * Checks the provided string to see if it is null or empty
+ * @param  {string} string the string to check.
+ */
+export function isNullOrWhiteSpace(string) {
+    if (typeof string === 'undefined' || string == null) return true;
+    return string.replace(/\s/g, '').length < 1;
+}
 
 class BitReader {
     constructor(dv) {

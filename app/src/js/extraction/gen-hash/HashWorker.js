@@ -7,6 +7,7 @@ import { EPPParser } from "../../classes/parsers/EPP.js";
 import { PRTParser } from "../../classes/parsers/PRT.js";
 import { GR2Parser } from "../../classes/parsers/GR2.js";
 import { BNKParser } from "../../classes/parsers/BNK.js";
+import { DATParser } from "src/js/classes/parsers/DAT.js";
 
 const path = require('path');
 const fs = require('fs');
@@ -56,6 +57,16 @@ async function generateHash(nodesByFqn, assets, checked) {
  */
 async function parseFiles(extension, assets, nodesByFqn) {
     const assetsDict = Object.assign({}, ...Object.values(assets));
+
+    Object.keys(assetsDict).map(key => {
+        const fileH = hash.getFileNameByHash(...d.split('|').reverse());
+        assetsDict[key] = {
+            ...asset,
+            "isNamed": fileH !== null,
+            "hash": (fileH !== null) ? fileH : `${asset.crc}_${asset.fileId}`
+        }
+    });
+
     const assetDictKeys = Object.keys(assetsDict)
         .map(d => hash.getFileNameByHash(...d.split('|').reverse())?.contains("." + extension.toLowerCase()));
     
@@ -143,24 +154,24 @@ async function parseFiles(extension, assets, nodesByFqn) {
             bnk_reader.writeFile();
             break;
         case "DAT":
-            Format_DAT dat_reader = new Format_DAT(extractPath, extension);
+            const dat_reader = new DATParser(extractPath, extension);
             for (const asset of matches) {
                 filesSearched++;
-                Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
-                dat_reader.ParseDAT(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName, this);
+                const assetStream = asset.getReadStream();
+                dat_reader.parseDAT(assetStream, asset.hash, assetsDict);
             }
-            namesFound = dat_reader.fileNames.Count;
-            dat_reader.WriteFile();
+            namesFound = dat_reader.fileNames.length;
+            dat_reader.writeFile();
             break;
-    //     case "CNV":
-    //         List<GomObject> cnvNodes = dom.GetObjectsStartingWith("cnv.");
-    //         Format_CNV cnv_node_parser = new Format_CNV(extractPath, extension);
-    //         cnv_node_parser.ParseCNVNodes(cnvNodes);
-    //         namesFound = cnv_node_parser.fileNames.Count + cnv_node_parser.animNames.Count + cnv_node_parser.fxSpecNames.Count;
-    //         filesSearched += cnvNodes.Count();
-    //         cnv_node_parser.WriteFile();
-    //         cnvNodes.Clear();
-    //         break;
+        case "CNV":
+            List<GomObject> cnvNodes = dom.GetObjectsStartingWith("cnv.");
+            Format_CNV cnv_node_parser = new Format_CNV(extractPath, extension);
+            cnv_node_parser.ParseCNVNodes(cnvNodes);
+            namesFound = cnv_node_parser.fileNames.Count + cnv_node_parser.animNames.Count + cnv_node_parser.fxSpecNames.Count;
+            filesSearched += cnvNodes.Count();
+            cnv_node_parser.WriteFile();
+            cnvNodes.Clear();
+            break;
     //     case "MISC":
     //         Format_MISC misc_parser = new Format_MISC(extractPath, extension);
     //         List<GomObject> ippNodes = dom.GetObjectsStartingWith("ipp.");

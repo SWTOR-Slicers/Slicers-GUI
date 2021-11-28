@@ -1,5 +1,6 @@
-const fs = require('fs');
 import { Reader } from '../util/FileWrapper.js';
+
+const fs = require('fs');
 
 class GR2Parser {
     #dest;
@@ -108,18 +109,18 @@ class GR2Parser {
             this.meshNames = new Map();
         }
 
-        if (matNames.length > 0) {
-            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_material_file_names.txt.txt`, {
+        if (this.matNames.length > 0) {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_material_file_names.txt`, {
                 flags: 'a'
             });
-            for (const file of matNames) {
+            for (const file of this.matNames) {
                 outputNames.write(`/resources/art/shaders/materials/${file}.mat\r\n`);
             }
             outputNames.end();
             this.matNames = [];
         }
 
-        if (errors.length > 0) {
+        if (this.errors.length > 0) {
             const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
                 flags: 'a'
             });

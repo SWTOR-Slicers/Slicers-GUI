@@ -2,12 +2,13 @@ import { XDocument } from "../../classes/util/XDocument.js";
 import { XML_MAT } from "../../classes/parsers/XML_MAT.js";
 import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 import { STBParser } from "../../classes/parsers/STB.js";
-import { hashlittle2 } from "../../Util.js";
+import { getCount, hashlittle2 } from "../../Util.js";
 import { EPPParser } from "../../classes/parsers/EPP.js";
 import { PRTParser } from "../../classes/parsers/PRT.js";
 import { GR2Parser } from "../../classes/parsers/GR2.js";
 import { BNKParser } from "../../classes/parsers/BNK.js";
-import { DATParser } from "src/js/classes/parsers/DAT.js";
+import { DATParser } from "../../classes/parsers/DAT.js";
+import { CNVParser } from "../../classes/parsers/CNV.js";
 
 const path = require('path');
 const fs = require('fs');
@@ -74,6 +75,7 @@ async function parseFiles(extension, assets, nodesByFqn) {
     const dom = nodesByFqn;
 
     let filesSearched = 0;
+    let namesFound = 0;
 
     for (const assetKey in assetDictKeys) {
         if (assetKey.split('.').at(-1).toUpperCase() !== extension) continue;
@@ -103,7 +105,7 @@ async function parseFiles(extension, assets, nodesByFqn) {
             break;
         case "EPP":
             const epp_reader = new EPPParser(extractPath, extension);
-            const eppNodes = dom.GetObjectsStartingWith("epp.");
+            const eppNodes = dom["epp."];
             for (const asset of matches) {
                 filesSearched++;
                 const assetStream = asset.getReadStream();
@@ -164,13 +166,12 @@ async function parseFiles(extension, assets, nodesByFqn) {
             dat_reader.writeFile();
             break;
         case "CNV":
-            List<GomObject> cnvNodes = dom.GetObjectsStartingWith("cnv.");
-            Format_CNV cnv_node_parser = new Format_CNV(extractPath, extension);
-            cnv_node_parser.ParseCNVNodes(cnvNodes);
-            namesFound = cnv_node_parser.fileNames.Count + cnv_node_parser.animNames.Count + cnv_node_parser.fxSpecNames.Count;
-            filesSearched += cnvNodes.Count();
-            cnv_node_parser.WriteFile();
-            cnvNodes.Clear();
+            const cnvNodes = dom["cnv."];
+            const cnv_node_parser = new CNVParser(extractPath, extension);
+            cnv_node_parser.parseCNVNodes(cnvNodes);
+            namesFound = cnv_node_parser.fileNames.length + cnv_node_parser.animFileNames.length + cnv_node_parser.fxSpecFileNames.length;
+            filesSearched += getCount(cnvNodes, 0);
+            cnv_node_parser.writeFile();
             break;
     //     case "MISC":
     //         Format_MISC misc_parser = new Format_MISC(extractPath, extension);

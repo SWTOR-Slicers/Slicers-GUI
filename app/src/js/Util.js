@@ -883,14 +883,28 @@ export function isNullOrWhiteSpace(string) {
     return string.replace(/\s/g, '').length < 1;
 }
 
-
-
 /**
  * Recursively counts the number of properties in an object
  * @param  {Object} data Object to count properties of.
  * @param  {int} count The running count;
  */
 export function getCount(data, count) {
+    for (const k of Object.keys(data)) {
+        count++;
+        if (typeof data[k] === 'object') {
+            count += getCount(data[k], count);
+        }
+    }
+
+    return count;
+}
+
+/**
+ * Recursively gets the property of an object
+ * @param  {Object} data Object to check.
+ * @param  {string} prop The property to find.
+ */
+export function getPropertyRecursive(data, prop) {
     for (const k of Object.keys(data)) {
         count++;
         if (typeof data[k] === 'object') {

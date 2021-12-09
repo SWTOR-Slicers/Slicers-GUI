@@ -307,7 +307,7 @@ class DATParser {
                                         fxspecs.push(o);
                                         break;
                                     case 2393024011:    // spnAnimation or spnNpcIdleAnimationName
-                                        animFileNames.push(o.toLowerCase());
+                                        animNames.push(o.toLowerCase());
                                         break;
                                     case 964697786:     // Tag
                                         this.this.fileNames.push(`/resources${area}${o}.dat`);
@@ -484,18 +484,18 @@ class DATParser {
                                         const actionName = action.attribute("name");
                                         if (action.attribute("actionProvider") != null) {
                                             let actionProvider = action.Attribute("actionProvider") + ".mph";
-                                            this.animFileNames.push(netfold + actionProvider);
-                                            this.animFileNames.push(netfold + actionProvider + ".amx");
+                                            this.animNames.push(netfold + actionProvider);
+                                            this.animNames.push(netfold + actionProvider + ".amx");
                                         }
                                         if (action.attribute("animName") != null) {
                                             const animationName = action.attribute("animName");
                                             if (actionName != animationName) {
                                                 animationName += ".jba";
-                                                this.animFileNames.push(netfold + animationName);
+                                                this.animNames.push(netfold + animationName);
                                             }
                                         }
                                         actionName += ".jba";
-                                        this.animFileNames.push(netfold + actionName);
+                                        this.animNames.push(netfold + actionName);
                                     }
                                 }
 
@@ -505,8 +505,8 @@ class DATParser {
                                     for (const network of networkList) {
                                         const fqnName = network.Attribute("fqn").Value;
                                         if (fqnName != null) {
-                                            this.animFileNames.push(netfold + fqnName);
-                                            this.animFileNames.push(netfold + fqnName + ".amx");
+                                            this.animNames.push(netfold + fqnName);
+                                            this.animNames.push(netfold + fqnName + ".amx");
                                         }
                                     }
                                 }
@@ -517,9 +517,9 @@ class DATParser {
                                     for (const input of inputList) {
                                         const fqnName = input.attribute("name");
                                         if (fqnName != null) {
-                                            this.animFileNames.push(netfold + fqnName);
-                                            this.animFileNames.push(netfold + fqnName + ".amx");
-                                            this.animFileNames.push(netfold + fqnName + ".jba");
+                                            this.animNames.push(netfold + fqnName);
+                                            this.animNames.push(netfold + fqnName + ".amx");
+                                            this.animNames.push(netfold + fqnName + ".jba");
                                         }
                                     }
                                 }
@@ -578,15 +578,15 @@ class DATParser {
             this.fileNames = [];
         }
 
-        if (this.animFileNames.length > 0) {
+        if (this.animNames.length > 0) {
             const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_anim_file_names.txt`, {
                 flags: 'a'
             });
-            for (const file of this.animFileNames) {
+            for (const file of this.animNames) {
                 outputNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputNames.end();
-            this.animFileNames = [];
+            this.animNames = [];
         }
 
         if (errors.length > 0) {

@@ -100,7 +100,7 @@ async function parseFiles(extension, assets, nodesByFqn) {
                 const doc = new XDocument(xmlJs.xml2json(xmlBuffString(assetStream), {compact: false, spaces: 4}));
                 xml_mat_reader.parseXML(doc, asset.hash);
             }
-            namesFound = xml_mat_reader.fileNames.length + xml_mat_reader.animFileNames.length;
+            namesFound = xml_mat_reader.fileNames.length + xml_mat_reader.animNames.length;
             xml_mat_reader.writeFile();
             break;
         case "EPP":
@@ -169,29 +169,29 @@ async function parseFiles(extension, assets, nodesByFqn) {
             const cnvNodes = dom["cnv."];
             const cnv_node_parser = new CNVParser(extractPath, extension);
             cnv_node_parser.parseCNVNodes(cnvNodes);
-            namesFound = cnv_node_parser.fileNames.length + cnv_node_parser.animFileNames.length + cnv_node_parser.fxSpecFileNames.length;
+            namesFound = cnv_node_parser.fileNames.length + cnv_node_parser.animNames.length + cnv_node_parser.fxSpecNames.length;
             filesSearched += getCount(cnvNodes, 0);
             cnv_node_parser.writeFile();
             break;
-    //     case "MISC":
-    //         Format_MISC misc_parser = new Format_MISC(extractPath, extension);
-    //         List<GomObject> ippNodes = dom.GetObjectsStartingWith("ipp.");
-    //         misc_parser.ParseMISC_IPP(ippNodes);
-    //         List<GomObject> cdxNodes = dom.GetObjectsStartingWith("cdx.");
-    //         misc_parser.ParseMISC_CDX(cdxNodes);
-    //         Dictionary<string, DomType> nodeDict;
-    //         dom.nodeLookup.TryGetValue(typeof(GomObject), out nodeDict);
-    //         misc_parser.ParseMISC_NODE(nodeDict);
-    //         GomObject ldgNode = dom.Get<GomObject>("loadingAreaLoadScreenPrototype");
-    //         //nodeDict.Clear(); //this was destroying dom.nodeLookup causing an annoyingly hard to locate exception.
-    //         Dictionary<object, object> itemApperances = dom.GetObject("itmAppearanceDatatable").Data.Get<Dictionary<object, object>>("itmAppearances");
-    //         misc_parser.ParseMISC_LdnScn(ldgNode);
-    //         misc_parser.ParseMISC_ITEM(itemApperances);
-    //         misc_parser.ParseMISC_TUTORIAL(dom);
-    //         misc_parser.WriteFile();
-    //         namesFound = misc_parser.found;
-    //         filesSearched += misc_parser.searched;
-    //         break;
+        case "MISC":
+            Format_MISC misc_parser = new Format_MISC(extractPath, extension);
+            List<GomObject> ippNodes = dom.GetObjectsStartingWith("ipp.");
+            misc_parser.ParseMISC_IPP(ippNodes);
+            List<GomObject> cdxNodes = dom.GetObjectsStartingWith("cdx.");
+            misc_parser.ParseMISC_CDX(cdxNodes);
+            Dictionary<string, DomType> nodeDict;
+            dom.nodeLookup.TryGetValue(typeof(GomObject), out nodeDict);
+            misc_parser.ParseMISC_NODE(nodeDict);
+            GomObject ldgNode = dom.Get<GomObject>("loadingAreaLoadScreenPrototype");
+            //nodeDict.Clear(); //this was destroying dom.nodeLookup causing an annoyingly hard to locate exception.
+            Dictionary<object, object> itemApperances = dom.GetObject("itmAppearanceDatatable").Data.Get<Dictionary<object, object>>("itmAppearances");
+            misc_parser.ParseMISC_LdnScn(ldgNode);
+            misc_parser.ParseMISC_ITEM(itemApperances);
+            misc_parser.ParseMISC_TUTORIAL(dom);
+            misc_parser.WriteFile();
+            namesFound = misc_parser.found;
+            filesSearched += misc_parser.searched;
+            break;
     //     case "MISC_WORLD":
     //         Format_MISC misc_world_parser = new Format_MISC(extractPath, extension);
     //         Dictionary<object, object> areaList = dom.GetObject("mapAreasDataProto").Data.Get<Dictionary<object, object>>("mapAreasDataObjectList");
@@ -234,7 +234,7 @@ async function parseFiles(extension, assets, nodesByFqn) {
     //         List<GomObject> hydNodes = dom.GetObjectsStartingWith("hyd.");
     //         Format_HYD hyd_parser = new Format_HYD(extractPath, extension);
     //         hyd_parser.ParseHYD(hydNodes);
-    //         namesFound = hyd_parser.animFileNames.Count + hyd_parser.vfxFileNames.Count;
+    //         namesFound = hyd_parser.animNames.Count + hyd_parser.vfxFileNames.Count;
     //         filesSearched += hydNodes.Count();
     //         hyd_parser.WriteFile();
     //         hydNodes.Clear();

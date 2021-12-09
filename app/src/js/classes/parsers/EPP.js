@@ -14,7 +14,7 @@ class EPPParser {
         this.#dest = dest;
         this.extension = ext;
         this.fileNames = [];
-        this.animFileNames = [];
+        this.animNames = [];
         this.errors = [];
     }
 
@@ -90,15 +90,15 @@ class EPPParser {
             this.fileNames = [];
         }
 
-        if (this.animFileNames.length > 0) {
+        if (this.animNames.length > 0) {
             const outputAnimNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_anim_file_names.txt`, {
                 flags: 'a'
             });
-            for (const file of this.animFileNames) {
+            for (const file of this.animNames) {
                 outputAnimNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputAnimNames.end();
-            this.animFileNames = [];
+            this.animNames = [];
         }
 
         if (errors.length > 0) {

@@ -821,9 +821,12 @@ class NodeEntr {
 
     render(parent, dataContainer, refSet) {
         refSet(this);
-        if (this.isBucket) {
-            parent.innerHTML = "";
+        this.readNode();
+        this.node.render(parent, dataContainer);
+    }
 
+    readNode() {
+        if (this.isBucket) {
             if (!this.node) {
                 const data = fs.readFileSync(this.torPath);
 
@@ -833,8 +836,6 @@ class NodeEntr {
             }
             this.node.render(parent, dataContainer);
         } else {
-            parent.innerHTML = "";
-
             if (!this.node) {
                 const data = fs.readFileSync(this.torPath);
                 let torData = null;
@@ -854,7 +855,6 @@ class NodeEntr {
                 const node = new ProtoNode(this, blob, this._dom);
                 this.node = node;
             }
-            this.node.render(parent, dataContainer);
         }
     }
 }

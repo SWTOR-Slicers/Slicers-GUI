@@ -1,5 +1,4 @@
 import {Node} from '../formats/Node.js';
-import { XDocument } from '../util/XDocument';
 
 const fs = require('fs');
 
@@ -14,8 +13,8 @@ class CNVParser {
         this.#dest = dest;
         this.extension = ext;
         this.fileNames = [];
-        this.animFileNames = [];
-        this.fxSpecFileNames = [];
+        this.animNames = [];
+        this.fxSpecNames = [];
         this.errors = [];
     }
 
@@ -36,24 +35,25 @@ class CNVParser {
 
             //Check for alien vo files.
             if (cnvNode.fqn.startsWith("cnv.alien_vo")) this.fileNames.push("/resources/bnk2/" + under + ".acb");
-            if (obj.Data.Dictionary.ContainsKey("cnvActionList")) {
-                const actionData = obj.Data.Get<List<object>>("cnvActionList");
+            cnvNode.readNode();
+            if (cnvNode.obj["cnvActionList"]) {
+                const actionData = cnvNode.obj["cnvActionList"];
                 if (actionData != null) {
                     for (const action of actionData) {
                         if (action.contains("stg.")) continue;
-                        this.animFileNames.push(action.split('.').Last().toLowerCase());
+                        this.animNames.push(action.split('.').Last().toLowerCase());
                     }
                 }
             }
 
-            if (obj.Data.Dictionary.ContainsKey("cnvActiveVFXList")) {
-                const vfxData = obj.Data.Get<Dictionary<object, object>>("cnvActiveVFXList");
+            if (cnvNode.obj["cnvActiveVFXList"]) {
+                const vfxData = cnvNode.obj["cnvActiveVFXList"];
                 if (vfxData != null) {
                     for (const kvp of vfxData) {
                         const value = kvp.value;
                         if (value.length > 0) {
                             for (const vfx of value) {
-                                this.fxSpecFileNames.push(vfx.toLowerCase());
+                                this.fxSpecNames.push(vfx.toLowerCase());
                             }
                         }
                     }
@@ -75,26 +75,26 @@ class CNVParser {
             this.fileNames = [];
         }
 
-        if (this.animFileNames.length > 0) {
+        if (this.animNames.length > 0) {
             const outputAnimNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_anim_file_names.txt`, {
                 flags: 'a'
             });
-            for (const file of this.animFileNames) {
+            for (const file of this.animNames) {
                 outputAnimNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputAnimNames.end();
-            this.animFileNames = [];
+            this.animNames = [];
         }
 
-        if (this.fxSpecFileNames.length > 0) {
+        if (this.fxSpecNames.length > 0) {
             const outputFxSpecNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_fxspec_names.txt`, {
                 flags: 'a'
             });
-            for (const file of this.fxSpecFileNames) {
+            for (const file of this.fxSpecNames) {
                 outputFxSpecNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputFxSpecNames.end();
-            this.fxSpecFileNames = [];
+            this.fxSpecNames = [];
         }
 
         if (errors.length > 0) {

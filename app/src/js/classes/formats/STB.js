@@ -2,7 +2,7 @@ import { Reader } from "../util/FileWrapper.js";
 
 const Decoder = new TextDecoder('utf-8');
 
-class StringEntry {
+class StringTableEntry {
     constructor(id, type1, type2, len, offset) {
         this.id = id;
         this.type1 = type1;
@@ -39,13 +39,17 @@ class STB {
             const dataOffset = this.reader.readUint32();
             this.reader.readUint32(); // repeat of len
 
-            const entr = new StringEntry(id, t1, t2, len, dataOffset);
+            const entr = new StringTableEntry(id, t1, t2, len, dataOffset);
 
             entr.val = Decoder.decode(new DataView(data, entr.offset, entr.len));
 
             this.strings.push(entr);
         }
     }
+
+    getText(id) {
+        return this.strings.find((entr) => entr.id == id);
+    }
 }
 
-export {STB};
+export {STB, StringTableEntry};

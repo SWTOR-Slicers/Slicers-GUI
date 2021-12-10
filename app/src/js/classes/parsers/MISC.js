@@ -1,6 +1,7 @@
+import { STB } from '../formats/STB.js';
+import { Area } from '../dataObjectModel/Area.js';
+
 const fs = require('fs');
-const { STB } = require('../formats/STB');
-const { Area } = require('../dataObjectModel/Area');
 
 class MISCParser {
     #dest;

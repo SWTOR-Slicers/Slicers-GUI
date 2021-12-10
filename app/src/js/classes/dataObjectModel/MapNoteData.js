@@ -1,0 +1,7 @@
+
+
+class MapNoteData {
+
+}
+
+export {MapNoteData};

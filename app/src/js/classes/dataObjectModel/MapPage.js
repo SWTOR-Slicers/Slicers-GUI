@@ -1,0 +1,7 @@
+
+
+class MapPage {
+
+}
+
+export {MapPage};

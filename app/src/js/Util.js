@@ -915,6 +915,38 @@ export function getPropertyRecursive(data, prop) {
     return count;
 }
 
+/**
+ * Converts a number to base62
+ * @param  {number} num number to convert.
+ */
+export function toMaskedBase62(num) {
+    const maskedId = num & 0xFFFFFFFFFF;
+    const maskedBytes = longToByteArray(maskedId);
+    maskedBytes.slice(5, 8);
+    return byteArrayToLong(maskedBytes).toBase62();
+}
+
+function longToByteArray(/*long*/long) {
+    // we want to represent the input as a 8-bytes array
+    let byteArray = [0, 0, 0, 0, 0, 0, 0, 0];
+
+    for ( let index = 0; index < byteArray.length; index ++ ) {
+        let byte = long & 0xff;
+        byteArray [ index ] = byte;
+        long = (long - byte) / 256 ;
+    }
+
+    return byteArray;
+}
+function byteArrayToLong(/*byte[]*/byteArray) {
+    let value = 0;
+    for ( let i = byteArray.length - 1; i >= 0; i--) {
+        value = (value * 256) + byteArray[i];
+    }
+
+    return value;
+}
+
 class BitReader {
     constructor(dv) {
         this.dv = dv;

@@ -48,13 +48,14 @@ class Area {
                 }
             }
             const mapNotePath = `/resources/world/areas/${this.areaId}/mapnotes.not`;
-            const mapNoteObj = assets.findFile(mapNotePath);
+            const mapNoteObj = assets[mapNotePath];
             if (mapNoteObj != null) {
                 this.loadMapNotes(mapNoteObj);
             }
 
-            this.areaDat = new AreaDat(this.areaId);
             this.dom = dom;
+            this.assets = assets;
+            this.areaDat = new AreaDat(this.areaId, assets);
         } else {
             console.log("unexpect null values. Expected Non-null gomObj and sysWorldMapTbl.");
         }
@@ -98,56 +99,52 @@ class Area {
         if (mapPages != null) {
             this.mapPages = [];
             for (const mapPage of mapPages) {
-                const page = new MapPage
-                {
-                    Area = area,
-                    Guid = mapPage.ValueOrDefault<long>("mapPageGUID", 0)
-                };
-                page.Id = (int)(page.Guid & 0x7FFFFFFF);
-                if (page.Id == 40003) {
+                const page = new MapPage(this, mapPage["mapPageGUID"] || 0);
+                page.id = (int)(page.guid & 0x7FFFFFFF);
+                if (page.id == 40003) {
                     // string sdf = "";
                 }
-                var minCoord = mapPage.ValueOrDefault<List<float>>("mapPageMinCoord", null);
+                const minCoord = mapPage["mapPageMinCoord"];
                 if (minCoord != null) {
-                    page.MinX = minCoord[0];
-                    page.MinY = minCoord[1];
-                    page.MinZ = minCoord[2];
+                    page.minX = minCoord[0];
+                    page.minY = minCoord[1];
+                    page.minZ = minCoord[2];
                 }
-                var maxCoord = mapPage.ValueOrDefault<List<float>>("mapPageMaxCoord", null);
+                const maxCoord = mapPage["mapPageMaxCoord"];
                 if (maxCoord != null) {
-                    page.MaxX = maxCoord[0];
-                    page.MaxY = maxCoord[1];
-                    page.MaxZ = maxCoord[2];
+                    page.maxX = maxCoord[0];
+                    page.maxY = maxCoord[1];
+                    page.maxZ = maxCoord[2];
                 }
-                var miniMinCoord = mapPage.ValueOrDefault<List<float>>("mapPageMiniMinCoord", null);
+                const miniMinCoord = mapPage["mapPageMiniMinCoord"];
                 if (miniMinCoord != null) {
-                    page.MiniMapMinX = miniMinCoord[0];
-                    page.MiniMapMinZ = miniMinCoord[2];
+                    page.miniMapMinX = miniMinCoord[0];
+                    page.miniMapMinZ = miniMinCoord[2];
                 }
-                var miniMaxCoord = mapPage.ValueOrDefault<List<float>>("mapPageMiniMaxCoord", null);
+                const miniMaxCoord = mapPage["mapPageMiniMaxCoord"];
                 if (miniMaxCoord != null) {
-                    page.MiniMapMaxX = miniMaxCoord[0];
-                    page.MiniMapMaxZ = miniMaxCoord[2];
+                    page.miniMapMaxX = miniMaxCoord[0];
+                    page.miniMapMaxZ = miniMaxCoord[2];
                 }
-                page.CalculateVolume();
-                page.ExplorationType = mapPage.ValueOrDefault("mapExplorationType", new ScriptEnum()).ToString();
-                page.MountAllowed = mapPage.ValueOrDefault("mapMountAllowed", false);
-                page.IsHeroic = mapPage.ValueOrDefault("mapIsHeroic", false);
-                page.ParentId = mapPage.ValueOrDefault<long>("mapParentNameSId", 0);
-                page.SId = mapPage.ValueOrDefault<long>("mapNameSId", 0);
-                page.MapName = mapPage.ValueOrDefault<string>("mapName", null);
+                page.calculateVolume();
+                page.explorationType = mapPage["mapExplorationType"];
+                page.mountAllowed = mapPage["mapMountAllowed"] || false;
+                page.isHeroic = mapPage["mapIsHeroic"] || false;
+                page.parentId = mapPage["mapParentNameSId"] || 0;
+                page.sId = mapPage["mapNameSId"] || 0;
+                page.mapName = mapPage["mapName"];
 
-                string mapImagePath = string.Format("/resources/world/areas/{0}/{1}_r.dds", area.AreaId, page.MapName);
-                page.HasImage = _dom._assets.HasFile(mapImagePath);
+                const mapImagePath = `/resources/world/areas/${this.areaId}/${page.mapName}_r.dds`;
+                page.hasImage = this.assets[mapImagePath] != null;
 
-                if (page.HasImage) {
-                    if (page.Area.RequiredFiles == null) page.Area.RequiredFiles = new HashSet<string>();
-                    page.Area.RequiredFiles.Add(mapImagePath);
+                if (page.hasImage) {
+                    if (page.area.requiredFiles == null) page.area.requiredFiles = [];
+                    page.area.requiredFiles.push(mapImagePath);
                 }
 
-                _dom._assets.icons.AddMap(area.AreaId, page.MapName);
+                // _dom._assets.icons.AddMap(area.AreaId, page.MapName);
 
-                page.Name = strTable.GetText(page.Guid, "MapPage." + page.MapName);
+                page.name = this.sysWorldMapTbl.getText(page.guid);
                 //if (String.IsNullOrWhiteSpace(page.Name))
                 //{
                 //    string sdfin = "";
@@ -160,20 +157,20 @@ class Area {
                 //        string sdf = "";
                 //    }
                 //}
-                page.LocalizedName = strTable.GetLocalizedText(page.Guid, "MapPage." + page.MapName);
 
-                page.ExplorationId = long.Parse(mapPage.ValueOrDefault<object>("mapExplorationId", 0).ToString());
-                page.MapFowRadius = mapPage.ValueOrDefault("mapFowRadius", 0f);
+                page.explorationId = mapPage["mapExplorationId"] || 0;
+                page.mapFowRadius = mapPage["mapFowRadius"] || 0;
 
-                pageLookup[page.SId] = page;
-                area.MapPages.Add(page);
+                pageLookup[page.sId] = page;
+                this.mapPages.push(page);
             }
 
-            foreach (var p in area.MapPages) {
-                if (p.ParentId == 0) continue; // MapPage has no parent (this is a world map)
+            for (const p of this.mapPages) {
+                if (p.parentId == 0) continue; // MapPage has no parent (this is a world map)
 
-                if (pageLookup.TryGetValue(p.ParentId, out MapPage parent)) {
-                    p.Parent = parent;
+                let parent;
+                if (Array.from(pageLookup.values()).includes(p.parentId)) {
+                    p.parent = parent;
                 } else {
                     throw new InvalidOperationException("Unable to find parent map page");
                 }

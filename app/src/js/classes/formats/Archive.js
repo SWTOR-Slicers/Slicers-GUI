@@ -1,4 +1,4 @@
-import { FileWrapper } from '../util/FileWrapper.js';
+import { FileWrapper, Reader } from '../util/FileWrapper.js';
 
 const fs = require('fs');
 const path = require('path');
@@ -38,13 +38,13 @@ class ArchiveEntry {
         const wrapper = new FileWrapper(this.torPath);
 
         wrapper.seek(this.offset, 0);
-        const data = wrapper.read(this.comprSize);
+        const data = wrapper.read(this.comprSize).data;
 
         const decompr = zlib.inflateRawSync(data, {
             level: zlib.constants.Z_BEST_COMPRESSION
         });
 
-        return decompr;
+        return new Reader(decompr);
     }
 }
 

@@ -3,12 +3,15 @@ import { RoomDat } from "./Room.js";
 
 class AreaDat {
     #rooms_;
+
+    _assetsRef;
     /**
      * Represents the AreaDat data model
      * @param  {number} id the areaId associated with this areaDat
      * @param  {Object.<string, ArchiveEntry>} assets the tor assets object
      */
     constructor(id, assets) {
+        this._assetsRef = assets;
         this.areaId = id;
         this.id = id;
 
@@ -17,7 +20,7 @@ class AreaDat {
         const header = reader.readInt32();
         if (header == 24) {
             const format = reader.readString();
-            if (format != "AREA_DAT_BINARY_FORMAT_") return null; //not an area dat file
+            if (format != "AREA_DAT_BINARY_FORMAT_") throw new Error(`Unexpected format. Expected 'AREA_DAT_BINARY_FORMAT_' but recieved '${format}'`); //not an area dat file
 
             reader.offset = 0x1C; //Skip to area header
 

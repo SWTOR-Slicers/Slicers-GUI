@@ -34,7 +34,6 @@ class Area {
             const mapDataPath = `world.areas.${this.areaId}.mapdata`;
             const mapDataObj = dom.getObject(mapDataPath);
             if (mapDataObj != null) {
-                mapDataObj.readNode();
                 this.loadMapdata(mapDataObj);
 
                 this.fowGroupStringIds = {};

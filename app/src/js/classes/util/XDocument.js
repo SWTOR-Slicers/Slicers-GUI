@@ -65,6 +65,7 @@ class XDocument {
     get attributes() { return this.document.attributes; }
 
     get hasElements() { return this.document.elements.length > 0; }
+    get hasAttributes() { return this.document.attributes.length > 0; }
 }
 
 export { XDocument }

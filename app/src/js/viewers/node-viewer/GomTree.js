@@ -11,7 +11,7 @@ const nodesByFqn = {
         "$F": [], //files
         "$O": 0
     },
-    getObject: (path) => {
+    getObjectNoLoad: (path) => {
         const components = path.split('.');
         if (components.length > 1) {
             let parent = this;
@@ -27,6 +27,30 @@ const nodesByFqn = {
         } else {
             return this.$F[components[0]];
         }
+    },
+    getObject: (path) => {
+        let ret = undefined;
+        const components = path.split('.');
+        if (components.length > 1) {
+            let parent = this;
+            let idx = 0;
+            for (const c of components) {
+                if (idx == components.length - 1) {
+                    ret = parent.$F[components[idx]];
+                } else {
+                    parent = parent[components[idx]];
+                    idx++;
+                }
+            }
+        } else {
+            ret = this.$F[components[0]];
+        }
+
+        if (ret) {
+            ret.readNode();
+        }
+
+        return ret;
     }
 };
 let currentNode;

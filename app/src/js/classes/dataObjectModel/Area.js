@@ -55,7 +55,7 @@ class Area {
 
             this.dom = dom;
             this.assets = assets;
-            this.areaDat = new AreaDat(this.areaId, assets);
+            this.areaDat = new AreaDat(this.areaId, assets, dom);
         } else {
             console.log("unexpect null values. Expected Non-null gomObj and sysWorldMapTbl.");
         }

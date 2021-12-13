@@ -1,5 +1,5 @@
 import { ArchiveEntry } from "../formats/Archive.js";
-import { RoomDat } from "./Room.js";
+import { RoomDat } from "./RoomDat.js";
 
 class AreaDat {
     #rooms_;
@@ -9,11 +9,14 @@ class AreaDat {
      * Represents the AreaDat data model
      * @param  {number} id the areaId associated with this areaDat
      * @param  {Object.<string, ArchiveEntry>} assets the tor assets object
+     * @param  {Object} dom the data object model
      */
-    constructor(id, assets) {
+    constructor(id, assets, dom) {
         this._assetsRef = assets;
         this.areaId = id;
         this.id = id;
+
+        this.dom = dom;
 
         // load the data
         const reader = assets[`/resources/world/areas/${this.areaId}/area.dat`].getReadStream();

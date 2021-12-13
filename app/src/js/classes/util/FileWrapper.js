@@ -21,6 +21,15 @@ class Reader {
     }
 
     /**
+     * read the next char and return a string.
+     */
+    readChar() {
+        const res = new Uint8Array(this.data, this.offset, 1);
+        this.offset += length;
+        return endianness ? res[0].toString() : res.reverse()[0].toString();
+    }
+
+    /**
      * reads the next (length) bytes and returns a Uint8 array.
      * @param  {number} length the number of bytes to read
      */

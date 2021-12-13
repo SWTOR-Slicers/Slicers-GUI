@@ -51,6 +51,26 @@ const nodesByFqn = {
         }
 
         return ret;
+    },
+    getObjectsStartingWith: (fam) => {
+        let ret = [];
+        if (this[fam]) {
+            let parent = this[fam];
+            recursiveAdd(fam, parent);
+        }
+
+        function recursiveAdd(fam, parent) {
+            for (const kvp in Object.entries(parent)) {
+                if (kvp[0] != '$O' && kvp[0] != '$F') {
+                    recursiveAdd(`${fam}${kvp[0]}.`, kvp[1]);
+                }
+            }
+            for (const entr in parent.$F) {
+                ret.push(entr);
+            }
+        }
+
+        return ret;
     }
 };
 let currentNode;

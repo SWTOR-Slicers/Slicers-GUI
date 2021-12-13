@@ -9,6 +9,7 @@ import { GR2Parser } from "../../classes/parsers/GR2.js";
 import { BNKParser } from "../../classes/parsers/BNK.js";
 import { DATParser } from "../../classes/parsers/DAT.js";
 import { CNVParser } from "../../classes/parsers/CNV.js";
+import { MISCParser } from "../../classes/parsers/MISC.js";
 
 const path = require('path');
 const fs = require('fs');
@@ -174,21 +175,21 @@ async function parseFiles(extension, assets, nodesByFqn) {
             cnv_node_parser.writeFile();
             break;
         case "MISC":
-            Format_MISC misc_parser = new Format_MISC(extractPath, extension);
-            List<GomObject> ippNodes = dom.GetObjectsStartingWith("ipp.");
-            misc_parser.ParseMISC_IPP(ippNodes);
-            List<GomObject> cdxNodes = dom.GetObjectsStartingWith("cdx.");
-            misc_parser.ParseMISC_CDX(cdxNodes);
+            const misc_parser = new MISCParser(extractPath, extension);
+            const ippNodes = dom.getObjectsStartingWith("ipp.");
+            misc_parser.parseMISC_IPP(ippNodes);
+            const cdxNodes = dom.getObjectsStartingWith("cdx.");
+            misc_parser.parseMISC_CDX(cdxNodes);
             Dictionary<string, DomType> nodeDict;
             dom.nodeLookup.TryGetValue(typeof(GomObject), out nodeDict);
-            misc_parser.ParseMISC_NODE(nodeDict);
-            GomObject ldgNode = dom.Get<GomObject>("loadingAreaLoadScreenPrototype");
+            misc_parser.parseMISC_NODE(nodeDict);
+            const ldgNode = dom.getObject("loadingAreaLoadScreenPrototype");
             //nodeDict.Clear(); //this was destroying dom.nodeLookup causing an annoyingly hard to locate exception.
-            Dictionary<object, object> itemApperances = dom.GetObject("itmAppearanceDatatable").Data.Get<Dictionary<object, object>>("itmAppearances");
-            misc_parser.ParseMISC_LdnScn(ldgNode);
-            misc_parser.ParseMISC_ITEM(itemApperances);
-            misc_parser.ParseMISC_TUTORIAL(dom);
-            misc_parser.WriteFile();
+            const itemApperances = dom.getObject("itmAppearanceDatatable").obj["itmAppearances"];
+            misc_parser.parseMISC_LdnScn(ldgNode);
+            misc_parser.parseMISC_ITEM(itemApperances);
+            misc_parser.parseMISC_TUTORIAL(dom);
+            misc_parser.writeFile();
             namesFound = misc_parser.found;
             filesSearched += misc_parser.searched;
             break;

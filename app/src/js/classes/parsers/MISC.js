@@ -287,3 +287,5 @@ class MISCParser {
         }
     }
 }
+
+export {MISCParser};

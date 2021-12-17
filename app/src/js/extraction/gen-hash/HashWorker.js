@@ -10,6 +10,7 @@ import { BNKParser } from "../../classes/parsers/BNK.js";
 import { DATParser } from "../../classes/parsers/DAT.js";
 import { CNVParser } from "../../classes/parsers/CNV.js";
 import { MISCParser } from "../../classes/parsers/MISC.js";
+import { STB } from "src/js/classes/formats/STB.js";
 
 const path = require('path');
 const fs = require('fs');
@@ -188,7 +189,8 @@ async function parseFiles(extension, assets, nodesByFqn) {
             const itemApperances = dom.getObject("itmAppearanceDatatable").obj["itmAppearances"];
             misc_parser.parseMISC_LdnScn(ldgNode);
             misc_parser.parseMISC_ITEM(itemApperances);
-            misc_parser.parseMISC_TUTORIAL(dom);
+            const guiTutorialsStb = new STB(assets["resources/en-us/str/gui/tutorials.stb"].getReadStream());
+            misc_parser.parseMISC_TUTORIAL(guiTutorialsStb);
             misc_parser.writeFile();
             namesFound = misc_parser.found;
             filesSearched += misc_parser.searched;

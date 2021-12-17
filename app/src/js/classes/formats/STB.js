@@ -16,7 +16,11 @@ class StringTableEntry {
 class STB {
     constructor(data) {
         this.strings = [];
-        this.reader = new Reader(data);
+        if (Reader.prototype.isPrototypeOf(data)) {
+            this.reader = data;
+        } else {
+            this.reader = new Reader(data);
+        }
 
         // Parse Header. Not important for our purposes
         this.reader.readUint8();

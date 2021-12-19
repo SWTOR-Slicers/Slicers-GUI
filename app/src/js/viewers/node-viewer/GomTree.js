@@ -54,8 +54,21 @@ const nodesByFqn = {
     },
     getObjectsStartingWith: (fam) => {
         let ret = [];
-        if (this[fam]) {
-            let parent = this[fam];
+        let path = fam.split(".");
+        let parent = this;
+        let seg;
+
+        if (path.length > 1) {
+            for (let i = 0; i < path.length - 1; i++) {
+                parent = parent[path[i]];
+            }
+
+            seg = path[path.length - 1];
+        } else {
+            seg = path[0];
+        }
+        if (parent[fam]) {
+            parent = parent[fam];
             recursiveAdd(fam, parent);
         }
 
@@ -73,6 +86,7 @@ const nodesByFqn = {
         return ret;
     }
 };
+const protoNodes = {};
 let currentNode;
 
 class NodeTree {
@@ -390,6 +404,9 @@ class StaticGomTree {
                 folderStart = i + 1
             }
         }
+        if (!node.isBucket) {
+            protoNodes[node.fqn] = node;
+        }
         node.path = name.substr(0, folderStart);
         const fileName = name.substring(folderStart, i);
         node.fileName = fileName;
@@ -417,4 +434,4 @@ function nodeFolderSort(a, b) {
     return 1
 }
 
-export {GomTree, StaticGomTree, nodesByFqn, nodeFolderSort, currentNode};
+export {GomTree, StaticGomTree, nodesByFqn, protoNodes, nodeFolderSort, currentNode};

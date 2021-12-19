@@ -11,6 +11,7 @@ import { DATParser } from "../../classes/parsers/DAT.js";
 import { CNVParser } from "../../classes/parsers/CNV.js";
 import { MISCParser } from "../../classes/parsers/MISC.js";
 import { STB } from "src/js/classes/formats/STB.js";
+import { protoNodes } from "../../viewers/node-viewer/GomTree.js";
 
 const path = require('path');
 const fs = require('fs');
@@ -181,11 +182,8 @@ async function parseFiles(extension, assets, nodesByFqn) {
             misc_parser.parseMISC_IPP(ippNodes);
             const cdxNodes = dom.getObjectsStartingWith("cdx.");
             misc_parser.parseMISC_CDX(cdxNodes);
-            Dictionary<string, DomType> nodeDict;
-            dom.nodeLookup.TryGetValue(typeof(GomObject), out nodeDict);
-            misc_parser.parseMISC_NODE(nodeDict);
+            misc_parser.parseMISC_NODE(protoNodes);
             const ldgNode = dom.getObject("loadingAreaLoadScreenPrototype");
-            //nodeDict.Clear(); //this was destroying dom.nodeLookup causing an annoyingly hard to locate exception.
             const itemApperances = dom.getObject("itmAppearanceDatatable").obj["itmAppearances"];
             misc_parser.parseMISC_LdnScn(ldgNode);
             misc_parser.parseMISC_ITEM(itemApperances);
@@ -195,16 +193,16 @@ async function parseFiles(extension, assets, nodesByFqn) {
             namesFound = misc_parser.found;
             filesSearched += misc_parser.searched;
             break;
-    //     case "MISC_WORLD":
-    //         Format_MISC misc_world_parser = new Format_MISC(extractPath, extension);
-    //         Dictionary<object, object> areaList = dom.GetObject("mapAreasDataProto").Data.Get<Dictionary<object, object>>("mapAreasDataObjectList");
-    //         List<GomObject> areaList2 = dom.GetObjectsStartingWith("world.areas.");
-    //         misc_world_parser.ParseMISC_WORLD(areaList2, areaList, dom);
-    //         areaList.Clear();
-    //         areaList2.Clear();
-    //         misc_world_parser.WriteFile();
-    //         namesFound = misc_world_parser.found;
-    //         break;
+        case "MISC_WORLD":
+            Format_MISC misc_world_parser = new Format_MISC(extractPath, extension);
+            Dictionary<object, object> areaList = dom.GetObject("mapAreasDataProto").Data.Get<Dictionary<object, object>>("mapAreasDataObjectList");
+            List<GomObject> areaList2 = dom.GetObjectsStartingWith("world.areas.");
+            misc_world_parser.ParseMISC_WORLD(areaList2, areaList, dom);
+            areaList.Clear();
+            areaList2.Clear();
+            misc_world_parser.WriteFile();
+            namesFound = misc_world_parser.found;
+            break;
     //     case "FXSPEC":
     //         Format_FXSPEC fxspec_parser = new Format_FXSPEC(extractPath, extension);
     //         for (const asset of matches) {

@@ -26,7 +26,7 @@ class STBParser {
             for (const node of fileList) {
                 const attr = node.attribute("val");
                 if (attr != null) {
-                    fileNames.push(attr);
+                    this.fileNames.push(attr);
                 }
             }
         }

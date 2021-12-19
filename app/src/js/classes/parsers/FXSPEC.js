@@ -1,3 +1,6 @@
+import { XDocument } from '../util/XDocument';
+
+const fs = require('fs');
 
 class FXSPECParser {
     #dest;
@@ -20,72 +23,72 @@ class FXSPECParser {
      * @param  {string} fullFileName
      */
     parseFXSPEC(doc, fullFileName) {
-      _ = fullFileName[(fullFileName.LastIndexOf('\\') + 1)..];
-      _ = fullFileName.Substring(0, fullFileName.LastIndexOf('/'));
+        let _ = fullFileName.substring(fullFileName.lastIndexOf('\\') + 1);
+        _ = fullFileName.substring(0, fullFileName.lastIndexOf('/'));
 
-      try {
+        try {
+            const docAsNodes = doc.nodes;
+            const nsResolver = document.createNSResolver( docAsNodes.ownerDocument == null ? docAsNodes.documentElement : docAsNodes.ownerDocument.documentElement );
+            const fileElemList = document.evaluate("//node()[@name='displayName']", docAsNodes, nsResolver, 7, null);
+            for (const node of fileElemList) {
+                const resource = node.innerText;
+                this.fileNames.push(resource + ".fxspec");
+            }
 
+            const resourceElemList = document.evaluate("//node()[@name='_fxResourceName']", docAsNodes, nsResolver, 7, null);
+            for (const node of resourceElemList) {
+                const resource = node.innerText;
+                if (resource.includes(".prt")) {
+                    const output = "/resources/art/fx/particles/" + resource.replace('\\', '/').toLower();
+                    output = output.replace("//", "/");
+                    output = output.replace("/resources/art/fx/particles/art/fx/particles/", "/resources/art/fx/particles/");
+                    resourceFileNames.push(output);
+                } else if (resource.includes(".gr2")) {
+                    const output = "/resources/" + resource.replace('\\', '/').toLower();
+                    output = output.replace("//", "/");
+                    resourceFileNames.push(output);
+                } else if (resource.includes(".lit") || resource.includes(".ext") || resource.includes(".zzp")) {
+                    const output = "/resources/" + resource.replace('\\', '/').toLower();
+                    output = output.replace("//", "/");
+                    resourceFileNames.push(output);
 
-        XmlNodeList fileElemList = doc.SelectNodes("//node()[@name='displayName']");
-        foreach (XmlNode node in fileElemList) {
-          string resource = node.InnerText;
-          fileNames.Add(resource + ".fxspec");
+                } else if (resource.includes("Play_") || resource.includes("play_") || resource.includes("Stop_") || resource.includes("stop_") || resource == "" || resource.includes(".sgt") || resource.includes(".wav")) {
+                    continue;
+                }
+            }
+
+            const projTexElemList = document.evaluate("//node()[@name='_fxProjectionTexture']", docAsNodes, nsResolver, 7, null);
+            for (const node of projTexElemList) {
+                const resource = node.innerText.replace(".tiny.dds", "").replace(".dds", "").replace(".tex", "");
+                const output = "/resources" + resource.replace('\\', '/').toLower();
+                resourceFileNames.push(output + ".dds");
+                resourceFileNames.push(output + ".tiny.dds");
+                resourceFileNames.push(output + ".tex");
+            }
+
+            const projTex1ElemList = document.evaluate("//node()[@name='_fxProjectionTexture_layer1']", docAsNodes, nsResolver, 7, null);
+            for (const node in projTex1ElemList) {
+                const resource = node.innerText.replace(".tiny.dds", "").replace(".dds", "").replace(".tex", "");
+                const output = "/resources" + resource.replace('\\', '/').toLower();
+                resourceFileNames.push(output + ".dds");
+                resourceFileNames.push(output + ".tiny.dds");
+                resourceFileNames.push(output + ".tex");
+            }
+
+            const texNameElemList = document.evaluate("//node()[@name='_fxTextureName']", docAsNodes, nsResolver, 7, null);
+            for (const node of texNameElemList) {
+                const resource = node.innerText.replace(".tiny.dds", "").replace(".dds", "").replace(".tex", "");
+                const output = "/resources" + resource.replace('\\', '/').toLower();
+                resourceFileNames.push(output + ".dds");
+                resourceFileNames.push(output + ".tiny.dds");
+                resourceFileNames.push(output + ".tex");
+            }
+        } catch (e) {
+            this.errors.push("File: " + fullFileName);
+            this.errors.push(e.message + ":");
+            this.errors.push(e.stack);
+            this.errors.push("");
         }
-
-        XmlNodeList resourceElemList = doc.SelectNodes("//node()[@name='_fxResourceName']");
-        foreach (XmlNode node in resourceElemList) {
-          string resource = node.InnerText;
-          if (resource.Contains(".prt")) {
-            string output = "/resources/art/fx/particles/" + resource.Replace('\\', '/').ToLower();
-            output = output.Replace("//", "/");
-            output = output.Replace("/resources/art/fx/particles/art/fx/particles/", "/resources/art/fx/particles/");
-            resourceFileNames.Add(output);
-          } else if (resource.Contains(".gr2")) {
-            string output = "/resources/" + resource.Replace('\\', '/').ToLower();
-            output = output.Replace("//", "/");
-            resourceFileNames.Add(output);
-          } else if (resource.Contains(".lit") || resource.Contains(".ext") || resource.Contains(".zzp")) {
-            string output = "/resources/" + resource.Replace('\\', '/').ToLower();
-            output = output.Replace("//", "/");
-            resourceFileNames.Add(output);
-
-          } else if (resource.Contains("Play_") || resource.Contains("play_") || resource.Contains("Stop_") || resource.Contains("stop_") || resource == "" || resource.Contains(".sgt") || resource.Contains(".wav")) {
-            continue;
-          }
-        }
-
-        XmlNodeList projTexElemList = doc.SelectNodes("//node()[@name='_fxProjectionTexture']");
-        foreach (XmlNode node in projTexElemList) {
-          string resource = node.InnerText.Replace(".tiny.dds", "").Replace(".dds", "").Replace(".tex", "");
-          string output = "/resources" + resource.Replace('\\', '/').ToLower();
-          resourceFileNames.Add(output + ".dds");
-          resourceFileNames.Add(output + ".tiny.dds");
-          resourceFileNames.Add(output + ".tex");
-        }
-
-        XmlNodeList projTex1ElemList = doc.SelectNodes("//node()[@name='_fxProjectionTexture_layer1']");
-        foreach (XmlNode node in projTex1ElemList) {
-          string resource = node.InnerText.Replace(".tiny.dds", "").Replace(".dds", "").Replace(".tex", "");
-          string output = "/resources" + resource.Replace('\\', '/').ToLower();
-          resourceFileNames.Add(output + ".dds");
-          resourceFileNames.Add(output + ".tiny.dds");
-          resourceFileNames.Add(output + ".tex");
-        }
-
-        XmlNodeList texNameElemList = doc.SelectNodes("//node()[@name='_fxTextureName']");
-        foreach (XmlNode node in texNameElemList) {
-          string resource = node.InnerText.Replace(".tiny.dds", "").Replace(".dds", "").Replace(".tex", "");
-          string output = "/resources" + resource.Replace('\\', '/').ToLower();
-          resourceFileNames.Add(output + ".dds");
-          resourceFileNames.Add(output + ".tiny.dds");
-          resourceFileNames.Add(output + ".tex");
-        }
-      } catch (e) {
-        this.errors.push("File: " + fullFileName);
-        this.errors.push(e.message + ":");
-        this.errors.push(e.stack);
-        this.errors.push("");
-      }
     }
 
     writeFile() {

@@ -213,56 +213,56 @@ async function parseFiles(extension, assets, nodesByFqn) {
             namesFound = fxspec_parser.fileNames.length;
             fxspec_parser.writeFile();
             break;
-    //     case "AMX":
-    //         Format_AMX amx_parser = new Format_AMX(extractPath, extension);
-    //         for (const asset of matches) {
-    //             filesSearched++;
-    //             Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
-    //             amx_parser.ParseAMX(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
-    //         }
-    //         namesFound = amx_parser.fileNames.Count();
-    //         amx_parser.WriteFile();
-    //         break;
-    //     case "SDEF":
-    //         Format_SDEF sdef_parser = new Format_SDEF(extractPath, extension);
-    //         TorLib.File sdef = AssetHandler.Instance.GetCurrentAssets().FindFile("/resources/systemgenerated/scriptdef.list");
-    //         sdef_parser.ParseSDEF(sdef.OpenCopyInMemory());
-    //         sdef_parser.WriteFile();
-    //         namesFound = sdef_parser.found;
-    //         filesSearched = 1;
-    //         break;
-    //     case "HYD":
-    //         List<GomObject> hydNodes = dom.GetObjectsStartingWith("hyd.");
-    //         Format_HYD hyd_parser = new Format_HYD(extractPath, extension);
-    //         hyd_parser.ParseHYD(hydNodes);
-    //         namesFound = hyd_parser.animNames.Count + hyd_parser.vfxFileNames.Count;
-    //         filesSearched += hydNodes.Count();
-    //         hyd_parser.WriteFile();
-    //         hydNodes.Clear();
-    //         break;
-    //     case "DYN":
-    //         List<GomObject> dynNodes = dom.GetObjectsStartingWith("dyn.");
-    //         Format_DYN dyn_parser = new Format_DYN(extractPath, extension);
-    //         dyn_parser.ParseDYN(dynNodes);
-    //         namesFound = dyn_parser.fileNames.Count + dyn_parser.unknownFileNames.Count;
-    //         filesSearched += dynNodes.Count();
-    //         dyn_parser.WriteFile();
-    //         break;
-    //     case "ICONS":
-    //         Format_ICONS icon_parser = new Format_ICONS(extractPath, extension);
-    //         icon_parser.ParseICONS(dom);
-    //         namesFound = icon_parser.fileNames.Count;
-    //         filesSearched += icon_parser.searched;
-    //         icon_parser.WriteFile();
-    //         break;
-    //     case "PLC":
-    //         List<GomObject> plcNodes = dom.GetObjectsStartingWith("plc.");
-    //         Format_PLC plc_parser = new Format_PLC(extractPath, extension);
-    //         plc_parser.ParsePLC(plcNodes);
-    //         namesFound = plc_parser.fileNames.Count;
-    //         filesSearched += plcNodes.Count();
-    //         plc_parser.WriteFile();
-    //         break;
+        case "AMX":
+            Format_AMX amx_parser = new Format_AMX(extractPath, extension);
+            for (const asset of matches) {
+                filesSearched++;
+                Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
+                amx_parser.ParseAMX(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
+            }
+            namesFound = amx_parser.fileNames.Count();
+            amx_parser.WriteFile();
+            break;
+        case "SDEF":
+            Format_SDEF sdef_parser = new Format_SDEF(extractPath, extension);
+            TorLib.File sdef = AssetHandler.Instance.GetCurrentAssets().FindFile("/resources/systemgenerated/scriptdef.list");
+            sdef_parser.ParseSDEF(sdef.OpenCopyInMemory());
+            sdef_parser.WriteFile();
+            namesFound = sdef_parser.found;
+            filesSearched = 1;
+            break;
+        case "HYD":
+            List<GomObject> hydNodes = dom.GetObjectsStartingWith("hyd.");
+            Format_HYD hyd_parser = new Format_HYD(extractPath, extension);
+            hyd_parser.ParseHYD(hydNodes);
+            namesFound = hyd_parser.animNames.Count + hyd_parser.vfxFileNames.Count;
+            filesSearched += hydNodes.Count();
+            hyd_parser.WriteFile();
+            hydNodes.Clear();
+            break;
+        case "DYN":
+            List<GomObject> dynNodes = dom.GetObjectsStartingWith("dyn.");
+            Format_DYN dyn_parser = new Format_DYN(extractPath, extension);
+            dyn_parser.ParseDYN(dynNodes);
+            namesFound = dyn_parser.fileNames.Count + dyn_parser.unknownFileNames.Count;
+            filesSearched += dynNodes.Count();
+            dyn_parser.WriteFile();
+            break;
+        case "ICONS":
+            Format_ICONS icon_parser = new Format_ICONS(extractPath, extension);
+            icon_parser.ParseICONS(dom);
+            namesFound = icon_parser.fileNames.Count;
+            filesSearched += icon_parser.searched;
+            icon_parser.WriteFile();
+            break;
+        case "PLC":
+            List<GomObject> plcNodes = dom.GetObjectsStartingWith("plc.");
+            Format_PLC plc_parser = new Format_PLC(extractPath, extension);
+            plc_parser.ParsePLC(plcNodes);
+            namesFound = plc_parser.fileNames.Count;
+            filesSearched += plcNodes.Count();
+            plc_parser.WriteFile();
+            break;
         case "STB":
             const stbParser = new STBParser(cache['hashPath'], extension);
             const manifest = assetsDict[hashlittle2("/resources/gamedata/str/stb.manifest").join('|')];

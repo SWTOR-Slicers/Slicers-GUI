@@ -139,7 +139,7 @@ class MISCParser {
                     ii++;
                     if (map_page.hasImage == true) {
                         if (!Object.keys(this.mapNames).includes(area.areaId)) this.mapNames[area.areaId] = [];
-                        mapNames[area.areaId].push(map_page.mapName);
+                        this.mapNames[area.areaId].push(map_page.mapName);
                     }
                 }
             }
@@ -161,7 +161,7 @@ class MISCParser {
                         if (end != -1) {
                             let temp = text.substring(start, ((end - start) + 4)).toLowerCase();
                             temp = temp.replace("img://", "/resources/").replace("//", "/").replace("<<grammar::locpath>>", "en-us");
-                            fileNames.push(temp);
+                            this.fileNames.push(temp);
                             start++;
                         }
                     }
@@ -172,7 +172,7 @@ class MISCParser {
                         if (end != -1) {
                             let temp = text.substring(start, ((end - start) + 1)).toLowerCase();
                             temp = temp.replace("img://", "/resources/").replace("//", "/").replace("<<grammar::locpath>>", "en-us");
-                            fileNames.push(temp + ".dds");
+                            this.fileNames.push(temp + ".dds");
                             start++;
                         }
                     }

@@ -48,18 +48,18 @@ class PRTParser {
 
             if (test.includes(".prt")) {
                 if (!test.includes("/art/fx/particles/")) {
-                    fileNames.push("/resources/art/fx/particles/" + test);
+                    this.fileNames.push("/resources/art/fx/particles/" + test);
                 } else {
-                    fileNames.push("/resources" + test);
+                    this.fileNames.push("/resources" + test);
                 }
             } else if (test.includes(".dds")) {
-                fileNames.push("/resources" + test);
-                fileNames.push("/resources" + test.replace(".dds", ".tiny.dds"));
-                fileNames.push("/resources" + test.replace(".dds", ".tex"));
+                this.fileNames.push("/resources" + test);
+                this.fileNames.push("/resources" + test.replace(".dds", ".tiny.dds"));
+                this.fileNames.push("/resources" + test.replace(".dds", ".tex"));
             } else if (test.includes(".fxspec")) {
-                fileNames.push("/resources" + test);
+                this.fileNames.push("/resources" + test);
             } else if (test.includes(".gr2")) {
-                fileNames.push("/resources" + test);
+                this.fileNames.push("/resources" + test);
             }
         }
     }

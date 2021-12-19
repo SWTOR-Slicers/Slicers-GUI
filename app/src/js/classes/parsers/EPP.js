@@ -30,39 +30,39 @@ class EPPParser {
         try {
             const anode = doc.element("Appearance");
             const file = "/resources/gamedata/" + anode.attribute("fqn").replace('.', '/') + ".epp";
-            fileNames.push(file);
+            this.fileNames.push(file);
 
             let elemList = doc.elements("fxSpecString");
             for (const node of elemList) {
                 const fxspec = node.value;
                 fxspec = "/resources/art/fx/fxspec/" + fxspec + ".fxspec";
-                fileNames.push(fxspec);
+                this.fileNames.push(fxspec);
             }
 
             elemList = doc.elements("projectileFXString");
             for (const node of elemList) {
                 const fxspec = node.value;
                 fxspec = "/resources/art/fx/fxspec/" + fxspec + ".fxspec";
-                fileNames.push(fxspec);
+                this.fileNames.push(fxspec);
             }
 
             elemList = doc.elements("casterAnim");
             for (const node of elemList) {
                 const anim = node.value;
-                animNames.push(anim);
+                this.animNames.push(anim);
             }
 
             elemList = doc.elements("targetAnim");
             for (const node of elemList) {
                 const anim = node.value;
-                animNames.push(anim);
+                this.animNames.push(anim);
             }
 
         } catch (e) {
-            errors.Add("File: " + fullName);
-            errors.Add(e.message + ":");
-            errors.Add(e.stack);
-            errors.Add("");
+            this.errors.Add("File: " + fullName);
+            this.errors.Add(e.message + ":");
+            this.errors.Add(e.stack);
+            this.errors.Add("");
         }
     }
     /**
@@ -73,7 +73,7 @@ class EPPParser {
         for (const obj of eppNodes) {
             const slash = obj.fqn.toLowerCase().replace('.', '/');
             const epp = "/resources/gamedata/" + slash + ".epp";
-            fileNames.push(epp);
+            this.fileNames.push(epp);
         }
     }
 

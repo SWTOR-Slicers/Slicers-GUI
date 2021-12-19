@@ -38,8 +38,8 @@ class BNKParser {
         if (bnk.sections.STID) {
             if (bnk.stid.numSndBnk != 0) {
                 for (const obj of bnk.stid.soundbanks) {
-                    fileNames.Add("/resources/bnk2/" + obj.name + ".bnk");
-                    fileNames.Add("/resources/en-us/bnk2/" + obj.name + ".bnk");
+                    this.fileNames.Add("/resources/bnk2/" + obj.name + ".bnk");
+                    this.fileNames.Add("/resources/en-us/bnk2/" + obj.name + ".bnk");
                 }
             }
         }

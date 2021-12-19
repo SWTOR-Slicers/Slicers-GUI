@@ -62,6 +62,7 @@ class XDocument {
     get value() { const node = this.document.elements.find(v => { return v.type === "text" }); return node ? node.text : node; }
     get name() { return this.document.name; }
     get elems() { return this.document.elements.filter(v => v.type === "element").map(v => { return new XDocument(v); }); }
+    get nodes() { return this.document; }
     get attributes() { return this.document.attributes; }
 
     get hasElements() { return this.document.elements.length > 0; }

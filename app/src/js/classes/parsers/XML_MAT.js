@@ -23,13 +23,13 @@ class XML_MAT {
      * @param  {string} baseFolder
      */
     parseXML(doc, fullFileName, baseFolder = null) {
-        const fileName = fullFileName.substr(fullFileName.lastIndexOf('\\') + 1);
-        const directory = fullFileName.substr(0, fullFileName.lastIndexOf('/'));
+        const fileName = fullFileName.substring(fullFileName.lastIndexOf('\\') + 1);
+        const directory = fullFileName.substring(0, fullFileName.lastIndexOf('/'));
 
         try {
             if (fileName.includes("am_")) {
                 const temp = fileName.split('/').at(-1);
-                const fileNameNoExtension = temp.substr(3, (temp.indexOf('.') - 3));
+                const fileNameNoExtension = temp.substring(3, (temp.indexOf('.') - 3));
                 let fullDirectory = "";
                 if (baseFolder != null) {
                     fullDirectory = `/resources/${baseFolder}`;
@@ -170,7 +170,7 @@ class XML_MAT {
 
                             if (tagsToRemove.some(name => scrubbedName.endsWith(name))) length -= 2;
 
-                            const primaryName = scrubbedName.substr(startPosition, length);
+                            const primaryName = scrubbedName.substring(startPosition, length);
                             fileNames.push(`\\resources\\art\\shaders\\materials\\${primaryName}.mat`);
                         }
                     }

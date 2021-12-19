@@ -611,7 +611,7 @@ class Node {
         dataContainer.innerHTML = `
         <div class="data-entr-cont">
             <div class="data-entr-label">Parent:</div>
-            <div class="data-entr-val">${(this.fqn.indexOf(".") > -1) ? this.fqn.substr(0, this.fqn.lastIndexOf(".")) : "none"}</div>
+            <div class="data-entr-val">${(this.fqn.indexOf(".") > -1) ? this.fqn.substring(0, this.fqn.lastIndexOf(".")) : "none"}</div>
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Compressed:</div>
@@ -733,7 +733,7 @@ class ProtoNode {
         dataContainer.innerHTML = `
         <div class="data-entr-cont">
             <div class="data-entr-label">Parent:</div>
-            <div class="data-entr-val">${(this.fqn.indexOf(".") > -1) ? this.fqn.substr(0, this.fqn.lastIndexOf(".")) : "none"}</div>
+            <div class="data-entr-val">${(this.fqn.indexOf(".") > -1) ? this.fqn.substring(0, this.fqn.lastIndexOf(".")) : "none"}</div>
         </div>
         <div class="data-entr-cont">
             <div class="data-entr-label">Compressed:</div>

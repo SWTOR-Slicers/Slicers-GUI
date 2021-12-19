@@ -523,8 +523,8 @@ function fileNameToHash(name) {
     let ph, sh;
 
     if (/^[0-9a-fA-F]{8}_[0-9a-fA-F]{8}$/.test(name)) {
-        ph = parseInt(name.substr(0, 8), 16);
-        sh = parseInt(name.substr(9, 8), 16);
+        ph = parseInt(name.substring(0, 8), 16);
+        sh = parseInt(name.substring(9, 17), 16);
     } else {
         [sh, ph] = hashlittle2(name);
         sh = sh.toString(16).toUpperCase();
@@ -542,7 +542,7 @@ async function extractFile(name) {
         assetFiles = assetFiles.filter((f) => {
             let isValid = true;
             if (path.extname(f) == '.tor') {
-                let assetName = f.substr(f.lastIndexOf('\\') + 1);
+                let assetName = f.substring(f.lastIndexOf('\\') + 1);
                 if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_') > -1) isValid = false;
                 if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_') > -1) isValid = false;
             } else {
@@ -571,7 +571,7 @@ function extractNode(name) {
         assetFiles = assetFiles.filter((f) => {
             let isValid = true;
             if (path.extname(f) == '.tor' && f.indexOf('main_global_1.tor') >= 0) {
-                let assetName = f.substr(f.lastIndexOf('\\') + 1);
+                let assetName = f.substring(f.lastIndexOf('\\') + 1);
                 if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_') > -1) isValid = false;
                 if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_') > -1) isValid = false;
             } else {
@@ -605,7 +605,7 @@ function changeFiles() {
     assetFiles = assetFiles.filter((f) => {
         let isValid = true;
         if (path.extname(f) == '.tor') {
-            let assetName = f.substr(f.lastIndexOf('\\') + 1);
+            let assetName = f.substring(f.lastIndexOf('\\') + 1);
             if (cache['verion'] == 'pts' && !assetName.indexOf('swtor_test_') > -1) isValid = false;
             if (cache['verion'] == 'Live' && assetName.indexOf('swtor_test_') > -1) isValid = false;
         } else {

@@ -19,7 +19,7 @@ export function shuffle(a) {
  * @param  {String} s .
  */
 export function capitalize(s) {
-    return s.substr(0, 1).toUpperCase() + s.slice(1);
+    return s.substring(0, 1).toUpperCase() + s.slice(1);
 }
 /**
  * Converts the DataView of a .wem file to a .ogg represented by a buffer.
@@ -389,7 +389,7 @@ export function assert(statement, msg) {
  * @param  {String} href a string representing the href attribute of the stylesheet
  */
 export function addStyleIfNotExists(href) {
-    let refCont = (href.indexOf('../') > -1) ? href.substr(href.lastIndexOf('../') + 3) : href;
+    let refCont = (href.indexOf('../') > -1) ? href.substring(href.lastIndexOf('../') + 3) : href;
     const existingStyles = document.getElementsByTagName('link');
     let exists = false;
     for (let i = 0; i < existingStyles.length; i++) {
@@ -1009,7 +1009,7 @@ class BitWriter {
     w(num, numBits) {
         let bin = num.toString(2);
         if (numBits < bin.length) {
-            bin = String(bin.substr(-numBits))
+            bin = String(bin.substring(-numBits))
         } else {
             bin = String(bin).padStart(numBits, '0')
         }

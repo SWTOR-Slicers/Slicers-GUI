@@ -12,6 +12,7 @@ import { CNVParser } from "../../classes/parsers/CNV.js";
 import { MISCParser } from "../../classes/parsers/MISC.js";
 import { STB } from "src/js/classes/formats/STB.js";
 import { protoNodes } from "../../viewers/node-viewer/GomTree.js";
+import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
 
 const path = require('path');
 const fs = require('fs');
@@ -194,25 +195,24 @@ async function parseFiles(extension, assets, nodesByFqn) {
             filesSearched += misc_parser.searched;
             break;
         case "MISC_WORLD":
-            Format_MISC misc_world_parser = new Format_MISC(extractPath, extension);
-            Dictionary<object, object> areaList = dom.GetObject("mapAreasDataProto").Data.Get<Dictionary<object, object>>("mapAreasDataObjectList");
-            List<GomObject> areaList2 = dom.GetObjectsStartingWith("world.areas.");
-            misc_world_parser.ParseMISC_WORLD(areaList2, areaList, dom);
-            areaList.Clear();
-            areaList2.Clear();
-            misc_world_parser.WriteFile();
+            const misc_world_parser = new MISCParser(extractPath, extension);
+            const areaList = dom.getObject("mapAreasDataProto").obj["mapAreasDataObjectList"];
+            const areaList2 = dom.getObjectsStartingWith("world.areas.");
+            misc_world_parser.parseMISC_WORLD(areaList2, areaList, dom);
+            misc_world_parser.writeFile();
             namesFound = misc_world_parser.found;
             break;
-    //     case "FXSPEC":
-    //         Format_FXSPEC fxspec_parser = new Format_FXSPEC(extractPath, extension);
-    //         for (const asset of matches) {
-    //             filesSearched++;
-    //             Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
-    //             fxspec_parser.ParseFXSPEC(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
-    //         }
-    //         namesFound = fxspec_parser.fileNames.Count();
-    //         fxspec_parser.WriteFile();
-    //         break;
+        case "FXSPEC":
+            const fxspec_parser = new FXSPECParser(extractPath, extension);
+            for (const asset of matches) {
+                filesSearched++;
+                const assetStream = asset.getReadStream();
+                const doc = new XDocument(xmlJs.xml2json(xmlBuffString(assetStream), {compact: false, spaces: 4}));
+                fxspec_parser.parseFXSPEC(doc, asset.hash);
+            }
+            namesFound = fxspec_parser.fileNames.length;
+            fxspec_parser.writeFile();
+            break;
     //     case "AMX":
     //         Format_AMX amx_parser = new Format_AMX(extractPath, extension);
     //         for (const asset of matches) {

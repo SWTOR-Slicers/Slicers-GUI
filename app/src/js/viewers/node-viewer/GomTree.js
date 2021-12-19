@@ -315,7 +315,7 @@ class GomTree {
                 folderStart = i + 1
             }
         }
-        node.path = name.substr(0, folderStart);
+        node.path = name.substring(0, folderStart);
         const fileName = name.substring(folderStart, i);
         node.fileName = fileName;
         if (curFolder.$O === 0) {
@@ -407,7 +407,7 @@ class StaticGomTree {
         if (!node.isBucket) {
             protoNodes[node.fqn] = node;
         }
-        node.path = name.substr(0, folderStart);
+        node.path = name.substring(0, folderStart);
         const fileName = name.substring(folderStart, i);
         node.fileName = fileName;
         if (curFolder.$O === 0) {

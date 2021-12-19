@@ -36,24 +36,24 @@ class AssetInstance {
     get assetFqn() {
         if (this.#assetFqn == null) {
             const parsedAssetString = this.roomDat.areaDat.assets[this.assetId];
-            if (parsedAssetString.startsWith("\\")) parsedAssetString = parsedAssetString.substr(1);
+            if (parsedAssetString.startsWith("\\")) parsedAssetString = parsedAssetString.substring(1);
             if (parsedAssetString.includes(':')) {
                 const splits = parsedAssetString.Split(':');
                 this.encounterComponent = splits[0];
                 parsedAssetString = splits[1];
             }
-            const assType = parsedAssetString.substr(0, 3);
+            const assType = parsedAssetString.substring(0, 3);
             switch (assType) {
                 case "ser":
-                    parsedAssetString = parsedAssetString.substr(7, parsedAssetString.length - 11);
+                    parsedAssetString = parsedAssetString.substring(7, parsedAssetString.length - 11);
                     break;
                 case "spn":
                 case "enc":
                     if (parsedAssetString.Contains(".spn_")) {
-                        this.spawnType = parsedAssetString.substr(parsedAssetString.indexOf(".spn_") + 5);
+                        this.spawnType = parsedAssetString.substring(parsedAssetString.indexOf(".spn_") + 5);
                     }
                     parsedAssetString = parsedAssetString.replace(".spn_" + this.spawnType, "");
-                    if (parsedAssetString.EndsWith(".enc")) parsedAssetString = parsedAssetString.substr(0, parsedAssetString.length - 4);
+                    if (parsedAssetString.EndsWith(".enc")) parsedAssetString = parsedAssetString.substring(0, parsedAssetString.length - 4);
                     break;
                 default:
                     break;
@@ -68,7 +68,7 @@ class AssetInstance {
             } else {
                 this.#assetFqn = parsedAssetString;
                 this.gomId = obj.Id;
-                this.gomType = parsedAssetString.substr(0, 3);
+                this.gomType = parsedAssetString.substring(0, 3);
             }
         }
 

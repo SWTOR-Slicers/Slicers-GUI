@@ -159,7 +159,7 @@ class DATParser {
                 while ((idx = scheme.indexOf('/', idx)) != -1) {
                     const end = scheme.indexOf('|', idx);
                     const len = end - idx;
-                    const final = scheme.substr(idx, len).toLowerCase();
+                    const final = scheme.substring(idx, idx+len).toLowerCase();
                     this.fileNames.push(`/resources${final}.tex`);
                     this.fileNames.push(`/resources${final}.dds`);
                     this.fileNames.push(`/resources${final}.tiny.dds`);
@@ -216,7 +216,7 @@ class DATParser {
         const filename = reader.readString(fileNameLength);
         this.fileNames.push(`/resources${filename}`);
 
-        const area = filename.substr(0, filename.lastIndexOf('/') + 1);
+        const area = filename.substring(0, filename.lastIndexOf('/') + 1);
         this.fileNames.push(`/resources${area + "area.dat"}`);
         this.fileNames.push(`/resources${area + "mapnotes.not"}`);
 

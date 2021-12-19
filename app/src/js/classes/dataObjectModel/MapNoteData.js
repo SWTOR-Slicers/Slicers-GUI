@@ -59,7 +59,7 @@ class MapNoteData {
             if (!f.hasAttributes || attrib == null) continue;
             switch (attrib) {
                 case "mpnPosition":
-                    const temp_vec = f.value.substr(1, f.value.length - 2);
+                    const temp_vec = f.value.substring(1, f.value.length - 2);
                     const split = temp_vec.split(',');
                     if (split.length == 3) {
                         this.positionX = split[0];

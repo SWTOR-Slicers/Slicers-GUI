@@ -184,7 +184,7 @@ class ExistingSheet {
      */
     constructor(fileName, type) {
         this.fileName = fileName;
-        this.displayName = capitalize(fileName.substr(fileName.lastIndexOf("\\")+1));
+        this.displayName = capitalize(fileName.substring(fileName.lastIndexOf("\\")+1));
         this.type = type;
         this.isSaved = false;
         this.needsSave = false;

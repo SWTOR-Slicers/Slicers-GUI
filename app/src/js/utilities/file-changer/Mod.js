@@ -45,7 +45,7 @@ async function read(path, domParent, changesList, writeModElem) {
 
         domParent.innerHTML = '';
         for (const change of changes) {
-            const fileName = change.modded.substr(change.modded.lastIndexOf('\\') + 1);
+            const fileName = change.modded.substring(change.modded.lastIndexOf('\\') + 1);
 
             const fc = new FileEntry(change.type, change.target, change.modded, changesList, writeModElem, {
                 "zip": path,

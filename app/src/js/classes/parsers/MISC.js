@@ -159,7 +159,7 @@ class MISCParser {
                     while ((start = text.indexOf("img://", start)) != -1) {
                         let end = text.indexOf(".dds", start);
                         if (end != -1) {
-                            let temp = text.substr(start, ((end - start) + 4)).toLowerCase();
+                            let temp = text.substring(start, ((end - start) + 4)).toLowerCase();
                             temp = temp.replace("img://", "/resources/").replace("//", "/").replace("<<grammar::locpath>>", "en-us");
                             fileNames.push(temp);
                             start++;
@@ -170,7 +170,7 @@ class MISCParser {
                     while ((start = text.indexOf("img://", start)) != -1) {
                         let end = text.indexOf("'", start);
                         if (end != -1) {
-                            let temp = text.substr(start, ((end - start) + 1)).toLowerCase();
+                            let temp = text.substring(start, ((end - start) + 1)).toLowerCase();
                             temp = temp.replace("img://", "/resources/").replace("//", "/").replace("<<grammar::locpath>>", "en-us");
                             fileNames.push(temp + ".dds");
                             start++;

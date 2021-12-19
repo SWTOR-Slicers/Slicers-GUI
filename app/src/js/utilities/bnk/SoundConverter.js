@@ -239,7 +239,7 @@ async function downloadSoundFile(outputPath, filePath) {
             for (const aFile of acb.audioFiles) {
                 const oggBuffer = ww2ogg(aFile.dataview);
                 const blob = new Blob([oggBuffer]);
-                const dName = aFile.name.substr(0, aFile.name.length - 4) + '.ogg';
+                const dName = aFile.name.substring(0, aFile.name.length - 4) + '.ogg';
                 
                 fs.writeFileSync(path.join(outputPath, dName), Buffer.from(await blob.arrayBuffer()));
             }

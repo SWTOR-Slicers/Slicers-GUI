@@ -215,13 +215,13 @@ async function handleFile(outputDir, patchFile, patchPath) {
         await unpackSolidpkg(outputDir, filePath);
     } else if (fileType === ".patchmanifest") {
         await unpackManifest(outputDir, filePath);
-    } else if (fileType.substr(0, 2) === ".z") {
+    } else if (fileType.substring(0, 2) === ".z") {
         await unpackZip(outputDir, filePath);
     }
 }
 
 async function unpackZip(outputDir, patchFile) {
-    const fileName = patchFile.substr(patchFile.lastIndexOf("\\") + 1, patchFile.lastIndexOf("."));
+    const fileName = patchFile.substring(patchFile.lastIndexOf("\\") + 1, patchFile.lastIndexOf("."));
     const solidPkgURL = getSolidPkgURLFromFileName(fileName);
     if (solidPkgURL) {
 
@@ -257,8 +257,8 @@ async function unpackZip(outputDir, patchFile) {
     }
 }
 async function extractZFile(outputDir, file, fileEntries, solidpkgData, diskFileNames) {
-    const xyStr = file.substr(file.lastIndexOf('_') + 1, file.lastIndexOf('.'));
-    verifyPatch(file.substr(file.lastIndexOf("\\") + 1), fileEntries, xyStr.substr(0, xyStr.indexOf('t')));
+    const xyStr = file.substring(file.lastIndexOf('_') + 1, file.lastIndexOf('.'));
+    verifyPatch(file.substring(file.lastIndexOf("\\") + 1), fileEntries, xyStr.substring(0, xyStr.indexOf('t')));
 
     console.log(solidpkgData);
     const tasks = [];
@@ -296,7 +296,7 @@ async function extractAdded(targetDir, file, diskFileNames) {
     }
 }
 async function unpackManifest(outputDir, patchFile) {
-    const patchFileName = patchFile.substr(patchFile.lastIndexOf("\\") + 1)
+    const patchFileName = patchFile.substring(patchFile.lastIndexOf("\\") + 1)
     const saveFilePath = path.join(outputDir, `${patchFileName}.json`);
     const ssnFile = fs.readFileSync(patchFile);
 
@@ -334,7 +334,7 @@ async function unpackManifest(outputDir, patchFile) {
     log(`Unpacking of ${patchFileName} complete!`, 'info');
 }
 async function unpackSolidpkg(outputDir, patchFile) {
-    const patchFileName = patchFile.substr(patchFile.lastIndexOf("\\") + 1)
+    const patchFileName = patchFile.substring(patchFile.lastIndexOf("\\") + 1)
     const saveFilePath = path.join(outputDir, `${patchFileName}.json`);
     const ssnFile = fs.readFileSync(patchFile);
 
@@ -395,8 +395,8 @@ async function getDiskFileNames(patchFileName, solidPkg) {
 }
 //get zFile url from file name
 function getZFileURLFromFileName(fileName) {
-    const parts = fileName.substr(0, fileName.lastIndexOf('.')).split('_');
-    const relivantSub = fileName.substr(0, fileName.lastIndexOf('_'));
+    const parts = fileName.substring(0, fileName.lastIndexOf('.')).split('_');
+    const relivantSub = fileName.substring(0, fileName.lastIndexOf('_'));
     let url = "";
 
     if (relivantSub === "retailclient_swtor") {
@@ -410,7 +410,7 @@ function getZFileURLFromFileName(fileName) {
     } else if (relivantSub.contains("movies")) {
         url = `http://cdn-patch.swtor.com/patch/movies_${parts[1]}/movies_${parts[1]}_${parts[2]}/${fileName}`;
     } else if (relivantSub.contains('retailclient')) {
-        const clientID = relivantSub.substr(relivantSub.lastIndexOf('_'));
+        const clientID = relivantSub.substring(relivantSub.lastIndexOf('_'));
         url = `http://cdn-patch.swtor.com/patch/${parts[1]}/retailclient_${parts[1]}/retailclient_${parts[1]}_${parts[2]}/${fileName}`;
     }
 
@@ -418,15 +418,15 @@ function getZFileURLFromFileName(fileName) {
 }
 //verify patch
 function verifyPatch(patchFileName, fileEntries, from) {
-    const fileName = patchFileName.substr(0, patchFileName.lastIndexOf('.'));
-    const relivantSub = fileName.substr(0, fileName.lastIndexOf('_'));
+    const fileName = patchFileName.substring(0, patchFileName.lastIndexOf('.'));
+    const relivantSub = fileName.substring(0, fileName.lastIndexOf('_'));
     let product = relivantSub;
     ssn.verifyPatch(fileEntries, product, from);
 }
 //get solidpkg from file name
 function getSolidPkgURLFromFileName(patchFileName) {
-    const fileName = patchFileName.substr(0, patchFileName.lastIndexOf('.'));
-    const relivantSub = fileName.substr(0, fileName.lastIndexOf('_'));
+    const fileName = patchFileName.substring(0, patchFileName.lastIndexOf('.'));
+    const relivantSub = fileName.substring(0, fileName.lastIndexOf('_'));
     let url = "";
 
     if (relivantSub === "retailclient_swtor") {
@@ -440,12 +440,12 @@ function getSolidPkgURLFromFileName(patchFileName) {
     } else if (relivantSub.contains("movies")) {
         url = `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg`;
     } else if (relivantSub.contains('retailclient')) {
-        const clientID = relivantSub.substr(relivantSub.lastIndexOf('_'));
+        const clientID = relivantSub.substring(relivantSub.lastIndexOf('_'));
         url = `http://cdn-patch.swtor.com/patch/${clientID}/${relivantSub}/${fileName}.solidpkg`;
     }
 
     //for the memes
-    //const url = (relivantSub === "retailclient_swtor") ? `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/${fileName}.solidpkg` : (relivantSub.contains("assets_swtor")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub === "retailclient_publictest") ? `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/${fileName}.solidpkg` : (relivantSub.contains("assets_swtor_test")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub.contains("movies")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub.contains('retailclient')) ? `http://cdn-patch.swtor.com/patch/${relivantSub.substr(relivantSub.lastIndexOf('_'))}/${relivantSub}/${fileName}.solidpkg` : null;
+    //const url = (relivantSub === "retailclient_swtor") ? `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/${fileName}.solidpkg` : (relivantSub.contains("assets_swtor")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub === "retailclient_publictest") ? `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/${fileName}.solidpkg` : (relivantSub.contains("assets_swtor_test")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub.contains("movies")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub.contains('retailclient')) ? `http://cdn-patch.swtor.com/patch/${relivantSub.substring(relivantSub.lastIndexOf('_'))}/${relivantSub}/${fileName}.solidpkg` : null;
 
     return url;
 }

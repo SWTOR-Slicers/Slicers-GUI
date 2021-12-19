@@ -143,7 +143,7 @@ for (let i = 0; i < hooksGr2.length; i++) {
 }
 
 class Room {
-    constructor(buffer roomName) {
+    constructor(roomName) {
         var room = Object.create(null);
             room.instances = Object.create(null);
             var pos = 0x34 + dv.getUint32(0x30, !0);
@@ -355,7 +355,7 @@ class DAT {
             const asset = {};
             asset.name = assetName;
             this.assets[idLo + '|' + idHi] = asset;
-            if (assetName.substr(-4) === '.gr2') {
+            if (assetName.substring(assetName.length - 4) === '.gr2') {
                 const file = getFile('/resources' + assetName.toLowerCase().replace(/\\/g, '/'));
                 if (file) {
                     loadFile(file, loadGr2, asset);

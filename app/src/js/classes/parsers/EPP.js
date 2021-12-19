@@ -24,8 +24,8 @@ class EPPParser {
      * @param  {string} fullName
      */
     parseEPP(doc, fullName) {
-        let _ = fullName.substr(fullName.lastIndexOf('\\') + 1);
-        _ = fullName.substr(0, fullName.lastIndexOf('/'));
+        let _ = fullName.substring(fullName.lastIndexOf('\\') + 1);
+        _ = fullName.substring(0, fullName.lastIndexOf('/'));
 
         try {
             const anode = doc.element("Appearance");

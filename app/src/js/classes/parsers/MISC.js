@@ -1,5 +1,6 @@
 import { STB } from '../formats/STB.js';
 import { Area } from '../dataObjectModel/Area.js';
+import { NodeEntr } from '../formats/Node.js';
 
 const fs = require('fs');
 
@@ -24,11 +25,11 @@ class MISCParser {
 
     /**
      * Parse the ldnScreen node tree for file names.
-     * @param {Array<Node>} ldnScreenNode ldnScreen node object
+     * @param {Array<NodeEntr>} ldnScreenNode ldnScreen node object
      */
     parseMISC_LdnScn(ldnScreenNode) {
         ldnScreenNode.readNode();
-        const ldgLookup = ldnScreenNode.obj["ldgAreaNameToLoadScreen"];
+        const ldgLookup = ldnScreenNode.obj.value["ldgAreaNameToLoadScreen"];
         for (const kvpLdgClass of ldgLookup) {
             this.searched++;
             const areaLdgInfo = kvpLdgClass[1];
@@ -46,7 +47,7 @@ class MISCParser {
 
     /**
      * Parse the ipp node tree for file names.
-     * @param {Array<Node>} ippNodes ipp node object
+     * @param {Array<NodeEntr>} ippNodes ipp node object
      */
     parseMISC_IPP(ippNodes) {
         for (const obj of ippNodes) {
@@ -74,7 +75,7 @@ class MISCParser {
 
     /**
      * Parse the cdx node tree for file names.
-     * @param {Array<Node>} cdxNodes cdx node object
+     * @param {Array<NodeEntr>} cdxNodes cdx node object
      */
     parseMISC_CDX(cdxNodes) {
         for (const obj in cdxNodes) {
@@ -87,7 +88,7 @@ class MISCParser {
 
     /**
      * Parse the itm node tree for file names.
-     * @param {Array<Node>} itmNodes itm node object
+     * @param {Array<NodeEntr>} itmNodes itm node object
      */
     parseMISC_ITEM(itmNodes) {
         for (const kvp of itmNodes) {
@@ -95,33 +96,34 @@ class MISCParser {
             const itm = kvp[1];
             itm.readNode();
 
-            const itmModel = itm.obj["itmModel"] ? itm.obj["itmModel"] : null;
+            const itmModel = itm.obj.value["itmModel"] ? itm.obj.value["itmModel"] : null;
             if (itmModel) this.fileNames.push(("/resources/" + (itmModel.replace("\\", "/"))).replace("//", "/"));
 
-            const itmFxSpec = itm.obj["itmFxSpec"] ? itm.obj["itmFxSpec"] : null;
+            const itmFxSpec = itm.obj.value["itmFxSpec"] ? itm.obj.value["itmFxSpec"] : null;
             if (itmFxSpec) this.fileNames.push(("/resources/art/fx/fxspec/" + itmFxSpec + ".fxspec").replace("//", "/").replace(".fxspec.fxspec", ".fxspec"));
         }
     }
 
     /**
      * Parse the misc_world nodes for file names.
-     * @param {Array<Node>} worldAreas world area nodes
+     * @param {Array<NodeEntr>} worldAreas world area nodes
      * @param {Object} worldAreasProto world area prototype nodes
      * @param {Object} dom data object model
      */
     parseMISC_WORLD(worldAreas, worldAreasProto, dom) {
         for (const obj of worldAreas) {
+            obj.readNode();
             this.searched++;
-            const areaId = obj.obj["mapDataContainerAreaID"] || 0;
+            const areaId = obj.obj.value["mapDataContainerAreaID"] || 0;
             if (areaId > 0) {
                 this.worldFileNames.push(`/resources/world/areas/${areaId}/area.dat`);
                 this.worldFileNames.push(`/resources/world/areas/${areaId}/mapnotes.not`);
 
-                const mapPages = obj.obj["mapDataContainerMapDataList"] || null;
+                const mapPages = obj.obj.value["mapDataContainerMapDataList"] || null;
 
                 if (mapPages != null) {
                     for (const mapPage of mapPages) {
-                        const mapName = mapPage.obj["mapName"] || null;
+                        const mapName = mapPage.obj.value["mapName"] || null;
                         if (!Object.keys(this.mapNames).includes(areaId)) this.mapNames[areaId] = [];
                         this.mapNames[areaId].push(mapName);
                     }
@@ -183,7 +185,7 @@ class MISCParser {
 
     /**
      * Parse the misc node tree for file names.
-     * @param {Array<Node>} miscNodes misc nodes object
+     * @param {Array<NodeEntr>} miscNodes misc nodes object
      */
     parseMISC_NODE(miscNodes) {
         for (const obj of miscNodes) {

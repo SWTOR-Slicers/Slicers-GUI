@@ -19,14 +19,14 @@ class Area {
     constructor(gomObj, sysWorldMapTbl, dom, assets) {
         if (gomObj != null && sysWorldMapTbl != null) {
             this.sysWorldMapTbl = sysWorldMapTbl;
-            this.displayNameId = gomObj.obj["mapAreasDataDisplayNameId"] || 0;
+            this.displayNameId = gomObj.obj.value["mapAreasDataDisplayNameId"] || 0;
             this.name = this.sysWorldMapTbl.getText(this.displayNameId);
             this.localizedName = this.name;
-            this.areaId = gomObj.obj["mapAreasDataAreaId"] || 0;
+            this.areaId = gomObj.obj.value["mapAreasDataAreaId"] || 0;
             this.id = this.areaId;
 
-            this.explorationType = gomObj.obj["mapAreasDataExplorationType"] || null;
-            this.zoneName = gomObj.obj["mapAreasDataDefaultZoneName"] || "";
+            this.explorationType = gomObj.obj.value["mapAreasDataExplorationType"] || null;
+            this.zoneName = gomObj.obj.value["mapAreasDataDefaultZoneName"] || "";
 
             this.mapPages;
             this.mapNotes;
@@ -37,7 +37,7 @@ class Area {
                 this.loadMapdata(mapDataObj);
 
                 this.fowGroupStringIds = {};
-                const mapDataContainerFowGroupList = mapDataObj.obj["mapDataContainerFowGroupList"] || null;
+                const mapDataContainerFowGroupList = mapDataObj.obj.value["mapDataContainerFowGroupList"] || null;
                 if (mapDataContainerFowGroupList != null) {
                     for (const kvp of Object.entries(mapDataContainerFowGroupList)) {
                         const fowId = kvp[0];
@@ -92,7 +92,7 @@ class Area {
      * @param  {Node} node the node obj
      */
     loadMapdata(node) {
-        const mapPages = node.obj["mapDataContainerMapDataList"] || null;
+        const mapPages = node.obj.value["mapDataContainerMapDataList"] || null;
         const pageLookup = new Map();
 
         if (mapPages != null) {

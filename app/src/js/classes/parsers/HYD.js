@@ -1,5 +1,4 @@
-import { Node } from '../formats/Node';
-
+import { NodeEntr } from '../formats/Node.js';
 
 const fs = require('fs');
 
@@ -20,25 +19,24 @@ class HYDParser {
 
     /**
      * parses the HYD nodes
-     * @param  {Array<Node>} hydNodes
+     * @param  {Array<NodeEntr>} hydNodes
      */
     parseHYD(hydNodes) {
         for (const obj of hydNodes) {
-            const hydScriptMap = obj.Data["hydScriptMap"];
+            const hydScriptMap = obj.obj.value["hydScriptMap"];
             if (hydScriptMap != null) {
                 for (const scriptMapItem of hydScriptMap) {
-                    const scriptMapItem2 = scriptMapItem.value;
-                    const hydScriptBlocks = scriptMapItem2["hydScriptBlocks"];
+                    const hydScriptBlocks = scriptMapItem.value["hydScriptBlocks"];
                     if (hydScriptBlocks != null) {
                         for (const hydScriptBlocksItem of hydScriptBlocks) {
-                            const hydActionBlocks = hydScriptBlocksItem["hydActionBlocks"];
+                            const hydActionBlocks = hydScriptBlocksItem.value["hydActionBlocks"];
                             if (hydActionBlocks != null) {
                                 for (const hydActionBlocksItem of hydActionBlocks) {
-                                    const hydActions = hydActionBlocksItem["hydActions"];
+                                    const hydActions = hydActionBlocksItem.value["hydActions"];
                                     if (hydActions != null) {
                                         for (const hydActionsItem of hydActions) {
-                                            const action = (hydActionsItem["hydAction"] || "");
-                                            const value = (hydActionsItem["hydValue"] || "").toLowerCase();
+                                            const action = (hydActionsItem.value["hydAction"] || "");
+                                            const value = (hydActionsItem.value["hydValue"] || "").toLowerCase();
                                             if (action.includes("Animation")) {
                                                 this.animFileNames.push(value);
                                             } else if (action.includes("VFX")) {

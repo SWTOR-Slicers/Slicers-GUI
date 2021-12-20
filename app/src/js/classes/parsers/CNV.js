@@ -1,4 +1,4 @@
-import {Node} from '../formats/Node.js';
+import { NodeEntr } from '../formats/Node.js';
 
 const fs = require('fs');
 
@@ -20,7 +20,7 @@ class CNVParser {
 
     /**
      * parse cnv nodes for file names
-     * @param  {Array<Node>} cnvNodes
+     * @param  {Array<NodeEntr>} cnvNodes
      */
     parseCNVNodes(cnvNodes) {
         for (const cnvNode of cnvNodes) {
@@ -36,8 +36,8 @@ class CNVParser {
             //Check for alien vo files.
             if (cnvNode.fqn.startsWith("cnv.alien_vo")) this.fileNames.push("/resources/bnk2/" + under + ".acb");
             cnvNode.readNode();
-            if (cnvNode.obj["cnvActionList"]) {
-                const actionData = cnvNode.obj["cnvActionList"];
+            if (cnvNode.obj.value["cnvActionList"]) {
+                const actionData = cnvNode.obj.value["cnvActionList"];
                 if (actionData != null) {
                     for (const action of actionData) {
                         if (action.contains("stg.")) continue;
@@ -46,8 +46,8 @@ class CNVParser {
                 }
             }
 
-            if (cnvNode.obj["cnvActiveVFXList"]) {
-                const vfxData = cnvNode.obj["cnvActiveVFXList"];
+            if (cnvNode.obj.value["cnvActiveVFXList"]) {
+                const vfxData = cnvNode.obj.value["cnvActiveVFXList"];
                 if (vfxData != null) {
                     for (const kvp of vfxData) {
                         const value = kvp.value;

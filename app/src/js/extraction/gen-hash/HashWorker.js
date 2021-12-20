@@ -15,6 +15,9 @@ import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
 import { AMXParser } from "../../classes/parsers/AMX.js";
 import { SDEFParser } from "../../classes/parsers/SDEF.js";
 import { HYDParser } from "../../classes/parsers/HYD.js";
+import { DYNParser } from "../../classes/parsers/DYN.js";
+import { PLCParser } from "../../classes/parsers/PLC.js";
+import { ICONSParser } from "../../classes/parsers/ICONS.js";
 
 const path = require('path');
 const xmlJs = require('xml-js');
@@ -42,12 +45,17 @@ onmessage = (e) => {
         case "genHash":
             totalFilesSearched = 0;
             totalNamesFound = 0;
-            generateHash(e.data.data.nodesByFqn, e.data.data.protoNodes, e.data.data.assets, e.data.data.checked);
+            generateNames(e.data.data.nodesByFqn, e.data.data.protoNodes, e.data.data.assets, e.data.data.checked, true);
+            break;
+        case "findFileNames":
+            totalFilesSearched = 0;
+            totalNamesFound = 0;
+            generateNames(e.data.data.nodesByFqn, e.data.data.protoNodes, e.data.data.assets, e.data.data.checked, false);
             break;
     }
 }
 
-async function generateHash(nodesByFqn, protoNodes, assets, checked) {
+async function generateNames(nodesByFqn, protoNodes, assets, checked, genHash) {
     const names = [];
     await Promise.all(checked.map((ext) => { parseFiles(ext, assets, nodesByFqn, protoNodes); }));
     postMessage({
@@ -110,8 +118,8 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
             xml_mat_reader.writeFile();
             break;
         case "EPP":
+            const eppNodes = dom.getObjectsStartingWith("epp.");
             const epp_reader = new EPPParser(extractPath, extension);
-            const eppNodes = dom["epp."];
             for (const asset of matches) {
                 filesSearched++;
                 const assetStream = asset.getReadStream();
@@ -172,7 +180,7 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
             dat_reader.writeFile();
             break;
         case "CNV":
-            const cnvNodes = dom["cnv."];
+            const cnvNodes = dom.getObjectsStartingWith("cnv.");
             const cnv_node_parser = new CNVParser(extractPath, extension);
             cnv_node_parser.parseCNVNodes(cnvNodes);
             namesFound = cnv_node_parser.fileNames.length + cnv_node_parser.animNames.length + cnv_node_parser.fxSpecNames.length;
@@ -187,7 +195,7 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
             misc_parser.parseMISC_CDX(cdxNodes);
             misc_parser.parseMISC_NODE(protoNodes);
             const ldgNode = dom.getObject("loadingAreaLoadScreenPrototype");
-            const itemApperances = dom.getObject("itmAppearanceDatatable").obj["itmAppearances"];
+            const itemApperances = dom.getObject("itmAppearanceDatatable").obj.value["itmAppearances"];
             misc_parser.parseMISC_LdnScn(ldgNode);
             misc_parser.parseMISC_ITEM(itemApperances);
             const guiTutorialsStb = new STB(assets["resources/en-us/str/gui/tutorials.stb"].getReadStream());
@@ -198,7 +206,7 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
             break;
         case "MISC_WORLD":
             const misc_world_parser = new MISCParser(extractPath, extension);
-            const areaList = dom.getObject("mapAreasDataProto").obj["mapAreasDataObjectList"];
+            const areaList = dom.getObject("mapAreasDataProto").obj.value["mapAreasDataObjectList"];
             const areaList2 = dom.getObjectsStartingWith("world.areas.");
             misc_world_parser.parseMISC_WORLD(areaList2, areaList, dom);
             misc_world_parser.writeFile();
@@ -242,27 +250,27 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
             hyd_parser.writeFile();
             break;
         case "DYN":
-            List<GomObject> dynNodes = dom.GetObjectsStartingWith("dyn.");
-            Format_DYN dyn_parser = new Format_DYN(extractPath, extension);
-            dyn_parser.ParseDYN(dynNodes);
-            namesFound = dyn_parser.fileNames.Count + dyn_parser.unknownFileNames.Count;
-            filesSearched += dynNodes.Count();
-            dyn_parser.WriteFile();
+            const dynNodes = dom.getObjectsStartingWith("dyn.");
+            const dyn_parser = new DYNParser(extractPath, extension);
+            dyn_parser.parseDYN(dynNodes);
+            namesFound = dyn_parser.fileNames.length + dyn_parser.unknownFileNames.length;
+            filesSearched += dynNodes.length;
+            dyn_parser.writeFile();
             break;
         case "ICONS":
-            Format_ICONS icon_parser = new Format_ICONS(extractPath, extension);
-            icon_parser.ParseICONS(dom);
-            namesFound = icon_parser.fileNames.Count;
+            const icon_parser = new ICONSParser(extractPath, extension);
+            icon_parser.parseICONS(dom);
+            namesFound = icon_parser.fileNames.length;
             filesSearched += icon_parser.searched;
-            icon_parser.WriteFile();
+            icon_parser.writeFile();
             break;
         case "PLC":
-            List<GomObject> plcNodes = dom.GetObjectsStartingWith("plc.");
-            Format_PLC plc_parser = new Format_PLC(extractPath, extension);
-            plc_parser.ParsePLC(plcNodes);
-            namesFound = plc_parser.fileNames.Count;
-            filesSearched += plcNodes.Count();
-            plc_parser.WriteFile();
+            const plcNodes = dom.getObjectsStartingWith("plc.");
+            const plc_parser = new PLCParser(extractPath, extension);
+            plc_parser.parsePLC(plcNodes);
+            namesFound = plc_parser.fileNames.length;
+            filesSearched += plcNodes.length;
+            plc_parser.writeFile();
             break;
         case "STB":
             const stbParser = new STBParser(cache['hashPath'], extension);

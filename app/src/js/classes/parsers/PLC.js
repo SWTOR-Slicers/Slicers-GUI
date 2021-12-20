@@ -1,55 +1,58 @@
+import { NodeEntr } from "../formats/Node.js";
+
+const fs = require('fs');
 
 class PLCParser {
-    public string dest = "";
-    public HashSet<string> fileNames = new HashSet<string>();
-    public List<string> errors = new List<string>();
-    public string extension;
-
-    public Format_PLC(string dest, string ext)
-    {
-        this.dest = dest;
-        extension = ext;
+    #dest;
+    /**
+     * PLC nodes parser class
+     * @param  {string} dest destination for ouputted hashes
+     * @param  {string} ext extentions to search
+     */
+     constructor(dest, ext) {
+        this.#dest = dest;
+        this.extension = ext;
+        this.fileNames = [];
+        this.errors = [];
     }
 
-    public void ParsePLC(List<GomObject> plcNodes)
-    {
-        foreach (GomObject obj in plcNodes)
-        {
-            string plcModel = obj.Data.ValueOrDefault<string>("plcModel", null);
-            if (plcModel != null)
-                if (plcModel.Contains("dyn."))
-                    continue;
-                else
-                    fileNames.Add(plcModel.Replace("\\", "/").Replace("//", "/"));
-            obj.Unload();
+    /**
+     * parses the PLC nodes
+     * @param  {Array<NodeEntr>} plcNodes
+     */
+    parsePLC(plcNodes) {
+        for (const obj of plcNodes) {
+            obj.readNode();
+            const plcModel = obj.obj.value["plcModel"];
+            if (plcModel != null) {
+                if (plcModel.contains("dyn.")) continue;
+                this.fileNames.push(plcModel.replace("\\", "/").replace("//", "/"));
+            }  
         }
     }
 
-    public void WriteFile(bool _ = false)
-    {
-        if (!Directory.Exists(dest + "\\File_Names"))
-            Directory.CreateDirectory(dest + "\\File_Names");
-        if (fileNames.Count > 0)
-        {
-            StreamWriter outputFileNames = new StreamWriter(dest + "\\File_Names\\" + extension + "_file_names.txt", false);
-            foreach (string item in fileNames)
-            {
-                if (item != "")
-                    outputFileNames.WriteLine(("/resources/" + item).Replace("//", "/"));
+    writeFile() {
+        if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
+        if (this.fileNames.length > 0) {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt`, {
+                flags: 'a'
+            });
+            for (const file of this.fileNames) {
+                if (item != "") outputNames.write(("/resources/" + file).replace("//", "/"));
             }
-            outputFileNames.Close();
-            fileNames.Clear();
+            outputNames.end();
+            this.fileNames = [];
         }
 
-        if (errors.Count > 0)
-        {
-            StreamWriter outputErrors = new StreamWriter(dest + "\\File_Names\\" + extension + "_error_list.txt", false);
-            foreach (string error in errors)
-            {
-                outputErrors.Write(error + "\r\n");
+        if (errors.length > 0) {
+            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
+                flags: 'a'
+            });
+            for (const error of errors) {
+                outputErrors.write(`${error}\r\n`);
             }
-            outputErrors.Close();
-            errors.Clear();
+            outputErrors.end();
+            this.errors = [];
         }
     }
 }

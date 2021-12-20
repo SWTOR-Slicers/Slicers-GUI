@@ -1,4 +1,4 @@
-import {Node} from '../formats/Node.js';
+import { NodeEntr } from '../formats/Node.js';
 import { XDocument } from '../util/XDocument';
 
 const fs = require('fs');
@@ -67,10 +67,11 @@ class EPPParser {
     }
     /**
      * parse epp nodes for file names
-     * @param  {Array<Node>} eppNodes
+     * @param  {Array<NodeEntr>} eppNodes
      */
     parseEPPNodes(eppNodes) {
         for (const obj of eppNodes) {
+            obj.readNode();
             const slash = obj.fqn.toLowerCase().replace('.', '/');
             const epp = "/resources/gamedata/" + slash + ".epp";
             this.fileNames.push(epp);

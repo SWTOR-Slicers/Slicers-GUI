@@ -18,7 +18,7 @@ class AMXParser {
     }
 
     /**
-     * parses an FXSPEC file
+     * parses an AMX file
      * @param  {Reader} reader
      * @param  {string} fullFileName
      */

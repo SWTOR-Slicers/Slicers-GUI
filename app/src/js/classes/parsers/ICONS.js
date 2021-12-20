@@ -1,124 +1,111 @@
+import { NodeEntr } from '../formats/Node.js';
+import { Reader } from '../util/FileWrapper.js';
+
+const fs = require('fs');
 
 class ICONSParser {
-    public string dest = "";
-    public HashSet<string> fileNames = new HashSet<string>();
-    public List<string> errors = new List<string>();
-    public string extension;
-    public int searched;
-
-    public Format_ICONS(string dest, string ext)
-    {
-        this.dest = dest;
-        extension = ext;
+    #dest;
+    /**
+     * AMX parser class
+     * @param  {string} dest destination for ouputted hashes
+     * @param  {string} ext extentions to search
+     */
+     constructor(dest, ext) {
+        this.#dest = dest;
+        this.extension = ext;
+        this.fileNames = [];
+        this.errors = [];
+        this.searched = 0;
+        this.found = 0;
     }
 
-    public void ParseICONS(DataObjectModel currentDom)
-    {
-        var itmList = currentDom.GetObjectsStartingWith("itm.");
-        foreach (var gomItm in itmList)
-        {
-            searched++;
-            string icon = gomItm.Data.ValueOrDefault<string>("itmIcon", null);
-            if (icon != null)
-            {
-                fileNames.Add("/resources/gfx/icons/" + icon + ".dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon + "_120x120.dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon + "_260x400.dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon + "_260x260.dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon + "_328x160.dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon + "_400x400.dds");
+    /**
+     * parses the dom for all Icon names
+     * @param  {Object} currentDom
+     */
+    parseICONS(currentDom) {
+        const itmList = currentDom.getObjectsStartingWith("itm.");
+        for (const gomItm of itmList) {
+            gomItm.readNode();
+            this.searched++;
+            const icon = gomItm.obj.value["itmIcon"];
+            if (icon != null) {
+                this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_120x120.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_260x400.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_260x260.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_328x160.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_400x400.dds");
             }
-            gomItm.Unload();
         }
-        itmList.Clear();
 
-        var ablList = currentDom.GetObjectsStartingWith("abl.");
-        foreach (var gomItm in ablList)
-        {
-            searched++;
-            string icon = gomItm.Data.ValueOrDefault<string>("ablIconSpec", null);
-            if (icon != null)
-                fileNames.Add("/resources/gfx/icons/" + icon + ".dds");
+        const ablList = currentDom.getObjectsStartingWith("abl.");
+        for (const gomItm of ablList) {
+            gomItm.readNode();
+            this.searched++;
+            const icon = gomItm.obj.value["ablIconSpec"];
+            if (icon != null) this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
 
-            icon = gomItm.Data.ValueOrDefault<string>("effIcon", null);
-            if (icon != null)
-                fileNames.Add("/resources/gfx/icons/" + icon + ".dds");
-            gomItm.Unload();
+            icon = gomItm.obj.value["effIcon"];
+            if (icon != null) this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
         }
-        ablList.Clear();
 
-        var qstList = currentDom.GetObjectsStartingWith("qst.");
-        foreach (var gomItm in qstList)
-        {
-            searched++;
-            string icon = gomItm.Data.ValueOrDefault<string>("qstMissionIcon", null);
-            if (icon != null)
-                fileNames.Add("/resources/gfx/codex/" + icon + ".dds");
-            gomItm.Unload();
+        const qstList = currentDom.getObjectsStartingWith("qst.");
+        for (const gomItm of qstList) {
+            gomItm.readNode();
+            this.searched++;
+            const icon = gomItm.obj.value["qstMissionIcon"];
+            if (icon != null) this.fileNames.push("/resources/gfx/codex/" + icon + ".dds");
         }
-        qstList.Clear();
 
-        var ippList = currentDom.GetObjectsStartingWith("ipp.");
-        foreach (var gomItm in ippList)
-        {
-            searched++;
-            string icon = gomItm.Name.ToString();
-            if (icon != null)
-            {
-                fileNames.Add("/resources/gfx/icons/" + icon + ".dds");
-                fileNames.Add("/resources/gfx/icons/" + icon.Replace("ipp.", "") + ".dds");
+        const ippList = currentDom.getObjectsStartingWith("ipp.");
+        for (const gomItm of ippList) {
+            gomItm.readNode();
+            this.searched++;
+            const icon = gomItm.fqn.ToString();
+            if (icon != null) {
+                this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
+                this.fileNames.push("/resources/gfx/icons/" + icon.Replace("ipp.", "") + ".dds");
 
-                fileNames.Add("/resources/gfx/mtxstore/" + icon + "_120x120.dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon + "_260x260.dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon + "_260x400.dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon + "_328x160.dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon + "_400x400.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_120x120.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_260x260.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_260x400.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_328x160.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_400x400.dds");
 
-                fileNames.Add("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_120x120.dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_260x260.dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_260x400.dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_328x160.dds");
-                fileNames.Add("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_400x400.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_120x120.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_260x260.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_260x400.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_328x160.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_400x400.dds");
             }
-            gomItm.Unload();
         }
-        ippList.Clear();
 
-        var cdxList = currentDom.GetObjectsStartingWith("cdx.");
-        foreach (var gomItm in cdxList)
-        {
-            searched++;
-            string icon = gomItm.Data.ValueOrDefault<string>("cdxImage", null);
-            if (icon != null)
-                fileNames.Add("/resources/gfx/codex/" + icon + ".dds");
-            gomItm.Unload();
+        const cdxList = currentDom.getObjectsStartingWith("cdx.");
+        for (const gomItm of cdxList) {
+            gomItm.readNode();
+            this.searched++;
+            const icon = gomItm.obj.value["cdxImage"];
+            if (icon != null) this.fileNames.push("/resources/gfx/codex/" + icon + ".dds");
         }
-        cdxList.Clear();
 
-        var achList = currentDom.GetObjectsStartingWith("ach.");
-        foreach (var gomItm in achList)
-        {
-            searched++;
-            string icon = gomItm.Data.ValueOrDefault<string>("achIcon", null);
-            if (icon != null)
-                fileNames.Add("/resources/gfx/icons/" + icon + ".dds");
-            gomItm.Unload();
+        const achList = currentDom.getObjectsStartingWith("ach.");
+        for (const gomItm of achList) {
+            gomItm.readNode();
+            this.searched++;
+            const icon = gomItm.obj.value["achIcon"];
+            if (icon != null) this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
         }
-        achList.Clear();
 
-        var talList = currentDom.GetObjectsStartingWith("tal.");
-        foreach (var gomItm in talList)
-        {
-            searched++;
-            string icon = gomItm.Data.ValueOrDefault<string>("talTalentIcon", null);
-            if (icon != null)
-                fileNames.Add("/resources/gfx/icons/" + icon + ".dds");
-            gomItm.Unload();
+        const talList = currentDom.getObjectsStartingWith("tal.");
+        for (const gomItm of talList) {
+            gomItm.readNode();
+            this.searched++;
+            const icon = gomItm.obj.value["talTalentIcon"];
+            if (icon != null) this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
         }
-        talList.Clear();
 
-        List<string> spvpIcons = new List<string>
-        {
+        const spvpIcons = [
             "armor_",
             "capacitor_",
             "eng_",
@@ -130,169 +117,123 @@ class ICONSParser {
             "sweap_",
             "sys_",
             "thruster_"
-        };
+        ];
 
-        foreach (string cmp in spvpIcons)
-        {
-            var spvpList1 = currentDom.GetObjectsStartingWith(cmp);
-            foreach (var gomItm in spvpList1)
-            {
-                searched++;
-                string icon = gomItm.Data.ValueOrDefault<string>("scFFComponentIcon", null);
-                if (icon != null)
-                    fileNames.Add("/resources/gfx/icons/" + icon + ".dds");
-                gomItm.Unload();
+        for (const cmp of spvpIcons) {
+            const spvpList1 = currentDom.getObjectsStartingWith(cmp);
+            for (const gomItm of spvpList1) {
+                gomItm.readNode();
+                this.searched++;
+                const icon = gomItm.obj.value["scFFComponentIcon"];
+                if (icon != null) this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
             }
-            spvpList1.Clear();
         }
-        spvpIcons.Clear();
 
-        GomObject shipDataProto = currentDom.GetObject("scFFShipsDataPrototype");
-        if (shipDataProto != null)
-        {
-            Dictionary<object, object> shipData = shipDataProto.Data.ValueOrDefault<Dictionary<object, object>>("scFFShipsData", null);
-            if (shipData != null)
-            {
-                foreach (var item in shipData)
-                {
-                    searched++;
-                    var item2 = (GomObjectData)item.Value;
-                    item2.Dictionary.TryGetValue("scFFShipHullIcon", out object icon1_string);
-                    item2.Dictionary.TryGetValue("scFFShipIcon", out object icon2_string);
-                    if (icon1_string != null)
-                    {
-                        fileNames.Add("/resources/gfx/icons/" + icon1_string + ".dds");
-                        fileNames.Add("/resources/gfx/textures/" + icon1_string + ".dds");
+        const shipDataProto = currentDom.getObject("scFFShipsDataPrototype");
+        if (shipDataProto != null) {
+            const shipData = shipDataProto.obj.value["scFFShipsData"];
+            if (shipData != null) {
+                for (const item of shipData) {
+                    this.searched++;
+                    const icon1_string = item.value["scFFShipHullIcon"];
+                    const icon2_string = item.value["scFFShipIcon"];
+                    if (icon1_string != null) {
+                        this.fileNames.push("/resources/gfx/icons/" + icon1_string + ".dds");
+                        this.fileNames.push("/resources/gfx/textures/" + icon1_string + ".dds");
                     }
-                    if (icon2_string != null)
-                    {
-                        fileNames.Add("/resources/gfx/icons/" + icon2_string + ".dds");
-                        fileNames.Add("/resources/gfx/textures/" + icon2_string + ".dds");
+                    if (icon2_string != null) {
+                        this.fileNames.push("/resources/gfx/icons/" + icon2_string + ".dds");
+                        this.fileNames.push("/resources/gfx/textures/" + icon2_string + ".dds");
                     }
                 }
-                shipData.Clear();
             }
-            shipDataProto.Unload();
         }
 
-        GomObject shipColorOptionProto = currentDom.GetObject("scFFColorOptionMasterPrototype");
-        if (shipColorOptionProto != null)
-        {
-            Dictionary<object, object> shipColors = shipColorOptionProto.Data.ValueOrDefault<Dictionary<object, object>>("scFFComponentColorUIData", null);
-            if (shipColors != null)
-            {
-                foreach (var item in shipColors)
-                {
-                    searched++;
-                    var item2 = (GomObjectData)item.Value;
-                    item2.Dictionary.TryGetValue("scFFComponentColorIcon", out object icon_string);
-                    if (icon_string != null)
-                    {
-                        fileNames.Add("/resources/gfx/icons/" + icon_string + ".dds");
-                        fileNames.Add("/resources/gfx/textures/" + icon_string + ".dds");
+        const shipColorOptionProto = currentDom.getObject("scFFColorOptionMasterPrototype");
+        if (shipColorOptionProto != null) {
+            const shipColors = shipColorOptionProto.obj.value["scFFComponentColorUIData"];
+            if (shipColors != null) {
+                for (const item of shipColors) {
+                    this.searched++;
+                    const icon_string = item.value["scFFComponentColorIcon"];
+                    if (icon_string != null) {
+                        this.fileNames.push("/resources/gfx/icons/" + icon_string + ".dds");
+                        this.fileNames.push("/resources/gfx/textures/" + icon_string + ".dds");
                     }
                 }
-                shipColors.Clear();
             }
-            shipColorOptionProto.Unload();
         }
 
-        GomObject scffCrewProto = currentDom.GetObject("scffCrewPrototype");
-        if (scffCrewProto != null)
-        {
-            Dictionary<object, object> shipCrew = scffCrewProto.Data.ValueOrDefault<Dictionary<object, object>>("scFFShipsCrewAndPatternData", null);
-            if (shipCrew != null)
-            {
-                foreach (var item in shipCrew)
-                {
-                    searched++;
-                    var item2 = (GomObjectData)item.Value;
-                    item2.Dictionary.TryGetValue("scFFCrewIcon", out object icon_string);
-                    if (icon_string != null)
-                    {
-                        fileNames.Add("/resources/gfx/icons/" + icon_string + ".dds");
-                        fileNames.Add("/resources/gfx/textures/" + icon_string + ".dds");
+        const scffCrewProto = currentDom.getObject("scffCrewPrototype");
+        if (scffCrewProto != null) {
+            const shipCrew = scffCrewProto.obj.value["scFFShipsCrewAndPatternData"];
+            if (shipCrew != null) {
+                for (const item of shipCrew) {
+                    this.searched++;
+                    const icon_string = item.value["scFFCrewIcon"];
+                    if (icon_string != null) {
+                        this.fileNames.push("/resources/gfx/icons/" + icon_string + ".dds");
+                        this.fileNames.push("/resources/gfx/textures/" + icon_string + ".dds");
                     }
                 }
-                shipCrew.Clear();
             }
-            scffCrewProto.Unload();
         }
 
-        GomObject mtxStore = currentDom.GetObject("mtxStorefrontInfoPrototype");
-        if (mtxStore != null)
-        {
-            Dictionary<object, object> mtxItems = mtxStore.Data.ValueOrDefault<Dictionary<object, object>>("mtxStorefrontData", null);
-            if (mtxItems != null)
-            {
-                foreach (var item in mtxItems)
-                {
-                    searched++;
-                    var item2 = (GomObjectData)item.Value;
-                    item2.Dictionary.TryGetValue("mtxStorefrontIcon", out object icon_string);
-                    if (icon_string != null)
-                    {
-                        string icon = icon_string.ToString().ToLower();
-                        fileNames.Add("/resources/gfx/icons/" + icon + ".dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_120x120.dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_260x400.dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_260x260.dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_328x160.dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_400x400.dds");
+        const mtxStore = currentDom.getObject("mtxStorefrontInfoPrototype");
+        if (mtxStore != null) {
+            const mtxItems = mtxStore.obj.value["mtxStorefrontData"];
+            if (mtxItems != null) {
+                for (const item of mtxItems) {
+                    this.searched++;
+                    const icon_string = item.value["mtxStorefrontIcon"];
+                    if (icon_string != null) {
+                        const icon = icon_string.toLowerCase();
+                        this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_120x120.dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_260x400.dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_260x260.dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_328x160.dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_400x400.dds");
                     }
                 }
-                mtxItems.Clear();
             }
-            mtxStore.Unload();
         }
 
-        GomObject colCategoriesProto = currentDom.GetObject("colCollectionCategoriesPrototype");
-        if (colCategoriesProto != null)
-        {
-            Dictionary<object, object> colCats = colCategoriesProto.Data.ValueOrDefault<Dictionary<object, object>>("colCollectionCategoryData", null);
-            if (colCats != null)
-            {
-                foreach (var item in colCats)
-                {
-                    searched++;
-                    var item2 = (GomObjectData)item.Value;
-                    item2.Dictionary.TryGetValue("colCollectionCategoryIcon", out object icon_string);
-                    if (icon_string != null)
-                    {
-                        string icon = icon_string.ToString().ToLower();
-                        fileNames.Add("/resources/gfx/icons/" + icon + ".dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_120x120.dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_260x400.dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_260x260.dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_328x160.dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_400x400.dds");
+        const colCategoriesProto = currentDom.getObject("colCollectionCategoriesPrototype");
+        if (colCategoriesProto != null) {
+            const colCats = colCategoriesProto.obj.value["colCollectionCategoryData"];
+            if (colCats != null) {
+                for (const item of colCats) {
+                    this.searched++;
+                    const icon_string = item.value["colCollectionCategoryIcon"];
+                    if (icon_string != null) {
+                        const icon = icon_string.toLowerCase();
+                        this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_120x120.dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_260x400.dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_260x260.dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_328x160.dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_400x400.dds");
                     }
                 }
-                colCats.Clear();
             }
-            colCategoriesProto.Unload();
         }
 
-        GomObject colCollectionItemsProto = currentDom.GetObject("colCollectionItemsPrototype");
-        if (colCollectionItemsProto != null)
-        {
-            Dictionary<object, object> colItems = colCollectionItemsProto.Data.ValueOrDefault<Dictionary<object, object>>("colCollectionItemsData", null);
-            if (colItems != null)
-            {
-                foreach (var item in colItems)
-                {
-                    searched++;
-                    var item2 = (GomObjectData)item.Value;
-                    item2.Dictionary.TryGetValue("colCollectionIcon", out object icon_string);
-                    if (icon_string != null)
-                    {
-                        string icon = icon_string.ToString().ToLower();
-                        fileNames.Add("/resources/gfx/icons/" + icon + ".dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_120x120.dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_260x400.dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_260x260.dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_328x160.dds");
-                        fileNames.Add("/resources/gfx/mtxstore/" + icon + "_400x400.dds");
+        const colCollectionItemsProto = currentDom.getObject("colCollectionItemsPrototype");
+        if (colCollectionItemsProto != null) {
+            const colItems = colCollectionItemsProto.obj.value["colCollectionItemsData"];
+            if (colItems != null) {
+                for (const item of colItems) {
+                    this.searched++;
+                    const icon_string = item.value["colCollectionIcon"];
+                    if (icon_string != null) {
+                        const icon = icon_string.toLowerCase();
+                        this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_120x120.dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_260x400.dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_260x260.dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_328x160.dds");
+                        this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_400x400.dds");
                     }
                 }
                 colItems.Clear();
@@ -300,32 +241,24 @@ class ICONSParser {
             colCollectionItemsProto.Unload();
         }
 
-        GomObject achCategoriesTable_Proto = currentDom.GetObject("achCategoriesTable_Prototype");
-        if (achCategoriesTable_Proto != null)
-        {
-            Dictionary<object, object> achCategories = achCategoriesTable_Proto.Data.ValueOrDefault<Dictionary<object, object>>("achCategoriesData", null);
-            if (achCategories != null)
-            {
-                foreach (var item in achCategories)
-                {
-                    searched++;
-                    var item2 = (GomObjectData)item.Value;
-                    item2.Dictionary.TryGetValue("achCategoriesIcon", out object icon_string1);
-                    if (icon_string1 != null)
-                    {
-                        string icon = icon_string1.ToString().ToLower();
-                        fileNames.Add("/resources/gfx/icons/" + icon + ".dds");
+        const achCategoriesTable_Proto = currentDom.getObject("achCategoriesTable_Prototype");
+        if (achCategoriesTable_Proto != null) {
+            const achCategories = achCategoriesTable_Proto.obj.value["achCategoriesData"];
+            if (achCategories != null) {
+                for (const item of achCategories) {
+                    this.searched++;
+                    const icon_string1 = item.value["achCategoriesIcon"];
+                    if (icon_string1 != null) {
+                        const icon = icon_string1.toLowerCase();
+                        this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
                     }
-                    item2.Dictionary.TryGetValue("achCategoriesCodexIcon", out object icon_string2);
-                    if (icon_string2 != null)
-                    {
-                        string icon = icon_string2.ToString().ToLower();
-                        fileNames.Add("/resources/gfx/codex/" + icon + ".dds");
+                    const icon_string2 = item.value["achCategoriesCodexIcon"];
+                    if (icon_string2 != null) {
+                        const icon = icon_string2.toLowerCase();
+                        this.fileNames.push("/resources/gfx/codex/" + icon + ".dds");
                     }
                 }
-                achCategories.Clear();
             }
-            achCategoriesTable_Proto.Unload();
         }
     }
 

@@ -1,87 +1,87 @@
+import { Reader } from '../util/FileWrapper.js';
+
+const fs = require('fs');
+const {Buffer} = require('buffer');
 
 class AMXParser {
-    public string dest = "";
-    public HashSet<string> fileNames = new HashSet<string>();
-    public List<string> errors = new List<string>();
-    public string extension;
-
-    public Format_AMX(string dest, string ext)
-    {
-        this.dest = dest;
-        extension = ext;
+    #dest;
+    /**
+     * AMX parser class
+     * @param  {string} dest destination for ouputted hashes
+     * @param  {string} ext extentions to search
+     */
+     constructor(dest, ext) {
+        this.#dest = dest;
+        this.extension = ext;
+        this.fileNames = [];
+        this.errors = [];
     }
 
-    public void ParseAMX(Stream fileStream, string fullFileName)
-    {
-        BinaryReader br = new BinaryReader(fileStream);
+    /**
+     * parses an FXSPEC file
+     * @param  {Reader} reader
+     * @param  {string} fullFileName
+     */
+    parseAMX(reader, fullFileName) {
+        const header = reader.readUint32();
 
-        ulong header = br.ReadUInt32();
-
-        if (header.ToString("X") != "20584D41")
-        {
-            errors.Add("File: " + fullFileName);
-            errors.Add("Invalid header" + header.ToString());
+        if (header.toString(16) != "20584D41") {
+            this.errors.push("File: " + fullFileName);
+            this.errors.push("Invalid header" + header);
             return;
-        }
-        else
-        {
-            br.ReadUInt16(); //unknown
-            bool stop = false;
-            do
-            {
-                byte fileLen = br.ReadByte();
-                if (fileLen == 0)
-                {
+        } else {
+            reader.readUint16(); //unknown
+            const stop = false;
+            while (!stop) {
+                const fileLen = reader.readByte();
+                if (fileLen == 0) {
                     stop = true;
-                }
-                else
-                {
-                    byte[] fileNameBytes = br.ReadBytes(fileLen);
-                    string fileName = Encoding.ASCII.GetString(fileNameBytes);
+                } else {
+                    const fileNameBytes = reader.readBytes(fileLen);
+                    const fileName = Buffer.from(fileNameBytes).toString('ascii');
 
-                    byte dirLen = br.ReadByte();
-                    byte[] dirNameBytes = br.ReadBytes(dirLen);
-                    string dirName = Encoding.ASCII.GetString(dirNameBytes);
-                    string fullName = "/resources/anim/" + dirName.Replace('\\', '/') + "/" + fileName;
-                    fullName = fullName.Replace("//", "/");
+                    const dirLen = reader.readByte();
+                    const dirNameBytes = reader.readBytes(dirLen);
+                    const dirName = Buffer.from(dirNameBytes).toString('ascii');
+                    let fullName = "/resources/anim/" + dirName.replace('\\', '/') + "/" + fileName;
+                    fullName = fullName.replace("//", "/");
 
                     //humanoid\bfanew
                     //em_wookiee_10
-                    fileNames.Add(fullName + ".jba");
-                    fileNames.Add(fullName + ".mph");
-                    fileNames.Add(fullName + ".mph.amx");
+                    this.fileNames.push(fullName + ".jba");
+                    this.fileNames.push(fullName + ".mph");
+                    this.fileNames.push(fullName + ".mph.amx");
 
-                    br.ReadUInt32();
-                    byte check = br.ReadByte();
-                    if (check != 2 && check != 3)
-                        stop = true;
+                    reader.readUInt32();
+                    const check = reader.readByte();
+                    if (check != 2 && check != 3) stop = true;
                 }
-            } while (!stop);
+            }
         }
     }
 
-    public void WriteFile(bool _ = false)
-    {
-        if (!Directory.Exists(dest + "\\File_Names"))
-            Directory.CreateDirectory(dest + "\\File_Names");
-        if (fileNames.Count > 0) {
-            StreamWriter outputFileNames = new StreamWriter(dest + "\\File_Names\\" + extension + "_file_names.txt", false);
-            foreach (var file in fileNames)
-            {
-                outputFileNames.WriteLine(file);
+    writeFile() {
+        if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
+        if (this.fileNames.length > 0) {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt`, {
+                flags: 'a'
+            });
+            for (const file of this.fileNames) {
+                outputNames.write(file);
             }
-            outputFileNames.Close();
-            fileNames.Clear();
+            outputNames.end();
+            this.fileNames = [];
         }
 
-        if (errors.Count > 0) {
-            StreamWriter outputErrors = new StreamWriter(dest + "\\File_Names\\" + extension + "_error_list.txt", false);
-            foreach (string error in errors)
-            {
-                outputErrors.Write(error + "\r\n");
+        if (errors.length > 0) {
+            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
+                flags: 'a'
+            });
+            for (const error of errors) {
+                outputErrors.write(`${error}\r\n`);
             }
-            outputErrors.Close();
-            errors.Clear();
+            outputErrors.end();
+            this.errors = [];
         }
     }
 }

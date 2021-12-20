@@ -1,5 +1,5 @@
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
-import { nodesByFqn, nodeFolderSort, StaticGomTree } from "../../viewers/node-viewer/GomTree.js";
+import { nodesByFqn, protoNodes, nodeFolderSort, StaticGomTree } from "../../viewers/node-viewer/GomTree.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
 
 const { ipcRenderer } = require("electron");
@@ -241,13 +241,12 @@ function initListeners() {
         
             ipcRenderer.send('readAllDataHashPrep');
         } else {
-            // ipcRenderer.send('genHashes');
-
             hashWorker.postMessage({
                 "message": 'genHash',
                 "data": {
                     "checked": getChecked(),
                     "nodesByFqn": nodesByFqn,
+                    "protoNodes": protoNodes,
                     "assets": archives
                 }
             });

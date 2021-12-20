@@ -1,86 +1,94 @@
+import { Reader } from '../util/FileWrapper.js';
+
+const fs = require('fs');
 
 class SDEFParser {
-    public string dest = "";
-    public HashSet<string> fileNames = new HashSet<string>();
-    public List<string> errors = new List<string>();
-    public string extension;
-    public int found;
-
-    public Format_SDEF(string dest, string ext) {
-    this.dest = dest;
-    extension = ext;
+    #dest;
+    /**
+     * SDEF (Script Definition) parser class
+     * @param  {string} dest destination for ouputted hashes
+     * @param  {string} ext extentions to search
+     */
+     constructor(dest, ext) {
+        this.#dest = dest;
+        this.extension = ext;
+        this.fileNames = [];
+        this.errors = [];
     }
 
-    public void ParseSDEF(Stream fileStream) {
-    BinaryReader br = new BinaryReader(fileStream);
+    /**
+     * parses the scriptdef.list file
+     * @param  {Reader} reader
+     */
+    parseSDEF(reader) {
+        const header = FileFormats.File_Helpers.ReverseBytes(reader.readUint32());
+        const header = reader.readUint32();
 
-    uint header = FileFormats.File_Helpers.ReverseBytes(br.ReadUInt32());
+        if (header.toString(16) != "53444546") {
+            return;
+        } else {
+            //read unknown 1 version info??
+            reader.readBytes(4);
 
-    if (header.ToString("X") != "53444546") {
+            //C9 indicates 2 byte integer
+            reader.readByte();
+
+            //Read 2 byte integer                
+            const count = reader.readUInt16(false);
+
+            for (let c = 0; c < count; c++) {
+                //CF Idenitifes 8 byte integer
+                reader.readByte();
+
+                //Read the 8 byte integer                    
+                const id = reader.readUInt64(false);
+
+                //null seperator
+                reader.readByte();
+
+                //CB identifies a 4 byte integer -- CA identifies a 3 byte integer                    
+                const cb = reader.readByte();
+
+                if (cb == 203) {
+                    //Read the 4 byte integer
+                    reader.readBytes(4);
+                } else if (cb == 202) {
+                    //Read the 3 byte integer
+                    reader.readBytes(3);
+                }
+
+                //null seperator
+                reader.readByte();
+
+                this.fileNames.push("/resources/systemgenerated/compilednative/" + id);
+            }
+        }
         return;
-    } else {
-        //read unknown 1 version info??
-        br.ReadBytes(4);
-
-        //C9 indicates 2 byte integer
-        br.ReadByte();
-
-        //Read 2 byte integer                
-        ushort count = FileFormats.File_Helpers.ReverseBytes(br.ReadUInt16());
-
-        for (int c = 0; c < count; c++) {
-        //CF Idenitifes 8 byte integer
-        br.ReadByte();
-
-        //Read the 8 byte integer                    
-        ulong id = FileFormats.File_Helpers.ReverseBytes(br.ReadUInt64());
-
-        //null seperator
-        br.ReadByte();
-
-        //CB identifies a 4 byte integer -- CA identifies a 3 byte integer                    
-        byte cb = br.ReadByte();
-
-        if (cb == 203) {
-            //Read the 4 byte integer
-            br.ReadBytes(4);
-        } else if (cb == 202) {
-            //Read the 3 byte integer
-            br.ReadBytes(3);
-        }
-
-        //null seperator
-        br.ReadByte();
-
-        fileNames.Add("/resources/systemgenerated/compilednative/" + id);
-        }
-    }
-    return;
     }
 
-    public void WriteFile() {
-    if (!Directory.Exists(dest + "\\File_Names"))
-        Directory.CreateDirectory(dest + "\\File_Names");
-
-    found = fileNames.Count;
-
-    if (fileNames.Count > 0) {
-        StreamWriter outputNames = new StreamWriter(dest + "\\File_Names\\" + extension + "_file_names.txt", false);
-        foreach (string file in fileNames) {
-        outputNames.WriteLine(file.Replace("\\", "/"));
+    writeFile() {
+        if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
+        if (this.fileNames.length > 0) {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt`, {
+                flags: 'a'
+            });
+            for (const file of this.fileNames) {
+                outputNames.write(`${file.replace("\\", "/")}`);
+            }
+            outputNames.end();
+            this.fileNames = [];
         }
-        outputNames.Close();
-        fileNames.Clear();
-    }
 
-    if (errors.Count > 0) {
-        StreamWriter outputErrors = new StreamWriter(dest + "\\File_Names\\" + extension + "_error_list.txt", false);
-        foreach (string error in errors) {
-        outputErrors.WriteLine(error);
+        if (errors.length > 0) {
+            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
+                flags: 'a'
+            });
+            for (const error of errors) {
+                outputErrors.write(error);
+            }
+            outputErrors.end();
+            this.errors = [];
         }
-        outputErrors.Close();
-        errors.Clear();
-    }
     }
 }
 

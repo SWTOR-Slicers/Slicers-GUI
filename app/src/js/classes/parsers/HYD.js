@@ -1,51 +1,49 @@
+import { Node } from '../formats/Node';
+
+
+const fs = require('fs');
 
 class HYDParser {
-    public string dest = "";
-    public HashSet<string> animFileNames = new HashSet<string>();
-    public HashSet<string> vfxFileNames = new HashSet<string>();
-    public List<string> errors = new List<string>();
-    public string extension;
-
-    public Format_HYD(string dest, string ext)
-    {
-        this.dest = dest;
-        extension = ext;
+    #dest;
+    /**
+     * HYD nodes parser class
+     * @param  {string} dest destination for ouputted hashes
+     * @param  {string} ext extentions to search
+     */
+     constructor(dest, ext) {
+        this.#dest = dest;
+        this.extension = ext;
+        this.animFileNames = [];
+        this.vfxFileNames = [];
+        this.errors = [];
     }
 
-    public void ParseHYD(List<GomObject> hydNodes)
-    {
-        foreach (GomObject obj in hydNodes)
-        {
-            Dictionary<object, object> hydScriptMap = obj.Data.ValueOrDefault<Dictionary<object, object>>("hydScriptMap", null);
-            if (hydScriptMap != null)
-            {
-                foreach (var scriptMapItem in hydScriptMap)
-                {
-                    var scriptMapItem2 = (GomObjectData)scriptMapItem.Value;
-                    List<object> hydScriptBlocks = scriptMapItem2.ValueOrDefault<List<object>>("hydScriptBlocks", null);
-                    if (hydScriptBlocks != null)
-                    {
-                        foreach (var hydScriptBlocksItem in hydScriptBlocks)
-                        {
-                            var hydScriptBlocksItem2 = (GomObjectData)hydScriptBlocksItem;
-                            List<object> hydActionBlocks = hydScriptBlocksItem2.ValueOrDefault<List<object>>("hydActionBlocks", null);
-                            if (hydActionBlocks != null)
-                            {
-                                foreach (var hydActionBlocksItem in hydActionBlocks)
-                                {
-                                    var hydActionBlocksItem2 = (GomObjectData)hydActionBlocksItem;
-                                    List<object> hydActions = hydActionBlocksItem2.ValueOrDefault<List<object>>("hydActions", null);
-                                    if (hydActions != null)
-                                    {
-                                        foreach (var hydActionsItem in hydActions)
-                                        {
-                                            var hydActionsItem2 = (GomObjectData)hydActionsItem;
-                                            var action = hydActionsItem2.ValueOrDefault<object>("hydAction", "").ToString();
-                                            var value = hydActionsItem2.ValueOrDefault<object>("hydValue", "").ToString().ToLower();
-                                            if (action.Contains("Animation"))
-                                                animFileNames.Add(value);
-                                            else if (action.Contains("VFX"))
-                                                vfxFileNames.Add(value);
+    /**
+     * parses the HYD nodes
+     * @param  {Array<Node>} hydNodes
+     */
+    parseHYD(hydNodes) {
+        for (const obj of hydNodes) {
+            const hydScriptMap = obj.Data["hydScriptMap"];
+            if (hydScriptMap != null) {
+                for (const scriptMapItem of hydScriptMap) {
+                    const scriptMapItem2 = scriptMapItem.value;
+                    const hydScriptBlocks = scriptMapItem2["hydScriptBlocks"];
+                    if (hydScriptBlocks != null) {
+                        for (const hydScriptBlocksItem of hydScriptBlocks) {
+                            const hydActionBlocks = hydScriptBlocksItem["hydActionBlocks"];
+                            if (hydActionBlocks != null) {
+                                for (const hydActionBlocksItem of hydActionBlocks) {
+                                    const hydActions = hydActionBlocksItem["hydActions"];
+                                    if (hydActions != null) {
+                                        for (const hydActionsItem of hydActions) {
+                                            const action = (hydActionsItem["hydAction"] || "");
+                                            const value = (hydActionsItem["hydValue"] || "").toLowerCase();
+                                            if (action.includes("Animation")) {
+                                                this.animFileNames.push(value);
+                                            } else if (action.includes("VFX")) {
+                                                this.vfxFileNames.push(value);
+                                            }
                                         }
                                     }
                                 }
@@ -54,58 +52,50 @@ class HYDParser {
                     }
                 }
             }
-            obj.Unload();
         }
     }
 
-    public void WriteFile(bool _ = false)
-    {
-        if (!Directory.Exists(dest + "\\File_Names"))
-            Directory.CreateDirectory(dest + "\\File_Names");
-        if (animFileNames.Count > 0)
-        {
-            StreamWriter outputAnimFileNames = new StreamWriter(dest + "\\File_Names\\" + extension + "_anim_file_names.txt", false);
-            foreach (string item in animFileNames)
-            {
-                if (item != "")
-                    outputAnimFileNames.WriteLine(item);
+    writeFile() {
+        if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
+        if (this.animFileNames.length > 0) {
+            const outputAnimFileNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_anim_file_names.txt`, {
+                flags: 'a'
+            });
+            for (const file of this.animFileNames) {
+                if (file != "") outputAnimFileNames.write(file);
             }
-            outputAnimFileNames.Close();
-            animFileNames.Clear();
+            outputAnimFileNames.end();
+            this.animFileNames = [];
         }
 
-        if (vfxFileNames.Count > 0)
-        {
-            StreamWriter outputVfxFileNames = new StreamWriter(dest + "\\File_Names\\" + extension + "_fxspec_file_names.txt", false);
-            foreach (string item in vfxFileNames)
-            {
-                if (item != "")
-                {
-                    if (item.Contains("art/"))
-                    {
-                        string output = "/resources/" + item + ".fxspec";
-                        outputVfxFileNames.WriteLine(output.Replace("//", "/").Replace(".fxspec.fxspec", ".fxspec"));
-                    }
-                    else
-                    {
-                        string output = "/resources/art/fx/fxspec/" + item + ".fxspec";
-                        outputVfxFileNames.WriteLine(output.Replace("//", "/").Replace(".fxspec.fxspec", ".fxspec"));
+        if (this.vfxFileNames.length > 0) {
+            const outputVfxFileNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_fxspec_file_names.txt`, {
+                flags: 'a'
+            });
+            for (const file of this.vfxFileNames) {
+                if (file != "") {
+                    if (file.includes("art/")) {
+                        const output = "/resources/" + file + ".fxspec";
+                        outputVfxFileNames.write(output.replace("//", "/").replace(".fxspec.fxspec", ".fxspec"));
+                    } else {
+                        const output = "/resources/art/fx/fxspec/" + file + ".fxspec";
+                        outputVfxFileNames.write(output.replace("//", "/").replace(".fxspec.fxspec", ".fxspec"));
                     }
                 }
             }
-            outputVfxFileNames.Close();
-            vfxFileNames.Clear();
+            outputVfxFileNames.end();
+            this.vfxFileNames = [];
         }
 
-        if (errors.Count > 0)
-        {
-            StreamWriter outputErrors = new StreamWriter(dest + "\\File_Names\\" + extension + "_error_list.txt", false);
-            foreach (string error in errors)
-            {
-                outputErrors.Write(error + "\r\n");
+        if (errors.length > 0) {
+            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
+                flags: 'a'
+            });
+            for (const error of errors) {
+                outputErrors.write(`${error}\r\n`);
             }
-            outputErrors.Close();
-            errors.Clear();
+            outputErrors.end();
+            this.errors = [];
         }
     }
 }

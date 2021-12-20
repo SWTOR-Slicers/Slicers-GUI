@@ -39,7 +39,7 @@ class STBParser {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
-                outputNames.write(`${file.replace("\\", "/")}\r\n`);
+                if (file != "") outputNames.write(`/resources/en-us/${file.replace(".", "/")}.stb`.replace("//", "/"));
             }
             outputNames.end();
             this.fileNames = [];

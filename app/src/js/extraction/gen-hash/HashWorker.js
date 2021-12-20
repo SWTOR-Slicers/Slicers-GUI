@@ -11,11 +11,12 @@ import { DATParser } from "../../classes/parsers/DAT.js";
 import { CNVParser } from "../../classes/parsers/CNV.js";
 import { MISCParser } from "../../classes/parsers/MISC.js";
 import { STB } from "src/js/classes/formats/STB.js";
-import { protoNodes } from "../../viewers/node-viewer/GomTree.js";
 import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
+import { AMXParser } from "../../classes/parsers/AMX.js";
+import { SDEFParser } from "../../classes/parsers/SDEF.js";
+import { HYDParser } from "../../classes/parsers/HYD.js";
 
 const path = require('path');
-const fs = require('fs');
 const xmlJs = require('xml-js');
 const xmlBuffString = require('xml-buffer-tostring');
 
@@ -41,14 +42,14 @@ onmessage = (e) => {
         case "genHash":
             totalFilesSearched = 0;
             totalNamesFound = 0;
-            generateHash(e.data.data.nodesByFqn, e.data.data.assets, e.data.data.checked);
+            generateHash(e.data.data.nodesByFqn, e.data.data.protoNodes, e.data.data.assets, e.data.data.checked);
             break;
     }
 }
 
-async function generateHash(nodesByFqn, assets, checked) {
+async function generateHash(nodesByFqn, protoNodes, assets, checked) {
     const names = [];
-    await Promise.all(checked.map((ext) => { parseFiles(ext, assets, nodesByFqn); }));
+    await Promise.all(checked.map((ext) => { parseFiles(ext, assets, nodesByFqn, protoNodes); }));
     postMessage({
         "message": "complete",
         "data": names
@@ -59,8 +60,9 @@ async function generateHash(nodesByFqn, assets, checked) {
  * @param  {string} extension The current extentions
  * @param  {Object} assets Object representing all of the assets in the .tor files
  * @param  {Object} nodesByFqn GOM Node object
+ * @param  {Object} protoNodes GOM Prototype Node object
  */
-async function parseFiles(extension, assets, nodesByFqn) {
+async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
     const assetsDict = Object.assign({}, ...Object.values(assets));
 
     Object.keys(assetsDict).map(key => {
@@ -214,31 +216,30 @@ async function parseFiles(extension, assets, nodesByFqn) {
             fxspec_parser.writeFile();
             break;
         case "AMX":
-            Format_AMX amx_parser = new Format_AMX(extractPath, extension);
+            const amx_parser = new AMXParser(extractPath, extension);
             for (const asset of matches) {
                 filesSearched++;
-                Stream assetStream = asset.hashInfo.File.OpenCopyInMemory();
-                amx_parser.ParseAMX(assetStream, asset.hashInfo.Directory + "/" + asset.hashInfo.FileName);
+                const assetStream = asset.getReadStream();
+                amx_parser.parseAMX(assetStream, asset.hash);
             }
-            namesFound = amx_parser.fileNames.Count();
-            amx_parser.WriteFile();
+            namesFound = amx_parser.fileNames.length;
+            amx_parser.writeFile();
             break;
         case "SDEF":
-            Format_SDEF sdef_parser = new Format_SDEF(extractPath, extension);
-            TorLib.File sdef = AssetHandler.Instance.GetCurrentAssets().FindFile("/resources/systemgenerated/scriptdef.list");
-            sdef_parser.ParseSDEF(sdef.OpenCopyInMemory());
-            sdef_parser.WriteFile();
+            const sdef_parser = new SDEFParser(extractPath, extension);
+            const sdef = assets["/resources/systemgenerated/scriptdef.list"];
+            sdef_parser.parseSDEF(sdef.getReadStream());
+            sdef_parser.writeFile();
             namesFound = sdef_parser.found;
             filesSearched = 1;
             break;
         case "HYD":
-            List<GomObject> hydNodes = dom.GetObjectsStartingWith("hyd.");
-            Format_HYD hyd_parser = new Format_HYD(extractPath, extension);
-            hyd_parser.ParseHYD(hydNodes);
-            namesFound = hyd_parser.animNames.Count + hyd_parser.vfxFileNames.Count;
-            filesSearched += hydNodes.Count();
-            hyd_parser.WriteFile();
-            hydNodes.Clear();
+            const hydNodes = dom.getObjectsStartingWith("hyd.");
+            const hyd_parser = new HYDParser(extractPath, extension);
+            hyd_parser.parseHYD(hydNodes);
+            namesFound = hyd_parser.animNames.length + hyd_parser.vfxFileNames.length;
+            filesSearched += hydNodes.length;
+            hyd_parser.writeFile();
             break;
         case "DYN":
             List<GomObject> dynNodes = dom.GetObjectsStartingWith("dyn.");

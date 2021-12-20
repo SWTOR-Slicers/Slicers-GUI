@@ -572,7 +572,7 @@ class DATParser {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
-                outputNames.write(`${file.replace("\\", "/")}\r\n`);
+                outputNames.write(file.replace("\\", "/"));
             }
             outputNames.end();
             this.fileNames = [];
@@ -583,7 +583,7 @@ class DATParser {
                 flags: 'a'
             });
             for (const file of this.animNames) {
-                outputNames.write(`${file.replace("\\", "/")}\r\n`);
+                outputNames.write(file.replace("\\", "/"));
             }
             outputNames.end();
             this.animNames = [];
@@ -594,7 +594,7 @@ class DATParser {
                 flags: 'a'
             });
             for (const error of errors) {
-                outputErrors.write(`${error}\r\n`);
+                outputErrors.write(error);
             }
             outputErrors.end();
             this.errors = [];

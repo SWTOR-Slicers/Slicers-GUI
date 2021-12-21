@@ -32,7 +32,6 @@ const cache = {
 let totalFilesSearched;
 let totalNamesFound;
 let hash;
-const newHash = [];
 
 onmessage = (e) => {
     switch (e.data.message) {
@@ -363,11 +362,12 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes, genHash, na
         for (const n of parseReturns) {
             if (n) {
                 const hash = hashlittle2(n);
+                const file = Object.entries(assets).find(val => val.ph == hash[1] && val.sh == hash[0]);
                 names.push({
                     "name": n,
                     "ph": hash[1],
                     "sh": hash[0],
-                    "crc": /* have need to fetch crc */
+                    "crc": file.metaDataCheckSum
                 });
             }
         }

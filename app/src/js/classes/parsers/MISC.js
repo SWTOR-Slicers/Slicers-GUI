@@ -18,7 +18,6 @@ class MISCParser {
         this.extension = ext;
         this.fileNames = [];
         this.worldFileNames = [];
-        this.animNames = [];
         this.mapNames = {};
         this.errors = [];
     }
@@ -196,36 +195,50 @@ class MISCParser {
         }
     }
 
+    genHash() {
+        this.found = this.fileNames.length;
+        const res = [...this.fileNames.map(file => {
+            if (file != "") {
+                return file.replace("\\", "/");
+            }
+        })];
+
+        this.found += this.worldFileNames.length;
+        for (const file of this.worldFileNames.length) {
+            res.push(file.replace("\\", "/"));
+        }
+        
+        this.found += Object.keys(this.mapNames);
+        for (const kvp of Object.entries(this.mapNames)) {
+            for (const line of kvp[1]) {
+                res.push(`/resources/world/areas/${kvp[0]}/${line}_r.dds`.replace("\\", "/"));
+                for (let m = 0; m <= 50; m++) {
+                    for (let mm = 0; mm <= 50; mm++) {
+                        res.push(`/resources/world/areas/${kvp[0]}/minimaps/${line}_${m}_${mm}_r.dds`.replace("\\", "/"));
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
     writeFile() {
         if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
 
         this.found = this.fileNames.length;
         if (this.fileNames.length > 0) {
-            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt`, {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_file_names.txt`, {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
                 outputNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputNames.end();
-            this.fileNames = [];
         }
 
-        this.found += this.animNames.length;
-        if (this.animNames.length > 0) {
-            const outputAnimNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_anim_file_names.txt`, {
-                flags: 'a'
-            });
-            for (const file of this.animNames) {
-                outputAnimNames.write(`${file.replace("\\", "/")}\r\n`);
-            }
-            outputAnimNames.end();
-            this.animNames = [];
-        }
-
-        found += this.worldFileNames.length;
+        this.found += this.worldFileNames.length;
         if (this.worldFileNames.length > 0) {
-            let outputWorldNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_world_file_names_1.txt`, {
+            let outputWorldNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_world_file_names_1.txt`, {
                 flags: 'a'
             });
             let fileCount = 1;
@@ -234,7 +247,7 @@ class MISCParser {
                 if (lineCount >= 750000) {
                     outputWorldNames.end();
                     fileCount++;
-                    outputWorldNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_world_file_names_${fileCount}.txt`, {
+                    outputWorldNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_world_file_names_${fileCount}.txt`, {
                         flags: 'a'
                     });
                     lineCount = 0;
@@ -243,12 +256,11 @@ class MISCParser {
                 lineCount++
             }
             outputWorldNames.end();
-            this.worldFileNames = [];
         }
 
-        found += Object.keys(this.mapNames);
-        if (this.worldFileNames.length > 0) {
-            let outputMapNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_world_map_file_names_1.txt`, {
+        this.found += Object.keys(this.mapNames);
+        if (this.mapNames.length > 0) {
+            let outputMapNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_world_map_file_names_1.txt`, {
                 flags: 'a'
             });
             let fileCount = 1;
@@ -258,7 +270,7 @@ class MISCParser {
                     if (lineCount >= 500000) {
                         outputMapNames.end();
                         fileCount++;
-                        outputMapNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_world_map_file_names_${fileCount}.txt`, {
+                        outputMapNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_world_map_file_names_${fileCount}.txt`, {
                             flags: 'a'
                         });
                         lineCount = 0;
@@ -274,18 +286,16 @@ class MISCParser {
                 }
             }
             outputMapNames.end();
-            this.mapNames = [];
         }
 
-        if (errors.length > 0) {
-            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
+        if (this.errors.length > 0) {
+            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_error_list.txt`, {
                 flags: 'a'
             });
             for (const error of errors) {
                 outputErrors.write(`${error}\r\n`);
             }
             outputErrors.end();
-            this.errors = [];
         }
     }
 }

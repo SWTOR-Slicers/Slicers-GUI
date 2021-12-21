@@ -57,7 +57,7 @@ onmessage = (e) => {
 
 async function generateNames(nodesByFqn, protoNodes, assets, checked, genHash) {
     const names = [];
-    await Promise.all(checked.map((ext) => { parseFiles(ext, assets, nodesByFqn, protoNodes); }));
+    await Promise.all(checked.map((ext) => { parseFiles(ext, assets, nodesByFqn, protoNodes, genHash, names); }));
     postMessage({
         "message": "complete",
         "data": names
@@ -69,8 +69,11 @@ async function generateNames(nodesByFqn, protoNodes, assets, checked, genHash) {
  * @param  {Object} assets Object representing all of the assets in the .tor files
  * @param  {Object} nodesByFqn GOM Node object
  * @param  {Object} protoNodes GOM Prototype Node object
+ * @param  {boolean} genHash Wether to generateHash or findFileNames
+ * @param  {Array<Object>} names An array of objects that represent lines in the hash file
  */
-async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
+async function parseFiles(extension, assets, nodesByFqn, protoNodes, genHash, names) {
+    let parseReturns = [];
     const assetsDict = Object.assign({}, ...Object.values(assets));
 
     Object.keys(assetsDict).map(key => {
@@ -115,7 +118,11 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
                 xml_mat_reader.parseXML(doc, asset.hash);
             }
             namesFound = xml_mat_reader.fileNames.length + xml_mat_reader.animNames.length;
-            xml_mat_reader.writeFile();
+            if (genHash) {
+                parseReturns = xml_mat_reader.genHash();
+            } else {
+                xml_mat_reader.writeFile();
+            }
             break;
         case "EPP":
             const eppNodes = dom.getObjectsStartingWith("epp.");
@@ -128,7 +135,11 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
             }
             epp_reader.parseEPPNodes(eppNodes);
             namesFound = epp_reader.fileNames.length;
-            epp_reader.writeFile();
+            if (genHash) {
+                parseReturns = epp_reader.genHash();
+            } else {
+                epp_reader.writeFile();
+            }
             break;
         case "PRT":
             const prt_reader = new PRTParser(extractPath, extension);
@@ -138,13 +149,17 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
                 prt_reader.parsePRT(assetStream, asset.hash);
             }
             namesFound = prt_reader.fileNames.length;
-            prt_reader.writeFile();
+            if (genHash) {
+                parseReturns = prt_reader.genHash();
+            } else {
+                prt_reader.writeFile();
+            }
             break;
         case "GR2":
             const gr2_reader = new GR2Parser(extractPath, extension);
             for (const asset of matches) {
                 if (asset.isNamed) { // if the hash is already included, then skip
-                    newHash.push({
+                    names.push({
                         "name": asset.hash,
                         "crc": asset.crc,
                         "ph": asset.ph,
@@ -157,7 +172,11 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
                 gr2_reader.parseGR2(assetStream, asset.hash, asset.tor);
             }
             namesFound = gr2_reader.matNames.length + gr2_reader.meshNames.size;
-            gr2_reader.writeFile();
+            if (genHash) {
+                parseReturns = gr2_reader.genHash();
+            } else {
+                gr2_reader.writeFile();
+            }
             break;
         case "BNK":
             const bnk_reader = new BNKParser(extractPath, extension);
@@ -167,7 +186,11 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
                 bnk_reader.parseBNK(assetStream, asset.hash);
             }
             namesFound = bnk_reader.fileNames.length;
-            bnk_reader.writeFile();
+            if (genHash) {
+                parseReturns = bnk_reader.genHash();
+            } else {
+                bnk_reader.writeFile();
+            }
             break;
         case "DAT":
             const dat_reader = new DATParser(extractPath, extension);
@@ -177,15 +200,23 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
                 dat_reader.parseDAT(assetStream, asset.hash, assetsDict);
             }
             namesFound = dat_reader.fileNames.length;
-            dat_reader.writeFile();
+            if (genHash) {
+                parseReturns = dat_reader.genHash();
+            } else {
+                dat_reader.writeFile();
+            }
             break;
         case "CNV":
             const cnvNodes = dom.getObjectsStartingWith("cnv.");
             const cnv_node_parser = new CNVParser(extractPath, extension);
             cnv_node_parser.parseCNVNodes(cnvNodes);
             namesFound = cnv_node_parser.fileNames.length + cnv_node_parser.animNames.length + cnv_node_parser.fxSpecNames.length;
-            filesSearched += getCount(cnvNodes, 0);
-            cnv_node_parser.writeFile();
+            filesSearched += cnvNodes.length;
+            if (genHash) {
+                parseReturns = cnv_node_parser.genHash();
+            } else {
+                cnv_node_parser.writeFile();
+            }
             break;
         case "MISC":
             const misc_parser = new MISCParser(extractPath, extension);
@@ -200,7 +231,11 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
             misc_parser.parseMISC_ITEM(itemApperances);
             const guiTutorialsStb = new STB(assets["resources/en-us/str/gui/tutorials.stb"].getReadStream());
             misc_parser.parseMISC_TUTORIAL(guiTutorialsStb);
-            misc_parser.writeFile();
+            if (genHash) {
+                parseReturns = misc_parser.genHash();
+            } else {
+                misc_parser.writeFile();
+            }
             namesFound = misc_parser.found;
             filesSearched += misc_parser.searched;
             break;
@@ -209,7 +244,11 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
             const areaList = dom.getObject("mapAreasDataProto").obj.value["mapAreasDataObjectList"];
             const areaList2 = dom.getObjectsStartingWith("world.areas.");
             misc_world_parser.parseMISC_WORLD(areaList2, areaList, dom);
-            misc_world_parser.writeFile();
+            if (genHash) {
+                parseReturns = misc_world_parser.genHash();
+            } else {
+                misc_world_parser.writeFile();
+            }
             namesFound = misc_world_parser.found;
             break;
         case "FXSPEC":
@@ -221,7 +260,11 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
                 fxspec_parser.parseFXSPEC(doc, asset.hash);
             }
             namesFound = fxspec_parser.fileNames.length;
-            fxspec_parser.writeFile();
+            if (genHash) {
+                parseReturns = fxspec_parser.genHash();
+            } else {
+                fxspec_parser.writeFile();
+            }
             break;
         case "AMX":
             const amx_parser = new AMXParser(extractPath, extension);
@@ -231,13 +274,21 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
                 amx_parser.parseAMX(assetStream, asset.hash);
             }
             namesFound = amx_parser.fileNames.length;
-            amx_parser.writeFile();
+            if (genHash) {
+                parseReturns = amx_parser.genHash();
+            } else {
+                amx_parser.writeFile();
+            }
             break;
         case "SDEF":
             const sdef_parser = new SDEFParser(extractPath, extension);
             const sdef = assets["/resources/systemgenerated/scriptdef.list"];
             sdef_parser.parseSDEF(sdef.getReadStream());
-            sdef_parser.writeFile();
+            if (genHash) {
+                parseReturns = sdef_parser.genHash();
+            } else {
+                sdef_parser.writeFile();
+            }
             namesFound = sdef_parser.found;
             filesSearched = 1;
             break;
@@ -247,7 +298,11 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
             hyd_parser.parseHYD(hydNodes);
             namesFound = hyd_parser.animNames.length + hyd_parser.vfxFileNames.length;
             filesSearched += hydNodes.length;
-            hyd_parser.writeFile();
+            if (genHash) {
+                parseReturns = hyd_parser.genHash();
+            } else {
+                hyd_parser.writeFile();
+            }
             break;
         case "DYN":
             const dynNodes = dom.getObjectsStartingWith("dyn.");
@@ -255,14 +310,22 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
             dyn_parser.parseDYN(dynNodes);
             namesFound = dyn_parser.fileNames.length + dyn_parser.unknownFileNames.length;
             filesSearched += dynNodes.length;
-            dyn_parser.writeFile();
+            if (genHash) {
+                parseReturns = dyn_parser.genHash();
+            } else {
+                dyn_parser.writeFile();
+            }
             break;
         case "ICONS":
             const icon_parser = new ICONSParser(extractPath, extension);
             icon_parser.parseICONS(dom);
             namesFound = icon_parser.fileNames.length;
             filesSearched += icon_parser.searched;
-            icon_parser.writeFile();
+            if (genHash) {
+                parseReturns = icon_parser.genHash();
+            } else {
+                icon_parser.writeFile();
+            }
             break;
         case "PLC":
             const plcNodes = dom.getObjectsStartingWith("plc.");
@@ -270,7 +333,11 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
             plc_parser.parsePLC(plcNodes);
             namesFound = plc_parser.fileNames.length;
             filesSearched += plcNodes.length;
-            plc_parser.writeFile();
+            if (genHash) {
+                parseReturns = plc_parser.genHash();
+            } else {
+                plc_parser.writeFile();
+            }
             break;
         case "STB":
             const stbParser = new STBParser(cache['hashPath'], extension);
@@ -280,13 +347,31 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes) {
             stbParser.parseSTBManifest(doc);
             namesFound = stbParser.fileNames.length;
             filesSearched += 1;
-            stbParser.writeFile();
+            if (genHash) {
+                parseReturns = stbParser.genHash();
+            } else {
+                stbParser.writeFile();
+            }
             break;
         default:
             break;
     }
     totalFilesSearched += filesSearched;
     totalNamesFound += namesFound;
+
+    if (parseReturns.length > 0) {
+        for (const n of parseReturns) {
+            if (n) {
+                const hash = hashlittle2(n);
+                names.push({
+                    "name": n,
+                    "ph": hash[1],
+                    "sh": hash[0],
+                    "crc": /* have need to fetch crc */
+                });
+            }
+        }
+    }
 
     postMessage({
         "message": "progress",

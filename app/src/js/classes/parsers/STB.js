@@ -32,28 +32,35 @@ class STBParser {
         }
     }
 
+    genHash() {
+        const res = [...this.fileNames.map(file => {
+            if (file != "") {
+                return `/resources/en-us/${file.replace(".", "/")}.stb`.replace("//", "/");
+            }
+        })];
+        return res;
+    }
+
     writeFile() {
         if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
         if (this.fileNames.length > 0) {
-            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt`, {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_file_names.txt`, {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
                 if (file != "") outputNames.write(`/resources/en-us/${file.replace(".", "/")}.stb`.replace("//", "/"));
             }
             outputNames.end();
-            this.fileNames = [];
         }
 
         if (this.errors.length > 0) {
-            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
+            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_error_list.txt`, {
                 flags: 'a'
             });
             for (const error of this.errors) {
                 outputErrors.write(`${error}\r\n`);
             }
             outputErrors.end();
-            this.errors = [];
         }
     }
 }

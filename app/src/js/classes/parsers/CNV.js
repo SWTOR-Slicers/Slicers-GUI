@@ -62,50 +62,51 @@ class CNVParser {
         }
     }
 
+    genHash() {
+        const res = [...this.fileNames.map(file => file.replace("\\", "/")), ...this.animNames.map(file => file.replace("\\", "/")), ...this.fxSpecNames.map(file => file.replace("\\", "/"))];
+        return res;
+    }
+
     writeFile() {
         if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
         if (this.fileNames.length > 0) {
-            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt`, {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_file_names.txt`, {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
                 outputNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputNames.end();
-            this.fileNames = [];
         }
 
         if (this.animNames.length > 0) {
-            const outputAnimNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_anim_file_names.txt`, {
+            const outputAnimNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_anim_file_names.txt`, {
                 flags: 'a'
             });
             for (const file of this.animNames) {
                 outputAnimNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputAnimNames.end();
-            this.animNames = [];
         }
 
         if (this.fxSpecNames.length > 0) {
-            const outputFxSpecNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_fxspec_names.txt`, {
+            const outputFxSpecNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_fxspec_names.txt`, {
                 flags: 'a'
             });
             for (const file of this.fxSpecNames) {
                 outputFxSpecNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputFxSpecNames.end();
-            this.fxSpecNames = [];
         }
 
-        if (errors.length > 0) {
-            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
+        if (this.errors.length > 0) {
+            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_error_list.txt`, {
                 flags: 'a'
             });
             for (const error of errors) {
                 outputErrors.write(`${error}\r\n`);
             }
             outputErrors.end();
-            this.errors = [];
         }
     }
 }

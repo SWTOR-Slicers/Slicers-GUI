@@ -91,39 +91,41 @@ class FXSPECParser {
         }
     }
 
+    genHash() {
+        const res = [...this.fileNames.map(file => file.replace("\\", "/")), ...this.resourceFileNames.map(file => file.replace("\\", "/"))];
+        return res;
+    }
+
     writeFile() {
         if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
         if (this.fileNames.length > 0) {
-            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt`, {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_file_names.txt`, {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
                 outputNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputNames.end();
-            this.fileNames = [];
         }
 
         if (this.resourceFileNames.length > 0) {
-            const outputResourceNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_resource_file_names.txt`, {
+            const outputResourceNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_resource_file_names.txt`, {
                 flags: 'a'
             });
             for (const file of this.resourceFileNames) {
                 outputResourceNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputResourceNames.end();
-            this.resourceFileNames = [];
         }
 
-        if (errors.length > 0) {
-            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
+        if (this.errors.length > 0) {
+            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_error_list.txt`, {
                 flags: 'a'
             });
             for (const error of errors) {
                 outputErrors.write(`${error}\r\n`);
             }
             outputErrors.end();
-            this.errors = [];
         }
     }
 }

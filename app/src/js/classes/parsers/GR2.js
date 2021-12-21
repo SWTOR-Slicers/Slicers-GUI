@@ -84,10 +84,30 @@ class GR2Parser {
         }
     }
 
+    genHash() {
+        const res = [...this.meshNames.entries().map(file => {
+            let output = "";
+            if (file[1].fileName.includes("_dynamic_")) {
+                if (file[0].includes("_")) {
+                    const type = file[0].split('_')[0];
+                    output += "/resources/art/dynamic/" + type + "/model/" + file[0] + ".gr2\r\n";
+                    output += "/resources/art/dynamic/" + type + "/model/" + file[0] + ".lod.gr2\r\n";
+                    output += "/resources/art/dynamic/" + type + "/model/" + file[0] + ".clo\r\n";
+                }
+            } else {
+                output += file[0] + ".gr2\r\n";
+            }
+            output = output.replace("//", "/");
+            return output;
+        }),
+        ...this.matNames.map(file => `/resources/art/shaders/materials/${file}.mat`)];
+        return res;
+    }
+
     writeFile() {
         if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
         if (this.meshNames.length > 0) {
-            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_mesh_file_names.txt`, {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_mesh_file_names.txt`, {
                 flags: 'a'
             });
             for (const file of this.meshNames.entries()) {
@@ -106,29 +126,26 @@ class GR2Parser {
                 outputNames.write(output);
             }
             outputNames.end();
-            this.meshNames = new Map();
         }
 
         if (this.matNames.length > 0) {
-            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_material_file_names.txt`, {
+            const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_material_file_names.txt`, {
                 flags: 'a'
             });
             for (const file of this.matNames) {
                 outputNames.write(`/resources/art/shaders/materials/${file}.mat\r\n`);
             }
             outputNames.end();
-            this.matNames = [];
         }
 
         if (this.errors.length > 0) {
-            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
+            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_error_list.txt`, {
                 flags: 'a'
             });
             for (const error of errors) {
                 outputErrors.write(`${error}\r\n`);
             }
             outputErrors.end();
-            this.errors = [];
         }
     }
 }

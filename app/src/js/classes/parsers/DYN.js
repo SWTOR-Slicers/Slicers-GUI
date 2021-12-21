@@ -58,21 +58,34 @@ class DYNParser {
         }
     }
 
+    genHash() {
+        const res = [...this.fileNames.map(file => {
+            if (file != "") {
+                return file;
+            }
+        }),
+        ...this.unknownFileNames.map(file => {
+            if (file != "") {
+                return file;
+            }
+        })];
+        return res;
+    }
+
     writeFile() {
         if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
         if (this.fileNames.length > 0) {
-            const outputFileNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_file_names.txt`, {
+            const outputFileNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_file_names.txt`, {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
                 if (file != "") outputFileNames.write(file);
             }
             outputFileNames.end();
-            this.fileNames = [];
         }
 
         if (this.unknownFileNames.length > 0) {
-            const outputUnknownFileNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_unknown_file_names.txt`, {
+            const outputUnknownFileNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_unknown_file_names.txt`, {
                 flags: 'a'
             });
             for (const file of this.unknownFileNames) {
@@ -81,18 +94,16 @@ class DYNParser {
                 }
             }
             outputUnknownFileNames.end();
-            this.unknownFileNames = [];
         }
 
-        if (errors.length > 0) {
-            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${extension}_error_list.txt`, {
+        if (this.errors.length > 0) {
+            const outputErrors = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_error_list.txt`, {
                 flags: 'a'
             });
             for (const error of errors) {
                 outputErrors.write(`${error}\r\n`);
             }
             outputErrors.end();
-            this.errors = [];
         }
     }
 }

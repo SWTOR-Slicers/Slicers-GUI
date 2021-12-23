@@ -1,5 +1,5 @@
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
-import { nodesByFqn, protoNodes, nodeFolderSort, StaticGomTree } from "../../viewers/node-viewer/GomTree.js";
+import { NodesByFqn, protoNodes, nodeFolderSort, StaticGomTree } from "../../viewers/node-viewer/GomTree.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
 
 const { ipcRenderer } = require("electron");
@@ -85,7 +85,7 @@ function initNodeWorker() {
                     GTree.addNode(node);
                 }
                 GTree.loadedBuckets++;
-                nodesByFqn.$F.sort(nodeFolderSort);
+                GTree.nodesByFqn.$F.sort(nodeFolderSort);
                 progressBar__baseNodes.style.width = `${GTree.loadedBuckets / 500 * 100}%`;
                 break;
             case "PROTO":
@@ -94,7 +94,7 @@ function initNodeWorker() {
                     GTree.addNode(testProto);
                 }
                 progressBar__protoNodes.style.width = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
-                nodesByFqn.$F.sort(nodeFolderSort);
+                GTree.nodesByFqn.$F.sort(nodeFolderSort);
                 break;
         }
         if (progressBar__assets.style.width == '100%' &&
@@ -245,8 +245,9 @@ function initListeners() {
                 "message": 'genHash',
                 "data": {
                     "checked": getChecked(),
-                    "nodesByFqn": nodesByFqn,
-                    "protoNodes": protoNodes,
+                    "nodesByFqn": JSON.stringify(nodesByFqn),
+                    "protoNodes": JSON.stringify(protoNodes),
+                    "_dom": protoNodes[0]._dom,
                     "assets": archives
                 }
             });

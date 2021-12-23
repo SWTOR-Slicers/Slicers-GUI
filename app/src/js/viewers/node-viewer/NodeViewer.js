@@ -1,4 +1,4 @@
-import { GomTree, nodesByFqn, nodeFolderSort, currentNode } from "./GomTree.js";
+import { GomTree, NodesByFqn, nodeFolderSort, currentNode } from "./GomTree.js";
 import { log } from "../../universal/Logger.js";
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
@@ -162,7 +162,7 @@ function initWorker() {
                     GTree.addNode(node);
                 }
                 GTree.nodeTree.loadedBuckets++;
-                nodesByFqn.$F.sort(nodeFolderSort);
+                GTree.nodesByFqn.$F.sort(nodeFolderSort);
                 GTree.nodeTree.resizefull();
                 GTree.nodeTree.redraw();
                 document.getElementById('numBucketsLeft').innerHTML = 500 - GTree.nodeTree.loadedBuckets;
@@ -178,7 +178,7 @@ function initWorker() {
                     const testProto = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
                     GTree.addNode(testProto);
                 }
-                nodesByFqn.$F.sort(nodeFolderSort);
+                GTree.nodesByFqn.$F.sort(nodeFolderSort);
                 GTree.nodeTree.resizefull();
                 GTree.nodeTree.redraw();
                 break;

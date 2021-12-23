@@ -442,7 +442,7 @@ function initMainListeners() {
   });
   ipcMain.on('openLink', (event, data) => { shell.openExternal(data[0]); });
   ipcMain.on('decompressZlib', async (event, data) => {
-    event.returnValue = await decompressZlib(data[0], data[1]);
+    event.returnValue = await decompressZlib(data[0]);
   });
 }
 //boot config
@@ -1430,7 +1430,7 @@ async function copyFileViaStream(progBarId, tPath, dPath, cSize, tSize) {
     });
   });
 }
-async function decompressZlib(srcPath, params) {
+async function decompressZlib(params) {
   const decomprFunc = edge.func({
       source: function() {/*
           using System.IO;
@@ -1449,7 +1449,7 @@ async function decompressZlib(srcPath, params) {
               return decompressed;
           }
       */},
-      references: [ `${path.join(srcPath, 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
+      references: [ `${path.join(resourcePath, 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
   });
   const data = decomprFunc(params, true);
   

@@ -800,6 +800,7 @@ function confirmType(dv, pos, exType) {
 }
 
 class NodeEntr {
+    #nodeJson;
     constructor(nodeJson, torPath, _dom, decomprFunc) {
         this.id = nodeJson.id;
         this.fqn = nodeJson.fqn;
@@ -816,6 +817,7 @@ class NodeEntr {
         if (decomprFunc) {
             this.decomprFunc = decomprFunc;
         }
+        this.#nodeJson = nodeJson;
     }
 
     render(parent, dataContainer, refSet) {
@@ -833,7 +835,6 @@ class NodeEntr {
                 const node = new Node(this, blob, this._dom);
                 this.node = node;
             }
-            this.node.render(parent, dataContainer);
         } else {
             if (!this.node) {
                 const data = fs.readFileSync(this.torPath);
@@ -854,6 +855,14 @@ class NodeEntr {
                 const node = new ProtoNode(this, blob, this._dom);
                 this.node = node;
             }
+        }
+    }
+
+    toJSON() {
+        return {
+            ...this.#nodeJson,
+            "_class": 'NodeEntr',
+            "_decompr": this.decomprFunc != undefined
         }
     }
 }

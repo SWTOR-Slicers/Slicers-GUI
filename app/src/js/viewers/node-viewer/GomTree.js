@@ -4,14 +4,24 @@ import { log } from "../../universal/Logger.js";
 
 const FILETREE_HEIGHT = 16;
 const NUM_META_FOLDERS = 2;
-const nodesByFqn = {
-    "$F": [], //files
-    "$O": 2,
-    "_misc": {
-        "$F": [], //files
-        "$O": 0
-    },
-    getObjectNoLoad: (path) => {
+
+class NodesByFqn {
+    constructor(json, deserializer) {
+        if (json) {
+            this.$F = JSON.parse(json.$F, deserializer); //files
+            this.$O = json.$O;
+            this._misc = JSON.parse(json._misc, deserializer)
+        } else {
+            this.$F = []; //files
+            this.$O = 2;
+            this._misc = {
+                "$F": [], //files
+                "$O": 0
+            }
+        }
+    }
+
+    getObjectNoLoad(path) {
         const components = path.split('.');
         if (components.length > 1) {
             let parent = this;
@@ -27,8 +37,8 @@ const nodesByFqn = {
         } else {
             return this.$F[components[0]];
         }
-    },
-    getObject: (path) => {
+    }
+    getObject(path) {
         let ret = undefined;
         const components = path.split('.');
         if (components.length > 1) {
@@ -51,8 +61,8 @@ const nodesByFqn = {
         }
 
         return ret;
-    },
-    getObjectsStartingWith: (fam) => {
+    }
+    getObjectsStartingWith(fam) {
         let ret = [];
         let path = fam.split(".");
         let parent = this;
@@ -67,8 +77,8 @@ const nodesByFqn = {
         } else {
             seg = path[0];
         }
-        if (parent[fam]) {
-            parent = parent[fam];
+        if (parent[seg]) {
+            parent = parent[seg];
             recursiveAdd(fam, parent);
         }
 
@@ -85,12 +95,13 @@ const nodesByFqn = {
 
         return ret;
     }
-};
+}
 const protoNodes = {};
 let currentNode;
 
 class NodeTree {
-    constructor(treeList, renderTarg, dataContainer) {
+    constructor(treeList, renderTarg, dataContainer, nodesByFqn) {
+        this.nodesByFqn = nodesByFqn;
         this.renderTarg = renderTarg;
         this.dataContainer = dataContainer;
 
@@ -131,7 +142,7 @@ class NodeTree {
             this.ctx.fillStyle = 'rgb(255, 255, 255)';
             this.ctx.fillText('Loading...', 170, 26)
         } else {
-            this.drawfolder(nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, this.scrollersize.offsetHeight)
+            this.drawfolder(this.nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, this.scrollersize.offsetHeight)
         }
         this.ctx.translate(-0.5, -0.5);
     }
@@ -147,7 +158,7 @@ class NodeTree {
                     this.ctx.fillRect(level + 5, height - 12, 500, FILETREE_HEIGHT)
                 }
                 this.ctx.fillStyle = '#ffce00';
-                if (i > NUM_META_FOLDERS || folder !== nodesByFqn) {
+                if (i > NUM_META_FOLDERS || folder !== this.nodesByFqn) {
                     // This block adds the vertical dots
                     this.ctx.fillRect(3 + level - 11, height - 14, 1, 5);
                 }
@@ -220,7 +231,7 @@ class NodeTree {
     
     click = (e) => {
         const clickEle = 15 - this.scroller.scrollTop + (e.offsetY & 0xFFFFF0);
-        this.clickfolder(nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, clickEle)
+        this.clickfolder(this.nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, clickEle)
     }
 
     contextMenu = (e) => {
@@ -265,7 +276,7 @@ class NodeTree {
     
     resizefull = () => {
         this.scrollercon.style.width = '500px';
-        this.scrollercon.style.height = (5 + this.resizedir(nodesByFqn)) + 'px'
+        this.scrollercon.style.height = (5 + this.resizedir(this.nodesByFqn)) + 'px'
     }
     
     resizedir = (folder) => {
@@ -284,9 +295,10 @@ class NodeTree {
 
 class GomTree {
     constructor (treeList, viewContainer, dataContainer) {
+        this.nodesByFqn = new NodesByFqn();
         this.viewContainer = viewContainer;
         this.dataContainer = dataContainer;
-        this.nodeTree = new NodeTree(treeList, viewContainer, dataContainer);
+        this.nodeTree = new NodeTree(treeList, viewContainer, dataContainer, this.nodesByFqn);
     }
 
     /**
@@ -295,7 +307,7 @@ class GomTree {
      */
     addNode(node) {
         let name = node.fqn;
-        let curFolder = nodesByFqn;
+        let curFolder = this.nodesByFqn;
         let folderStart = 0;
         let i = 0;
         for (; i < name.length; i++) {
@@ -335,10 +347,10 @@ class GomTree {
 
     getNodeByFQN(fqn) {
         let hasFound = false;
-        console.log(nodesByFqn);
+        console.log(this.nodesByFqn);
         const tree = fqn.split(".");
         if (tree.length > 0) {
-            let parent = nodesByFqn;
+            let parent = this.nodesByFqn;
             for (let i = 0; i < tree.length; i++) {
                 const elem = tree[i];
                 const fqnObj = parent[elem];
@@ -358,7 +370,7 @@ class GomTree {
                 }
             }
         } else {
-            const tNode = nodesByFqn.$F.find((val, idx) => { return val.fileName == tree[0]; });
+            const tNode = this.nodesByFqn.$F.find((val, idx) => { return val.fileName == tree[0]; });
             if (tNode) {
                 hasFound = true;
                 tNode.render(this.viewContainer, this.dataContainer, (val) => {
@@ -434,4 +446,4 @@ function nodeFolderSort(a, b) {
     return 1
 }
 
-export {GomTree, StaticGomTree, nodesByFqn, protoNodes, nodeFolderSort, currentNode};
+export {GomTree, StaticGomTree, NodesByFqn, protoNodes, nodeFolderSort, currentNode};

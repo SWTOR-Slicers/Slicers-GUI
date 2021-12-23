@@ -76,7 +76,7 @@ class MapPage {
         while (!foundAllRows) {
             const miniMapPartPath = `/resources/world/areas/${area.areaId}/minimaps/${this.mapName}_${Math.round(rows)}_${"00"}_r.dds`;
 
-            if (Area.Dom_._assets.HasFile(miniMapPartPath)) {
+            if (area.dom.assets[miniMapPartPath]) {
                 //Found map tile. Increment counter.
                 rows++;
             } else {
@@ -115,7 +115,7 @@ class MapPage {
     }
 
     containsPoint(x, y, z) {
-        return HasImage &&         // We don't want to link MapMarkers to maps with no image
+        return this.hasImage &&         // We don't want to link MapMarkers to maps with no image
                 (x >= this.minX) &&
                 (y >= this.minY) &&
                 (z >= this.minZ) &&
@@ -125,7 +125,7 @@ class MapPage {
     }
 
     miniMapContainsPoint(x, y, z) {
-        return HasImage &&         // We don't want to link MapMarkers to maps with no image
+        return this.hasImage &&         // We don't want to link MapMarkers to maps with no image
                 (x >= this.miniMapMinX) && (x >= this.minX) &&
                 (y >= this.minY) &&
                 (z >= this.miniMapMinZ) && (z >= this.minZ) &&

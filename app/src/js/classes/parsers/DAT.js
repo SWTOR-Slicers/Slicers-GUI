@@ -1,7 +1,7 @@
-import { isNullOrWhiteSpace } from "src/js/Util.js";
+import { isNullOrWhiteSpace } from "../../Util.js";
 import { ArchiveEntry } from "../formats/Archive.js";
 import { Reader } from "../util/FileWrapper.js";
-import { XDocument } from "..//util/XDocument.js";
+import { XDocument } from "../util/XDocument.js";
 
 const fs = require('fs');
 const stream = require('stream');

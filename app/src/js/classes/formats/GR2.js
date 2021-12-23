@@ -1,6 +1,8 @@
 import { readString } from "../../Util.js";
 import Vec3 from "../util/Vec3.js";
+
 const { Float16Array } = require("@petamoriken/float16");
+
 function cElem(type) {
     return document.createElement(type);
 }

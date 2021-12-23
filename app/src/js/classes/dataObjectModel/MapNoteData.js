@@ -1,6 +1,5 @@
 import { XDocument } from "../util/XDocument.js";
 
-
 class MapNoteData {
     #mpn;
     #mpnB62Id;

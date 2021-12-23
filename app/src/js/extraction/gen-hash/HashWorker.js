@@ -2,22 +2,24 @@ import { XDocument } from "../../classes/util/XDocument.js";
 import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 import { STB } from "../../classes/formats/STB.js";
 import { hashlittle2 } from "../../Util.js";
+
+import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
+import { ICONSParser } from "../../classes/parsers/ICONS.js";
 import { XML_MAT } from "../../classes/parsers/XML_MAT.js";
+import { SDEFParser } from "../../classes/parsers/SDEF.js";
 import { STBParser } from "../../classes/parsers/STB.js";
 import { EPPParser } from "../../classes/parsers/EPP.js";
-// import { PRTParser } from "../../classes/parsers/PRT.js";
-// import { GR2Parser } from "../../classes/parsers/GR2.js";
-// import { BNKParser } from "../../classes/parsers/BNK.js";
-// import { DATParser } from "../../classes/parsers/DAT.js";
-// import { CNVParser } from "../../classes/parsers/CNV.js";
-// import { MISCParser } from "../../classes/parsers/MISC.js";
-// import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
-// import { AMXParser } from "../../classes/parsers/AMX.js";
-// import { SDEFParser } from "../../classes/parsers/SDEF.js";
-// import { HYDParser } from "../../classes/parsers/HYD.js";
-// import { DYNParser } from "../../classes/parsers/DYN.js";
-// import { PLCParser } from "../../classes/parsers/PLC.js";
-// import { ICONSParser } from "../../classes/parsers/ICONS.js";
+import { PRTParser } from "../../classes/parsers/PRT.js";
+import { GR2Parser } from "../../classes/parsers/GR2.js";
+import { BNKParser } from "../../classes/parsers/BNK.js";
+import { DATParser } from "../../classes/parsers/DAT.js";
+import { CNVParser } from "../../classes/parsers/CNV.js";
+import { AMXParser } from "../../classes/parsers/AMX.js";
+import { HYDParser } from "../../classes/parsers/HYD.js";
+import { DYNParser } from "../../classes/parsers/DYN.js";
+import { PLCParser } from "../../classes/parsers/PLC.js";
+
+import { MISCParser } from "../../classes/parsers/MISC.js";
 
 const path = require('path');
 const xmlJs = require('xml-js');
@@ -59,7 +61,7 @@ async function generateNames(nodesByFqn, protoNodes, assets, checked, genHash) {
     await Promise.all(checked.map((ext) => { parseFiles(ext, assets, nodesByFqn, protoNodes, genHash, names); }));
     postMessage({
         "message": "complete",
-        "data": names
+        "data": (genHash) ? names : `File name output complete. Found ${totalNamesFound} names, and searched ${totalFilesSearched} files.`
     });
 }
 /**

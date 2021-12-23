@@ -1,6 +1,5 @@
 import { FileWrapper, Reader } from '../util/FileWrapper.js';
 
-const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 

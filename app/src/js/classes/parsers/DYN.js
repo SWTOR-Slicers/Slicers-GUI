@@ -3,6 +3,7 @@ import { NodeEntr } from '../formats/Node.js';
 const fs = require('fs');
 
 class DYNParser {
+    #dest;
     /**
      * DYN nodes parser class
      * @param  {string} dest destination for ouputted hashes
@@ -26,7 +27,7 @@ class DYNParser {
             const dynVisualList = obj.obj.value["dynVisualList"];
             if (dynVisualList != null) {
                 for (const dynVisualListItem of dynVisualList) {
-                    const visual = (dynVisualListItem.value["dynVisualFqn"] || "").toLowerCase();
+                    const visual = (dynVisualListItem.value["dynVisualFqn"] ?? "").toLowerCase();
                     if (visual != "") {
                         const output = visual.replace("\\", "/").replace("//", "/");
                         if (visual.contains(".gr2") || visual.contains(".lit") || visual.contains(".mag")) {
@@ -47,9 +48,9 @@ class DYNParser {
             const dynLightNameToProperty = obj.obj.value["dynLightNameToProperty"];
             if (dynLightNameToProperty != null) {
                 for (const dynLightNameToPropertyItem of dynLightNameToProperty) {
-                    const ramp = (dynLightNameToPropertyItem.value["dynLightRampMap"] || "").toLowerCase();
-                    const illum = (dynLightNameToPropertyItem.value["dynLightIlluminationMap"] || "").toLowerCase();
-                    const fall = (dynLightNameToPropertyItem.value["dynLightFalloff"] || "").toLowerCase();
+                    const ramp = (dynLightNameToPropertyItem.value["dynLightRampMap"] ?? "").toLowerCase();
+                    const illum = (dynLightNameToPropertyItem.value["dynLightIlluminationMap"] ?? "").toLowerCase();
+                    const fall = (dynLightNameToPropertyItem.value["dynLightFalloff"] ?? "").toLowerCase();
                     if (ramp != "") this.fileNames.push("/resources/" + ramp + ".dds");
                     if (illum != "") this.fileNames.push("/resources/" + illum + ".dds");
                     if (fall != "") this.fileNames.push("/resources/" + fall + ".dds");

@@ -1,4 +1,4 @@
-import { Node } from "../formats/Node.js";
+import { NodeEntr } from "../formats/Node.js";
 import { STB } from "../formats/STB.js";
 import { XDocument } from "../../classes/util/XDocument.js";
 import { AreaDat } from "./AreaDat.js";
@@ -11,7 +11,7 @@ const xmlBuffString = require('xml-buffer-tostring');
 class Area {
     /**
      * Represents the Area data model
-     * @param  {Node} gomObj Node containing data to use
+     * @param  {NodeEntr} gomObj Node containing data to use
      * @param  {STB} sysWorldMapTbl the system world map String Table
      * @param  {Object} dom the data object model
      * @param  {Object} assets the tor assets object
@@ -19,14 +19,14 @@ class Area {
     constructor(gomObj, sysWorldMapTbl, dom, assets) {
         if (gomObj != null && sysWorldMapTbl != null) {
             this.sysWorldMapTbl = sysWorldMapTbl;
-            this.displayNameId = gomObj.obj.value["mapAreasDataDisplayNameId"] || 0;
+            this.displayNameId = gomObj.obj.value["mapAreasDataDisplayNameId"] ?? 0;
             this.name = this.sysWorldMapTbl.getText(this.displayNameId);
             this.localizedName = this.name;
-            this.areaId = gomObj.obj.value["mapAreasDataAreaId"] || 0;
+            this.areaId = gomObj.obj.value["mapAreasDataAreaId"] ?? 0;
             this.id = this.areaId;
 
             this.explorationType = gomObj.obj.value["mapAreasDataExplorationType"] || null;
-            this.zoneName = gomObj.obj.value["mapAreasDataDefaultZoneName"] || "";
+            this.zoneName = gomObj.obj.value["mapAreasDataDefaultZoneName"] ?? "";
 
             this.mapPages;
             this.mapNotes;
@@ -89,7 +89,7 @@ class Area {
 
     /**
      * loads mapdata
-     * @param  {Node} node the node obj
+     * @param  {NodeEntr} node the node obj
      */
     loadMapdata(node) {
         const mapPages = node.obj.value["mapDataContainerMapDataList"] || null;
@@ -98,7 +98,7 @@ class Area {
         if (mapPages != null) {
             this.mapPages = [];
             for (const mapPage of mapPages) {
-                const page = new MapPage(this, mapPage["mapPageGUID"] || 0);
+                const page = new MapPage(this, mapPage["mapPageGUID"] ?? 0);
                 page.id = (int)(page.guid & 0x7FFFFFFF);
                 if (page.id == 40003) {
                     // string sdf = "";
@@ -129,8 +129,8 @@ class Area {
                 page.explorationType = mapPage["mapExplorationType"];
                 page.mountAllowed = mapPage["mapMountAllowed"] || false;
                 page.isHeroic = mapPage["mapIsHeroic"] || false;
-                page.parentId = mapPage["mapParentNameSId"] || 0;
-                page.sId = mapPage["mapNameSId"] || 0;
+                page.parentId = mapPage["mapParentNameSId"] ?? 0;
+                page.sId = mapPage["mapNameSId"] ?? 0;
                 page.mapName = mapPage["mapName"];
 
                 const mapImagePath = `/resources/world/areas/${this.areaId}/${page.mapName}_r.dds`;
@@ -157,8 +157,8 @@ class Area {
                 //    }
                 //}
 
-                page.explorationId = mapPage["mapExplorationId"] || 0;
-                page.mapFowRadius = mapPage["mapFowRadius"] || 0;
+                page.explorationId = mapPage["mapExplorationId"] ?? 0;
+                page.mapFowRadius = mapPage["mapFowRadius"] ?? 0;
 
                 pageLookup[page.sId] = page;
                 this.mapPages.push(page);

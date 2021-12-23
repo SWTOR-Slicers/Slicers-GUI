@@ -21,8 +21,7 @@ class SDEFParser {
      * @param  {Reader} reader
      */
     parseSDEF(reader) {
-        const header = FileFormats.File_Helpers.ReverseBytes(reader.readUint32());
-        const header = reader.readUint32();
+        const header = reader.readUint32(false);
 
         if (header.toString(16) != "53444546") {
             return;

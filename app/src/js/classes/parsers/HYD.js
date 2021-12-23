@@ -23,6 +23,7 @@ class HYDParser {
      */
     parseHYD(hydNodes) {
         for (const obj of hydNodes) {
+            obj.readNode();
             const hydScriptMap = obj.obj.value["hydScriptMap"];
             if (hydScriptMap != null) {
                 for (const scriptMapItem of hydScriptMap) {
@@ -35,8 +36,8 @@ class HYDParser {
                                     const hydActions = hydActionBlocksItem.value["hydActions"];
                                     if (hydActions != null) {
                                         for (const hydActionsItem of hydActions) {
-                                            const action = (hydActionsItem.value["hydAction"] || "");
-                                            const value = (hydActionsItem.value["hydValue"] || "").toLowerCase();
+                                            const action = (hydActionsItem.value["hydAction"] ?? "");
+                                            const value = (hydActionsItem.value["hydValue"] ?? "").toLowerCase();
                                             if (action.includes("Animation")) {
                                                 this.animFileNames.push(value);
                                             } else if (action.includes("VFX")) {

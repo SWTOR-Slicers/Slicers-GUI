@@ -12,9 +12,9 @@ class MISCParser {
      * @param {string} ext extentions to search
      */
     constructor(dest, ext) {
+        this.#dest = dest;
         this.found = 0;
         this.searched = 0;
-        this.#dest = dest;
         this.extension = ext;
         this.fileNames = [];
         this.worldFileNames = [];
@@ -24,20 +24,19 @@ class MISCParser {
 
     /**
      * Parse the ldnScreen node tree for file names.
-     * @param {Array<NodeEntr>} ldnScreenNode ldnScreen node object
+     * @param {NodeEntr} ldnScreenNode ldnScreen node object
      */
     parseMISC_LdnScn(ldnScreenNode) {
-        ldnScreenNode.readNode();
         const ldgLookup = ldnScreenNode.obj.value["ldgAreaNameToLoadScreen"];
         for (const kvpLdgClass of ldgLookup) {
             this.searched++;
             const areaLdgInfo = kvpLdgClass[1];
-            const loadingScreen = areaLdgInfo["ldgScreenName"] || "";
+            const loadingScreen = areaLdgInfo["ldgScreenName"] ?? "";
             if (loadingScreen.length > 0) {
                 this.fileNames.push("/resources/gfx/loadingscreen/" + loadingScreen + ".dds");
             }
 
-            const loadingOverlay = areaLdgInfo["ldgOverlayName"] || "";
+            const loadingOverlay = areaLdgInfo["ldgOverlayName"] ?? "";
             if (loadingOverlay.length > 0) {
                 this.fileNames.push("/resources/gfx/gfx_productions/" + loadingOverlay + ".gfx");
             }
@@ -53,7 +52,7 @@ class MISCParser {
             obj.readNode();
             this.searched++;
             const full = obj.fqn.toLowerCase();
-            const partial = obj.Name.toLowerCase().replace("ipp.", "");
+            const partial = obj.fqn.toLowerCase().replace("ipp.", "");
 
             this.fileNames.push("/resources/gfx/icons/" + full + ".dds");
             this.fileNames.push("/resources/gfx/icons/" + partial + ".dds");
@@ -93,12 +92,11 @@ class MISCParser {
         for (const kvp of itmNodes) {
             this.searched++;
             const itm = kvp[1];
-            itm.readNode();
 
-            const itmModel = itm.obj.value["itmModel"] ? itm.obj.value["itmModel"] : null;
+            const itmModel = itm.value["itmModel"] ? itm.value["itmModel"] : null;
             if (itmModel) this.fileNames.push(("/resources/" + (itmModel.replace("\\", "/"))).replace("//", "/"));
 
-            const itmFxSpec = itm.obj.value["itmFxSpec"] ? itm.obj.value["itmFxSpec"] : null;
+            const itmFxSpec = itm.value["itmFxSpec"] ? itm.value["itmFxSpec"] : null;
             if (itmFxSpec) this.fileNames.push(("/resources/art/fx/fxspec/" + itmFxSpec + ".fxspec").replace("//", "/").replace(".fxspec.fxspec", ".fxspec"));
         }
     }
@@ -113,16 +111,16 @@ class MISCParser {
         for (const obj of worldAreas) {
             obj.readNode();
             this.searched++;
-            const areaId = obj.obj.value["mapDataContainerAreaID"] || 0;
+            const areaId = obj.obj.value["mapDataContainerAreaID"] ?? 0;
             if (areaId > 0) {
                 this.worldFileNames.push(`/resources/world/areas/${areaId}/area.dat`);
                 this.worldFileNames.push(`/resources/world/areas/${areaId}/mapnotes.not`);
 
-                const mapPages = obj.obj.value["mapDataContainerMapDataList"] || null;
+                const mapPages = obj.obj.value["mapDataContainerMapDataList"];
 
                 if (mapPages != null) {
                     for (const mapPage of mapPages) {
-                        const mapName = mapPage.obj.value["mapName"] || null;
+                        const mapName = mapPage.value["mapName"];
                         if (!Object.keys(this.mapNames).includes(areaId)) this.mapNames[areaId] = [];
                         this.mapNames[areaId].push(mapName);
                     }
@@ -132,13 +130,13 @@ class MISCParser {
 
         for (const gomItm of worldAreasProto) {
             const area = new Area(gomItm.val);
-            if (area.Id == 0 && area.areaId == 0) continue;
+            if (area.id == 0 && area.areaId == 0) continue;
             this.objsearched++;
             if (area.mapPages != null) {
                 let ii = 0;
                 for (const map_page of area.mapPages) {
                     ii++;
-                    if (map_page.hasImage == true) {
+                    if (map_page.hasImage) {
                         if (!Object.keys(this.mapNames).includes(area.areaId)) this.mapNames[area.areaId] = [];
                         this.mapNames[area.areaId].push(map_page.mapName);
                     }
@@ -191,7 +189,7 @@ class MISCParser {
             obj.readNode();
             this.searched++;
             const node = obj;
-            this.fileNames.push(`/resources/systemgenerated/prototypes/${node.Id}.node`);
+            this.fileNames.push(`/resources/systemgenerated/prototypes/${node.id}.node`);
         }
     }
 

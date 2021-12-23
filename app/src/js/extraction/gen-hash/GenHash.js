@@ -1,6 +1,5 @@
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 
-const NodeWorker = require('worker_threads');
 const { ipcRenderer } = require("electron");
 const path = require("path");
 const fs = require("fs");
@@ -177,32 +176,6 @@ function initHashWorker() {
     });
 }
 
-function initHashThreadWorker() {
-    hashWorker = new Worker(path.join(sourcePath, "js", "extraction", "gen-hash", "HashWorker.js"), {
-        type: "module"
-    });
-
-    hashWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    hashWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    hashWorker.onmessage = (e) => {
-        switch (e.data.message) {
-            case "complete":
-                const names = e.data.data;
-                console.log(names);
-                break;
-            case "progress":
-                namesFound.innerHTML = e.data.data.totalNamesFound;
-                numSearched.innerHTML = e.data.data.totalFilesSearched;
-                break;
-        }
-    }
-
-    hashWorker.postMessage({
-        "message": "init",
-        "data": resourcePath
-    });
-}
-
 function initListeners() {
     const chkbxs = document.querySelectorAll('input');
     const allChk = document.getElementById('AllChk');
@@ -268,13 +241,13 @@ function initListeners() {
         
             ipcRenderer.send('readAllDataHashPrep');
         } else {
-            // hashWorker.postMessage({
-            //     "message": 'genHash',
-            //     "data": {
-            //         "checked": getChecked(),
-            //         "assets": archives
-            //     }
-            // });
+            hashWorker.postMessage({
+                "message": 'genHash',
+                "data": {
+                    "checked": getChecked(),
+                    "assets": archives
+                }
+            });
             
             // document.querySelector('.header-container').innerHTML = 'Select file types to generate';
             // hashTypeCont.classList.toggle('hidden');

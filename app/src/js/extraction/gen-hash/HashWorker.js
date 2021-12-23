@@ -26,8 +26,7 @@ import { PLCParser } from "../../classes/parsers/PLC.js";
 const path = require('path');
 const xmlJs = require('xml-js');
 const xmlBuffString = require('xml-buffer-tostring');
-// const edge = require('electron-edge-js');
-const { ipcRenderer } = require("electron");
+const edge = require('electron-edge-js');
 
 const cache = {
     "configPath": "",
@@ -41,9 +40,7 @@ let hash;
 let GTree;
 let _dom = null;
 
-function decomprFunc(params) {
-    // return ipcRenderer.sendSync('decompressZlib', params);
-}
+let decompressZlib = function(){};
 
 onmessage = (e) => {
     switch (e.data.message) {
@@ -55,26 +52,26 @@ onmessage = (e) => {
             hash = new HashDictionary(path.join(cache['hashPath'], 'hashes_filename.txt'));
             hash.loadHashList();
 
-            // decomprFunc = edge.func({
-            //     source: function() {/*
-            //         using System.IO;
-            //         using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+            decompressZlib = edge.func({
+                source: function() {/*
+                    using System.IO;
+                    using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
                 
-            //         async (dynamic input) => {
-            //             byte[] buffer = (byte[])input.buffer;
-            //             MemoryStream stream = new MemoryStream(buffer);
-            //             InflaterInputStream inflaterStream = new InflaterInputStream(stream);
+                    async (dynamic input) => {
+                        byte[] buffer = (byte[])input.buffer;
+                        MemoryStream stream = new MemoryStream(buffer);
+                        InflaterInputStream inflaterStream = new InflaterInputStream(stream);
         
-            //             byte[] decompressed = new byte[(int)input.dataLength];
-            //             inflaterStream.Read(decompressed, 0, (int)input.dataLength);
-            //             inflaterStream.Dispose();
-            //             stream.Close();
+                        byte[] decompressed = new byte[(int)input.dataLength];
+                        inflaterStream.Read(decompressed, 0, (int)input.dataLength);
+                        inflaterStream.Dispose();
+                        stream.Close();
         
-            //             return decompressed;
-            //         }
-            //     */},
-            //     references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
-            // });
+                        return decompressed;
+                    }
+                */},
+                references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
+            });
             break;
         case "genHash":
             totalFilesSearched = 0;
@@ -92,14 +89,14 @@ onmessage = (e) => {
         // case "nodesProgress":
         //     if (e.data.data.isBucket) {
         //         for (const n of e.data.data.nodes) {
-        //             const node = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
+        //             const node = new NodeEntr(n.node, n.torPath, _dom, decompressZlib);
         //             GTree.addNode(node);
         //         }
         //         GTree.loadedBuckets++;
         //         GTree.nodesByFqn.$F.sort(nodeFolderSort);
         //     } else {
         //         for (const n of e.data.data.nodes) {
-        //             const testProto = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
+        //             const testProto = new NodeEntr(n.node, n.torPath, _dom, decompressZlib);
         //             GTree.addNode(testProto);
         //         }
         //         GTree.nodesByFqn.$F.sort(nodeFolderSort);

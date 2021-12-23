@@ -83,25 +83,25 @@ onmessage = (e) => {
             totalNamesFound = 0;
             generateNames(GTree.nodesByFqn, GTree.protoNodes, e.data.data.assets, e.data.data.checked, false);
             break;
-        // case "setDOM":
-        //     _dom = e.data.data;
-        //     break;
-        // case "nodesProgress":
-        //     if (e.data.data.isBucket) {
-        //         for (const n of e.data.data.nodes) {
-        //             const node = new NodeEntr(n.node, n.torPath, _dom, decompressZlib);
-        //             GTree.addNode(node);
-        //         }
-        //         GTree.loadedBuckets++;
-        //         GTree.nodesByFqn.$F.sort(nodeFolderSort);
-        //     } else {
-        //         for (const n of e.data.data.nodes) {
-        //             const testProto = new NodeEntr(n.node, n.torPath, _dom, decompressZlib);
-        //             GTree.addNode(testProto);
-        //         }
-        //         GTree.nodesByFqn.$F.sort(nodeFolderSort);
-        //     }
-        //     break;
+        case "setDOM":
+            _dom = e.data.data;
+            break;
+        case "nodesProgress":
+            if (e.data.data.isBucket) {
+                for (const n of e.data.data.nodes) {
+                    const node = new NodeEntr(n.node, n.torPath, _dom, decompressZlib);
+                    GTree.addNode(node);
+                }
+                GTree.loadedBuckets++;
+                GTree.nodesByFqn.$F.sort(nodeFolderSort);
+            } else {
+                for (const n of e.data.data.nodes) {
+                    const testProto = new NodeEntr(n.node, n.torPath, _dom, decompressZlib);
+                    GTree.addNode(testProto);
+                }
+                GTree.nodesByFqn.$F.sort(nodeFolderSort);
+            }
+            break;
         default:
             console.log(`Unexpected message with value ${e.data.message}`);
             break;

@@ -8,9 +8,12 @@ const NUM_META_FOLDERS = 2;
 class NodesByFqn {
     constructor(json, deserializer) {
         if (json) {
-            this.$F = JSON.parse(json.$F, deserializer); //files
             this.$O = json.$O;
-            this._misc = JSON.parse(json._misc, deserializer)
+            for (const kvp of Object.entries(json)) {
+                if (kvp[0] != '_class' && kvp[0] != '$O') {
+                    this[kvp[0]] = JSON.parse(kvp[1], deserializer);
+                }
+            }
         } else {
             this.$F = []; //files
             this.$O = 2;
@@ -93,6 +96,16 @@ class NodesByFqn {
             }
         }
 
+        return ret;
+    }
+
+    toJSON() {
+        let ret = {};
+        for (const kvp of Object.entries(this)) {
+            if (typeof(kvp[1]) != 'function') {
+                ret[kvp[0]] = kvp[1];
+            }
+        }
         return ret;
     }
 }

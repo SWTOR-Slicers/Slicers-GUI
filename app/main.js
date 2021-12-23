@@ -14,7 +14,6 @@ if (handleSquirrelEvent()) { return; }
 
 const devBuild = true;
 process.env.ELECTRON_ENABLE_LOGGING = devBuild;
-process.env.ELECTRON_LOG_FILE = "C:\\Users\\Torma\\Desktop\\electron-logs";
 
 const sourceResourceDir = (devBuild) ? path.join(__dirname, "resources") : process.resourcesPath;
 

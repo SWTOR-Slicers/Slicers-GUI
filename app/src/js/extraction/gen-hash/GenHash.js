@@ -1,6 +1,4 @@
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
-import { NodesByFqn, protoNodes, nodeFolderSort, StaticGomTree } from "../../viewers/node-viewer/GomTree.js";
-import { NodeEntr } from "../../classes/formats/Node.js";
 
 const { ipcRenderer } = require("electron");
 const path = require("path");
@@ -48,11 +46,8 @@ const checkedTypes = {};
 let nodeWorker;
 let assetWorker;
 let hashWorker;
-let _dom = null;
-const GTree = new StaticGomTree();
+let bktsLoaded = 0;
 let archives = [];
-
-const decomprFunc = (params) => { return ipcRenderer.sendSync('decompressZlib', [resourcePath, params]); }
 
 function init() {
     for (const hType of hashTypes) {
@@ -61,9 +56,9 @@ function init() {
     }
     initListeners();
     initSubs();
+    initHashWorker();
     initNodeWorker();
     initAssetWorker();
-    initHashWorker();
 }
 
 function initNodeWorker() {
@@ -76,27 +71,35 @@ function initNodeWorker() {
     nodeWorker.onmessage = (e) => {
         switch (e.data.message) {
             case "DomElements":
-                _dom = e.data.data;
+                // hashWorker.postMessage({
+                //     "message": "setDOM",
+                //     "data": e.data.data
+                // });
                 progressBar__clientGOM.style.width = '100%';
                 break;
             case "NODES":
-                for (const n of e.data.data) {
-                    const node = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
-                    GTree.addNode(node);
-                }
-                GTree.loadedBuckets++;
-                GTree.nodesByFqn.$F.sort(nodeFolderSort);
-                progressBar__baseNodes.style.width = `${GTree.loadedBuckets / 500 * 100}%`;
+                // hashWorker.postMessage({
+                //     "message": "nodesProgress",
+                //     "data": {
+                //         "nodes": e.data.data,
+                //         "isBkt": true
+                //     }
+                // });
+                bktsLoaded++;
+                progressBar__baseNodes.style.width = `${bktsLoaded / 500 * 100}%`;
                 break;
             case "PROTO":
-                for (const n of e.data.data.nodes) {
-                    const testProto = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
-                    GTree.addNode(testProto);
-                }
+                // hashWorker.postMessage({
+                //     "message": "nodesProgress",
+                //     "data": {
+                //         "nodes": e.data.data.nodes,
+                //         "isBkt": false
+                //     }
+                // });
                 progressBar__protoNodes.style.width = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
-                GTree.nodesByFqn.$F.sort(nodeFolderSort);
                 break;
         }
+        
         if (progressBar__assets.style.width == '100%' &&
             progressBar__baseNodes.style.width == '100%' &&
             progressBar__clientGOM.style.width == '100%' &&
@@ -241,16 +244,13 @@ function initListeners() {
         
             ipcRenderer.send('readAllDataHashPrep');
         } else {
-            hashWorker.postMessage({
-                "message": 'genHash',
-                "data": {
-                    "checked": getChecked(),
-                    "nodesByFqn": JSON.stringify(nodesByFqn),
-                    "protoNodes": JSON.stringify(protoNodes),
-                    "_dom": protoNodes[0]._dom,
-                    "assets": archives
-                }
-            });
+            // hashWorker.postMessage({
+            //     "message": 'genHash',
+            //     "data": {
+            //         "checked": getChecked(),
+            //         "assets": archives
+            //     }
+            // });
             
             // document.querySelector('.header-container').innerHTML = 'Select file types to generate';
             // hashTypeCont.classList.toggle('hidden');

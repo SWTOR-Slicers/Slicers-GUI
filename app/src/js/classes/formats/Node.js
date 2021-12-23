@@ -327,7 +327,7 @@ function nodeFieldToHtml(type, value, tr, level, field, _dom) {
     case DOM_TYPES.VECTOR3:
         return value[0] + ', ' + value[1] + ', ' + value[2];
     case DOM_TYPES.ENUM:
-        return _dom[2][_dom[3][field.id].data].values[uint64C(value)-1];
+        return field ? _dom[2][_dom[3][field.id].data].values[uint64C(value)-1] : uint64C(value);
     default:
         return '[Type not recognized]'
     }

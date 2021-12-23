@@ -1,8 +1,10 @@
 import { XDocument } from "../../classes/util/XDocument.js";
 import { HashDictionary } from "../../classes/hash/HashDictionary.js";
-import { STB } from "../../classes/formats/STB.js";
-import { hashlittle2 } from "../../Util.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
+import { STB } from "../../classes/formats/STB.js";
+
+import { hashlittle2 } from "../../Util.js";
+import { StaticGomTree, nodeFolderSort } from "../../viewers/node-viewer/GomTree.js";
 
 import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
 import { ICONSParser } from "../../classes/parsers/ICONS.js";
@@ -20,12 +22,11 @@ import { AMXParser } from "../../classes/parsers/AMX.js";
 import { HYDParser } from "../../classes/parsers/HYD.js";
 import { DYNParser } from "../../classes/parsers/DYN.js";
 import { PLCParser } from "../../classes/parsers/PLC.js";
-import { NodesByFqn } from "../../viewers/node-viewer/GomTree.js";
 
 const path = require('path');
 const xmlJs = require('xml-js');
 const xmlBuffString = require('xml-buffer-tostring');
-const edge = require('electron-edge-js');
+// const edge = require('electron-edge-js');
 
 const cache = {
     "configPath": "",
@@ -36,59 +37,71 @@ const cache = {
 let totalFilesSearched;
 let totalNamesFound;
 let hash;
-let _dom;
+let GTree;
+let _dom = null;
 
-let decompressZlib = function(){};
-
-function deserializer(k, v) {
-    if (v instanceof Object && v._class == 'NodeEntr') {
-        return v._decompr ? new NodeEntr(v, _dom, decompressZlib) : new NodeEntr(v, _dom);
-    } else if (v instanceof Object && v._class == 'NodesByFqn') {
-        return new NodesByFqn(v, deserializer);
-    }
-    // default to returning the value unaltered
-    return v;
-}
+let decomprFunc = function(){};
 
 onmessage = (e) => {
     switch (e.data.message) {
         case "init":
+            GTree = new StaticGomTree();
             cache['configPath'] = path.normalize(path.join(e.data.data.resourcePath, "config.json"));
             cache['hashPath'] = e.data.data.hashPath;
-            decompressZlib = edge.func({
-                source: function() {/*
-                    using System.IO;
-                    using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+            // decomprFunc = edge.func({
+            //     source: function() {/*
+            //         using System.IO;
+            //         using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
                 
-                    async (dynamic input) => {
-                        byte[] buffer = (byte[])input.buffer;
-                        MemoryStream stream = new MemoryStream(buffer);
-                        InflaterInputStream inflaterStream = new InflaterInputStream(stream);
+            //         async (dynamic input) => {
+            //             byte[] buffer = (byte[])input.buffer;
+            //             MemoryStream stream = new MemoryStream(buffer);
+            //             InflaterInputStream inflaterStream = new InflaterInputStream(stream);
         
-                        byte[] decompressed = new byte[(int)input.dataLength];
-                        inflaterStream.Read(decompressed, 0, (int)input.dataLength);
-                        inflaterStream.Dispose();
-                        stream.Close();
+            //             byte[] decompressed = new byte[(int)input.dataLength];
+            //             inflaterStream.Read(decompressed, 0, (int)input.dataLength);
+            //             inflaterStream.Dispose();
+            //             stream.Close();
         
-                        return decompressed;
-                    }
-                */},
-                references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
-            });
+            //             return decompressed;
+            //         }
+            //     */},
+            //     references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
+            // });
             hash = new HashDictionary(path.join(cache['hashPath'], 'hashes_filename.txt'));
             hash.loadHashList();
             break;
         case "genHash":
-            _dom = e.data.data._dom;
             totalFilesSearched = 0;
             totalNamesFound = 0;
-            generateNames(JSON.parse(e.data.data.nodesByFqn, deserializer), JSON.parse(e.data.data.protoNodes, deserializer), e.data.data.assets, e.data.data.checked, true);
+            generateNames(GTree.nodesByFqn, GTree.protoNodes, e.data.data.assets, e.data.data.checked, true);
             break;
         case "findFileNames":
-            _dom = e.data.data._dom;
             totalFilesSearched = 0;
             totalNamesFound = 0;
-            generateNames(JSON.parse(e.data.data.nodesByFqn, deserializer), JSON.parse(e.data.data.protoNodes, deserializer), e.data.data.assets, e.data.data.checked, false);
+            generateNames(GTree.nodesByFqn, GTree.protoNodes, e.data.data.assets, e.data.data.checked, false);
+            break;
+        // case "setDOM":
+        //     _dom = e.data.data;
+        //     break;
+        // case "nodesProgress":
+        //     if (e.data.data.isBucket) {
+        //         for (const n of e.data.data.nodes) {
+        //             const node = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
+        //             GTree.addNode(node);
+        //         }
+        //         GTree.loadedBuckets++;
+        //         GTree.nodesByFqn.$F.sort(nodeFolderSort);
+        //     } else {
+        //         for (const n of e.data.data.nodes) {
+        //             const testProto = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
+        //             GTree.addNode(testProto);
+        //         }
+        //         GTree.nodesByFqn.$F.sort(nodeFolderSort);
+        //     }
+        //     break;
+        default:
+            console.log(`Unexpected message with value ${e.data.message}`);
             break;
     }
 }
@@ -420,3 +433,13 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes, genHash, na
         }
     });
 }
+
+// function deserializer(k, v) {
+//     if (v instanceof Object && v._class == 'NodeEntr') {
+//         return v._decompr ? new NodeEntr(v, _dom, decomprFunc) : new NodeEntr(v, _dom);
+//     } else if (v instanceof Object && v._class == 'NodesByFqn') {
+//         return new NodesByFqn(v, deserializer);
+//     }
+//     // default to returning the value unaltered
+//     return v;
+// }

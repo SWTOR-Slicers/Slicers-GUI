@@ -1,6 +1,5 @@
 import { fixDpi } from "../../Util.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
-import { log } from "../../universal/Logger.js";
 
 const FILETREE_HEIGHT = 16;
 const NUM_META_FOLDERS = 2;
@@ -100,7 +99,9 @@ class NodesByFqn {
     }
 
     toJSON() {
-        let ret = {};
+        let ret = {
+            "_class": 'NodesByFqn'
+        };
         for (const kvp of Object.entries(this)) {
             if (typeof(kvp[1]) != 'function') {
                 ret[kvp[0]] = kvp[1];
@@ -109,7 +110,6 @@ class NodesByFqn {
         return ret;
     }
 }
-const protoNodes = {};
 let currentNode;
 
 class NodeTree {
@@ -392,14 +392,14 @@ class GomTree {
             }
         }
     
-        if (!hasFound) {
-            log("Unable to find a node with the given fqn. Check your input for possible typos.", "alert");
-        }
+        return hasFound;
     }
 }
 
 class StaticGomTree {
     constructor () {
+        this.nodesByFqn = new NodesByFqn();
+        this.protoNodes = {};
         this.loadedBuckets = 0;
     }
 
@@ -409,7 +409,7 @@ class StaticGomTree {
      */
     addNode(node) {
         let name = node.fqn;
-        let curFolder = nodesByFqn;
+        let curFolder = this.nodesByFqn;
         let folderStart = 0;
         let i = 0;
         for (; i < name.length; i++) {
@@ -430,7 +430,7 @@ class StaticGomTree {
             }
         }
         if (!node.isBucket) {
-            protoNodes[node.fqn] = node;
+            this.protoNodes[node.fqn] = node;
         }
         node.path = name.substring(0, folderStart);
         const fileName = name.substring(folderStart, i);
@@ -459,4 +459,4 @@ function nodeFolderSort(a, b) {
     return 1
 }
 
-export {GomTree, StaticGomTree, NodesByFqn, protoNodes, nodeFolderSort, currentNode};
+export {GomTree, StaticGomTree, NodesByFqn, nodeFolderSort, currentNode};

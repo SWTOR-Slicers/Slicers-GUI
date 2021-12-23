@@ -1,4 +1,4 @@
-import { GomTree, NodesByFqn, nodeFolderSort, currentNode } from "./GomTree.js";
+import { GomTree, nodeFolderSort, currentNode } from "./GomTree.js";
 import { log } from "../../universal/Logger.js";
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
@@ -117,7 +117,16 @@ function initListeners() {
             dataViewContainer.style.width = `${100 - changePercent - existingIncr}%`;
         }
     });
-    fqnField.addEventListener('change', (e) => { if (fqnField.value != "") GTree.getNodeByFQN(fqnField.value); });
+    fqnField.addEventListener('change', (e) => {
+        if (fqnField.value != "") {
+            const found = GTree.getNodeByFQN(fqnField.value);
+            if (found) {
+                log("Found node. It has been opened in the viewer.", "info");
+            } else {
+                log("Unable to find a node with the given fqn. Check your input for possible typos.", "alert");
+            }
+        }
+    });
     exportNode.addEventListener('click', (e) => {
         if (currentNode) {
             const res = currentNode.node.extract(cache['output'], cache['outputType']);

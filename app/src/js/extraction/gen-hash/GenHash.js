@@ -1,5 +1,6 @@
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 
+const NodeWorker = require('worker_threads');
 const { ipcRenderer } = require("electron");
 const path = require("path");
 const fs = require("fs");
@@ -172,10 +173,33 @@ function initHashWorker() {
 
     hashWorker.postMessage({
         "message": "init",
-        "data": {
-            "resourcePath": resourcePath,
-            "hashPath": path.join(resourcePath, 'hash')
+        "data": resourcePath
+    });
+}
+
+function initHashThreadWorker() {
+    hashWorker = new Worker(path.join(sourcePath, "js", "extraction", "gen-hash", "HashWorker.js"), {
+        type: "module"
+    });
+
+    hashWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    hashWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    hashWorker.onmessage = (e) => {
+        switch (e.data.message) {
+            case "complete":
+                const names = e.data.data;
+                console.log(names);
+                break;
+            case "progress":
+                namesFound.innerHTML = e.data.data.totalNamesFound;
+                numSearched.innerHTML = e.data.data.totalFilesSearched;
+                break;
         }
+    }
+
+    hashWorker.postMessage({
+        "message": "init",
+        "data": resourcePath
     });
 }
 

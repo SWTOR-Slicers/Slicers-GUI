@@ -27,6 +27,7 @@ const path = require('path');
 const xmlJs = require('xml-js');
 const xmlBuffString = require('xml-buffer-tostring');
 // const edge = require('electron-edge-js');
+const { ipcRenderer } = require("electron");
 
 const cache = {
     "configPath": "",
@@ -40,14 +41,20 @@ let hash;
 let GTree;
 let _dom = null;
 
-let decomprFunc = function(){};
+function decomprFunc(params) {
+    // return ipcRenderer.sendSync('decompressZlib', params);
+}
 
 onmessage = (e) => {
     switch (e.data.message) {
         case "init":
             GTree = new StaticGomTree();
-            cache['configPath'] = path.normalize(path.join(e.data.data.resourcePath, "config.json"));
-            cache['hashPath'] = e.data.data.hashPath;
+            cache['configPath'] = path.normalize(path.join(e.data.data, "config.json"));
+            cache['hashPath'] = path.join(e.data.data, "hash");
+
+            hash = new HashDictionary(path.join(cache['hashPath'], 'hashes_filename.txt'));
+            hash.loadHashList();
+
             // decomprFunc = edge.func({
             //     source: function() {/*
             //         using System.IO;
@@ -68,8 +75,6 @@ onmessage = (e) => {
             //     */},
             //     references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
             // });
-            hash = new HashDictionary(path.join(cache['hashPath'], 'hashes_filename.txt'));
-            hash.loadHashList();
             break;
         case "genHash":
             totalFilesSearched = 0;

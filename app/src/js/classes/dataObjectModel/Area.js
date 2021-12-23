@@ -11,7 +11,7 @@ const xmlBuffString = require('xml-buffer-tostring');
 class Area {
     /**
      * Represents the Area data model
-     * @param  {NodeEntr} gomObj Node containing data to use
+     * @param  {Object} gomObj Node value containing data to use
      * @param  {STB} sysWorldMapTbl the system world map String Table
      * @param  {Object} dom the data object model
      * @param  {Object} assets the tor assets object
@@ -19,14 +19,14 @@ class Area {
     constructor(gomObj, sysWorldMapTbl, dom, assets) {
         if (gomObj != null && sysWorldMapTbl != null) {
             this.sysWorldMapTbl = sysWorldMapTbl;
-            this.displayNameId = gomObj.obj.value["mapAreasDataDisplayNameId"] ?? 0;
+            this.displayNameId = gomObj.value["mapAreasDataDisplayNameId"] ?? 0;
             this.name = this.sysWorldMapTbl.getText(this.displayNameId);
             this.localizedName = this.name;
-            this.areaId = gomObj.obj.value["mapAreasDataAreaId"] ?? 0;
+            this.areaId = gomObj.value["mapAreasDataAreaId"] ?? 0;
             this.id = this.areaId;
 
-            this.explorationType = gomObj.obj.value["mapAreasDataExplorationType"] || null;
-            this.zoneName = gomObj.obj.value["mapAreasDataDefaultZoneName"] ?? "";
+            this.explorationType = gomObj.value["mapAreasDataExplorationType"] || null;
+            this.zoneName = gomObj.value["mapAreasDataDefaultZoneName"] ?? "";
 
             this.mapPages;
             this.mapNotes;
@@ -192,7 +192,7 @@ class Area {
     sortMaps() {
         if (this.mapPages == null) return;
         this.mapPages.sort((x, y) => x.volume < y.volume); // Sort MapPages by Volume (smallest to largest)
-        sortedByVolume = true;
+        this.sortedByVolume = true;
     }
 
     findSmallestMapContaining(x, y, z) {

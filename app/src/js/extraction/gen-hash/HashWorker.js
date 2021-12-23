@@ -6,6 +6,7 @@ import { hashlittle2 } from "../../Util.js";
 import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
 import { ICONSParser } from "../../classes/parsers/ICONS.js";
 import { XML_MAT } from "../../classes/parsers/XML_MAT.js";
+import { MISCParser } from "../../classes/parsers/MISC.js";
 import { SDEFParser } from "../../classes/parsers/SDEF.js";
 import { STBParser } from "../../classes/parsers/STB.js";
 import { EPPParser } from "../../classes/parsers/EPP.js";
@@ -18,8 +19,6 @@ import { AMXParser } from "../../classes/parsers/AMX.js";
 import { HYDParser } from "../../classes/parsers/HYD.js";
 import { DYNParser } from "../../classes/parsers/DYN.js";
 import { PLCParser } from "../../classes/parsers/PLC.js";
-
-import { MISCParser } from "../../classes/parsers/MISC.js";
 
 const path = require('path');
 const xmlJs = require('xml-js');

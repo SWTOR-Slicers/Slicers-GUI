@@ -3,8 +3,6 @@ import { RoomDat } from "./RoomDat.js";
 
 class AreaDat {
     #rooms_;
-
-    _assetsRef;
     /**
      * Represents the AreaDat data model
      * @param  {number} id the areaId associated with this areaDat

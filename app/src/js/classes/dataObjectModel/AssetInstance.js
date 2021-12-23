@@ -2,7 +2,7 @@ import Vec3 from "../util/Vec3.js";
 import { RoomDat } from "./RoomDat.js";
 
 class AssetInstance {
-    #positon;
+    #position;
     #assetFqn;
     #parentInstance
 

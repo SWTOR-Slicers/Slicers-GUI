@@ -128,10 +128,9 @@ class MISCParser {
             }
         }
 
-        for (const gomItm of worldAreasProto) {
-            const area = new Area(gomItm.val);
+        for (const gomItm of worldAreasProto.value) {
+            const area = new Area(gomItm);
             if (area.id == 0 && area.areaId == 0) continue;
-            this.objsearched++;
             if (area.mapPages != null) {
                 let ii = 0;
                 for (const map_page of area.mapPages) {

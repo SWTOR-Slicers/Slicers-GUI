@@ -1,4 +1,4 @@
-import { XDocument } from '../util/XDocument';
+import { XDocument } from '../util/XDocument.js';
 
 const fs = require('fs');
 

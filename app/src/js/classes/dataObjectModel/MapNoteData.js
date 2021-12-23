@@ -1,4 +1,3 @@
-import { Node } from "../formats/Node.js";
 import { XDocument } from "../util/XDocument.js";
 
 

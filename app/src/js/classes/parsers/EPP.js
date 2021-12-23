@@ -1,5 +1,5 @@
 import { NodeEntr } from '../formats/Node.js';
-import { XDocument } from '../util/XDocument';
+import { XDocument } from '../util/XDocument.js';
 
 const fs = require('fs');
 
@@ -24,9 +24,6 @@ class EPPParser {
      * @param  {string} fullName
      */
     parseEPP(doc, fullName) {
-        let _ = fullName.substring(fullName.lastIndexOf('\\') + 1);
-        _ = fullName.substring(0, fullName.lastIndexOf('/'));
-
         try {
             const anode = doc.element("Appearance");
             const file = "/resources/gamedata/" + anode.attribute("fqn").replace('.', '/') + ".epp";

@@ -1,6 +1,3 @@
-import { NodeEntr } from '../formats/Node.js';
-import { Reader } from '../util/FileWrapper.js';
-
 const fs = require('fs');
 
 class ICONSParser {

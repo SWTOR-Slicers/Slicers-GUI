@@ -399,7 +399,7 @@ class GomTree {
 class StaticGomTree {
     constructor () {
         this.nodesByFqn = new NodesByFqn();
-        this.protoNodes = {};
+        this.nodesList = {};
         this.loadedBuckets = 0;
     }
 
@@ -408,6 +408,7 @@ class StaticGomTree {
      * @param {NodeEntr} node A Node object representing the node entry data from the node reader.
      */
     addNode(node) {
+        this.nodesList[node.fqn] = node;
         let name = node.fqn;
         let curFolder = this.nodesByFqn;
         let folderStart = 0;
@@ -428,9 +429,6 @@ class StaticGomTree {
                 curFolder = tmpFolder;
                 folderStart = i + 1
             }
-        }
-        if (!node.isBucket) {
-            this.protoNodes[node.fqn] = node;
         }
         node.path = name.substring(0, folderStart);
         const fileName = name.substring(folderStart, i);

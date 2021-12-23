@@ -76,12 +76,12 @@ onmessage = (e) => {
         case "genHash":
             totalFilesSearched = 0;
             totalNamesFound = 0;
-            generateNames(GTree.nodesByFqn, GTree.protoNodes, e.data.data.assets, e.data.data.checked, true);
+            generateNames(GTree.nodesByFqn, GTree.nodesList, e.data.data.assets, e.data.data.checked, true);
             break;
         case "findFileNames":
             totalFilesSearched = 0;
             totalNamesFound = 0;
-            generateNames(GTree.nodesByFqn, GTree.protoNodes, e.data.data.assets, e.data.data.checked, false);
+            generateNames(GTree.nodesByFqn, GTree.nodesList, e.data.data.assets, e.data.data.checked, false);
             break;
         case "setDOM":
             _dom = e.data.data;
@@ -108,9 +108,9 @@ onmessage = (e) => {
     }
 }
 
-async function generateNames(nodesByFqn, protoNodes, assets, checked, genHash) {
+async function generateNames(nodesByFqn, nodesList, assets, checked, genHash) {
     const names = [];
-    await Promise.all(checked.map((ext) => { parseFiles(ext, assets, nodesByFqn, protoNodes, genHash, names); }));
+    await Promise.all(checked.map((ext) => { parseFiles(ext, assets, nodesByFqn, nodesList, genHash, names); }));
     postMessage({
         "message": "complete",
         "data": (genHash) ? names : `File name output complete. Found ${totalNamesFound} names, and searched ${totalFilesSearched} files.`
@@ -121,11 +121,11 @@ async function generateNames(nodesByFqn, protoNodes, assets, checked, genHash) {
  * @param  {string} extension The current extentions
  * @param  {Object} assets Object representing all of the assets in the .tor files
  * @param  {Object} nodesByFqn GOM Node object
- * @param  {Object} protoNodes GOM Prototype Node object
+ * @param  {Object} nodesList GOM Node object
  * @param  {boolean} genHash Wether to generateHash or findFileNames
  * @param  {Array<Object>} names An array of objects that represent lines in the hash file
  */
-async function parseFiles(extension, assets, nodesByFqn, protoNodes, genHash, names) {
+async function parseFiles(extension, assets, nodesByFqn, nodesList, genHash, names) {
     let parseReturns = [];
     const assetsDict = Object.assign({}, ...Object.values(assets));
 
@@ -277,7 +277,7 @@ async function parseFiles(extension, assets, nodesByFqn, protoNodes, genHash, na
             misc_parser.parseMISC_IPP(ippNodes);
             const cdxNodes = dom.getObjectsStartingWith("cdx.");
             misc_parser.parseMISC_CDX(cdxNodes);
-            misc_parser.parseMISC_NODE(protoNodes);
+            misc_parser.parseMISC_NODE(nodesList);
             const ldgNode = dom.getObject("loadingAreaLoadScreenPrototype");
             const itemApperances = dom.getObject("itmAppearanceDatatable").obj.value["itmAppearances"];
             misc_parser.parseMISC_LdnScn(ldgNode);

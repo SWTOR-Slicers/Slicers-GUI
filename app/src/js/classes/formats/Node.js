@@ -1,7 +1,6 @@
 import { GOM } from "../util/Gom.js";
 import { RawDeflate } from "../../externals/Inflate.js";
 import { readVarInt, uint64_add, uint64C, assert, cleanString, readString, serializeMap } from "../../Util.js";
-import { log } from "../../universal/Logger.js";
 
 const fs = require('fs');
 const path = require('path');
@@ -650,12 +649,12 @@ class Node {
         if (fs.existsSync(dest)) {
             if (data) {
                 fs.writeFileSync(path.join(dest, `${this.fqn}.${type == "raw" ? "node" : type}`), data);
-                log(`Sucessfully extracted node to a .${type == "raw" ? "node" : type} file`, 'info');
+                return 0;
             } else {
-                log("Error reading the node data: data is null.", "error");
+                return 1;
             }
         } else {
-            log("Invalid node extract path.", "error");
+            return 2;
         }
     }
 }
@@ -785,12 +784,12 @@ class ProtoNode {
         if (fs.existsSync(dest)) {
             if (data) {
                 fs.writeFileSync(path.join(dest, `${this.fqn}.${type == "raw" ? "node" : type}`), data);
-                log(`Sucessfully extracted node to a .${type == "raw" ? "node" : type} file`, 'info');
+                return 0;
             } else {
-                log("Error reading the node data: data is null.", "error");
+                return 1;
             }
         } else {
-            log("Invalid node extract path.", "error");
+            return 2;
         }
     }
 }

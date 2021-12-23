@@ -10,9 +10,7 @@ const UUID = require('uuid');
 const edge = require('electron-edge-js');
 const uuidV4 = UUID.v4;
 
-if (handleSquirrelEvent()) {
-  return;
-}
+if (handleSquirrelEvent()) { return; }
 
 const devBuild = true;
 process.env.ELECTRON_ENABLE_LOGGING = devBuild;
@@ -1410,7 +1408,7 @@ function handleSquirrelEvent() {
       app.quit();
       return true;
   }
-};
+}
 
 async function copyFileViaStream(progBarId, tPath, dPath, cSize, tSize) {
   return new Promise((resolve, reject) => {

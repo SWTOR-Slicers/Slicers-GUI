@@ -1,4 +1,4 @@
-import { hashlittle2, uint64, readString as readStr, readVarInt, uint64C, inflateZlib } from "../../Util.js";
+import { hashlittle2, uint64, readString as readStr, readVarInt, uint64C } from "../../Util.js";
 import { GOM } from "../../classes/util/Gom.js";
 import { DomLoader } from "../../classes/DomLoaders.js";
 

@@ -1,6 +1,7 @@
 import { codebooks } from "./classes/util/Cookbooks.js";
 
 const fs = require("fs");
+const edge = require('electron-edge-js');
 /**
  * Shuffles a list using the modern Fisher-Yates shuffle algorithm
  * @param  {Array} a Array to be shuffled and returned.
@@ -913,6 +914,37 @@ export function getPropertyRecursive(data, prop) {
     }
 
     return count;
+}
+
+/**
+ * Inflates the provided data using the ICSharp zlib
+ * @param {string} resourcePath the resource path in reference to the current context
+ * @param {Object} params the parameters to pass to the inflate function
+ * @returns The inflated buffer
+ */
+export function inflateZlib(resourcePath, params) {
+    const func = edge.func({
+        source: function() {/*
+            using System.IO;
+            using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+        
+            async (dynamic input) => {
+                byte[] buffer = (byte[])input.buffer;
+                MemoryStream stream = new MemoryStream(buffer);
+                InflaterInputStream inflaterStream = new InflaterInputStream(stream);
+
+                byte[] decompressed = new byte[(int)input.dataLength];
+                inflaterStream.Read(decompressed, 0, (int)input.dataLength);
+                inflaterStream.Dispose();
+                stream.Close();
+
+                return decompressed;
+            }
+        */},
+        references: [ `${path.join(resourcePath, 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
+    });
+
+    return func(params);
 }
 
 /**

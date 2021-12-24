@@ -49,6 +49,10 @@ let hashWorker;
 let bktsLoaded = 0;
 let archives = [];
 
+const decomprFunc = (params) => {
+    return ipcRenderer.sendSync('decompressZlib', [params]);
+}
+
 function init() {
     for (const hType of hashTypes) {
         const typeCont = genEntr(hType);
@@ -71,31 +75,31 @@ function initNodeWorker() {
     nodeWorker.onmessage = (e) => {
         switch (e.data.message) {
             case "DomElements":
-                // hashWorker.postMessage({
-                //     "message": "setDOM",
-                //     "data": e.data.data
-                // });
+                hashWorker.postMessage({
+                    "message": "setDOM",
+                    "data": e.data.data
+                });
                 progressBar__clientGOM.style.width = '100%';
                 break;
             case "NODES":
-                // hashWorker.postMessage({
-                //     "message": "nodesProgress",
-                //     "data": {
-                //         "nodes": e.data.data,
-                //         "isBkt": true
-                //     }
-                // });
+                hashWorker.postMessage({
+                    "message": "nodesProgress",
+                    "data": {
+                        "nodes": e.data.data,
+                        "isBkt": true
+                    }
+                });
                 bktsLoaded++;
                 progressBar__baseNodes.style.width = `${bktsLoaded / 500 * 100}%`;
                 break;
             case "PROTO":
-                // hashWorker.postMessage({
-                //     "message": "nodesProgress",
-                //     "data": {
-                //         "nodes": e.data.data.nodes,
-                //         "isBkt": false
-                //     }
-                // });
+                hashWorker.postMessage({
+                    "message": "nodesProgress",
+                    "data": {
+                        "nodes": e.data.data.nodes,
+                        "isBkt": false
+                    }
+                });
                 progressBar__protoNodes.style.width = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
                 break;
         }

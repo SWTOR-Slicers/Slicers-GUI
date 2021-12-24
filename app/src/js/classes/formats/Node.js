@@ -823,6 +823,7 @@ class NodeEntr {
     render(parent, dataContainer, refSet) {
         refSet(this);
         this.readNode();
+        parent.innerHTML = "";
         this.node.render(parent, dataContainer);
     }
 

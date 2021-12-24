@@ -3,7 +3,7 @@ import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
 import { STB } from "../../classes/formats/STB.js";
 
-import { hashlittle2 } from "../../Util.js";
+import { inflateZlib, hashlittle2 } from "../../Util.js";
 import { StaticGomTree, nodeFolderSort } from "../../viewers/node-viewer/GomTree.js";
 
 import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
@@ -26,7 +26,6 @@ import { PLCParser } from "../../classes/parsers/PLC.js";
 const path = require('path');
 const xmlJs = require('xml-js');
 const xmlBuffString = require('xml-buffer-tostring');
-const edge = require('electron-edge-js');
 
 const cache = {
     "configPath": "",
@@ -40,7 +39,9 @@ let hash;
 let GTree;
 let _dom = null;
 
-let decompressZlib = function(){};
+let decompressZlib = (params) => {
+    return inflateZlib(path.dirname(cache['configPath']), params);
+}
 
 onmessage = (e) => {
     switch (e.data.message) {
@@ -51,27 +52,6 @@ onmessage = (e) => {
 
             hash = new HashDictionary(path.join(cache['hashPath'], 'hashes_filename.txt'));
             hash.loadHashList();
-
-            decompressZlib = edge.func({
-                source: function() {/*
-                    using System.IO;
-                    using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
-                
-                    async (dynamic input) => {
-                        byte[] buffer = (byte[])input.buffer;
-                        MemoryStream stream = new MemoryStream(buffer);
-                        InflaterInputStream inflaterStream = new InflaterInputStream(stream);
-        
-                        byte[] decompressed = new byte[(int)input.dataLength];
-                        inflaterStream.Read(decompressed, 0, (int)input.dataLength);
-                        inflaterStream.Dispose();
-                        stream.Close();
-        
-                        return decompressed;
-                    }
-                */},
-                references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
-            });
             break;
         case "genHash":
             totalFilesSearched = 0;
@@ -87,7 +67,7 @@ onmessage = (e) => {
             _dom = e.data.data;
             break;
         case "nodesProgress":
-            if (e.data.data.isBucket) {
+            if (e.data.data.isBkt) {
                 for (const n of e.data.data.nodes) {
                     const node = new NodeEntr(n.node, n.torPath, _dom, decompressZlib);
                     GTree.addNode(node);

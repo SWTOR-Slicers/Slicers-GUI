@@ -145,7 +145,7 @@ function initListeners() {
 }
 
 const decomprFunc = (params) => {
-    return ipcRenderer.sendSync('decompressZlib', [resourcePath, params]);
+    return ipcRenderer.sendSync('decompressZlib', [params]);
 }
 
 function initWorker() {

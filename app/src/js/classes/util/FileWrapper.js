@@ -12,6 +12,23 @@ class Reader {
     }
 
     /**
+     * seeks to the current offset
+     * @param  {number} offset the new offset.
+     * @param  {number} position the position to update from. 0 = start, 1 = current offset, 2 = end.
+     */
+     seek(offset, position = 0) {
+        if (position == 0) {
+            this.offset = offset;
+        } else if (position == 1) {
+            this.offset = this.offset + offset;
+        } else if (position == 2) {
+            this.offset = this.data.byteLength - offset;
+        } else {
+            throw Error(`Unexpected position value. Expected 0, 1, or 2, but got ${position}.`);
+        }
+    }
+
+    /**
      * read the next byte and return a Uint8 array.
      */
     readByte() {

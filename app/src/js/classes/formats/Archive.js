@@ -57,10 +57,11 @@ class Archive {
         this.data = new FileWrapper(this.file);
 
         let mypHeader = this.data.read(0x24);
-        if (mypHeader.readUint32() !== 0x50594d) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Not a .tor file (Wrong file header)`);
+        const magic = mypHeader.readUint32();
+        if (magic !== 0x50594d) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Not a .tor file (Wrong file header)`);
         
         this.version = mypHeader.readUint32();
-        if (this.version !== 5) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Only version 5 is supported, file has ${datView.getUint32(4, true)}`);
+        if (this.version !== 5) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Only version 5 is supported, file has ${this.version}`);
         
         this.bom = mypHeader.readUint32()
         if (this.bom !== 0xFD23EC43) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Unexpected byte order`);
@@ -70,6 +71,10 @@ class Archive {
 
         this.tableCapacity = mypHeader.readUint32();
         this.totalFiles = mypHeader.readUint32();
+
+        mypHeader.readUint32();
+        mypHeader.readUint32();
+
         if (loadTables) {
             this.#readFileTables();
         }
@@ -80,7 +85,11 @@ class Archive {
         while (this.tableOffset > 0n) {
             this.data.seek(this.tableOffset, 0);
             let fileTableHeader = this.data.read(0xC);
-            this.tableCapacity = fileTableHeader.readUint32();
+            const newTableCapacity = fileTableHeader.readUint32();
+            if (newTableCapacity != this.tableCapacity) {
+                console.log(`Expected newTableCapacity of ${newTableCapacity} to equal global table capacity of ${this.tableCapacity}, unless this is the last table.`);
+                this.tableCapacity = newTableCapacity;
+            }
             this.tableOffset = fileTableHeader.readUint64();
 
             let fileTable = this.data.read(this.tableCapacity * 0x22);
@@ -90,7 +99,10 @@ class Archive {
 
             for (let i = 0; i < this.tableCapacity; ++i) {
                 let offset = fileTable.readUint64();
-                if (offset === 0) continue;
+                if (offset === 0) {
+                    fileTable.offset += 0x22;
+                    continue;
+                }
                 const headerSize = fileTable.readUint32();
 
                 const comprSize = fileTable.readUint32();

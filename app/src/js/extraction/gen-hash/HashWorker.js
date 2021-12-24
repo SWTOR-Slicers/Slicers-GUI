@@ -109,7 +109,13 @@ async function generateNames(nodesByFqn, nodesList, assets, checked, genHash, ex
  */
 async function parseFiles(extension, assets, nodesByFqn, nodesList, genHash, names, extractPath) {
     let parseReturns = [];
-    const assetsDict = Object.assign({}, ...Object.values(assets));
+    assets.map(asset => asset.entries);
+    console.log(Object.values(assets));
+    
+    let assetsDict = {};
+    for (const entrList of assets) {
+        Object.assign(assetsDict, ...entrList);
+    }
 
     Object.keys(assetsDict).map(key => {
         const fileH = hash.getFileNameByHash(...d.split('|').reverse());

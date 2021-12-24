@@ -49,10 +49,6 @@ let hashWorker;
 let bktsLoaded = 0;
 let archives = [];
 
-const decomprFunc = (params) => {
-    return ipcRenderer.sendSync('decompressZlib', [params]);
-}
-
 function init() {
     for (const hType of hashTypes) {
         const typeCont = genEntr(hType);

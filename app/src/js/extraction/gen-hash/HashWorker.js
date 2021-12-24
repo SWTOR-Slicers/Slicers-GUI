@@ -39,8 +39,9 @@ let hash;
 let GTree;
 let _dom = null;
 
-let decompressZlib = (params) => {
-    return inflateZlib(path.dirname(cache['configPath']), params);
+let decompressZlib = async (params) => {
+    const ret = await inflateZlib(path.dirname(cache['configPath']), params);
+    return ret;
 }
 
 onmessage = (e) => {

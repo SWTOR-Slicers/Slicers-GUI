@@ -923,7 +923,7 @@ export function getPropertyRecursive(data, prop) {
  * @param {Object} params the parameters to pass to the inflate function
  * @returns The inflated buffer
  */
-export async function inflateZlib(resourcePath, params) {
+export function inflateZlib(resourcePath, params) {
     const func = edge.func({
         source: function() {/*
             using System.IO;

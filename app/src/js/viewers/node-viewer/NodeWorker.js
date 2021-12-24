@@ -4,21 +4,39 @@ import { DomLoader } from "../../classes/DomLoaders.js";
 
 const path = require('path');
 const { promises: { readFile }, readFileSync, existsSync, mkdirSync } = require('fs');
+const edge = require('electron-edge-js');
 
 const cache = {
     "configPath": "",
     "tmpPath": "",
     "store": {}
 }
-let decompressZlib = async (params) => {
-    const ret = await inflateZlib(path.dirname(cache['configPath']), params);
-    return ret;
-}
+let decompressZlib = function(){};
 
 onmessage = (e) => {
     switch (e.data.message) {
         case "init":
             cache['configPath'] = path.normalize(path.join(e.data.data, "config.json"));
+            decompressZlib = edge.func({
+                source: function() {/*
+                    using System.IO;
+                    using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+                
+                    async (dynamic input) => {
+                        byte[] buffer = (byte[])input.buffer;
+                        MemoryStream stream = new MemoryStream(buffer);
+                        InflaterInputStream inflaterStream = new InflaterInputStream(stream);
+        
+                        byte[] decompressed = new byte[(int)input.dataLength];
+                        inflaterStream.Read(decompressed, 0, (int)input.dataLength);
+                        inflaterStream.Dispose();
+                        stream.Close();
+        
+                        return decompressed;
+                    }
+                */},
+                references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
+            });
             break;
         case "loadNodes":
             loadNodes(e.data.data.torFiles[1], false);
@@ -96,9 +114,9 @@ async function loadNodes(torPath, loadProts) {
 
         if (Object.keys(gomArchive.files).length > 0) {
             if (path.basename(torPath).indexOf('systemgenerated_gom_1') > -1) {
-                await findClientGOM(gomArchive, data, torPath);
+                findClientGOM(gomArchive, data, torPath);
             } else if (loadProts) {
-                await findPrototypes(gomArchive, data, torPath);
+                findPrototypes(gomArchive, data, torPath);
             } else {
                 cache['store']['gomArchive'] = gomArchive;
                 cache['store']['data'] = data;
@@ -117,7 +135,7 @@ async function findClientGOM(gomArchive, data, torPath) {
 
     const dat = data.slice(gomFileEntr.offset, gomFileEntr.offset + (gomFileEntr.isCompressed ? gomFileEntr.comprSize : gomFileEntr.size));
     if (gomFileEntr.isCompressed) {
-        const decompressed = await decompressZlib({
+        const decompressed = decompressZlib({
             buffer: Buffer.from(dat),
             dataLength: gomFileEntr.size
         }, true);
@@ -190,7 +208,7 @@ async function findGom(gomArchive, data, torPath) {
 
     const dat = data.slice(bucketInfoEntr.offset, bucketInfoEntr.offset + (bucketInfoEntr.isCompressed ? bucketInfoEntr.comprSize : bucketInfoEntr.size));
     if (bucketInfoEntr.isCompressed) {
-        const decompressed = await decompressZlib({
+        const decompressed = decompressZlib({
             buffer: Buffer.from(dat),
             dataLength: bucketInfoEntr.size
         }, true);
@@ -316,12 +334,12 @@ async function findPrototypes(gomArchive, data, torPath) {
 
     const dat = data.slice(protInfoEntr.offset, protInfoEntr.offset + (protInfoEntr.isCompressed ? protInfoEntr.comprSize : protInfoEntr.size));
     if (protInfoEntr.isCompressed) {
-        const decompressed = await decompressZlib({
+        const decompressed = decompressZlib({
             buffer: Buffer.from(dat),
             dataLength: protInfoEntr.size
         }, true);
         const infoDV = new DataView(decompressed.buffer);
-        await loadPrototypes(gomArchive, data, torPath, infoDV);
+        loadPrototypes(gomArchive, data, torPath, infoDV);
     }
 }
 async function loadPrototypes(gomArchive, data, torPath, dv) {
@@ -357,7 +375,7 @@ async function loadPrototypes(gomArchive, data, torPath, dv) {
                 let fData = null;
                 if (file.isCompressed) {
                     const blob = data.slice(file.offset, file.offset + file.comprSize);
-                    const decompressed = await decompressZlib({
+                    const decompressed = decompressZlib({
                         buffer: Buffer.from(blob),
                         dataLength: file.size
                     }, true);

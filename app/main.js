@@ -1045,6 +1045,7 @@ function initNodeViewer () {
     show: false
   });
   nodeViewerWin.once('ready-to-show', () => nodeViewerWin.show());
+  nodeViewerWin.webContents.openDevTools();
   
   nodeViewerWin.removeMenu();
   nodeViewerWin.loadFile(`${__dirname}/src/html/NodeViewer.html`);

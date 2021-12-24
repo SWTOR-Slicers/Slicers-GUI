@@ -297,7 +297,7 @@ function getChecked() {
     const chkbxs = document.querySelectorAll('input');
 
     for (const box of chkbxs) {
-        if (box.checked) {
+        if (box.checked && box.name != 'All') {
             checked.push(box.name);
         }
     }

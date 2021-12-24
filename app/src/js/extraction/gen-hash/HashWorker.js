@@ -39,8 +39,8 @@ let hash;
 let GTree;
 let _dom = null;
 
-let decompressZlib = async (params) => {
-    const ret = await inflateZlib(path.dirname(cache['configPath']), params);
+let decompressZlib = (params) => {
+    const ret = inflateZlib(path.dirname(cache['configPath']), params);
     return ret;
 }
 
@@ -62,7 +62,7 @@ onmessage = (e) => {
         case "findFileNames":
             totalFilesSearched = 0;
             totalNamesFound = 0;
-            generateNames(GTree.nodesByFqn, GTree.nodesList, e.data.data.assets, e.data.data.checked, false);
+            generateNames(GTree.nodesByFqn, GTree.nodesList, e.data.data.assets, e.data.data.checked, false, e.data.data.extractPath);
             break;
         case "setDOM":
             _dom = e.data.data;
@@ -89,9 +89,9 @@ onmessage = (e) => {
     }
 }
 
-async function generateNames(nodesByFqn, nodesList, assets, checked, genHash) {
+async function generateNames(nodesByFqn, nodesList, assets, checked, genHash, extractPath) {
     const names = [];
-    await Promise.all(checked.map((ext) => { parseFiles(ext, assets, nodesByFqn, nodesList, genHash, names); }));
+    await Promise.all(checked.map((ext) => { parseFiles(ext, assets, nodesByFqn, nodesList, genHash, names, genHash ? "" : extractPath); }));
     postMessage({
         "message": "complete",
         "data": (genHash) ? names : `File name output complete. Found ${totalNamesFound} names, and searched ${totalFilesSearched} files.`
@@ -105,8 +105,9 @@ async function generateNames(nodesByFqn, nodesList, assets, checked, genHash) {
  * @param  {Object} nodesList GOM Node object
  * @param  {boolean} genHash Wether to generateHash or findFileNames
  * @param  {Array<Object>} names An array of objects that represent lines in the hash file
+ * @param  {string} extractPath the path to write filenames to, if finding files
  */
-async function parseFiles(extension, assets, nodesByFqn, nodesList, genHash, names) {
+async function parseFiles(extension, assets, nodesByFqn, nodesList, genHash, names, extractPath) {
     let parseReturns = [];
     const assetsDict = Object.assign({}, ...Object.values(assets));
 

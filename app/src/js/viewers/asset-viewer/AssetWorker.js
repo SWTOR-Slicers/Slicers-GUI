@@ -24,10 +24,10 @@ async function loadArchives(torFiles) {
     let numLoaded = 0;
     const loadedArchives = await Promise.all(torFiles.map((tf, idx) => {
         numLoaded++;
-        loadArchive(tf, numLoaded, torFiles.length, idx);
+        return loadArchive(tf, numLoaded, torFiles.length, idx);
     }));
     postMessage({
-        "message": "",
+        "message": "complete",
         "data": {
             "archives": loadedArchives
         }

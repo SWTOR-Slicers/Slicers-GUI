@@ -2,6 +2,7 @@ import { codebooks } from "./classes/util/Cookbooks.js";
 
 const fs = require("fs");
 const edge = require('electron-edge-js');
+const path = require('path');
 /**
  * Shuffles a list using the modern Fisher-Yates shuffle algorithm
  * @param  {Array} a Array to be shuffled and returned.
@@ -922,7 +923,7 @@ export function getPropertyRecursive(data, prop) {
  * @param {Object} params the parameters to pass to the inflate function
  * @returns The inflated buffer
  */
-export function inflateZlib(resourcePath, params) {
+export async function inflateZlib(resourcePath, params) {
     const func = edge.func({
         source: function() {/*
             using System.IO;
@@ -944,7 +945,9 @@ export function inflateZlib(resourcePath, params) {
         references: [ `${path.join(resourcePath, 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
     });
 
-    return func(params);
+    const res = func(params, true);
+
+    return res;
 }
 
 /**

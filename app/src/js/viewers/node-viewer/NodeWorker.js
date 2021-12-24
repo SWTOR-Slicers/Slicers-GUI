@@ -1,42 +1,24 @@
-import { hashlittle2, uint64, readString as readStr, readVarInt, uint64C } from "../../Util.js";
+import { hashlittle2, uint64, readString as readStr, readVarInt, uint64C, inflateZlib } from "../../Util.js";
 import { GOM } from "../../classes/util/Gom.js";
 import { DomLoader } from "../../classes/DomLoaders.js";
 
 const path = require('path');
 const { promises: { readFile }, readFileSync, existsSync, mkdirSync } = require('fs');
-const edge = require('electron-edge-js');
 
 const cache = {
     "configPath": "",
     "tmpPath": "",
     "store": {}
 }
-let decompressZlib = function(){};
+let decompressZlib = async (params) => {
+    const ret = await inflateZlib(path.dirname(cache['configPath']), params);
+    return ret;
+}
 
 onmessage = (e) => {
     switch (e.data.message) {
         case "init":
             cache['configPath'] = path.normalize(path.join(e.data.data, "config.json"));
-            decompressZlib = edge.func({
-                source: function() {/*
-                    using System.IO;
-                    using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
-                
-                    async (dynamic input) => {
-                        byte[] buffer = (byte[])input.buffer;
-                        MemoryStream stream = new MemoryStream(buffer);
-                        InflaterInputStream inflaterStream = new InflaterInputStream(stream);
-        
-                        byte[] decompressed = new byte[(int)input.dataLength];
-                        inflaterStream.Read(decompressed, 0, (int)input.dataLength);
-                        inflaterStream.Dispose();
-                        stream.Close();
-        
-                        return decompressed;
-                    }
-                */},
-                references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
-            });
             break;
         case "loadNodes":
             loadNodes(e.data.data.torFiles[1], false);
@@ -63,7 +45,7 @@ async function loadNodes(torPath, loadProts) {
         }
     }
     
-    readFile(torPath).then(buff => {
+    readFile(torPath).then(async (buff) => {
         const data = buff.buffer;
         const datView = new DataView(data);
         ftOffset = datView.getUint32(12, !0);
@@ -114,9 +96,9 @@ async function loadNodes(torPath, loadProts) {
 
         if (Object.keys(gomArchive.files).length > 0) {
             if (path.basename(torPath).indexOf('systemgenerated_gom_1') > -1) {
-                findClientGOM(gomArchive, data, torPath);
+                await findClientGOM(gomArchive, data, torPath);
             } else if (loadProts) {
-                findPrototypes(gomArchive, data, torPath);
+                await findPrototypes(gomArchive, data, torPath);
             } else {
                 cache['store']['gomArchive'] = gomArchive;
                 cache['store']['data'] = data;
@@ -129,13 +111,13 @@ async function loadNodes(torPath, loadProts) {
     });
 }
 
-function findClientGOM(gomArchive, data, torPath) {
+async function findClientGOM(gomArchive, data, torPath) {
     const gomFileHash = hashlittle2("/resources/systemgenerated/client.gom");
     const gomFileEntr = gomArchive.files[`${gomFileHash[1]}|${gomFileHash[0]}`];
 
     const dat = data.slice(gomFileEntr.offset, gomFileEntr.offset + (gomFileEntr.isCompressed ? gomFileEntr.comprSize : gomFileEntr.size));
     if (gomFileEntr.isCompressed) {
-        const decompressed = decompressZlib({
+        const decompressed = await decompressZlib({
             buffer: Buffer.from(dat),
             dataLength: gomFileEntr.size
         }, true);
@@ -202,13 +184,13 @@ function loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr) {
     })
 }
 
-function findGom(gomArchive, data, torPath) {
+async function findGom(gomArchive, data, torPath) {
     const bucketInfoHash = hashlittle2(`/resources/systemgenerated/buckets.info`);
     const bucketInfoEntr = gomArchive.files[`${bucketInfoHash[1]}|${bucketInfoHash[0]}`];
 
     const dat = data.slice(bucketInfoEntr.offset, bucketInfoEntr.offset + (bucketInfoEntr.isCompressed ? bucketInfoEntr.comprSize : bucketInfoEntr.size));
     if (bucketInfoEntr.isCompressed) {
-        const decompressed = decompressZlib({
+        const decompressed = await decompressZlib({
             buffer: Buffer.from(dat),
             dataLength: bucketInfoEntr.size
         }, true);
@@ -328,21 +310,21 @@ function readAllItems(dv, pos, length, torPath, bktIdx, bktFile, isBucket) {
     })
 }
 
-function findPrototypes(gomArchive, data, torPath) {
+async function findPrototypes(gomArchive, data, torPath) {
     const protInfoHash = hashlittle2(`/resources/systemgenerated/prototypes.info`);
     const protInfoEntr = gomArchive.files[`${protInfoHash[1]}|${protInfoHash[0]}`];
 
     const dat = data.slice(protInfoEntr.offset, protInfoEntr.offset + (protInfoEntr.isCompressed ? protInfoEntr.comprSize : protInfoEntr.size));
     if (protInfoEntr.isCompressed) {
-        const decompressed = decompressZlib({
+        const decompressed = await decompressZlib({
             buffer: Buffer.from(dat),
             dataLength: protInfoEntr.size
         }, true);
         const infoDV = new DataView(decompressed.buffer);
-        loadPrototypes(gomArchive, data, torPath, infoDV);
+        await loadPrototypes(gomArchive, data, torPath, infoDV);
     }
 }
-function loadPrototypes(gomArchive, data, torPath, dv) {
+async function loadPrototypes(gomArchive, data, torPath, dv) {
     let pos = 0;
 
     const magicNum = dv.getInt32(pos, true);
@@ -375,7 +357,7 @@ function loadPrototypes(gomArchive, data, torPath, dv) {
                 let fData = null;
                 if (file.isCompressed) {
                     const blob = data.slice(file.offset, file.offset + file.comprSize);
-                    const decompressed = decompressZlib({
+                    const decompressed = await decompressZlib({
                         buffer: Buffer.from(blob),
                         dataLength: file.size
                     }, true);

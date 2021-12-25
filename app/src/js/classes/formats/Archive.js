@@ -97,10 +97,10 @@ class Archive {
             const tableIdx = this.tables.length;
             this.tables.push(table);
 
-            for (let i = 0; i < this.tableCapacity; ++i) {
+            for (let i = 0; i < this.tableCapacity; i++) {
                 let offset = fileTable.readUint64();
                 if (offset === 0) {
-                    fileTable.offset += 0x22;
+                    fileTable.seek(0x22, 1);
                     continue;
                 }
                 const headerSize = fileTable.readUint32();
@@ -115,10 +115,6 @@ class Archive {
                 const sh = fileTable.readUint32();
                 const ph = fileTable.readUint32();
                 const crc = fileTable.readUint32();
-
-                if (sh === 0xC75A71E6 && ph === 0xE4B96113) continue;
-                if (sh === 0xCB34F836 && ph === 0x8478D2E1) continue;
-                if (sh === 0x02C9CF77 && ph === 0xF077E262) continue;
 
                 const compression = fileTable.readUint8();
                 const fileObj = new ArchiveEntry(

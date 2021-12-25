@@ -100,25 +100,25 @@ async function generateNames(nodesByFqn, nodesList, assets, checked, genHash, ex
 /**
  * Parses filenames for the given extension.
  * @param  {string} extension The current extentions
- * @param  {Object} assets Object representing all of the assets in the .tor files
+ * @param  {Object} archives Object representing a list of all the .tor archive files
  * @param  {Object} nodesByFqn GOM Node object
  * @param  {Object} nodesList GOM Node object
  * @param  {boolean} genHash Wether to generateHash or findFileNames
  * @param  {Array<Object>} names An array of objects that represent lines in the hash file
  * @param  {string} extractPath the path to write filenames to, if finding files
  */
-async function parseFiles(extension, assets, nodesByFqn, nodesList, genHash, names, extractPath) {
+async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, names, extractPath) {
     let parseReturns = [];
-    assets.map(asset => asset.entries);
-    console.log(Object.values(assets));
+    const assets = Object.values(archives).map(asset => asset.entries);
     
     let assetsDict = {};
     for (const entrList of assets) {
-        Object.assign(assetsDict, ...entrList);
+        Object.assign(assetsDict, entrList);
     }
 
     Object.keys(assetsDict).map(key => {
-        const fileH = hash.getFileNameByHash(...d.split('|').reverse());
+        const asset = assetsDict[key];
+        const fileH = hash.getFileNameByHash(...key.split('|').reverse());
         assetsDict[key] = {
             ...asset,
             "isNamed": fileH !== null,
@@ -127,7 +127,7 @@ async function parseFiles(extension, assets, nodesByFqn, nodesList, genHash, nam
     });
 
     const assetDictKeys = Object.keys(assetsDict)
-        .map(d => hash.getFileNameByHash(...d.split('|').reverse())?.contains("." + extension.toLowerCase()));
+        .map(key => hash.getFileNameByHash(...key.split('|').reverse())?.contains("." + extension.toLowerCase()));
     
     const matches = [];
     const dom = nodesByFqn;

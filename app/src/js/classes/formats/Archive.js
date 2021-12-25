@@ -56,9 +56,18 @@ class Archive {
 
         this.data = new FileWrapper(this.file);
 
-        let mypHeader = this.data.read(0x24);
+        if (loadTables) {
+            this.#readFileTables();
+        }
+    }
+
+    async #readFileTables() {
+        // const testBuf = this.data.read(this.data.length);
+        this.entries = {};
+
+        let mypHeader = this.data.read(36);
         const magic = mypHeader.readUint32();
-        if (magic !== 0x50594d) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Not a .tor file (Wrong file header)`);
+        if (magic !== 0x50594D) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Not a .tor file (Wrong file header)`);
         
         this.version = mypHeader.readUint32();
         if (this.version !== 5) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Only version 5 is supported, file has ${this.version}`);
@@ -66,8 +75,8 @@ class Archive {
         this.bom = mypHeader.readUint32()
         if (this.bom !== 0xFD23EC43) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Unexpected byte order`);
 
-        this.tableOffset = mypHeader.readUint64();
-        if (this.tableOffset === 0) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. File is empty`);
+        let tableOffset = mypHeader.readUint64();
+        if (tableOffset === 0) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. File is empty`);
 
         this.tableCapacity = mypHeader.readUint32();
         this.totalFiles = mypHeader.readUint32();
@@ -75,34 +84,27 @@ class Archive {
         mypHeader.readUint32();
         mypHeader.readUint32();
 
-        if (loadTables) {
-            this.#readFileTables();
-        }
-    }
+        while (tableOffset != 0n) {
+            this.data.seek(tableOffset, 0);
+            // testBuf.seek(tableOffset, 0);
 
-    async #readFileTables() {
-        this.entries = {};
-        while (this.tableOffset > 0n) {
-            this.data.seek(this.tableOffset, 0);
-            let fileTableHeader = this.data.read(0xC);
-            const newTableCapacity = fileTableHeader.readUint32();
-            if (newTableCapacity != this.tableCapacity) {
-                console.log(`Expected newTableCapacity of ${newTableCapacity} to equal global table capacity of ${this.tableCapacity}, unless this is the last table.`);
-                this.tableCapacity = newTableCapacity;
-            }
-            this.tableOffset = fileTableHeader.readUint64();
+            const fileTableHeader = this.data.read(12);
+            const numFiles = fileTableHeader.readUint32();
 
-            let fileTable = this.data.read(this.tableCapacity * 0x22);
-            const table = new ArchiveEntryTable(this.tableCapacity, this.tableOffset);
+            tableOffset = fileTableHeader.readUint64();
+
+            const fileTable = this.data.read(numFiles * 34);
+            const table = new ArchiveEntryTable(numFiles, tableOffset);
             const tableIdx = this.tables.length;
             this.tables.push(table);
 
-            for (let i = 0; i < this.tableCapacity; i++) {
+            for (let i = 0; i < numFiles; i++) {
                 let offset = fileTable.readUint64();
                 if (offset === 0) {
                     fileTable.seek(0x22, 1);
                     continue;
                 }
+
                 const headerSize = fileTable.readUint32();
 
                 const comprSize = fileTable.readUint32();
@@ -110,7 +112,7 @@ class Archive {
 
                 const reOff = fileTable.offset;
                 const fileId = fileTable.readUint64();
-                fileTable.offset = reOff;
+                fileTable.seek(reOff, 0);
 
                 const sh = fileTable.readUint32();
                 const ph = fileTable.readUint32();

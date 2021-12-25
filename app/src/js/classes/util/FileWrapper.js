@@ -18,11 +18,11 @@ class Reader {
      */
      seek(offset, position = 0) {
         if (position == 0) {
-            this.offset = offset;
+            this.offset = Number(offset);
         } else if (position == 1) {
-            this.offset = this.offset + offset;
+            this.offset = this.offset + Number(offset);
         } else if (position == 2) {
-            this.offset = this.data.byteLength - offset;
+            this.offset = Number(this.length) - Number(offset);
         } else {
             throw Error(`Unexpected position value. Expected 0, 1, or 2, but got ${position}.`);
         }
@@ -71,10 +71,10 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readUint16(endianness = true) {
-        const needDV = this.offset % 2 == 0;
-        const res = needDV ? new Uint16Array(this.data, this.offset, 1) : new DataView(this.data).getUint16(this.offset, endianness);
+        const noDV = this.offset % 2 == 0;
+        const res = noDV ? new Uint16Array(this.data, this.offset, 1) : new DataView(this.data).getUint16(this.offset, endianness);
         this.offset += 2;
-        return needDV ? (endianness ? res[0] : res.reverse()[0]) : res;
+        return noDV ? (endianness ? res[0] : res.reverse()[0]) : res;
     }
 
     /**
@@ -82,10 +82,10 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readUint32(endianness = true) {
-        const needDV = this.offset % 4 == 0;
-        const res = needDV ? new Uint32Array(this.data, this.offset, 1) : new DataView(this.data).getUint32(this.offset, endianness);
+        const noDV = this.offset % 4 == 0;
+        const res = noDV ? new Uint32Array(this.data, this.offset, 1) : new DataView(this.data).getUint32(this.offset, endianness);
         this.offset += 4;
-        return needDV ? (endianness ? res[0] : res.reverse()[0]) : res;
+        return noDV ? (endianness ? res[0] : res.reverse()[0]) : res;
     }
 
     /**
@@ -93,13 +93,13 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readUint64(endianness = true) {
-        const needDV = this.offset % 8 == 0;
+        const noDV = this.offset % 8 == 0;
         let res;
-        if (needDV) {
+        if (noDV) {
+            res = endianness ? BigInt(this.readUint32()) | BigInt(this.readUint32()) << 32n : BigInt(this.readUint32()) << 32n | BigInt(this.readUint32());
+        } else {
             res = new DataView(this.data).getBigUint64(this.offset, endianness);
             this.offset += 8;
-        } else {
-            res = endianness ? BigInt(this.readUint32()) | BigInt(this.readUint32()) << 32n : BigInt(this.readUint32()) << 32n | BigInt(this.readUint32());
         }
         return res;
     }
@@ -119,10 +119,10 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readInt16(endianness = true) {
-        const needDV = this.offset % 2 == 0;
-        const res = needDV ? new Int16Array(this.data, this.offset, 1) : new DataView(this.data).getInt16(this.offset, endianness);
+        const noDV = this.offset % 2 == 0;
+        const res = noDV ? new Int16Array(this.data, this.offset, 1) : new DataView(this.data).getInt16(this.offset, endianness);
         this.offset += 2;
-        return needDV ? (endianness ? res[0] : res.reverse()[0]) : res;
+        return noDV ? (endianness ? res[0] : res.reverse()[0]) : res;
     }
 
     /**
@@ -130,8 +130,8 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readInt32(endianness = true) {
-        const needDV = this.offset % 4 == 0;
-        const res = needDV ? new Int32Array(this.data, this.offset, 1) : new DataView(this.data).getInt32(this.offset, endianness);
+        const noDV = this.offset % 4 == 0;
+        const res = noDV ? new Int32Array(this.data, this.offset, 1) : new DataView(this.data).getInt32(this.offset, endianness);
         this.offset += 4;
         return endianness ? res[0] : res.reverse()[0];
     }
@@ -141,13 +141,13 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readInt64(endianness = true) {
-        const needDV = this.offset % 8 == 0;
+        const noDV = this.offset % 8 == 0;
         let res;
-        if (needDV) {
+        if (noDV) {
+            res = endianness ? BigInt(this.readInt32()) | BigInt(this.readInt32()) << 32n : BigInt(this.readInt32()) << 32n | BigInt(this.readInt32());
+        } else {
             res = new DataView(this.data).getBigInt64(this.offset, endianness);
             this.offset += 8;
-        } else {
-            res = endianness ? BigInt(this.readInt32()) | BigInt(this.readInt32()) << 32n : BigInt(this.readInt32()) << 32n | BigInt(this.readInt32());
         }
         return res;
     }
@@ -167,10 +167,10 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readFloat32(endianness = true) {
-        const needDV = this.offset % 4 == 0;
-        const res = needDV ? new Float32Array(this.data, this.offset, 1) : new DataView(this.data).getFloat32(this.offset, endianness);
+        const noDV = this.offset % 4 == 0;
+        const res = noDV ? new Float32Array(this.data, this.offset, 1) : new DataView(this.data).getFloat32(this.offset, endianness);
         this.offset += 4;
-        return needDV ? (endianness ? res[0] : res.reverse()[0]) : res;
+        return noDV ? (endianness ? res[0] : res.reverse()[0]) : res;
     }
 
     /**
@@ -178,13 +178,13 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readFloat64(endianness = true) {
-        const needDV = this.offset % 8 == 0;
+        const noDV = this.offset % 8 == 0;
         let res;
-        if (needDV) {
+        if (noDV) {
+            res = endianness ? BigInt(this.readFloat32()) | BigInt(this.readFloat32()) << 32n : BigInt(this.readFloat32()) << 32n | BigInt(this.readFloat32());
+        } else {
             res = new DataView(this.data).getFloat64(this.offset, endianness);
             this.offset += 8;
-        } else {
-            res = endianness ? BigInt(this.readFloat32()) | BigInt(this.readFloat32()) << 32n : BigInt(this.readFloat32()) << 32n | BigInt(this.readFloat32());
         }
         return res;
     }
@@ -228,11 +228,11 @@ class FileWrapper {
      */
     seek(offset, position = 0) {
         if (position == 0) {
-            this.offset = offset;
+            this.offset = BigInt(offset);
         } else if (position == 1) {
-            this.offset = this.offset + offset;
+            this.offset = this.offset + BigInt(offset);
         } else if (position == 2) {
-            this.offset = this.length - offset;
+            this.offset = BigInt(this.length) - BigInt(offset);
         } else {
             throw Error(`Unexpected position value. Expected 0, 1, or 2, but got ${position}.`);
         }
@@ -261,9 +261,16 @@ class FileWrapper {
      */
     copy(length) {
         const buffer = new Uint8Array(length);
-        fs.readSync(this.descriptor, buffer, 0, length, this.offset);
+        fs.readSync(this.descriptor, buffer, 0, length, Number(this.offset));
         this.offset += BigInt(length);
         return buffer;
+    }
+
+    /**
+     * Closes the file descriptor referenced by this instance of FileWrapper.
+     */
+    close() {
+        fs.closeSync(this.descriptor);
     }
 }
 

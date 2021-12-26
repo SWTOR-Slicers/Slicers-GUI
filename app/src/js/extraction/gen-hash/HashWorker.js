@@ -94,7 +94,11 @@ async function generateNames(nodesByFqn, nodesList, assets, checked, genHash, ex
     await Promise.all(checked.map((ext) => { parseFiles(ext, assets, nodesByFqn, nodesList, genHash, names, genHash ? "" : extractPath); }));
     postMessage({
         "message": "complete",
-        "data": (genHash) ? names : `File name output complete. Found ${totalNamesFound} names, and searched ${totalFilesSearched} files.`
+        "data": {
+            "names": (genHash) ? names : `File name output complete. Found ${totalNamesFound} names, and searched ${totalFilesSearched} files.`,
+            "numFilesFound": totalNamesFound,
+            "numFilesSearched": totalFilesSearched
+        }
     });
 }
 /**
@@ -118,7 +122,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
 
     Object.keys(assetsDict).map(key => {
         const asset = assetsDict[key];
-        const fileH = hash.getFileNameByHash(...key.split('|').reverse());
+        const fileH = hash.getFileNameByHash(key);
         assetsDict[key] = {
             ...asset,
             "isNamed": fileH !== null,
@@ -127,7 +131,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
     });
 
     const assetDictKeys = Object.keys(assetsDict)
-        .map(key => hash.getFileNameByHash(...key.split('|').reverse())?.contains("." + extension.toLowerCase()));
+        .map(key => assetsDict[key].hash?.contains("." + extension.toLowerCase()));
     
     const matches = [];
     const dom = nodesByFqn;

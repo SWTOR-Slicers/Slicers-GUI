@@ -160,8 +160,15 @@ function initHashWorker() {
     hashWorker.onmessage = (e) => {
         switch (e.data.message) {
             case "complete":
-                const names = e.data.data;
+                const names = e.data.data.names;
                 console.log(names);
+
+                document.querySelector('.header-container').innerHTML = 'Select file types to generate';
+                hashTypeCont.classList.toggle('hidden');
+                genHashes.innerHTML = 'Load Data';
+                genHashes.classList.toggle('disabled');
+
+                ipcRenderer.send("hashComplete", [e.data.data.numFilesFound, e.data.data.numFilesSearched]);
                 break;
             case "progress":
                 namesFound.innerHTML = e.data.data.totalNamesFound;
@@ -248,10 +255,8 @@ function initListeners() {
                     "assets": archives
                 }
             });
-            
-            // document.querySelector('.header-container').innerHTML = 'Select file types to generate';
-            // hashTypeCont.classList.toggle('hidden');
-            // genHashes.innerHTML = 'Load Data';
+
+            genHashes.classList.toggle('disabled');
         }
     });
 }

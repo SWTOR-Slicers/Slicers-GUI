@@ -1109,6 +1109,8 @@ function initGenHashListeners(window) {
     mainWindow.webContents.send('genHashStarted');
   });
   ipcMain.on('hashComplete', (event, data) => {
+    const numFound = data[0].numFound;
+    const numSearched = data[0].numSearched;
     window.close();
     mainWindow.webContents.send("genHashCompl", "");
   });

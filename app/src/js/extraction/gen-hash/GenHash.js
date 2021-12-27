@@ -135,6 +135,7 @@ function initAssetWorker() {
                     progressBar__baseNodes.style.width == '100%' &&
                     progressBar__clientGOM.style.width == '100%' &&
                     progressBar__protoNodes.style.width == '100%') {
+
                     document.querySelector('.header-container').innerHTML = 'Loading Complete!';
                     spinner.classList.toggle('hidden');
                     generate.classList.toggle('hidden');

@@ -29,7 +29,7 @@ class HashDictionary {
     loadHash(ph, sh, name, crc) {
         const hashData = new HashData(ph, sh, name, crc);
         this.hashByFileName[name] = hashData;
-        this.fileNameByHash[`${sh}|${ph}`] = hashData;
+        this.fileNameByHash[`${parseInt(sh, 16)}|${parseInt(ph, 16)}`] = hashData;
     }
 
     async loadHashList(progressBarElem) {
@@ -64,15 +64,18 @@ class HashDictionary {
      * 
      * @returns {Array} Array containing primary and secondary hashes.
      */
-    getHashByFileName(name) { const entry = this.hashByFileName[name]; return [entry.ph, entry.sh]; }
+    getHashByFileName(name) { const entry = this.hashByFileName[name]; return [entry?.ph, entry?.sh]; }
 
     /**
      * gets the file name based on the provided hash
      * @param  {string} hash the file's hash
      * 
-     * @returns {HashData} HashData instance for the provided hashes.
+     * @returns {string} Name of the file with that hash
      */
-    getFileNameByHash(hash) { const entry = this.fileNameByHash[hash]; return entry.name; }
+    getFileNameByHash(hash) {
+        const entry = this.fileNameByHash[hash];
+        return entry?.name;
+    }
 }
 
 export {HashDictionary};

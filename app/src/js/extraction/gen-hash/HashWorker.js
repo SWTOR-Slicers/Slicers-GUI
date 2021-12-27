@@ -120,37 +120,24 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
         Object.assign(assetsDict, entrList);
     }
 
+    const matches = [];
     Object.keys(assetsDict).map(key => {
         const asset = assetsDict[key];
         const fileH = hash.getFileNameByHash(key);
         assetsDict[key] = {
             ...asset,
-            "isNamed": fileH !== null,
-            "hash": (fileH !== null) ? fileH : `${asset.crc}_${asset.fileId}`
+            "isNamed": new Boolean(fileH),
+            "hash": (fileH) ? fileH : `${asset.crc}_${asset.fileId}`
+        }
+        if (assetsDict[key].hash?.includes("." + extension.toLowerCase())) {
+            matches.push(assetsDict[key]);
         }
     });
-
-    const assetDictKeys = Object.keys(assetsDict)
-        .map(key => assetsDict[key].hash?.contains("." + extension.toLowerCase()));
     
-    const matches = [];
     const dom = nodesByFqn;
 
     let filesSearched = 0;
     let namesFound = 0;
-
-    for (const assetKey in assetDictKeys) {
-        if (assetKey.split('.').at(-1).toUpperCase() !== extension) continue;
-        if (assets[assetKey]) {
-            const asset = assets[assetKey];
-            const fileH = hash.getFileNameByHash(...d.split('|').reverse());
-            matches.push({
-                ...asset,
-                "isNamed": fileH !== null,
-                "hash": (fileH !== null) ? fileH : `${asset.crc}_${asset.fileId}`
-            });
-        }
-    }
 
     switch (extension) {
         case "XML":
@@ -404,17 +391,12 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
     totalFilesSearched += filesSearched;
     totalNamesFound += namesFound;
 
-    if (parseReturns.length > 0) {
+    if (parseReturns.length > 0 && genHash) {
         for (const n of parseReturns) {
             if (n) {
                 const hash = hashlittle2(n);
                 const file = Object.entries(assets).find(val => val.ph == hash[1] && val.sh == hash[0]);
-                names.push({
-                    "name": n,
-                    "ph": hash[1],
-                    "sh": hash[0],
-                    "crc": file.metaDataCheckSum
-                });
+                names.push([n, hash[1].toString(16), hash[0].toString(16), file.metaDataCheckSum.toString(16)].join('#'));
             }
         }
     }

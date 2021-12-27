@@ -74,7 +74,7 @@ class HashDictionary {
      */
     getFileNameByHash(hash) {
         const entry = this.fileNameByHash[hash];
-        return entry?.name;
+        return entry?.filename;
     }
 }
 

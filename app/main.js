@@ -1238,7 +1238,9 @@ async function extract(progBarId) {
       values = [];
       const tors = extractionPresetConsts[cache.extraction.version]["names"];
       for (const tor of tors) {
-        values.push(path.join(temp, tor));
+        if (fs.existsSync(path.join(cache['assetsFolder'], tor))) {
+          values.push(path.join(temp, tor));
+        }
       }
       if (fs.existsSync(lastPath)) {
         values.push(lastPath);

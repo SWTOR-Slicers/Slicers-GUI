@@ -1,11 +1,10 @@
 const fs = require('fs');
 const { Float16Array } = require("@petamoriken/float16");
 
-class Reader {
-    /**
-     * A custom Reader class for ease of use.
-     * @param  {Uint8Array} data the data to wrap.
-     */
+/**
+ * A custom Reader class for ease of use.
+ */
+ class Reader {
     constructor(data) {
         this.data = data.buffer;
         this.offset = 0;
@@ -22,7 +21,7 @@ class Reader {
         } else if (position == 1) {
             this.offset = this.offset + Number(offset);
         } else if (position == 2) {
-            this.offset = Number(this.length) - Number(offset);
+            this.offset = Number(this.data.byteLength) - Number(offset);
         } else {
             throw Error(`Unexpected position value. Expected 0, 1, or 2, but got ${position}.`);
         }
@@ -30,15 +29,17 @@ class Reader {
 
     /**
      * read the next byte and return a Uint8 array.
+     * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readByte(endianness = true) {
         const res = new Uint8Array(this.data, this.offset, 1);
-        this.offset += length;
+        this.offset ++;
         return endianness ? res[0] : res.reverse()[0];
     }
 
     /**
      * read the next char and return a string.
+     * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readChar(endianness = true) {
         const res = new Uint8Array(this.data, this.offset, 1);
@@ -49,8 +50,9 @@ class Reader {
     /**
      * reads the next (length) bytes and returns a Uint8 array.
      * @param  {number} length the number of bytes to read
+     * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-    readBytes(length) {
+    readBytes(length, endianness = true) {
         const res = new Uint8Array(this.data, this.offset, length);
         this.offset += length;
         return endianness ? res[0] : res.reverse()[0];
@@ -71,10 +73,10 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readUint16(endianness = true) {
-        const noDV = this.offset % 2 == 0;
-        const res = noDV ? new Uint16Array(this.data, this.offset, 1) : new DataView(this.data).getUint16(this.offset, endianness);
+        const noDV = this.offset % 2 == 0 && endianness;
+        const res = noDV ? new Uint16Array(this.data, this.offset, 1)[0] : new DataView(this.data).getUint16(this.offset, endianness);
         this.offset += 2;
-        return noDV ? (endianness ? res[0] : res.reverse()[0]) : res;
+        return res;
     }
 
     /**
@@ -82,10 +84,10 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readUint32(endianness = true) {
-        const noDV = this.offset % 4 == 0;
-        const res = noDV ? new Uint32Array(this.data, this.offset, 1) : new DataView(this.data).getUint32(this.offset, endianness);
+        const noDV = this.offset % 4 == 0 && endianness;
+        const res = noDV ? new Uint32Array(this.data, this.offset, 1)[0] : new DataView(this.data).getUint32(this.offset, endianness);
         this.offset += 4;
-        return noDV ? (endianness ? res[0] : res.reverse()[0]) : res;
+        return res;
     }
 
     /**
@@ -119,10 +121,10 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readInt16(endianness = true) {
-        const noDV = this.offset % 2 == 0;
-        const res = noDV ? new Int16Array(this.data, this.offset, 1) : new DataView(this.data).getInt16(this.offset, endianness);
+        const noDV = this.offset % 2 == 0 && endianness;
+        const res = noDV ? new Int16Array(this.data, this.offset, 1)[0] : new DataView(this.data).getInt16(this.offset, endianness);
         this.offset += 2;
-        return noDV ? (endianness ? res[0] : res.reverse()[0]) : res;
+        return res;
     }
 
     /**
@@ -130,10 +132,10 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readInt32(endianness = true) {
-        const noDV = this.offset % 4 == 0;
-        const res = noDV ? new Int32Array(this.data, this.offset, 1) : new DataView(this.data).getInt32(this.offset, endianness);
+        const noDV = this.offset % 4 == 0 && endianness;
+        const res = noDV ? new Int32Array(this.data, this.offset, 1)[0] : new DataView(this.data).getInt32(this.offset, endianness);
         this.offset += 4;
-        return endianness ? res[0] : res.reverse()[0];
+        return res;
     }
 
     /**
@@ -167,10 +169,10 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readFloat32(endianness = true) {
-        const noDV = this.offset % 4 == 0;
-        const res = noDV ? new Float32Array(this.data, this.offset, 1) : new DataView(this.data).getFloat32(this.offset, endianness);
+        const noDV = this.offset % 4 == 0 && endianness;
+        const res = noDV ? new Float32Array(this.data, this.offset, 1)[0] : new DataView(this.data).getFloat32(this.offset, endianness);
         this.offset += 4;
-        return noDV ? (endianness ? res[0] : res.reverse()[0]) : res;
+        return res;
     }
 
     /**
@@ -178,14 +180,9 @@ class Reader {
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readFloat64(endianness = true) {
-        const noDV = this.offset % 8 == 0;
-        let res;
-        if (noDV) {
-            res = endianness ? BigInt(this.readFloat32()) | BigInt(this.readFloat32()) << 32n : BigInt(this.readFloat32()) << 32n | BigInt(this.readFloat32());
-        } else {
-            res = new DataView(this.data).getFloat64(this.offset, endianness);
-            this.offset += 8;
-        }
+        const noDV = this.offset % 8 == 0 && endianness;
+        const res = noDV ? new Float64Array(this.data, this.offset, 1)[0] : new DataView(this.data).getFloat64(this.offset, endianness);
+        this.offset += 8;
         return res;
     }
 

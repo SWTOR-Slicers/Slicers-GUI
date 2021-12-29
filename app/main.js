@@ -82,6 +82,13 @@ function initGlobalListeners() {
     const win = getWindowFromArg(data);
     win.close();
   });
+  ipcMain.on("checkValidity", (event, data) => {
+    switch(data[0]) {
+      case "node":
+        event.returnValue = fs.existsSync(path.join(cache['assetsFolder'], `swtor_${cache.extraction.version == 'Live' ? "main" : "test"}_systemgenerated_gom_1.tor`)) && fs.existsSync(path.join(cache['assetsFolder'], `swtor_${cache.extraction.version == 'Live' ? "main" : "test"}_global_1.tor`));
+        break;
+    }
+  })
 }
 function getWindowFromArg(arg) {
   let win;

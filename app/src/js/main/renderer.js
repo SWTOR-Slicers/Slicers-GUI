@@ -183,7 +183,12 @@ function setupListeners() {
         log(`Extraction: Unpack started.`, 'info');
     });
     genHashBtn.addEventListener("click", (e) => {
-        ipcRenderer.send('runExec', 'genHash');
+        const nodesAvailable = ipcRenderer.sendSync('checkValidity', ['node']);
+        if (nodesAvailable) {
+            ipcRenderer.send('runExec', 'genHash');
+        } else {
+            log("Unable to open hash generator because one or more GOM archives are missing. Please change the assets directory and try again.", "alert");
+        }
     });
 
     //viewers
@@ -192,8 +197,13 @@ function setupListeners() {
         log(`Viewer: GR2 opened.`, 'info');
     });
     nvBtn.addEventListener("click", (e) => {
-        ipcRenderer.send('runExec', 'nodeViewer');
-        log(`Viewer: Node opened.`, 'info');
+        const nodesAvailable = ipcRenderer.sendSync('checkValidity', ['node']);
+        if (nodesAvailable) {
+            ipcRenderer.send('runExec', 'nodeViewer');
+            log(`Viewer: Node opened.`, 'info');
+        } else {
+            log("Unable to open node viewer because one or more GOM archives are missing. Please change the assets directory and try again.", "alert");
+        }
     });
     modelViewBtn.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'modelViewer');

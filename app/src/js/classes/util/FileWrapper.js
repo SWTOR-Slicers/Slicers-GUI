@@ -31,7 +31,7 @@ class Reader {
     /**
      * read the next byte and return a Uint8 array.
      */
-    readByte() {
+    readByte(endianness = true) {
         const res = new Uint8Array(this.data, this.offset, 1);
         this.offset += length;
         return endianness ? res[0] : res.reverse()[0];
@@ -40,7 +40,7 @@ class Reader {
     /**
      * read the next char and return a string.
      */
-    readChar() {
+    readChar(endianness = true) {
         const res = new Uint8Array(this.data, this.offset, 1);
         this.offset += length;
         return endianness ? res[0].toString() : res.reverse()[0].toString();

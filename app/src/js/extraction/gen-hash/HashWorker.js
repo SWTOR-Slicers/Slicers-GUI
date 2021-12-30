@@ -22,6 +22,7 @@ import { AMXParser } from "../../classes/parsers/AMX.js";
 import { HYDParser } from "../../classes/parsers/HYD.js";
 import { DYNParser } from "../../classes/parsers/DYN.js";
 import { PLCParser } from "../../classes/parsers/PLC.js";
+import { ArchiveEntry } from "../../classes/formats/Archive.js";
 
 const path = require('path');
 const xmlJs = require('xml-js');
@@ -122,15 +123,16 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
 
     const matches = [];
     Object.keys(assetsDict).map(key => {
+        assetsDict[key] = ArchiveEntry.fromJSON(assetsDict[key]);
+
         const asset = assetsDict[key];
         const fileH = hash.getFileNameByHash(key);
-        assetsDict[key] = {
-            ...asset,
-            "isNamed": new Boolean(fileH),
-            "hash": (fileH) ? fileH : `${asset.crc}_${asset.fileId}`
-        }
-        if (assetsDict[key].hash?.includes("." + extension.toLowerCase())) {
-            matches.push(assetsDict[key]);
+
+        asset.isNamed = new Boolean(fileH);
+        asset.hash = (fileH) ? fileH : `${asset.crc}_${asset.fileId}`;
+
+        if (asset.hash?.includes("." + extension.toLowerCase())) {
+            matches.push(asset);
         }
     });
     

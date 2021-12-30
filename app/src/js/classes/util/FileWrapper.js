@@ -6,7 +6,7 @@ const { Float16Array } = require("@petamoriken/float16");
  */
  class Reader {
     constructor(data) {
-        this.data = data.buffer;
+        this.data = data instanceof ArrayBuffer ? data : data.buffer;
         this.offset = 0;
     }
 

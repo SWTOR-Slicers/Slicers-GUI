@@ -3,16 +3,19 @@ import { FileWrapper, Reader } from '../util/FileWrapper.js';
 const path = require('path');
 const zlib = require('zlib');
 
-
 class ArchiveEntryTable {
     constructor(capacity, offset) {
         this.capacity = capacity;
         this.offset = offset;
     }
+
+    static fromJSON(json) {
+        return new ArchiveEntryTable(json.capacity, json.offset);
+    }
 }
 
 class ArchiveEntry {
-    constructor(offset, metaDataSize, comprSize, uncomprSize, metaDataCheckSum, comprType, ph, sh, fileId, fileTableNum, fileTableFileIdx, torPath) {
+    constructor(offset, metaDataSize, comprSize, uncomprSize, metaDataCheckSum, isCompr, ph, sh, fileId, fileTableNum, fileTableFileIdx, torPath) {
         this.offset = offset;
 
         this.metaDataSize = metaDataSize;
@@ -20,7 +23,7 @@ class ArchiveEntry {
 
         this.comprSize = comprSize;
         this.uncomprSize = uncomprSize;
-        this.comprType = comprType;
+        this.isCompr = isCompr;
 
         this.fileId = fileId;
         this.ph = ph;
@@ -31,19 +34,32 @@ class ArchiveEntry {
 
         this.torPath = torPath;
         this.tor = path.basename(this.torPath);
+
+        this.isNamed = null;
+        this.hash = null;
     }
 
     getReadStream() {
         const wrapper = new FileWrapper(this.torPath);
 
         wrapper.seek(this.offset, 0);
-        const data = wrapper.read(this.comprSize).data;
+        const data = wrapper.read(this.isCompr ? this.comprSize : this.uncomprSize).data;
 
-        const decompr = zlib.inflateRawSync(data, {
-            level: zlib.constants.Z_BEST_COMPRESSION
-        });
+        let decompr;
+        if (this.isCompr) {
+            decompr = zlib.inflateSync(data, {
+                level: zlib.constants.Z_BEST_COMPRESSION,
+                maxOutputLength: this.uncomprSize
+            });
+        } else {
+            decompr = data;
+        }
 
         return new Reader(decompr);
+    }
+
+    static fromJSON(json) {
+        return new ArchiveEntry(json.offset, json.metaDataSize, json.comprSize, json.uncomprSize, json.metaDataCheckSum, json.isCompr, json.ph, json.sh, json.fileId, json.fileTableNum, json.fileTableFileIdx, json.torPath);
     }
 }
 

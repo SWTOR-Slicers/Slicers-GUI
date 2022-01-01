@@ -42,7 +42,7 @@ class ArchiveEntry {
     getReadStream() {
         const wrapper = new FileWrapper(this.torPath);
 
-        wrapper.seek(this.offset, 0);
+        wrapper.seek(this.offset+BigInt(this.metaDataSize), 0);
         const data = wrapper.read(this.isCompr ? this.comprSize : this.uncomprSize).data;
 
         let decompr;

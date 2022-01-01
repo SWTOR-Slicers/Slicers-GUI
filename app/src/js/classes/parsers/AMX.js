@@ -52,7 +52,7 @@ class AMXParser {
                     this.fileNames.push(fullName + ".mph");
                     this.fileNames.push(fullName + ".mph.amx");
 
-                    reader.readUInt32();
+                    reader.readUint32();
                     const check = reader.readByte();
                     if (check != 2 && check != 3) stop = true;
                 }

@@ -25,13 +25,13 @@ class AMXParser {
     parseAMX(reader, fullFileName) {
         const header = reader.readUint32();
 
-        if (header.toString(16) != "20584D41") {
+        if (header.toString(16) != "20584d41") {
             this.errors.push("File: " + fullFileName);
             this.errors.push("Invalid header" + header);
             return;
         } else {
             reader.readUint16(); //unknown
-            const stop = false;
+            let stop = false;
             while (!stop) {
                 const fileLen = reader.readByte();
                 if (fileLen == 0) {

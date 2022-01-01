@@ -397,8 +397,8 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
         for (const n of parseReturns) {
             if (n) {
                 const hash = hashlittle2(n);
-                const file = Object.entries(assets).find(val => val.ph == hash[1] && val.sh == hash[0]);
-                names.push([n, hash[1].toString(16), hash[0].toString(16), file.metaDataCheckSum.toString(16)].join('#'));
+                const file = assetsDict[`${hash[0]}|${hash[1]}`];
+                names.push([hash[1].toString(16), hash[0].toString(16), n, file ? file.metaDataCheckSum.toString(16) : ''].join('#'));
             }
         }
     }

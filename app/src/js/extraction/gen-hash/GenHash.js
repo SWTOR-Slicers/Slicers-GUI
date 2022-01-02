@@ -22,37 +22,23 @@ const genHashes = document.getElementById('genHashes');
 const cancelGen = document.getElementById('cancelHashGen');
 
 //Consts
-const hashTypes = [
-    "All", 
-    "AMX",
-    "BNK",
-    "CNV",
-    "DAT",
-    "DYN",
-    "EPP",
-    "FXSPEC",
-    "GR2",
-    "HYD",
-    "ICONS",
-    "MAT",
-    "MISC",
-    "MISC_WORLD",
-    "PLC",
-    "PRT",
-    "SDEF",
-    "STB",
-    "XML"
-];
-const checkedTypes = {};
+const hashTypes = [ "All", "AMX", "BNK", "CNV", "DAT", "DYN", "EPP", "FXSPEC", "GR2", "HYD", "ICONS", "MAT", "MISC", "MISC_WORLD", "PLC", "PRT", "SDEF", "STB", "XML" ];
+const configPath = path.normalize(path.join(resourcePath, "config.json"));
+const cache = {
+    "checked": {}
+}
+
 let nodeWorker;
 let assetWorker;
 let hashWorker;
 let bktsLoaded = 0;
 let archives = [];
 
-function init() {
+async function init() {
+    await loadCache();
+
     for (const hType of hashTypes) {
-        const typeCont = genEntr(hType);
+        const typeCont = genEntr(hType, cache["checked"][hType]);
         hashTypeCont.appendChild(typeCont);
     }
     initListeners();
@@ -60,6 +46,25 @@ function init() {
     initHashWorker();
     initNodeWorker();
     initAssetWorker();
+}
+
+// Caching functions
+async function loadCache() {
+    let res = fs.readFileSync(configPath);
+    let jsonObj = await JSON.parse(res);
+    let json = jsonObj["hashGenerator"];
+
+    cache["checked"] = json["checked"];
+}
+function updateCache(field, val, sec) {
+    if (sec) {
+        let res = fs.readFileSync(configPath);
+        let json = JSON.parse(res);
+        json["hashGenerator"][field][sec] = val;
+        cache[field][sec] = val;
+
+        fs.writeFileSync(configPath, JSON.stringify(json, null, '\t'), 'utf-8');
+    }
 }
 
 function initNodeWorker() {
@@ -190,12 +195,13 @@ function initListeners() {
     const allChk = document.getElementById('AllChk');
 
     for (const box of chkbxs) {
-        checkedTypes[box.name] = box.checked;
         if (box.id !== "AllChk") {
             box.addEventListener('change', (e) => {
                 const elem = e.currentTarget;
-                checkedTypes[elem.name] = elem.checked;
+                updateCache("checked", elem.checked, elem.name);
+
                 if (!elem.checked && allChk.checked) {
+                    updateCache("checked", false, "All");
                     allChk.checked = false;
                 }
 
@@ -208,9 +214,11 @@ function initListeners() {
         } else {
             allChk.addEventListener('change', (e) => {
                 const elem = e.currentTarget;
-                checkedTypes[elem.name] = elem.checked;
+                updateCache("checked", elem.checked, elem.name);
+
                 for (const b of chkbxs) {
                     if (b.id !== "AllChk") {
+                        updateCache("checked", b.checked, b.id);
                         b.checked = elem.checked;
                     }
                 }
@@ -285,10 +293,10 @@ function initSubs() {
 }
 
 //util funcs
-function genEntr(hashType) {
+function genEntr(hashType, isChecked) {
     const famCont = document.createElement('div');
     famCont.className = "hash-type";
-    famCont.innerHTML = `<input name="${hashType}" id="${hashType}Chk" is="check-box" checked></input>`;
+    famCont.innerHTML = `<input name="${hashType}" id="${hashType}Chk" is="check-box" ${isChecked ? "checked" : ""}></input>`;
 
     const lbl = document.createElement('label');
     lbl.className = "hash-type-label";

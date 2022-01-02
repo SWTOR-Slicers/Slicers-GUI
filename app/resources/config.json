@@ -37,5 +37,28 @@
         "output": "",
         "backup": true,
         "version": "Live"
+    },
+    "hashGenerator": {
+        "checked": {
+            "All": true, 
+            "AMX": true,
+            "BNK": true,
+            "CNV": true,
+            "DAT": true,
+            "DYN": true,
+            "EPP": true,
+            "FXSPEC": true,
+            "GR2": true,
+            "HYD": true,
+            "ICONS": true,
+            "MAT": true,
+            "MISC": true,
+            "MISC_WORLD": true,
+            "PLC": true,
+            "PRT": true,
+            "SDEF": true,
+            "STB": true,
+            "XML": true
+        }
     }
 }

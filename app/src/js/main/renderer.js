@@ -3,6 +3,7 @@ import { getSetting } from "../../api/config/settings/Settings.js";
 import { updateAlertType } from "../universal/Logger.js";
 import { changeSource, playAudio, pauseAudio } from "./BackgroundTheme.js";
 
+
 const { ipcRenderer } = require('electron');
 const path = require('path');
 

@@ -1,5 +1,4 @@
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
-import { log } from "../../universal/Logger.js";
 
 const { ipcRenderer } = require("electron");
 const path = require("path");

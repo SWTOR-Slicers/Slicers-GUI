@@ -1,6 +1,8 @@
 const {app, BrowserWindow, dialog, ipcMain, screen, shell} = require('electron');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
+const { DOM_Factory } = require("./src/js/classes/DOM.js");
+
 const fs = require('fs');
 const ChildProcess = require('child_process');
 const path = require('path');
@@ -188,6 +190,7 @@ function initMain () {
 
   mainWindow.removeMenu();
   mainWindow.loadFile('./src/html/Index.html');
+  mainWindow.webContents.openDevTools();
   
   let wasMinimized = false;
   mainWindow.on('minimize', () => { mainWindow.webContents.send('minimizedMain'); wasMinimized = true; });

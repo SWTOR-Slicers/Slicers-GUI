@@ -190,7 +190,6 @@ function initMain () {
 
   mainWindow.removeMenu();
   mainWindow.loadFile('./src/html/Index.html');
-  mainWindow.webContents.openDevTools();
   
   let wasMinimized = false;
   mainWindow.on('minimize', () => { mainWindow.webContents.send('minimizedMain'); wasMinimized = true; });

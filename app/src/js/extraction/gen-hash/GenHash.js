@@ -274,7 +274,6 @@ function initSubs() {
     ipcRenderer.on('dataTorPaths', (event, data) => {
         const dat = fs.readFileSync(data[0]);
         const json = JSON.parse(dat);
-        console.log(json);
         nodeWorker.postMessage({
             "message": 'loadNodes',
             "data": {

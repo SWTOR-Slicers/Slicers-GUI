@@ -6,7 +6,8 @@ import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/T
 import { setSounds } from './MusicPlayer.js';
 import { ww2ogg } from '../../Util.js';
 import { getSetting } from '../../../api/config/settings/Settings.js';
-import { ACB } from '@js/classes/ACB.js';
+import { ACB } from '../../classes/formats/ACB.js';
+import { Reader } from '../../classes/util/FileWrapper.js';
 
 let settingsJSON = getSetting();
 
@@ -214,7 +215,7 @@ async function downloadSoundFile(outputPath, filePath) {
     const fileData = fs.readFileSync(filePath).buffer;
 
     if (path.extname(filePath) == ".bnk") {
-        const bnk = new BNK(fileData);
+        const bnk = new BNK(new Reader(fileData));
 
         if (bnk.sections.DIDX) {
             for (let i = 0; i < bnk.sections.DIDX.files.length; i++) {
@@ -227,13 +228,13 @@ async function downloadSoundFile(outputPath, filePath) {
             }
         }
     } else if (path.extname(filePath) == ".wem") {
-        const oggBuffer = new WEM(fileData).oggBuffer;
+        const oggBuffer = new WEM(new Reader(fileData)).oggBuffer;
         const blob = new Blob([oggBuffer]);
         const dName = path.basename().substring(0, path.basename().lastIndexOf('.')) + '.ogg';
         
         fs.writeFileSync(path.join(outputPath, dName), Buffer.from(await blob.arrayBuffer()));
     } else if (path.extname(filePath) == ".acb") {
-        const acb = new ACB(fileData);
+        const acb = new ACB(new Reader(fileData));
 
         if (acb.audioFiles.length > 0) {
             for (const aFile of acb.audioFiles) {

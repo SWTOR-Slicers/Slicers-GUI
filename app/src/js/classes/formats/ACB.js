@@ -1,30 +1,34 @@
-import { assert } from "@js/Util";
+import { assert } from "../../Util.js";
+import { Reader } from "../util/FileWrapper.js";
 
 class ACB {
-    constructor(buffer) {
+    /**
+     * ACB file format
+     * @param {Reader} reader file reader
+     */
+    constructor(reader) {
         this.audioFiles = [];
 
-        const dv = new DataView(buffer);
-        this.numFiles = dv.getUint32(0, !0);
-        let pos = 0x8;
+        this.numFiles = reader.readUint32();
+        reader.seek(0x8);
+
         for (let i = 0; i < this.numFiles; i++) {
-            let fileName = '';
-            {
-                let curChar = dv.getUint8(pos++);
-                while (curChar !== 0) {
-                    fileName += String.fromCharCode(curChar);
-                    curChar = dv.getUint8(pos++)
-                }
-                assert(fileName.endsWith('.wem'), 'Expected .acb entry to end with .wem but it was ' + fileName)
-            }
-            const size = dv.getUint32(pos, !0);
-            pos += 8;
-            const offset = dv.getUint32(pos, !0);
-            pos += 8;
-            const dataview = new DataView(dv.buffer,offset,size);
-            const sampleRate = dataview.getUint32(0x18, !0);
-            const numSamples = dataview.getUint32(0x2C, !0);
+            let fileName = reader.readString();
+            assert(fileName.endsWith('.wem'), 'Expected .acb entry to end with .wem but it was ' + fileName);
+            
+            const size = reader.readUint32();
+            reader.readUint32(); // idk why we skip 4
+
+            const offset = reader.readUint32();
+            reader.readUint32(); // idk why we skip 4
+
+            const r2 = new Reader(reader.data.slice(offset, offset + size));
+            r2.seek(0x18);
+            const sampleRate = reader.readUint32();
+            r2.seek(0x2C);
+            const numSamples = reader.readUint32();
             const duration = numSamples / sampleRate;
+            
             this.audioFiles[i] = {
                 name: fileName,
                 size,
@@ -35,4 +39,4 @@ class ACB {
     }
 }
 
-export {ACB};
+export { ACB };

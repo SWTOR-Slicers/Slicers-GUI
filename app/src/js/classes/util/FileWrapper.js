@@ -60,12 +60,11 @@ const { Float16Array } = require("@petamoriken/float16");
 
     /**
      * reads the next Uint of length 1
-     * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-     readUint8(endianness = true) {
+     readUint8() {
         const res = new Uint8Array(this.data, this.offset, 1);
         this.offset++;
-        return endianness ? res[0] : res.reverse()[0];
+        return res[0];
     }
 
     /**
@@ -108,12 +107,11 @@ const { Float16Array } = require("@petamoriken/float16");
 
     /**
      * reads the next Int of length 1
-     * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-    readInt8(endianness = true) {
+     readInt8() {
         const res = new Int8Array(this.data, this.offset, 1);
         this.offset++;
-        return endianness ? res[0] : res.reverse()[0];
+        return res[0];
     }
 
     /**

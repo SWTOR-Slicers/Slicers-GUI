@@ -1,47 +1,52 @@
-import { readString, assert } from "../../Util.js";
+import { assert } from "../../Util.js";
+import { Reader } from "../util/FileWrapper.js";
 
 export class BNK {
-    constructor (buffer) {
+    /**
+     * BNK file format
+     * @param {Reader} reader file reader
+     */
+     constructor(reader) {
         const dv = new DataView(buffer);
-        this.pos = 0;
-        const totalLength = buffer.byteLength;
+        reader.seek(0);
+        const totalLength = reader.data.length;
 
         this.sections = {};
 
-        while (this.pos < totalLength) {
+        while (reader.offset < totalLength) {
             let section = {};
-            const type = dv.getUint32(this.pos, true);
-            this.pos += 4;
+
+            const type = reader.readUint32();
             const sectionName = String.fromCharCode(type & 0xFF) + String.fromCharCode((type & 0xFF00) >> 8) + String.fromCharCode((type & 0xFF0000) >> 16) + String.fromCharCode((type & 0xFF000000) >> 24);
-            const sectionLength = dv.getUint32(this.pos, true);
-            this.pos += 4;
-            const posEnd = this.pos + sectionLength;
+            const sectionLength = reader.readUint32();
+            
+            const posEnd = reader.offset + sectionLength;
             
             switch (sectionName) {
                 case "BKHD":
-                    section = new BKHD(dv, this.pos, this);
+                    section = new BKHD(reader);
                     break;
                 case "DIDX":
-                    section = new DIDX(dv, this.pos, sectionLength, this);
+                    section = new DIDX(reader, sectionLength);
                     break;
                 case "DATA":
-                    section = new DATA(dv, this.pos, this.sections.DIDX, this);
+                    section = new DATA(reader, this.sections.DIDX);
                     break;
                 case "ENVS":
-                    section = new ENVS(dv, this.pos, sectionLength, this);
+                    section = new ENVS(reader, sectionLength);
                     break;
                 case "HIRC":
-                    section = new HIRC(dv, this.pos, this);
+                    section = new HIRC(reader);
                     break;
                 case "STID":
-                    section = new STID(dv, this.pos, this);
+                    section = new STID(reader);
                     break;
                 case "STMG":
-                    section = new STMG(dv, this.pos, this);
+                    section = new STMG(reader);
                     break;
                 default:
                     console.log('BNK section', sectionName, 'not recognized');
-                    section = new NANSEC(dv, this.pos, sectionLength, this);
+                    section = new NANSEC(reader, sectionLength);
                     break;
             }
 
@@ -53,261 +58,254 @@ export class BNK {
         if (this.sections.DIDX) {
             for (let i = 0, il = this.sections.DIDX.files.length; i < il; i++) {
                 const file = this.sections.DIDX.files[i];
-                file.dv = new DataView(dv.buffer, this.sections.DATA.start + file.offset,file.size);
+                const offset = this.sections.DATA.start + file.offset;
+
+                file.dv = new Reader(reader.data.slice(offset, offset + file.size));
             }
         }
     }
-
-    setPos(pos) { this.pos = pos; }
 }
 
 class BKHD {
-    constructor (dv, pos, bnk) {
-        this.version = dv.getUint32(pos, true);
-        pos += 4;
+    /**
+     * BKHD class
+     * @param {Reader} reader file reader
+     */
+    constructor (reader) {
+        this.version = reader.readUint32();
 
-        this.id = dv.getUint32(pos, true);
-        pos += 4;
-
-        bnk.setPos(pos);
+        this.id = reader.readUint32();
     }
 }
 class DIDX {
-    constructor (dv, pos, sectionLength, bnk) {
+    /**
+     * DIDX class
+     * @param {Reader} reader file reader
+     * @param {number} sectionLength length of this section
+     */
+    constructor (reader, sectionLength) {
         this.numFiles = sectionLength / 0xC; //0xC = 12. this is the length of each embeded file's info.
         this.files = [];
         for (let i = 0; i < this.numFiles; i++) {
             const file = {};
-            file.id = dv.getUint32(pos, true);
-            pos += 4;
-            file.offset = dv.getUint32(pos, true);
-            pos += 4;
-            file.size = dv.getUint32(pos, true);
-            pos += 4;
+            file.id = reader.readUint32();
+            file.offset = reader.readUint32();
+            file.size = reader.readUint32();
             this.files[i] = file
         }
-
-        bnk.setPos(pos);
     }
 }
 class DATA {
-    constructor (dv, pos, DIDX, bnk) {
+    /**
+     * DATA class
+     * @param {Reader} reader file reader
+     * @param {any} DIDX DIDX section
+     */
+    constructor (reader, DIDX) {
         this.start = pos;
         if (DIDX) {
             for (let i = 0; i < DIDX.files.length; i++) {
                 const curFile = DIDX.files[i];
-                pos = this.start + curFile.offset;
-                pos += 22;
-                curFile.channels = dv.getUint16(pos, true);
-                pos += 2;
-                curFile.sampleRate = dv.getUint32(pos, true);
-                pos += 4;
-                curFile.avgBytesPerSecond = dv.getUint32(pos, true);
-                pos += 4;
-                pos += 12;
-                curFile.sampleCount = dv.getUint32(pos, true);
+                
+                reader.seek(this.start + curFile.offset); // start of data
+                reader.seek(22, 1);
+
+                curFile.channels = reader.readUint16();
+                curFile.sampleRate = reader.readUint32();
+                curFile.avgBytesPerSecond = reader.readUint32();
+
+                reader.seek(12, 1);
+                
+                curFile.sampleCount = reader.readUint32();
             }
         }
-
-        bnk.setPos(pos);
     }
 }
 class ENVS {
-    constructor (dv, pos, sectionLength, bnk) {
+    /**
+     * ENVS class
+     * @param {Reader} reader file reader
+     * @param {number} sectionLength length of this section
+     */
+    constructor (reader, sectionLength) {
         this.envs = [];
         this.numEnvs = sectionLength / 28;
         for (let i = 0; i < this.numEnvs; i++) {
             const env = {};
-            env.byte1 = dv.getUint8(pos);
-            pos++;
-            env.byte2 = dv.getUint8(pos);
-            pos++;
-            env.byte3 = dv.getUint8(pos);
-            pos++;
-            env.byte4 = dv.getUint8(pos);
-            pos++;
-            pos += 8;
-            env.const4 = dv.getUint32(pos, true);
-            pos += 4;
-            env.unkFloat = dv.getFloat32(pos, true);
-            pos += 4;
-            env.unkFloat2 = dv.getFloat32(pos, true);
-            pos += 4;
-            env.const4b = dv.getUint32(pos, true);
-            pos += 4;
+
+            env.byte1 = reader.readUint8();
+            env.byte2 = reader.readUint8();
+            env.byte3 = reader.readUint8();
+            env.byte4 = reader.readUint8();
+
+            reader.seek(8, 1);
+            
+            env.const4 = reader.readUint32();
+            env.unkFloat = reader.readFloat32();
+            env.unkFloat2 = reader.readFloat32();
+            env.const4b = reader.readUint32();
+            
             this.envs[i] = env;
         }
-
-        bnk.setPos(pos);
     }
 }
 class HIRC {
-    constructor (dv, pos, bnk) {
+    /**
+     * HIRC class
+     * @param {Reader} reader file reader
+     */
+    constructor (reader) {
         this.objects = {};
         this.switches = {};
         this.states = {};
-        const numObjects = dv.getUint32(pos, true);
-        pos += 4;
+
+        const numObjects = reader.readUint32();
+        
         for (let i = 0; i < numObjects; i++) {
             const obj = {};
-            obj.type = dv.getUint8(pos);
-            pos++;
-            const objLength = dv.getUint32(pos, true);
-            pos += 4;
-            const posEnd = pos + objLength;
-            const objId = dv.getUint32(pos, true);
-            pos += 4;
+
+            obj.type = reader.readUint8();
+            const objLength = reader.readUint32();
+            
+            const posEnd = reader.offset + objLength;
+            const objId = reader.readUint32();
+            
             switch (obj.type) {
                 case 1:
-                    const numSettings = dv.getUint32(pos++);
+                    const numSettings = reader.readUint8();
                     obj.settings = [];
                     for (let j = 0; j < numSettings; j++) {
                         obj.settings[j] = Object.create(null);
-                        obj.settings[j].type = dv.getUint8(pos++);
+                        obj.settings[j].type = reader.readUint8();
                     }
                     for (let j = 0; j < numSettings; j++) {
-                        obj.settings[j].value = dv.getFloat32(pos, true);
+                        obj.settings[j].value = reader.readFloat32();
                         pos += 4
                     }
                     break
                 case 2:
-                    const unknown = dv.getUint32(pos, true);
-                    pos += 4;
-                    const isStreamed = dv.getUint32(pos, true);
-                    pos += 4;
-                    const audioId = dv.getUint32(pos, true);
-                    pos += 4;
-                    const audioSourceId = dv.getUint32(pos, true);
-                    pos += 4;
+                    const unknown = reader.readUint32();
+                    const isStreamed = reader.readUint32();
+                    const audioId = reader.readUint32();
+                    const audioSourceId = reader.readUint32();
+                    
                     if (isStreamed === 0) {
-                        const audioOffset = dv.getUint32(pos, true);
-                        pos += 4;
-                        const audioLength = dv.getUint32(pos, true);
-                        pos += 4
+                        const audioOffset = reader.readUint32();
+                        const audioLength = reader.readUint32();
                     }
                     break
                 case 3:
-                    obj.scope = dv.getUint32(pos++);
-                    obj.actionType = dv.getUint32(pos++);
-                    obj.refId = dv.getUint32(pos, true);
-                    pos += 4;
-                    const zero = dv.getUint32(pos++);
-                    const numParams = dv.getUint32(pos++);
+                    obj.scope = reader.readUint8();
+                    obj.actionType = reader.readUint8();
+                    obj.refId = reader.readUint32();
+                    
+                    const zero = reader.readUint8();
+                    const numParams = reader.readUint8();
                     obj.params = [];
-                    pos += numParams * 5;
+
+                    reader.seek(numParams * 5, 1);
+
                     if (obj.actionType === 0x12) {
-                        obj.stateGroupId = dv.getUint32(pos, true);
-                        pos += 4;
-                        obj.stateId = dv.getUint32(pos, true);
-                        pos += 4
+                        obj.stateGroupId = reader.readUint32();
+                        obj.stateId = reader.readUint32();
                     } else if (obj.actionType === 0x19) {
-                        obj.switchGroupId = dv.getUint32(pos, true);
-                        pos += 4;
-                        obj.switchId = dv.getUint32(pos, true);
-                        pos += 4
+                        obj.switchGroupId = reader.readUint32();
+                        obj.switchId = reader.readUint32();
                     }
                     break
                 case 4:
                     obj.actions = [];
-                    const numActions = dv.getUint32(pos, true);
-                    pos += 4;
+                    const numActions = reader.readUint32();
+                    
                     for (let j = 0; j < numActions; j++) {
-                        obj.actions[j] = dv.getUint32(pos, true);
-                        pos += 4
+                        obj.actions[j] = reader.readUint32();
                     }
                     break;
                 case 10:
                     {
-                        pos += read_bnk_soundstruct(dv, pos, obj);
-                        const numChildren = dv.getUint32(pos, true);
-                        pos += 4;
+                        read_bnk_soundstruct(reader, obj);
+                        const numChildren = reader.readUint32();
+                        
                         obj.children = [];
                         for (let j = 0; j < numChildren; j++) {
-                            obj.children[j] = dv.getUint32(pos, true);
-                            pos += 4
+                            obj.children[j] = reader.readUint32();
                         }
-                        break
+                        break;
                     }
                 case 11:
-                    const unknown1 = dv.getUint32(pos, true);
-                    pos += 4;
+                    const unknown1 = reader.readUint32();
                     assert(unknown1 === 1, 'Expected unknown1 in music track section to be 1 but it was ' + unknown1);
-                    const unknown2 = dv.getUint16(pos, true);
-                    pos += 2;
+
+                    const unknown2 = reader.readUint16();
                     assert(unknown2 === 1, 'Expected unknown2 in music track section to be 1 but it was ' + unknown2);
-                    const unknown3 = dv.getUint16(pos, true);
-                    pos += 2;
+
+                    const unknown3 = reader.readUint16();
                     assert(unknown3 === 4, 'Expected unknown3 in music track section to be 4 but it was ' + unknown3);
-                    obj.isStreamed = dv.getUint32(pos, true);
-                    pos += 4;
-                    obj.audioId = dv.getUint32(pos, true);
-                    pos += 4;
-                    obj.audioSourceId = dv.getUint32(pos, true);
-                    pos += 4;
+
+                    obj.isStreamed = reader.readUint32();
+                    obj.audioId = reader.readUint32();
+                    obj.audioSourceId = reader.readUint32();
+                    
                     if (obj.isStreamed === 0) {
-                        obj.audioOffset = dv.getUint32(pos, true);
-                        pos += 4;
-                        obj.audioLength = dv.getUint32(pos, true);
-                        pos += 4
+                        obj.audioOffset = reader.readUint32();
+                        obj.audioLength = reader.readUint32();
                     }
                     break
                 case 12:
                     {
-                        pos += read_bnk_soundstruct(dv, pos, obj);
-                        const numChildren = dv.getUint32(pos, true);
-                        pos += 4;
+                        pread_bnk_soundstruct(reader, obj);
+                        const numChildren = reader.readUint32();
+                        
                         obj.children = [];
                         for (let i = 0; i < numChildren; i++) {
-                            obj.children[i] = dv.getUint32(pos, true);
-                            pos += 4
+                            obj.children[i] = reader.readUint32();
                         }
-                        pos += 16;
-                        obj.tempo = dv.getFloat32(pos, true);
-                        pos += 4;
-                        pos += 7;
-                        const numTransitions = dv.getUint32(pos, true);
-                        pos += 4;
+                        reader.seek(16, 1);
+                        
+                        obj.tempo = reader.readFloat32();
+                        reader.seek(7, 1);
+
+                        const numTransitions = reader.readUint32();
+                        
                         for (let i = 0; i < numTransitions; i++) {
-                            pos += 4;
-                            pos += 4;
-                            pos += 4;
-                            pos += 4;
-                            pos += 4;
-                            pos += 4;
-                            pos++;
-                            pos += 4;
-                            pos += 4;
-                            pos += 4;
-                            pos += 4;
-                            pos += 4;
-                            pos += 2;
-                            pos++;
-                            pos++;
-                            pos += 4;
-                            pos += 4;
-                            pos += 4;
-                            pos += 4;
-                            pos += 4;
-                            pos += 4;
-                            pos += 4;
-                            pos++;
-                            pos++
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint8();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint16();
+                            reader.readUint8();
+                            reader.readUint8();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint32();
+                            reader.readUint8();
+                            reader.readUint8()
                         }
-                        const switchType = dv.getUint32(pos, true);
-                        pos += 4;
-                        obj.switchStateId = dv.getUint32(pos, true);
-                        pos += 4;
-                        obj.defaultSwitchState = dv.getUint32(pos, true);
-                        pos += 4;
-                        pos++;
-                        const numSwitchStates = dv.getUint32(pos, true);
-                        pos += 4;
+                        const switchType = reader.readUint32();
+                        obj.switchStateId = reader.readUint32();
+                        obj.defaultSwitchState = reader.readUint32();
+
+                        reader.readUint8();
+
+                        const numSwitchStates = reader.readUint32();
+                        
                         obj.switchStates = Object.create(null);
                         for (let i = 0; i < numSwitchStates; i++) {
-                            const switchState = dv.getUint32(pos, true);
-                            pos += 4;
-                            const musicRef = dv.getUint32(pos, true);
-                            pos += 4;
+                            const switchState = reader.readUint32();
+                            const musicRef = reader.readUint32();
+                            
                             obj.switchStates[switchState] = musicRef
                         }
                         if (switchType === 0) {
@@ -318,120 +316,118 @@ class HIRC {
                         break
                     }
                 case 13:
-                    pos += read_bnk_soundstruct(dv, pos, obj);
-                    const numSegments = dv.getUint32(pos, true);
-                    pos += 4;
+                    read_bnk_soundstruct(reader, obj);
+                    const numSegments = reader.readUint32();
+                    
                     obj.segments = [];
                     for (let i = 0; i < numSegments; i++) {
-                        obj.segments[i] = dv.getUint32(pos, true);
-                        pos += 4
+                        obj.segments[i] = reader.readUint32();
                     }
                     break
                 default:
             }
             this.objects[objId] = obj;
-            pos = posEnd
+            reader.seek(posEnd);
         }
-
-        bnk.setPos(pos);
     }
 }
 class STID {
-    constructor (dv, pos, bnk) {
-        this.const1 = dv.getUint32(pos, true);
-        pos += 4;
-        this.numSndBnk = dv.getUint32(pos, true);
-        pos += 4;
+    /**
+     * STID class
+     * @param {Reader} reader file reader
+     */
+    constructor (reader) {
+        this.const1 = reader.readUint32();
+        this.numSndBnk = reader.readUint32();
+        
         this.soundbanks = [];
         for (let i = 0; i < this.numSndBnk; i++) {
             const bank = {};
-            bank.id = dv.getUint32(pos, true);
-            pos += 4;
-            let nameLength = dv.getUint8(pos);
-            pos++;
-            bank.name = readString(dv.buffer, pos, nameLength);
-            pos += nameLength;
+            bank.id = reader.readUint32();
+            let nameLength = reader.readUint8();
+            bank.name = reader.readString(nameLength);
             this.soundbanks[i] = bank;
         }
-
-        bnk.setPos(pos);
     }
 }
 class STMG {
-    constructor (dv, pos, bnk) {
-        this.volumeThreshold = dv.getFloat32(pos, true);
-        pos += 4;
-        this.maxVoiceInstances = dv.getUint16(pos, true);
-        pos += 2;
+    /**
+     * STMG class
+     * @param {Reader} reader file reader
+     */
+    constructor (reader) {
+        this.volumeThreshold = reader.readFloat32();
+        this.maxVoiceInstances = reader.readUint16();
+        
         this.stateGroups = [];
-        let numStateGroups = dv.getUint32(pos, true);
-        pos += 4;
+        let numStateGroups = reader.readUint32();
+        
         for (let i = 0; i < numStateGroups; i++) {
             const stateGroup = {};
-            stateGroup.id = dv.getUint32(pos, true);
-            pos += 4;
-            stateGroup.defaultTransitionTime = dv.getUint32(pos, true);
-            pos += 4;
+
+            stateGroup.id = reader.readUint32();
+            stateGroup.defaultTransitionTime = reader.readUint32();
+            
             stateGroup.customTransitions = [];
-            let numCustomTrans = dv.getUint32(pos, true);
-            pos += 4;
+            let numCustomTrans = reader.readUint32();
+            
             for (let j = 0; j < numCustomTrans; j++) {
                 const customTrans = {};
-                customTrans.fromId = dv.getUint32(pos, true);
-                pos += 4;
-                customTrans.toId = dv.getUint32(pos, true);
-                pos += 4;
-                customTrans.transTime = dv.getUint32(pos, true);
-                pos += 4;
+
+                customTrans.fromId = reader.readUint32();
+                customTrans.toId = reader.readUint32();
+                customTrans.transTime = reader.readUint32();
+                
                 stateGroup.customTransitions[j] = customTrans
             }
-            this.stateGroups[i] = stateGroup
+            this.stateGroups[i] = stateGroup;
         }
         this.switchGroups = [];
-        let numSwitchGroups = dv.getUint32(pos, true);
-        pos += 4;
+        let numSwitchGroups = reader.readUint32();
+        
         for (let i = 0; i < numSwitchGroups; i++) {
             const switchGroup = {};
-            switchGroup.id = dv.getUint32(pos, true);
-            pos += 4;
-            switchGroup.gameParamId = dv.getUint32(pos, true);
-            pos += 4;
+
+            switchGroup.id = reader.readUint32();
+            switchGroup.gameParamId = reader.readUint32();
+            
             switchGroup.points = [];
-            let numPoints = dv.getUint32(pos, true);
-            pos += 4;
+            let numPoints = reader.readUint32();
+            
             for (let j = 0; j < numPoints; j++) {
                 const point = {};
-                point.value = dv.getFloat32(pos, true);
-                pos += 4;
-                point.switchId = dv.getUint32(pos, true);
-                pos += 4;
-                point.shape = dv.getUint32(pos, true);
-                pos += 4;
-                switchGroup.points[j] = point
+
+                point.value = reader.readFloat32();
+                point.switchId = reader.readUint32();
+                point.shape = reader.readUint32();
+                
+                switchGroup.points[j] = point;
             }
-            this.switchGroups[i] = switchGroup
+            this.switchGroups[i] = switchGroup;
         }
         this.gameParams = [];
-        let numGameParams = dv.getUint32(pos, true);
-        pos += 4;
+        let numGameParams = reader.readUint32();
+        
         for (let i = 0; i < numGameParams; i++) {
             const gameParam = {};
-            gameParam.id = dv.getUint32(pos, true);
-            pos += 4;
-            gameParam.defaultValue = dv.getFloat32(pos, true);
-            pos += 4;
-            this.gameParams[i] = gameParam
-        }
 
-        bnk.setPos(pos);
+            gameParam.id = reader.readUint32();
+            gameParam.defaultValue = reader.readFloat32();
+            
+            this.gameParams[i] = gameParam;
+        }
     }
 }
 class NANSEC {
-    constructor (dv, pos, secLen, bnk) {
+    /**
+     * NAN Section class
+     * @param {Reader} reader file reader
+     * @param {number} sectionLength length of this section
+     */
+    constructor (reader, secLen) {
         let out2 = '';
         for (let i = 0; i < secLen; i++) {
-            const byte = dv.getUint32(pos);
-            pos++;
+            const byte = reader.readUint8();
             let byteStr = byte.toString(16).toUpperCase();
             if (byte < 16)
                 byteStr = '0' + byteStr;
@@ -440,79 +436,77 @@ class NANSEC {
             out2 += byteStr
         }
         this.hex = out2
-
-        bnk.setPos(pos);
     }
 }
 
-function read_bnk_soundstruct(dv, pos, obj) {
-    var startPos = pos;
-    obj.overrideParentEffects = dv.getUint8(pos++);
-    let numEffects = dv.getUint8(pos++);
+/**
+ * Util method for the HIRC class
+ * @param {Reader} reader file reader
+ * @param {object} obj
+ */
+function read_bnk_soundstruct(reader, obj) {
+    const startPos = reader.offset;
+    obj.overrideParentEffects = reader.readUint8();
+    let numEffects = reader.readUint8();
     if (numEffects > 0) {
-        pos++;
-        pos += 7 * numEffects
+        reader.readUint8()
+        reader.seek(7 * numEffects, 1);
     }
-    obj.outputBus = dv.getUint32(pos, !0);
-    pos += 4;
-    obj.parentId = dv.getUint32(pos, !0);
-    pos += 4;
-    obj.overrideParentPlaybackPrio = dv.getUint8(pos++);
-    obj.offsetPrioAtMaxDistance = dv.getUint8(pos++);
-    let numAdditionalParams = dv.getUint8(pos++);
+
+    obj.outputBus = reader.readUint32();
+    obj.parentId = reader.readUint32();
+    obj.overrideParentPlaybackPrio = reader.readUint8();
+    obj.offsetPrioAtMaxDistance = reader.readUint8();
+    let numAdditionalParams = reader.readUint8();
+
     obj.params = [];
     for (let i = 0; i < numAdditionalParams; i++) {
         obj.params[i] = Object.create(null);
-        obj.params[i].type = dv.getUint8(pos++)
+        obj.params[i].type = reader.readUint8()
     }
     for (let i = 0; i < numAdditionalParams; i++) {
-        obj.params[i].value = dv.getFloat32(pos, !0);
-        pos += 4
+        obj.params[i].value = reader.readFloat32();
     }
-    pos++;
-    let hasPositioning = dv.getUint8(pos++);
+    reader.readUint8()
+    let hasPositioning = reader.readUint8();
     if (hasPositioning === 1) {
-        obj.positioningType = dv.getUint8(pos++);
+        obj.positioningType = reader.readUint8();
         if (obj.positioningType === 0) {
-            pos++
+            reader.readUint8();
         } else {
-            obj.positioningSourceType = dv.getUint32(pos, !0);
-            pos += 4;
-            pos += 5;
+            obj.positioningSourceType = reader.readUint32();
+            reader.seek(5, 1);
+            
             if (obj.positioningSourceType === 2) {
-                pos += 10
+                reader.seek(10, 1);
             } else if (obj.positioningSourceType === 3) {
-                pos++
+                reader.readUint8();
             }
         }
     }
-    pos += 3;
-    let hasAuxiliarySends = dv.getUint8(pos++);
+    reader.seek(3, 1);
+    let hasAuxiliarySends = reader.readUint8();
     if (hasAuxiliarySends === 1) {
-        pos += 16
+        reader.seek(16, 1);
     }
-    let hasPlaybackLimit = dv.getUint8(pos++);
+    let hasPlaybackLimit = reader.readUint8();
     if (hasAuxiliarySends === 1) {
-        pos += 4
+        reader.seek(4, 1);
     }
-    pos += 4;
-    let numStateGroups = dv.getUint32(pos, !0);
-    pos += 4;
+    reader.seek(4, 1);
+    let numStateGroups = reader.readUint32();
     for (let i = 0; i < numStateGroups; i++) {
-        pos += 5;
-        let numCustomStates = dv.getUint16(pos, !0);
-        pos += 2;
+        reader.seek(5, 1);
+        let numCustomStates = reader.readUint16();
         for (let j = 0; j < numCustomStates; j++) {
-            pos += 8
+            reader.seek(8, 1);
         }
     }
-    let numRTCPs = dv.getUint16(pos, !0);
-    pos += 2;
+    let numRTCPs = reader.readUint16();
     for (let i = 0; i < numRTCPs; i++) {
-        pos += 13;
-        let numPoints = dv.getUint8(pos++);
-        pos++;
-        pos += numPoints * 12
+        reader.seek(13, 1);
+        let numPoints = reader.readUint8();
+        reader.seek(numPoints * 12, 1);
     }
     return pos - startPos
 }

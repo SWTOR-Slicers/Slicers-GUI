@@ -20,26 +20,26 @@ class BNKParser {
         const bnk = new BNK(reader);
 
         if (bnk.sections.HIRC) {
-            if (bnk.hirc.numObject != 0) {
-                for (const obj of bnk.hirc.objects) {
+            if (bnk.sections.HIRC.objects.length != 0) {
+                for (const obj of Object.values(bnk.sections.HIRC.objects)) {
                     if (obj.type == 2) {
                         if (obj.isStreamed != 0) {
-                            if (obj.audioId != 0) this.fileNames.push("/resources/bnk2/streamed/" + obj.audio_id + ".wem");
-                            if (obj.audioSourceId != 0) this.fileNames.push("/resources/bnk2/streamed/" + obj.audio_source_id + ".wem");
+                            if (obj.audioId != 0) this.fileNames.push("/resources/bnk2/streamed/" + obj.audioId + ".wem");
+                            if (obj.audioSourceId != 0) this.fileNames.push("/resources/bnk2/streamed/" + obj.audioSourceId + ".wem");
                         }
                     } else if (obj.type == 11) {
-                        if (obj.audioId != 0) this.fileNames.push("/resources/bnk2/streamed/" + obj.audio_id + ".wem");
-                        if (obj.audioSourceId != 0) this.fileNames.push("/resources/bnk2/streamed/" + obj.audio_source_id + ".wem");
+                        if (obj.audioId != 0) this.fileNames.push("/resources/bnk2/streamed/" + obj.audioId + ".wem");
+                        if (obj.audioSourceId != 0) this.fileNames.push("/resources/bnk2/streamed/" + obj.audioSourceId + ".wem");
                     }
                 }
             }
         }
 
         if (bnk.sections.STID) {
-            if (bnk.stid.numSndBnk != 0) {
-                for (const obj of bnk.stid.soundbanks) {
-                    this.fileNames.Add("/resources/bnk2/" + obj.name + ".bnk");
-                    this.fileNames.Add("/resources/en-us/bnk2/" + obj.name + ".bnk");
+            if (bnk.sections.STID.numSndBnk != 0) {
+                for (const obj of Object.values(bnk.sections.STID.soundbanks)) {
+                    this.fileNames.push("/resources/bnk2/" + obj.name + ".bnk");
+                    this.fileNames.push("/resources/en-us/bnk2/" + obj.name + ".bnk");
                 }
             }
         }

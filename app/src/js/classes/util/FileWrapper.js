@@ -33,7 +33,7 @@ const { Float16Array } = require("@petamoriken/float16");
      */
     readByte(endianness = true) {
         const res = new Uint8Array(this.data, this.offset, 1);
-        this.offset ++;
+        this.offset++;
         return endianness ? res[0] : res.reverse()[0];
     }
 

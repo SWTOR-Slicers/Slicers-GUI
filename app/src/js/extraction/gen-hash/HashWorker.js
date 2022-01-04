@@ -3,7 +3,7 @@ import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
 import { STB } from "../../classes/formats/STB.js";
 
-import { inflateZlib, hashlittle2 } from "../../Util.js";
+import { inflateZlib, hashlittle2, getFileType } from "../../Util.js";
 import { StaticGomTree, nodeFolderSort } from "../../viewers/node-viewer/GomTree.js";
 
 import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
@@ -102,6 +102,7 @@ async function generateNames(nodesByFqn, nodesList, assets, checked, genHash, ex
         }
     });
 }
+
 /**
  * Parses filenames for the given extension.
  * @param  {string} extension The current extentions
@@ -130,8 +131,9 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
 
         asset.isNamed = new Boolean(fileH);
         asset.hash = (fileH) ? fileH : `${asset.crc}_${asset.fileId}`;
+        asset.type = getFileType(asset.getReadStream());
 
-        if (asset.hash?.includes("." + extension.toLowerCase())) {
+        if (asset.hash?.includes("." + extension.toLowerCase()) || asset.type == extension.toLowerCase()) {
             matches.push(asset);
         }
     });

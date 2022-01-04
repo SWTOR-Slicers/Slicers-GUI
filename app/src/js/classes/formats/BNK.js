@@ -8,7 +8,7 @@ export class BNK {
      */
      constructor(reader) {
         reader.seek(0);
-        const totalLength = reader.data.length;
+        const totalLength = reader.data.byteLength;
 
         this.sections = {};
 
@@ -20,6 +20,10 @@ export class BNK {
             const sectionLength = reader.readUint32();
             
             const posEnd = reader.offset + sectionLength;
+            if (posEnd > totalLength) {
+                reader.seek(totalLength);
+                continue;
+            }
             
             switch (sectionName) {
                 case "BKHD":
@@ -49,7 +53,7 @@ export class BNK {
                     break;
             }
 
-            this.pos = posEnd;
+            reader.seek(posEnd);
             if (this.sections[sectionName]) console.log('BNK section', sectionName, 'already exists and will be overwritten');
             this.sections[sectionName] = section;
         }
@@ -101,7 +105,7 @@ class DATA {
      * @param {any} DIDX DIDX section
      */
     constructor (reader, DIDX) {
-        this.start = pos;
+        this.start = reader.offset;
         if (DIDX) {
             for (let i = 0; i < DIDX.files.length; i++) {
                 const curFile = DIDX.files[i];
@@ -179,18 +183,17 @@ class HIRC {
                     }
                     for (let j = 0; j < numSettings; j++) {
                         obj.settings[j].value = reader.readFloat32();
-                        pos += 4
                     }
                     break
                 case 2:
-                    const unknown = reader.readUint32();
-                    const isStreamed = reader.readUint32();
-                    const audioId = reader.readUint32();
-                    const audioSourceId = reader.readUint32();
+                    obj.unknown = reader.readUint32();
+                    obj.isStreamed = reader.readUint32();
+                    obj.audioId = reader.readUint32();
+                    obj.audioSourceId = reader.readUint32();
                     
-                    if (isStreamed === 0) {
-                        const audioOffset = reader.readUint32();
-                        const audioLength = reader.readUint32();
+                    if (obj.isStreamed === 0) {
+                        obj.audioOffset = reader.readUint32();
+                        obj.audioLength = reader.readUint32();
                     }
                     break
                 case 3:
@@ -232,14 +235,14 @@ class HIRC {
                         break;
                     }
                 case 11:
-                    const unknown1 = reader.readUint32();
-                    assert(unknown1 === 1, 'Expected unknown1 in music track section to be 1 but it was ' + unknown1);
+                    obj.unknown1 = reader.readUint32();
+                    assert(obj.unknown1 === 1, 'Expected unknown1 in music track section to be 1 but it was ' + unknown1);
 
-                    const unknown2 = reader.readUint16();
-                    assert(unknown2 === 1, 'Expected unknown2 in music track section to be 1 but it was ' + unknown2);
+                    obj.unknown2 = reader.readUint16();
+                    assert(obj.unknown2 === 1, 'Expected unknown2 in music track section to be 1 but it was ' + unknown2);
 
-                    const unknown3 = reader.readUint16();
-                    assert(unknown3 === 4, 'Expected unknown3 in music track section to be 4 but it was ' + unknown3);
+                    obj.unknown3 = reader.readUint16();
+                    assert(obj.unknown3 === 4, 'Expected unknown3 in music track section to be 4 but it was ' + unknown3);
 
                     obj.isStreamed = reader.readUint32();
                     obj.audioId = reader.readUint32();
@@ -423,9 +426,9 @@ class NANSEC {
      * @param {Reader} reader file reader
      * @param {number} sectionLength length of this section
      */
-    constructor (reader, secLen) {
+    constructor (reader, sectionLength) {
         let out2 = '';
-        for (let i = 0; i < secLen; i++) {
+        for (let i = 0; i < sectionLength; i++) {
             const byte = reader.readUint8();
             let byteStr = byte.toString(16).toUpperCase();
             if (byte < 16)
@@ -507,5 +510,5 @@ function read_bnk_soundstruct(reader, obj) {
         let numPoints = reader.readUint8();
         reader.seek(numPoints * 12, 1);
     }
-    return pos - startPos
+    return reader.offset - startPos
 }

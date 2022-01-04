@@ -16,8 +16,8 @@ class BNKParser {
         this.errors = [];
     }
 
-    parseBNK(data) {
-        const bnk = new BNK(data.data.buffer);
+    parseBNK(reader) {
+        const bnk = new BNK(reader);
 
         if (bnk.sections.HIRC) {
             if (bnk.hirc.numObject != 0) {

@@ -7,7 +7,6 @@ export class BNK {
      * @param {Reader} reader file reader
      */
      constructor(reader) {
-        const dv = new DataView(buffer);
         reader.seek(0);
         const totalLength = reader.data.length;
 

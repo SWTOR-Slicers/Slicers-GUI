@@ -1,7 +1,5 @@
-const {app, BrowserWindow, dialog, ipcMain, screen, shell, Session, session} = require('electron');
+const {app, BrowserWindow, dialog, ipcMain, screen, shell} = require('electron');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
-
-const { DOM_Factory } = require("./src/js/classes/DOM.js");
 
 const fs = require('fs');
 const ChildProcess = require('child_process');
@@ -66,8 +64,6 @@ const extractionPresetConsts = {
     "gui": []
   }
 };
-
-session.defaultSession.addListener()
 
 function initGlobalListeners() {
   ipcMain.on('minimizeWindow', (event, data) => {

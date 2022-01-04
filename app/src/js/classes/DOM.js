@@ -45,22 +45,6 @@ class Dom {
     }
 }
 
-class DOM_Factory {
-    static DOM = new Dom();
-
-    /**
-     * gets connection to the DOM
-     * @returns {Dom} Shared DOM instance
-     */
-    static getConnection() {
-        if (DOM_Factory.DOM === undefined) {
-            DOM_Factory.DOM = new Dom();
-        }
-
-        return DOM_Factory.DOM;
-    }
-}
-
 module.exports = {
     "DOM_Factory": DOM_Factory
 }

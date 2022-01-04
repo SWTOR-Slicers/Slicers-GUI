@@ -27,33 +27,35 @@ export function capitalize(s) {
  * Converts the DataView of a .wem file to a .ogg represented by a buffer.
  * @param  {DataView} dv DataView representing the .wem file.
  */
-export function ww2ogg(dv) {
-    var pos = 0;
-    var reader = new BitReader(dv);
-    var writer = new BitWriter();
-    var ilog = function(n) {
-        var out = 0;
+export function ww2ogg(fileReader) {
+    const dv = new DataView(fileReader.data);
+    let pos = 0;
+    const reader = new BitReader(dv);
+    const writer = new BitWriter();
+    const ilog = function(n) {
+        let out = 0;
         while (n > 0) {
             out++;
             n >>= 1
         }
-        return out
+        return out;
     };
     let header = dv.getUint32(pos, !0);
     pos += 4;
     if (header != 0x46464952) {
         alert('Wrong header, not a .wem file!');
-        return null
+        return null;
     }
-    var fileSize = 8 + dv.getUint32(pos, !0);
+
+    const fileSize = 8 + dv.getUint32(pos, !0);
     pos += 4;
     assert(fileSize === dv.byteLength, 'Expected file size field to match file size but it was ' + fileSize + ' instead of ' + dv.byteLength);
-    var waveHeader = dv.getUint32(pos, !0);
+    const waveHeader = dv.getUint32(pos, !0);
     pos += 4;
     assert(waveHeader === 0x45564157, 'Expected WAVE but read ' + waveHeader);
-    var channels, sampleRate, avgBytesPerSecond, sampleCount;
-    var setupPacketOffset, firstAudioPacketOffset;
-    var blocksize0pow, blocksize1pow;
+    let channels, sampleRate, avgBytesPerSecond, sampleCount;
+    let setupPacketOffset, firstAudioPacketOffset;
+    let blocksize0pow, blocksize1pow;
     while (pos < fileSize) {
         let chunkType = dv.getUint32(pos, !0);
         pos += 4;
@@ -346,7 +348,7 @@ export function ww2ogg(dv) {
             pos += chunkSize
         }
     }
-    var buffer = writer.toArray();
+    const buffer = writer.toArray();
     buffer.channels = channels;
     buffer.sampleRate = sampleRate;
     buffer.avgBytesPerSecond = avgBytesPerSecond;

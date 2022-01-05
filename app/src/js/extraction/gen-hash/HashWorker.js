@@ -3,7 +3,7 @@ import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
 import { STB } from "../../classes/formats/STB.js";
 
-import { inflateZlib, hashlittle2, getFileType } from "../../Util.js";
+import { inflateZlib, hashlittle2 } from "../../Util.js";
 import { StaticGomTree, nodeFolderSort } from "../../viewers/node-viewer/GomTree.js";
 
 import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
@@ -22,7 +22,8 @@ import { AMXParser } from "../../classes/parsers/AMX.js";
 import { HYDParser } from "../../classes/parsers/HYD.js";
 import { DYNParser } from "../../classes/parsers/DYN.js";
 import { PLCParser } from "../../classes/parsers/PLC.js";
-import { ArchiveEntry } from "../../classes/formats/Archive.js";
+
+import { ArchiveEntry, FileExtension } from "../../classes/formats/Archive.js";
 
 const path = require('path');
 const xmlJs = require('xml-js');
@@ -123,6 +124,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
     }
 
     const matches = [];
+    const fileExt = new FileExtension();
     Object.keys(assetsDict).map(key => {
         assetsDict[key] = ArchiveEntry.fromJSON(assetsDict[key]);
 
@@ -131,7 +133,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
 
         asset.isNamed = new Boolean(fileH);
         asset.hash = (fileH) ? fileH : `${asset.crc}_${asset.fileId}`;
-        asset.type = getFileType(asset.getReadStream());
+        asset.type = fileExt.guessExtension(asset);
 
         if (asset.hash?.includes("." + extension.toLowerCase()) || asset.type == extension.toLowerCase()) {
             matches.push(asset);

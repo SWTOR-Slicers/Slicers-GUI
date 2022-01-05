@@ -37,6 +37,7 @@ class HashDictionary {
         let downloaded = 0;
         const len = hashData.readableLength;
 
+        let i = 0;
         hashData.pipe(es.split()).pipe(es.mapSync((line) => {
             hashData.pause();
 
@@ -44,6 +45,9 @@ class HashDictionary {
             const ph = strsplt[0];
             const sh = strsplt[1];
             const fileName = strsplt[2];
+            if (!!fileName) {
+                if (fileName.includes('.bnk')) i++;
+            }
             const crc = strsplt[3];
 
             this.loadHash(ph, sh, fileName, crc);
@@ -55,7 +59,11 @@ class HashDictionary {
             if (progressBarElem) {
                 progressBarElem.style.width = `${percentage}%`;
             }
-        }));
+        })).on('end', () => {
+            console.log(`File names by hash: ${Object.entries(this.fileNameByHash).length}`);
+            console.log(`Hash by file name: ${Object.entries(this.hashByFileName).length}`);
+            console.log(`Number of bnks: ${i}`);
+        });
     }
 
     /**

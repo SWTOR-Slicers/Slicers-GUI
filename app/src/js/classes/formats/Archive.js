@@ -198,62 +198,51 @@ class Archive {
 
     async #readFileTables() {
         this.entries = {};
+        const reader = this.data.read(this.data.length);
 
-        let mypHeader = this.data.read(36);
-        const magic = mypHeader.readUint32();
-        if (magic !== 0x50594D) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Not a .tor file (Wrong file header)`);
+        const magic = reader.readUint32();
+        if (magic !== 0x50594D) throw new Error(`This is not an MYP file: index ${this.idx}.`);
         
-        this.version = mypHeader.readUint32();
-        if (this.version !== 5) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Only version 5 is supported, file has ${this.version}`);
-        
-        this.bom = mypHeader.readUint32()
-        if (this.bom !== 0xFD23EC43) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Unexpected byte order`);
+        reader.seek(12, 0);
 
-        let tableOffset = mypHeader.readUint64();
-        if (tableOffset === 0) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. File is empty`);
+        let tableOffset = reader.readUint64();
 
-        this.tableCapacity = mypHeader.readUint32();
-        this.totalFiles = mypHeader.readUint32();
-
-        mypHeader.readUint32();
-        mypHeader.readUint32();
+        this.tableCapacity = reader.readUint32();
+        this.totalFiles = reader.readUint32();
 
         while (tableOffset != 0n) {
-            this.data.seek(tableOffset, 0);
+            reader.seek(tableOffset, 0);
 
-            const fileTableHeader = this.data.read(12);
-            const numFiles = fileTableHeader.readUint32();
+            const numFiles = reader.readUint32();
+            tableOffset = reader.readUint64();
 
-            tableOffset = fileTableHeader.readUint64();
-
-            const fileTable = this.data.read(numFiles * 34);
             const table = new ArchiveEntryTable(numFiles, tableOffset);
             const tableIdx = this.tables.length;
             this.tables.push(table);
 
             for (let i = 0; i < numFiles; i++) {
-                let offset = fileTable.readUint64();
+                let offset = reader.readUint64();
                 if (offset === 0) {
                     fileTable.seek(26, 1);
                     continue;
                 }
 
-                const headerSize = fileTable.readUint32();
+                const headerSize = reader.readUint32();
 
-                const comprSize = fileTable.readUint32();
-                const uncomprSize = fileTable.readUint32();
+                const comprSize = reader.readUint32();
+                const uncomprSize = reader.readUint32();
 
-                const reOff = fileTable.offset;
+                const reOff = reader.offset;
 
-                const sh = fileTable.readUint32();
-                const ph = fileTable.readUint32();
+                const sh = reader.readUint32();
+                const ph = reader.readUint32();
 
-                fileTable.seek(reOff, 0);
+                reader.seek(reOff, 0);
 
-                const fileId = fileTable.readUint64();
-                const crc = fileTable.readUint32();
+                const fileId = reader.readUint64();
+                const crc = reader.readUint32();
 
-                const compression = fileTable.readUint16();
+                const compression = reader.readUint16();
                 const fileObj = new ArchiveEntry(
                     offset,
                     headerSize,

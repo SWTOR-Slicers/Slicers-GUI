@@ -71,7 +71,7 @@ class FileExtension {
      */
     guessExtension(file) {
         let fs = file.getReadStream();
-        let bytes = fs.readBytes((file.metaDataCheckSum < 200) ? file.comprSize : 200);
+        let bytes = fs.readBytes((file.crc < 200) ? file.comprSize : 200);
 
         if (((bytes[0] == 0x01) && (bytes[1] == 0x00)) && (bytes[2] == 0x00)) return "stb";
         if (((bytes[0] == 0x02) && (bytes[1] == 0x00)) && (bytes[2] == 0x00)) return "mph";
@@ -134,11 +134,11 @@ class FileExtension {
 }
 
 class ArchiveEntry {
-    constructor(offset, metaDataSize, comprSize, uncomprSize, metaDataCheckSum, isCompr, ph, sh, fileId, fileTableNum, fileTableFileIdx, torPath) {
+    constructor(offset, metaDataSize, comprSize, uncomprSize, crc, isCompr, ph, sh, fileId, fileTableNum, fileTableFileIdx, torPath) {
         this.offset = offset;
 
         this.metaDataSize = metaDataSize;
-        this.metaDataCheckSum = metaDataCheckSum;
+        this.crc = crc;
 
         this.comprSize = comprSize;
         this.uncomprSize = uncomprSize;
@@ -178,7 +178,7 @@ class ArchiveEntry {
     }
 
     static fromJSON(json) {
-        return new ArchiveEntry(json.offset, json.metaDataSize, json.comprSize, json.uncomprSize, json.metaDataCheckSum, json.isCompr, json.ph, json.sh, json.fileId, json.fileTableNum, json.fileTableFileIdx, json.torPath);
+        return new ArchiveEntry(json.offset, json.metaDataSize, json.comprSize, json.uncomprSize, json.crc, json.isCompr, json.ph, json.sh, json.fileId, json.fileTableNum, json.fileTableFileIdx, json.torPath);
     }
 }
 
@@ -234,7 +234,7 @@ class Archive {
             for (let i = 0; i < numFiles; i++) {
                 let offset = fileTable.readUint64();
                 if (offset === 0) {
-                    fileTable.seek(0x22, 1);
+                    fileTable.seek(26, 1);
                     continue;
                 }
 
@@ -244,14 +244,16 @@ class Archive {
                 const uncomprSize = fileTable.readUint32();
 
                 const reOff = fileTable.offset;
-                const fileId = fileTable.readUint64();
-                fileTable.seek(reOff, 0);
 
                 const sh = fileTable.readUint32();
                 const ph = fileTable.readUint32();
+
+                fileTable.seek(reOff, 0);
+
+                const fileId = fileTable.readUint64();
                 const crc = fileTable.readUint32();
 
-                const compression = fileTable.readUint8();
+                const compression = fileTable.readUint16();
                 const fileObj = new ArchiveEntry(
                     offset,
                     headerSize,

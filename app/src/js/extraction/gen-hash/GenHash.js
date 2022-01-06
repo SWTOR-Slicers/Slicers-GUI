@@ -136,6 +136,10 @@ function initAssetWorker() {
                 break;
             case "complete":
                 archives = e.data.data.archives;
+                hashWorker.postMessage({
+                    "message": "archivesComplete",
+                    "data": archives
+                });
                 if (progressBar__assets.style.width == '100%' &&
                     progressBar__baseNodes.style.width == '100%' &&
                     progressBar__clientGOM.style.width == '100%' &&
@@ -260,8 +264,7 @@ function initListeners() {
             hashWorker.postMessage({
                 "message": 'genHash',
                 "data": {
-                    "checked": getChecked(),
-                    "assets": archives
+                    "checked": getChecked()
                 }
             });
 

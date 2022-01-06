@@ -28,7 +28,8 @@ class HashDictionary {
      */
     loadHash(ph, sh, name, crc) {
         const hashData = new HashData(ph, sh, name, crc);
-        this.hashByFileName[name] = hashData;
+        
+        this.hashByFileName[name ? name : `${crc}_${parseInt(ph, 16) | parseInt(sh, 16) << 32}`] = hashData;
         this.fileNameByHash[`${parseInt(sh, 16)}|${parseInt(ph, 16)}`] = hashData;
     }
 

@@ -40,6 +40,7 @@ let totalNamesFound;
 let hash;
 let GTree;
 let _dom = null;
+let archives;
 
 let decompressZlib = (params) => {
     const ret = inflateZlib(path.dirname(cache['configPath']), params);
@@ -59,12 +60,12 @@ onmessage = (e) => {
         case "genHash":
             totalFilesSearched = 0;
             totalNamesFound = 0;
-            generateNames(GTree.nodesByFqn, GTree.nodesList, e.data.data.assets, e.data.data.checked, true);
+            generateNames(GTree.nodesByFqn, GTree.nodesList, archives, e.data.data.checked, true);
             break;
         case "findFileNames":
             totalFilesSearched = 0;
             totalNamesFound = 0;
-            generateNames(GTree.nodesByFqn, GTree.nodesList, e.data.data.assets, e.data.data.checked, false, e.data.data.extractPath);
+            generateNames(GTree.nodesByFqn, GTree.nodesList, archives, e.data.data.checked, false, e.data.data.extractPath);
             break;
         case "setDOM":
             _dom = e.data.data;
@@ -84,6 +85,9 @@ onmessage = (e) => {
                 }
                 GTree.nodesByFqn.$F.sort(nodeFolderSort);
             }
+            break;
+        case "archivesComplete":
+            archives = e.data.data;
             break;
         default:
             console.log(`Unexpected message with value ${e.data.message}`);
@@ -121,6 +125,15 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
     let assetsDict = {};
     for (const entrList of assets) {
         Object.assign(assetsDict, entrList);
+    }
+    console.log(Object.values(assetsDict).length);
+    for (const archive of Object.values(archives)) {
+        const numEntr = Object.values(archive.entries).length;
+        if (archive.totalFiles == numEntr) {
+            console.log(`Validated archive. Found all ${archive.totalFiles} assets.`);
+        } else {
+            console.log(`ERROR: Expected ${archive.totalFiles} assets but only found ${numEntr}.`);
+        }
     }
 
     const matches = [];

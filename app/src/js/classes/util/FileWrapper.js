@@ -7,9 +7,8 @@ const { Float16Array } = require("@petamoriken/float16");
 let GLOBAL_ENDIANNESS = true;
 class Reader {
     constructor(data) {
-        this.buffer = data instanceof ArrayBuffer ? data : data.buffer;
         this.data = data instanceof ArrayBuffer ? data : data.buffer;
-        this.view = new DataView(this.buffer);
+        this.view = new DataView(this.data);
         this.offset = 0;
     }
 

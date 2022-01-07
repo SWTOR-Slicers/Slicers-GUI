@@ -221,8 +221,8 @@ function initListeners() {
 
                 for (const b of chkbxs) {
                     if (b.id !== "AllChk") {
-                        updateCache("checked", b.checked, b.id);
                         b.checked = elem.checked;
+                        updateCache("checked", b.checked, b.name);
                     }
                 }
 

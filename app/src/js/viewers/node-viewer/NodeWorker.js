@@ -1,54 +1,35 @@
-import { hashlittle2, uint64, readString as readStr, readVarInt, uint64C } from "../../Util.js";
-import { GOM } from "../../classes/util/Gom.js";
-import { DomLoader } from "../../classes/DomLoaders.js";
+import { hashlittle2, uint64, readString as readStr, readVarInt } from "../../Util.js";
 
 const path = require('path');
+const zlib = require('zlib');
 const { promises: { readFile }, readFileSync, existsSync, mkdirSync } = require('fs');
-const edge = require('electron-edge-js');
 
 const cache = {
     "configPath": "",
     "tmpPath": "",
     "store": {}
 }
-let decompressZlib = function(){};
+let decompressZlib = function(data){
+    const decompr = zlib.inflateSync(data.buffer, {
+        level: zlib.constants.Z_BEST_COMPRESSION,
+        maxOutputLength: data.dataLength
+    });
+
+    return decompr
+};
 
 onmessage = (e) => {
     switch (e.data.message) {
         case "init":
-            cache['configPath'] = path.normalize(path.join(e.data.data, "config.json"));
-            decompressZlib = edge.func({
-                source: function() {/*
-                    using System.IO;
-                    using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
-                
-                    async (dynamic input) => {
-                        byte[] buffer = (byte[])input.buffer;
-                        MemoryStream stream = new MemoryStream(buffer);
-                        InflaterInputStream inflaterStream = new InflaterInputStream(stream);
-        
-                        byte[] decompressed = new byte[(int)input.dataLength];
-                        inflaterStream.Read(decompressed, 0, (int)input.dataLength);
-                        inflaterStream.Dispose();
-                        stream.Close();
-        
-                        return decompressed;
-                    }
-                */},
-                references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
-            });
+            cache['configPath'] = path.join(e.data.data, 'config.json');
             break;
         case "loadNodes":
-            loadNodes(e.data.data.torFiles[1], false);
-            if (e.data.data.loadProts) {
-                loadNodes(e.data.data.torFiles[0], false);
-            }
-            loadNodes(e.data.data.torFiles[0], e.data.data.loadProts);
+            loadNodes(e.data.data);
             break;
     }
 }
 
-async function loadNodes(torPath, loadProts) {
+async function loadNodes(torPath) {
     cache['tmpPath'] = cache['tmpPath'] == "" ? await getTmpFilePath() : cache['tmpPath'];
     let ftOffset = 0;
     let firstLoop = true;
@@ -113,93 +94,14 @@ async function loadNodes(torPath, loadProts) {
         }
 
         if (Object.keys(gomArchive.files).length > 0) {
-            if (path.basename(torPath).indexOf('systemgenerated_gom_1') > -1) {
-                findClientGOM(gomArchive, data, torPath);
-            } else if (loadProts) {
-                findPrototypes(gomArchive, data, torPath);
-            } else {
-                cache['store']['gomArchive'] = gomArchive;
-                cache['store']['data'] = data;
-                cache['store']['torPath'] = torPath;
-                findGom(gomArchive, data, torPath);
-            }
+            cache['store']['gomArchive'] = gomArchive;
+            cache['store']['data'] = data;
+            cache['store']['torPath'] = torPath;
+            findGom(gomArchive, data, torPath);
         }
     }).catch(err => {
         throw err;
     });
-}
-
-async function findClientGOM(gomArchive, data, torPath) {
-    const gomFileHash = hashlittle2("/resources/systemgenerated/client.gom");
-    const gomFileEntr = gomArchive.files[`${gomFileHash[1]}|${gomFileHash[0]}`];
-
-    const dat = data.slice(gomFileEntr.offset, gomFileEntr.offset + (gomFileEntr.isCompressed ? gomFileEntr.comprSize : gomFileEntr.size));
-    if (gomFileEntr.isCompressed) {
-        const decompressed = decompressZlib({
-            buffer: Buffer.from(dat),
-            dataLength: gomFileEntr.size
-        }, true);
-        const infoDV = new DataView(decompressed.buffer);
-        loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr);
-    }
-}
-function loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr) {
-    const DomElements = {};
-
-    let pos = 0
-    // Check DBLB
-    const magicNum = infoDV.getInt32(pos, true)
-    pos += 4;
-    if (magicNum != 0x424C4244) {
-        throw new Error("client.gom does not begin with DBLB");
-    }
-
-    pos += 4;
-
-    while (true) {
-        const iniPos = pos;
-        // Begin Reading Gom Definitions
-
-        const defLength = infoDV.getInt32(pos, true);
-        pos += 4;
-
-        // Length == 0 means we've read them all!
-        if (defLength == 0) {
-            break;
-        }
-
-        const defBuffer = new Uint8Array(defLength);
-        pos += 4; // 4 blank bytes
-        const defId = infoDV.getBigUint64(pos, true); // 8-byte type ID
-        pos += 8;
-        const defFlags = infoDV.getInt16(pos, true); // 16-bit flag field
-        pos += 2;
-        const defType = (defFlags >> 3) & 0x7;
-
-        const defData = new Uint8Array(infoDV.buffer, pos, defLength - 18);
-        defBuffer.set(defData, 18);
-
-        const DomElem = new DomLoader(defType, new DataView(defBuffer.buffer), 0).getLoader().load();
-        delete DomElem.Name;
-        delete DomElem.Description;
-
-        const DElem = DomElem;
-        DElem.id = defId;
-        DElem.fqn = GOM.fields[DElem.id];
-        
-        if (!DomElements[defType]) DomElements[defType] = {};
-        DomElements[defType][DElem.id] = DElem;
-
-        // Read the required number of padding bytes
-        const padding = ((8 - (defLength & 0x7)) & 0x7);
-
-        pos = iniPos + defLength + padding;
-    }
-
-    postMessage({
-        "message": 'DomElements',
-        "data": DomElements
-    })
 }
 
 async function findGom(gomArchive, data, torPath) {
@@ -211,7 +113,7 @@ async function findGom(gomArchive, data, torPath) {
         const decompressed = decompressZlib({
             buffer: Buffer.from(dat),
             dataLength: bucketInfoEntr.size
-        }, true);
+        });
         const infoDV = new DataView(decompressed.buffer);
         loadBuckets(gomArchive, data, torPath, infoDV);
     }
@@ -326,142 +228,6 @@ function readAllItems(dv, pos, length, torPath, bktIdx, bktFile, isBucket) {
         "message": 'NODES',
         "data": nodes
     })
-}
-
-async function findPrototypes(gomArchive, data, torPath) {
-    const protInfoHash = hashlittle2(`/resources/systemgenerated/prototypes.info`);
-    const protInfoEntr = gomArchive.files[`${protInfoHash[1]}|${protInfoHash[0]}`];
-
-    const dat = data.slice(protInfoEntr.offset, protInfoEntr.offset + (protInfoEntr.isCompressed ? protInfoEntr.comprSize : protInfoEntr.size));
-    if (protInfoEntr.isCompressed) {
-        const decompressed = decompressZlib({
-            buffer: Buffer.from(dat),
-            dataLength: protInfoEntr.size
-        }, true);
-        const infoDV = new DataView(decompressed.buffer);
-        loadPrototypes(gomArchive, data, torPath, infoDV);
-    }
-}
-async function loadPrototypes(gomArchive, data, torPath, dv) {
-    let pos = 0;
-
-    const magicNum = dv.getInt32(pos, true);
-    pos += 4;
-    if (magicNum != 0x464E4950) {
-        throw new Error("prototypes.info does not begin with PINF");
-    }
-
-    pos += 4; // Skip 4 bytes
-
-    const res = readVarInt(dv, pos);
-    const numPrototypes = uint64C(res);
-    pos += res.len;
-
-    let prototypes = [];
-    let protoLoaded = 0;
-    for (let i = 0; i < numPrototypes; i++) {
-        const res = readVarInt(dv, pos);
-        const protId = uint64C(res);
-        pos += res.len;
-
-        const flag = new Uint8Array(dv.buffer, pos, 1)[0];
-        pos++;
-
-        if (flag == 1) {
-            const hashArr = hashlittle2(`/resources/systemgenerated/prototypes/${protId}.node`);
-            const file = gomArchive.files[`${hashArr[1]}|${hashArr[0]}`];
-
-            if (file) {
-                let fData = null;
-                if (file.isCompressed) {
-                    const blob = data.slice(file.offset, file.offset + file.comprSize);
-                    const decompressed = decompressZlib({
-                        buffer: Buffer.from(blob),
-                        dataLength: file.size
-                    }, true);
-                    fData = decompressed.buffer;
-                } else {
-                    const blob = data.slice(file.offset, file.offset + file.size);
-                    fData = blob;
-                }
-                const node = loadPrototype(protId, new DataView(fData), file);
-                prototypes.push({
-                    "node": node,
-                    "torPath": torPath
-                });
-                protoLoaded++;
-
-                // This batches together prototype nodes so that we dont lag out the app by batching 16 thousand at once
-                if (protoLoaded % 500 == 0 || protoLoaded == 16650) {
-                    postMessage({
-                        "message": 'PROTO',
-                        "data": {
-                            "nodes": prototypes,
-                            "numLoaded": protoLoaded,
-                            "total": 16650
-                        }
-                    });
-                    prototypes = [];
-                }
-            }
-        }
-    }
-}
-function loadPrototype(id, dv, prototype) {
-    let pos = 0;
-
-    // Check PROT
-    const magicNum = dv.getInt32(pos, true);
-    pos += 4;
-    if (magicNum != 0x544F5250) {
-        console.log(magicNum, 0x544F5250);
-        console.error(`PROT node ${id} does not begin with PROT`);
-        return null
-    }
-
-    pos += 4; // Skip 4 bytes
-
-    const node = {};
-    node.id = dv.getBigUint64(pos, true);
-    pos += 8;
-    const nameLen = dv.getInt32(pos, true);
-    pos += 4;
-    node.fqn = readStr(dv.buffer, pos, nameLen-1); //readString(dv, pos)
-    pos += nameLen-1;
-    pos++;
-
-    pos++;
-
-    pos += 4;
-
-    pos += 4;
-    
-    pos += 4;
-
-    node.baseClass = dv.getBigUint64(pos, true);
-    pos += 8;
-
-    pos += 8;
-
-    node.objectSizeInFile = dv.getInt32(pos, true); // 0x24
-    pos += 4;
-
-    node.isCompressed = false;
-    node.dataOffset = 20 + nameLen + 33; // 8 byte file header + node ID + nameLen + node name + 33 byte node header
-
-    if (node.objectSizeInFile > 0) {
-        node.dataLength = node.objectSizeInFile;
-    } else {
-        node.dataLength = 0;
-    }
-
-    node.proto = {
-        "id": id,
-        "data": prototype
-    }
-    node.isBucket = false;
-
-    return node;
 }
 
 // Utility functions

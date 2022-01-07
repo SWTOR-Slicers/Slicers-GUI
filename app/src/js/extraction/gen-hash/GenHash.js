@@ -27,7 +27,7 @@ const cache = {
     "checked": {}
 }
 
-let nodeWorker;
+let gomWorker;
 let assetWorker;
 let hashWorker;
 let bktsLoaded = 0;
@@ -67,13 +67,13 @@ function updateCache(field, val, sec) {
 }
 
 function initNodeWorker() {
-    nodeWorker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "NodeWorker.js"), {
+    gomWorker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "GomWorker.js"), {
         type: "module"
     });
 
-    nodeWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    nodeWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    nodeWorker.onmessage = (e) => {
+    gomWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    gomWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    gomWorker.onmessage = (e) => {
         switch (e.data.message) {
             case "DomElements":
                 hashWorker.postMessage({
@@ -117,9 +117,9 @@ function initNodeWorker() {
         }
     }
 
-    nodeWorker.postMessage({
+    gomWorker.postMessage({
         "message": "init",
-        "data": resourcePath
+        "data": [ resourcePath, sourcePath ]
     });
 }
 function initAssetWorker() {
@@ -277,12 +277,9 @@ function initSubs() {
     ipcRenderer.on('dataTorPaths', (event, data) => {
         const dat = fs.readFileSync(data[0]);
         const json = JSON.parse(dat);
-        nodeWorker.postMessage({
+        gomWorker.postMessage({
             "message": 'loadNodes',
-            "data": {
-                "torFiles": json.nodeTors,
-                "loadProts": true
-            }
+            "data": json.nodeTors
         });
         assetWorker.postMessage({
             "message": 'loadAssets',

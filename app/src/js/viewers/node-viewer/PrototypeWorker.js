@@ -1,45 +1,30 @@
-import { hashlittle2, uint64, readString as readStr, readVarInt, uint64C } from "../../Util.js";
-import { GOM } from "../../classes/util/Gom.js";
-import { DomLoader } from "../../classes/DomLoaders.js";
+import { hashlittle2, readString as readStr, readVarInt, uint64C } from "../../Util.js";
 
 const path = require('path');
+const zlib = require('zlib');
 const { promises: { readFile }, readFileSync, existsSync, mkdirSync } = require('fs');
-const edge = require('electron-edge-js');
 
 const cache = {
     "configPath": "",
     "tmpPath": "",
     "store": {}
 }
-let decompressZlib = function(){};
+let decompressZlib = function(data){
+    const decompr = zlib.inflateSync(data.buffer, {
+        level: zlib.constants.Z_BEST_COMPRESSION,
+        maxOutputLength: data.dataLength
+    });
+
+    return decompr
+};
 
 onmessage = (e) => {
     switch (e.data.message) {
         case "init":
-            cache['configPath'] = path.normalize(path.join(e.data.data, "config.json"));
-            decompressZlib = edge.func({
-                source: function() {/*
-                    using System.IO;
-                    using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
-                
-                    async (dynamic input) => {
-                        byte[] buffer = (byte[])input.buffer;
-                        MemoryStream stream = new MemoryStream(buffer);
-                        InflaterInputStream inflaterStream = new InflaterInputStream(stream);
-        
-                        byte[] decompressed = new byte[(int)input.dataLength];
-                        inflaterStream.Read(decompressed, 0, (int)input.dataLength);
-                        inflaterStream.Dispose();
-                        stream.Close();
-        
-                        return decompressed;
-                    }
-                */},
-                references: [ `${path.join(path.dirname(cache['configPath']), 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
-            });
+            cache['configPath'] = path.join(e.data.data, 'config.json');
             break;
         case "loadNodes":
-            loadNodes(e.data.data.torFile);
+            loadNodes(e.data.data);
             break;
     }
 }
@@ -50,6 +35,9 @@ async function loadNodes(torPath) {
     let firstLoop = true;
     const ftCapacity = 1000;
     const fileName = path.basename(torPath);
+    const gomArchive = {
+        "files": {}
+    };
     
     readFile(torPath).then(async (buff) => {
         const data = buff.buffer;
@@ -117,7 +105,7 @@ async function findPrototypes(gomArchive, data, torPath) {
         const decompressed = decompressZlib({
             buffer: Buffer.from(dat),
             dataLength: protInfoEntr.size
-        }, true);
+        });
         const infoDV = new DataView(decompressed.buffer);
         loadPrototypes(gomArchive, data, torPath, infoDV);
     }
@@ -158,7 +146,7 @@ async function loadPrototypes(gomArchive, data, torPath, dv) {
                     const decompressed = decompressZlib({
                         buffer: Buffer.from(blob),
                         dataLength: file.size
-                    }, true);
+                    });
                     fData = decompressed.buffer;
                 } else {
                     const blob = data.slice(file.offset, file.offset + file.size);

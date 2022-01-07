@@ -339,7 +339,10 @@ class FileExtension {
      */
     guessExtension(file) {
         let fs = file.getReadStream();
-        let bytes = fs.readBytes((file.crc < 200) ? file.comprSize : 200);
+        if (fs.view.byteLength == 0) {
+            return "empty";
+        }
+        let bytes = fs.readBytes((fs.view.byteLength < 200) ? file.comprSize : 200);
 
         if (((bytes[0] == 0x01) && (bytes[1] == 0x00)) && (bytes[2] == 0x00)) return "stb";
         if (((bytes[0] == 0x02) && (bytes[1] == 0x00)) && (bytes[2] == 0x00)) return "mph";
@@ -355,7 +358,7 @@ class FileExtension {
         if (((bytes[0] == 10) && (bytes[1] == 5)) && ((bytes[2] == 1) && (bytes[3] == 8))) return "pcx";
         if (((bytes[0] == 0x38) && (bytes[1] == 0x03)) && ((bytes[2] == 0x00) && (bytes[3] == 0x00))) return "spt";
         if (((bytes[0] == 0x18) && (bytes[1] == 0x00)) && ((bytes[2] == 0x00) && (bytes[3] == 0x00))) {
-            const strCheckDAT = decoder.decode(bytes, 4, 22);
+            const strCheckDAT = readString(bytes.buffer, 4, 22);
             if(strCheckDAT == "AREA_DAT_BINARY_FORMAT" || strCheckDAT == "ROOM_DAT_BINARY_FORMAT") return "dat";
         }
 

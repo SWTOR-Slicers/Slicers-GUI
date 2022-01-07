@@ -149,7 +149,7 @@ const decomprFunc = (params) => {
 }
 
 function initWorker() {
-    worker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "NodeWorker.js"), {
+    worker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "GomWorker.js"), {
         type: "module"
     });
     worker.onerror = (e) => {
@@ -196,7 +196,7 @@ function initWorker() {
 
     worker.postMessage({
         "message": "init",
-        "data": resourcePath
+        "data": [ resourcePath, sourcePath ]
     });
 }
 
@@ -204,10 +204,8 @@ function initSubs() {
     ipcRenderer.on('nodeTorPath', (event, data) => {
         worker.postMessage({
             "message": 'loadNodes',
-            "data": {
-                "torFiles": data,
-                "loadProts": loadPrototypeNodes.checked
-            }
+            "data": data,
+            "prots": loadPrototypeNodes.checked
         });
     });
     ipcRenderer.on('errorPathNotExist', (event, data) => { log("The required .tor file is not in your assets directory.", "error"); });

@@ -414,8 +414,8 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
         for (const n of parseReturns) {
             if (n) {
                 const hash = hashlittle2(n);
-                const file = assetsDict[`${hash[0]}|${hash[1]}`];
-                names.push([hash[1].toString(16).toUpperCase(), hash[0].toString(16).toUpperCase(), n, file ? file.crc.toString(16).toUpperCase() : ''].join('#'));
+                const file = assetsDict[`${hash[1]}|${hash[0]}`];
+                names.push([hash[0].toString(16).toUpperCase(), hash[1].toString(16).toUpperCase(), n, file ? file.crc.toString(16).toUpperCase() : ''].join('#'));
             }
         }
     }

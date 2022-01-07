@@ -126,7 +126,15 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
     for (const entrList of assets) {
         Object.assign(assetsDict, entrList);
     }
-    console.log(Object.values(assetsDict).length);
+    // console.log(Object.values(assetsDict).length);
+    // for (const archive of Object.values(archives)) {
+    //     const numEntr = Object.values(archive.entries).length;
+    //     if (archive.totalFiles == (numEntr - 1)) {
+    //         console.log(`Validated archive. Found all ${archive.totalFiles} assets.`);
+    //     } else {
+    //         console.log(`ERROR: Expected ${archive.totalFiles} assets but only found ${numEntr}.`);
+    //     }
+    // }
 
     const matches = [];
     const fileExt = new FileExtension();

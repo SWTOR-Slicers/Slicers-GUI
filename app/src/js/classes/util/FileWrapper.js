@@ -4,10 +4,21 @@ const { Float16Array } = require("@petamoriken/float16");
 /**
  * A custom Reader class for ease of use.
  */
- class Reader {
+let GLOBAL_ENDIANNESS = true;
+class Reader {
     constructor(data) {
+        this.buffer = data instanceof ArrayBuffer ? data : data.buffer;
         this.data = data instanceof ArrayBuffer ? data : data.buffer;
+        this.view = new DataView(this.buffer);
         this.offset = 0;
+    }
+
+    #readI(method, bytes) {
+        return function (endianness) {
+            const res = this.view[method](this.offset, endianness ? endianness : GLOBAL_ENDIANNESS);
+            this.offset += bytes;
+            return res;
+        }
     }
 
     /**
@@ -15,7 +26,7 @@ const { Float16Array } = require("@petamoriken/float16");
      * @param  {number} offset the new offset.
      * @param  {number} position the position to update from. 0 = start, 1 = current offset, 2 = end.
      */
-     seek(offset, position = 0) {
+    seek(offset, position = 0) {
         if (position == 0) {
             this.offset = Number(offset);
         } else if (position == 1) {
@@ -31,20 +42,15 @@ const { Float16Array } = require("@petamoriken/float16");
      * read the next byte and return a Uint8 array.
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-    readByte(endianness = true) {
-        const res = new Uint8Array(this.data, this.offset, 1);
-        this.offset++;
-        return endianness ? res[0] : res.reverse()[0];
-    }
+    readByte = this.#readI('getInt8', 1);
 
     /**
      * read the next char and return a string.
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
     readChar(endianness = true) {
-        const res = new Uint8Array(this.data, this.offset, 1);
-        this.offset += length;
-        return endianness ? res[0].toString() : res.reverse()[0].toString();
+        const res = this.#readI('getInt8', 1)(endianness);
+        return res.toString();
     }
 
     /**
@@ -55,102 +61,54 @@ const { Float16Array } = require("@petamoriken/float16");
     readBytes(length, endianness = true) {
         const res = new Uint8Array(this.data, this.offset, length);
         this.offset += length;
-        return endianness ? res : res.reverse();
+        return (endianness ? endianness : GLOBAL_ENDIANNESS) ? res : res.reverse();
     }
 
     /**
      * reads the next Uint of length 1
      */
-     readUint8() {
-        const res = new Uint8Array(this.data, this.offset, 1);
-        this.offset++;
-        return res[0];
-    }
+    readUint8 = this.#readI('getUint8', 1)
 
     /**
      * reads the next Uint of length 2
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-    readUint16(endianness = true) {
-        const noDV = this.offset % 2 == 0 && endianness;
-        const res = noDV ? new Uint16Array(this.data, this.offset, 1)[0] : new DataView(this.data).getUint16(this.offset, endianness);
-        this.offset += 2;
-        return res;
-    }
+    readUint16 = this.#readI('getUint16', 2)
 
     /**
      * reads the next Uint of length 4
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-    readUint32(endianness = true) {
-        const noDV = this.offset % 4 == 0 && endianness;
-        const res = noDV ? new Uint32Array(this.data, this.offset, 1)[0] : new DataView(this.data).getUint32(this.offset, endianness);
-        this.offset += 4;
-        return res;
-    }
+    readUint32 = this.#readI('getUint32', 4)
 
     /**
      * reads the next Uint of length 8
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-    readUint64(endianness = true) {
-        const noDV = this.offset % 8 == 0;
-        let res;
-        if (noDV) {
-            res = endianness ? BigInt(this.readUint32()) | BigInt(this.readUint32()) << 32n : BigInt(this.readUint32()) << 32n | BigInt(this.readUint32());
-        } else {
-            res = new DataView(this.data).getBigUint64(this.offset, endianness);
-            this.offset += 8;
-        }
-        return res;
-    }
+    readUint64 = this.#readI('getBigUint64', 8);
 
     /**
      * reads the next Int of length 1
      */
-     readInt8() {
-        const res = new Int8Array(this.data, this.offset, 1);
-        this.offset++;
-        return res[0];
-    }
+    readInt8 = this.#readI('getInt8', 1)
 
     /**
      * reads the next Int of length 2
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-    readInt16(endianness = true) {
-        const noDV = this.offset % 2 == 0 && endianness;
-        const res = noDV ? new Int16Array(this.data, this.offset, 1)[0] : new DataView(this.data).getInt16(this.offset, endianness);
-        this.offset += 2;
-        return res;
-    }
+    readInt16 = this.#readI('getInt16', 2)
 
     /**
      * reads the next Int of length 4
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-    readInt32(endianness = true) {
-        const noDV = this.offset % 4 == 0 && endianness;
-        const res = noDV ? new Int32Array(this.data, this.offset, 1)[0] : new DataView(this.data).getInt32(this.offset, endianness);
-        this.offset += 4;
-        return res;
-    }
+    readInt32 = this.#readI('getInt32', 4)
 
     /**
      * reads the next Int of length 8
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-    readInt64(endianness = true) {
-        const noDV = this.offset % 8 == 0;
-        let res;
-        if (noDV) {
-            res = endianness ? BigInt(this.readInt32()) | BigInt(this.readInt32()) << 32n : BigInt(this.readInt32()) << 32n | BigInt(this.readInt32());
-        } else {
-            res = new DataView(this.data).getBigInt64(this.offset, endianness);
-            this.offset += 8;
-        }
-        return res;
-    }
+    readInt64 = this.#readI('getBigInt64', 8)
 
     /**
      * reads the next Float of length 2
@@ -159,30 +117,20 @@ const { Float16Array } = require("@petamoriken/float16");
     readFloat16(endianness = true) {
         const res = new Float16Array(this.data, this.offset, 1);
         this.offset += 2;
-        return endianness ? res[0] : res.reverse()[0];
+        return (endianness ? endianness : GLOBAL_ENDIANNESS) ? res[0] : res.reverse()[0];
     }
 
     /**
      * reads the next Float of length 4
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-    readFloat32(endianness = true) {
-        const noDV = this.offset % 4 == 0 && endianness;
-        const res = noDV ? new Float32Array(this.data, this.offset, 1)[0] : new DataView(this.data).getFloat32(this.offset, endianness);
-        this.offset += 4;
-        return res;
-    }
+    readFloat32 = this.#readI('getFloat32', 4)
 
     /**
      * reads the next Float of length 4
      * @param  {boolean} endianness whether or not to use littleEdian. Default is true.
      */
-    readFloat64(endianness = true) {
-        const noDV = this.offset % 8 == 0 && endianness;
-        const res = noDV ? new Float64Array(this.data, this.offset, 1)[0] : new DataView(this.data).getFloat64(this.offset, endianness);
-        this.offset += 8;
-        return res;
-    }
+    readFloat64 = this.#readI('getFloat64', 8)
 
     /**
      * reads the next null terminated string.

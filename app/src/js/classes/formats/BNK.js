@@ -236,13 +236,13 @@ class HIRC {
                     }
                 case 11:
                     obj.unknown1 = reader.readUint32();
-                    assert(obj.unknown1 === 1, 'Expected unknown1 in music track section to be 1 but it was ' + unknown1);
+                    assert(obj.unknown1 === 1, 'Expected unknown1 in music track section to be 1 but it was ' + obj.unknown1);
 
                     obj.unknown2 = reader.readUint16();
-                    assert(obj.unknown2 === 1, 'Expected unknown2 in music track section to be 1 but it was ' + unknown2);
+                    assert(obj.unknown2 === 1, 'Expected unknown2 in music track section to be 1 but it was ' + obj.unknown2);
 
                     obj.unknown3 = reader.readUint16();
-                    assert(obj.unknown3 === 4, 'Expected unknown3 in music track section to be 4 but it was ' + unknown3);
+                    assert(obj.unknown3 === 4, 'Expected unknown3 in music track section to be 4 but it was ' + obj.unknown3);
 
                     obj.isStreamed = reader.readUint32();
                     obj.audioId = reader.readUint32();
@@ -255,7 +255,7 @@ class HIRC {
                     break
                 case 12:
                     {
-                        pread_bnk_soundstruct(reader, obj);
+                        read_bnk_soundstruct(reader, obj);
                         const numChildren = reader.readUint32();
                         
                         obj.children = [];

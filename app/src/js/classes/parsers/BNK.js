@@ -12,7 +12,7 @@ class BNKParser {
     constructor(dest, ext) {
         this.#dest = dest;
         this.extension = ext;
-        this.fileNames = [];
+        this.fileNames = new Map();
         this.errors = [];
     }
 
@@ -24,12 +24,12 @@ class BNKParser {
                 for (const obj of Object.values(bnk.sections.HIRC.objects)) {
                     if (obj.type == 2) {
                         if (obj.isStreamed != 0) {
-                            if (obj.audioId != 0) this.fileNames.push("/resources/bnk2/streamed/" + obj.audioId + ".wem");
-                            if (obj.audioSourceId != 0) this.fileNames.push("/resources/bnk2/streamed/" + obj.audioSourceId + ".wem");
+                            if (obj.audioId != 0) this.fileNames.set("/resources/bnk2/streamed/" + obj.audioId + ".wem", "/resources/bnk2/streamed/" + obj.audioId + ".wem");
+                            if (obj.audioSourceId != 0) this.fileNames.set("/resources/bnk2/streamed/" + obj.audioSourceId + ".wem", "/resources/bnk2/streamed/" + obj.audioSourceId + ".wem");
                         }
                     } else if (obj.type == 11) {
-                        if (obj.audioId != 0) this.fileNames.push("/resources/bnk2/streamed/" + obj.audioId + ".wem");
-                        if (obj.audioSourceId != 0) this.fileNames.push("/resources/bnk2/streamed/" + obj.audioSourceId + ".wem");
+                        if (obj.audioId != 0) this.fileNames.set("/resources/bnk2/streamed/" + obj.audioId + ".wem", "/resources/bnk2/streamed/" + obj.audioId + ".wem");
+                        if (obj.audioSourceId != 0) this.fileNames.set("/resources/bnk2/streamed/" + obj.audioSourceId + ".wem", "/resources/bnk2/streamed/" + obj.audioSourceId + ".wem");
                     }
                 }
             }
@@ -38,15 +38,16 @@ class BNKParser {
         if (bnk.sections.STID) {
             if (bnk.sections.STID.numSndBnk != 0) {
                 for (const obj of Object.values(bnk.sections.STID.soundbanks)) {
-                    this.fileNames.push("/resources/bnk2/" + obj.name + ".bnk");
-                    this.fileNames.push("/resources/en-us/bnk2/" + obj.name + ".bnk");
+                    this.fileNames.set("/resources/bnk2/" + obj.name + ".bnk", "/resources/bnk2/" + obj.name + ".bnk");
+                    this.fileNames.set("/resources/en-us/bnk2/" + obj.name + ".bnk", "/resources/en-us/bnk2/" + obj.name + ".bnk");
                 }
             }
         }
     }
 
     genHash() {
-        const res = this.fileNames.map(file => file.replace("\\", "/"));
+        const namesArr = Array.from(this.fileNames.keys());
+        const res = namesArr.map(file => file.replace("\\", "/"));
         return res;
     }
 

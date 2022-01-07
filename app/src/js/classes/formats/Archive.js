@@ -434,7 +434,8 @@ class ArchiveEntry {
 
         wrapper.seek(this.offset+BigInt(this.metaDataSize), 0);
         const data = wrapper.read(this.isCompr ? this.comprSize : this.uncomprSize).data;
-
+        wrapper.close();
+        
         let decompr;
         if (this.isCompr) {
             decompr = zlib.inflateSync(data, {

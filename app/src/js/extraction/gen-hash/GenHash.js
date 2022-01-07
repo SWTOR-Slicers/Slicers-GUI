@@ -279,7 +279,8 @@ function initSubs() {
         const json = JSON.parse(dat);
         gomWorker.postMessage({
             "message": 'loadNodes',
-            "data": json.nodeTors
+            "data": json.nodeTors,
+            "prots": true
         });
         assetWorker.postMessage({
             "message": 'loadAssets',

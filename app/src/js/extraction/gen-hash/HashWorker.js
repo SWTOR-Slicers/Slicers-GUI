@@ -146,7 +146,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
 
         asset.isNamed = new Boolean(fileH);
         asset.hash = (fileH) ? fileH : `${asset.crc}_${asset.fileId}`;
-        asset.type = fileExt.guessExtension(asset);
+        asset.type = (asset.isNamed) ? asset.hash.substring(asset.hash.lastIndexOf(".") + 1) : fileExt.guessExtension(asset);
 
         if (asset.hash?.includes("." + extension.toLowerCase()) || asset.type == extension.toLowerCase()) {
             matches.push(asset);
@@ -236,7 +236,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
                 const assetStream = asset.getReadStream();
                 bnk_reader.parseBNK(assetStream, asset.hash);
             }
-            namesFound = bnk_reader.fileNames.length;
+            namesFound = bnk_reader.fileNames.size;
             if (genHash) {
                 parseReturns = bnk_reader.genHash();
             } else {
@@ -415,7 +415,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
             if (n) {
                 const hash = hashlittle2(n);
                 const file = assetsDict[`${hash[0]}|${hash[1]}`];
-                names.push([hash[1].toString(16).toUpperCase(), hash[0].toString(16).toUpperCase(), n, file ? file.crc.toString(16) : ''].join('#'));
+                names.push([hash[1].toString(16).toUpperCase(), hash[0].toString(16).toUpperCase(), n, file ? file.crc.toString(16).toUpperCase() : ''].join('#'));
             }
         }
     }

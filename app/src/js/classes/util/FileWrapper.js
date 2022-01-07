@@ -214,6 +214,13 @@ class FileWrapper {
     close() {
         fs.closeSync(this.descriptor);
     }
+
+    /**
+     * Opens the file descriptor referenced by this instance of FileWrapper.
+     */
+    open() {
+        this.descriptor = fs.openSync(path, mode);
+    }
 }
 
 export {FileWrapper, Reader};

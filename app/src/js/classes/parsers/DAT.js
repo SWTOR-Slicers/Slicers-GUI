@@ -463,10 +463,10 @@ class DATParser {
         if (Array.from(parts.keys()).includes("AnimMetadataFqn")) {
             const temp = parts["AnimMetadataFqn"].Split(',');
             for (const item of temp) {
-                const tempName = `/resources/${item.replace('\\', '/').replace("//", "/")}`;
+                const tempName = `/resources/${item.replace(/\\/g, "/").replace("//", "/")}`;
                 this.fileNames.push(tempName);
                 if (Array.from(parts.keys()).includes("AnimNetworkFolder")) {
-                    const netfold = `/resources/${parts["AnimNetworkFolder"].replace('\\', '/').replace("//", "/")}`;
+                    const netfold = `/resources/${parts["AnimNetworkFolder"].replace(/\\/g, "/").replace("//", "/")}`;
                     const file = assets[tempName];
                     if (file != null) {
                         try {
@@ -537,12 +537,12 @@ class DATParser {
 
         if (Array.from(parts.keys()).includes("AnimLibraryFqn")) {
             const tempName = "/resources/" + parts["AnimLibraryFqn"];
-            this.fileNames.push(tempName.replace('\\', '/').replace("//", "/"));
+            this.fileNames.push(tempName.replace(/\\/g, "/").replace("//", "/"));
         }
 
         if (Array.from(parts.keys()).includes("AnimShareMetadataFqn")) {
             const tempName = "/resources/" + parts["AnimShareMetadataFqn"];
-            this.fileNames.push(tempName.replace('\\', '/').replace("//", "/"));
+            this.fileNames.push(tempName.replace(/\\/g, "/").replace("//", "/"));
         }
 
         /** 

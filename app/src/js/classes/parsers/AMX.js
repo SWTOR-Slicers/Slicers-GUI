@@ -43,9 +43,9 @@ class AMXParser {
                     const dirLen = reader.readByte();
                     const dirNameBytes = reader.readBytes(dirLen);
                     const dirName = Buffer.from(dirNameBytes).toString('ascii');
-                    let fullName = "/resources/anim/" + dirName.replace('\\', '/') + fileName;
+
+                    let fullName = "/resources/anim/" + dirName.replace(/\\/g, "/") + fileName;
                     fullName = fullName.replace("//", "/");
-                    fullName = fullName.replace("\\", "/");
 
                     //humanoid\bfanew
                     //em_wookiee_10

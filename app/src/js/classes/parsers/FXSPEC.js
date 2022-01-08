@@ -39,16 +39,16 @@ class FXSPECParser {
             for (const node of resourceElemList) {
                 const resource = node.innerText;
                 if (resource.includes(".prt")) {
-                    const output = "/resources/art/fx/particles/" + resource.replace('\\', '/').toLower();
+                    const output = "/resources/art/fx/particles/" + resource.replace(/\\/g, "/").toLower();
                     output = output.replace("//", "/");
                     output = output.replace("/resources/art/fx/particles/art/fx/particles/", "/resources/art/fx/particles/");
                     resourceFileNames.push(output);
                 } else if (resource.includes(".gr2")) {
-                    const output = "/resources/" + resource.replace('\\', '/').toLower();
+                    const output = "/resources/" + resource.replace(/\\/g, "/").toLower();
                     output = output.replace("//", "/");
                     resourceFileNames.push(output);
                 } else if (resource.includes(".lit") || resource.includes(".ext") || resource.includes(".zzp")) {
-                    const output = "/resources/" + resource.replace('\\', '/').toLower();
+                    const output = "/resources/" + resource.replace(/\\/g, "/").toLower();
                     output = output.replace("//", "/");
                     resourceFileNames.push(output);
 
@@ -60,7 +60,7 @@ class FXSPECParser {
             const projTexElemList = document.evaluate("//node()[@name='_fxProjectionTexture']", docAsNodes, nsResolver, 7, null);
             for (const node of projTexElemList) {
                 const resource = node.innerText.replace(".tiny.dds", "").replace(".dds", "").replace(".tex", "");
-                const output = "/resources" + resource.replace('\\', '/').toLower();
+                const output = "/resources" + resource.replace(/\\/g, "/").toLower();
                 resourceFileNames.push(output + ".dds");
                 resourceFileNames.push(output + ".tiny.dds");
                 resourceFileNames.push(output + ".tex");
@@ -69,7 +69,7 @@ class FXSPECParser {
             const projTex1ElemList = document.evaluate("//node()[@name='_fxProjectionTexture_layer1']", docAsNodes, nsResolver, 7, null);
             for (const node in projTex1ElemList) {
                 const resource = node.innerText.replace(".tiny.dds", "").replace(".dds", "").replace(".tex", "");
-                const output = "/resources" + resource.replace('\\', '/').toLower();
+                const output = "/resources" + resource.replace(/\\/g, "/").toLower();
                 resourceFileNames.push(output + ".dds");
                 resourceFileNames.push(output + ".tiny.dds");
                 resourceFileNames.push(output + ".tex");
@@ -78,7 +78,7 @@ class FXSPECParser {
             const texNameElemList = document.evaluate("//node()[@name='_fxTextureName']", docAsNodes, nsResolver, 7, null);
             for (const node of texNameElemList) {
                 const resource = node.innerText.replace(".tiny.dds", "").replace(".dds", "").replace(".tex", "");
-                const output = "/resources" + resource.replace('\\', '/').toLower();
+                const output = "/resources" + resource.replace(/\\/g, "/").toLower();
                 resourceFileNames.push(output + ".dds");
                 resourceFileNames.push(output + ".tiny.dds");
                 resourceFileNames.push(output + ".tex");

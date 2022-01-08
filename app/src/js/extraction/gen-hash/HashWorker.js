@@ -210,12 +210,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
             const gr2_reader = new GR2Parser(extractPath, extension);
             for (const asset of matches) {
                 if (asset.isNamed) { // if the hash is already included, then skip
-                    names.push({
-                        "name": asset.hash,
-                        "crc": asset.crc,
-                        "ph": asset.ph,
-                        "sh": asset.sh
-                    });
+                    names.push([asset.sh.toString(16).toUpperCase(), asset.ph.toString(16).toUpperCase(), asset.hash, asset.crc.toString(16).toUpperCase()].join('#'));
                     continue;
                 }
                 filesSearched++;
@@ -415,7 +410,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
             if (n) {
                 const hash = hashlittle2(n);
                 const file = assetsDict[`${hash[1]}|${hash[0]}`];
-                names.push([hash[0].toString(16).toUpperCase(), hash[1].toString(16).toUpperCase(), n, file ? file.crc.toString(16).toUpperCase() : ''].join('#'));
+                names.push([hash[0].toString(16).toUpperCase(), hash[1].toString(16).toUpperCase(), n, file ? file.crc.toString(16).toUpperCase() : 'DEADBEEF'].join('#'));
             }
         }
     }

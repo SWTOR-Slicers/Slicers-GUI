@@ -3,9 +3,9 @@ const es = require('event-stream');
 const hashSeperator = '#';
 
 class HashData {
-    constructor(ph, sh, filename, crc) {
-        this.ph = ph;
+    constructor(sh, ph, filename, crc) {
         this.sh = sh;
+        this.ph = ph;
         this.filename = filename;
         this.crc = crc;
     }
@@ -26,8 +26,8 @@ class HashDictionary {
      * @param  {String} name the file's name
      * @param  {int} crc the content redundancy check number
      */
-    loadHash(ph, sh, name, crc) {
-        const hashData = new HashData(ph, sh, name, crc);
+    loadHash(sh, ph, name, crc) {
+        const hashData = new HashData(sh, ph, name, crc);
         
         this.hashByFileName[name ? name : `${crc}_${parseInt(ph, 16) | parseInt(sh, 16) << 32}`] = hashData;
         this.fileNameByHash[`${parseInt(sh, 16)}|${parseInt(ph, 16)}`] = hashData;
@@ -43,15 +43,15 @@ class HashDictionary {
             hashData.pause();
 
             const strsplt = line.split(hashSeperator);
-            const ph = strsplt[0];
-            const sh = strsplt[1];
+            const sh = strsplt[0];
+            const ph = strsplt[1];
             const fileName = strsplt[2];
             if (!!fileName) {
                 if (fileName.includes('.bnk')) i++;
             }
             const crc = strsplt[3];
 
-            this.loadHash(ph, sh, fileName, crc);
+            this.loadHash(sh, ph, fileName, crc);
 
             hashData.resume();
         }).on('data', (chunk) => {
@@ -73,7 +73,7 @@ class HashDictionary {
      * 
      * @returns {Array} Array containing primary and secondary hashes.
      */
-    getHashByFileName(name) { const entry = this.hashByFileName[name]; return [entry?.ph, entry?.sh]; }
+    getHashByFileName(name) { const entry = this.hashByFileName[name]; return [entry?.sh, entry?.ph]; }
 
     /**
      * gets the file name based on the provided hash

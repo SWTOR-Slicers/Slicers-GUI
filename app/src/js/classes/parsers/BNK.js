@@ -53,11 +53,12 @@ class BNKParser {
 
     writeFile() {
         if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
-        if (this.fileNames.length > 0) {
+        const namesArr = Array.from(this.fileNames.keys());
+        if (namesArr.length > 0) {
             const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_file_names.txt`, {
                 flags: 'a'
             });
-            for (const file of this.fileNames) {
+            for (const file of namesArr) {
                 outputNames.write(`${file.replace("\\", "/")}\r\n`);
             }
             outputNames.end();

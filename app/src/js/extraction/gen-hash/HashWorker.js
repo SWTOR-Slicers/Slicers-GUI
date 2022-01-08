@@ -148,7 +148,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
         asset.hash = (fileH) ? fileH : `${asset.crc}_${asset.fileId}`;
         asset.type = (asset.isNamed) ? asset.hash.substring(asset.hash.lastIndexOf(".") + 1) : fileExt.guessExtension(asset);
 
-        if (asset.hash?.includes("." + extension.toLowerCase()) || asset.type == extension.toLowerCase()) {
+        if (asset.type == extension.toLowerCase()) {
             matches.push(asset);
         }
     });
@@ -319,7 +319,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
                 const assetStream = asset.getReadStream();
                 amx_parser.parseAMX(assetStream, asset.hash);
             }
-            namesFound = amx_parser.fileNames.length;
+            namesFound = amx_parser.fileNames.size;
             if (genHash) {
                 parseReturns = amx_parser.genHash();
             } else {

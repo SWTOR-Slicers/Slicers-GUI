@@ -13,7 +13,7 @@ class AMXParser {
      constructor(dest, ext) {
         this.#dest = dest;
         this.extension = ext;
-        this.fileNames = [];
+        this.fileNames = new Map();
         this.errors = [];
     }
 
@@ -43,14 +43,15 @@ class AMXParser {
                     const dirLen = reader.readByte();
                     const dirNameBytes = reader.readBytes(dirLen);
                     const dirName = Buffer.from(dirNameBytes).toString('ascii');
-                    let fullName = "/resources/anim/" + dirName.replace('\\', '/') + "/" + fileName;
+                    let fullName = "/resources/anim/" + dirName.replace('\\', '/') + fileName;
                     fullName = fullName.replace("//", "/");
+                    fullName = fullName.replace("\\", "/");
 
                     //humanoid\bfanew
                     //em_wookiee_10
-                    this.fileNames.push(fullName + ".jba");
-                    this.fileNames.push(fullName + ".mph");
-                    this.fileNames.push(fullName + ".mph.amx");
+                    this.fileNames.set(fullName + ".jba", fullName + ".jba");
+                    this.fileNames.set(fullName + ".mph", fullName + ".mph");
+                    this.fileNames.set(fullName + ".mph.amx", fullName + ".mph.amx");
 
                     reader.readUint32();
                     const check = reader.readByte();
@@ -61,17 +62,19 @@ class AMXParser {
     }
 
     genHash() {
-        const res = this.fileNames;
+        const namesArr = Array.from(this.fileNames.keys());
+        const res = namesArr.map(file => file.replace("\\", "/"));
         return res;
     }
 
     writeFile() {
         if (!fs.existsSync(`${this.#dest}\\File_Names`)) fs.mkdirSync(`${this.#dest}\\File_Names`);
-        if (this.fileNames.length > 0) {
+        const namesArr = Array.from(this.fileNames.keys());
+        if (namesArr.length > 0) {
             const outputNames = fs.createWriteStream(`${this.#dest}\\File_Names\\${this.extension}_file_names.txt`, {
                 flags: 'a'
             });
-            for (const file of this.fileNames) {
+            for (const file of namesArr) {
                 outputNames.write(file);
             }
             outputNames.end();

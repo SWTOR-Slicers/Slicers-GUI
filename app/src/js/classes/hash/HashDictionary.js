@@ -1,3 +1,5 @@
+import { uint32ToUint64 } from '../../Util.js';
+
 const fs = require('fs');
 const es = require('event-stream');
 const hashSeperator = '#';
@@ -28,9 +30,10 @@ class HashDictionary {
      */
     loadHash(ph, sh, name, crc) {
         const hashData = new HashData(ph, sh, name, crc);
-        
-        this.hashByFileName[name ? name : `${crc}_${parseInt(ph, 16) | parseInt(sh, 16) << 32}`] = hashData;
-        this.fileNameByHash[parseInt(ph, 16) | parseInt(sh, 16) << 32] = hashData;
+        if (ph != "" && sh != "" ) {
+            this.hashByFileName[name ? name : `${crc}_${uint32ToUint64(parseInt(ph, 16), parseInt(sh, 16))}`] = hashData;
+            this.fileNameByHash[uint32ToUint64(parseInt(ph, 16), parseInt(sh, 16))] = hashData;
+        }
     }
 
     async loadHashList(progressBarElem) {

@@ -69,24 +69,23 @@ async function loadNodes(torPath) {
                 const uncomprSize = dv.getUint32(i + 16, !0);
                 const sh = dv.getUint32(i + 20, !0);
                 const ph = dv.getUint32(i + 24, !0);
-                if (sh === 0xC75A71E6 && ph === 0xE4B96113)
-                    continue;
-                if (sh === 0xCB34F836 && ph === 0x8478D2E1)
-                    continue;
-                if (sh === 0x02C9CF77 && ph === 0xF077E262)
-                    continue;
+
+                if (sh === 0xC75A71E6 && ph === 0xE4B96113) continue;
+                if (sh === 0xCB34F836 && ph === 0x8478D2E1) continue;
+                if (sh === 0x02C9CF77 && ph === 0xF077E262) continue;
+                
                 const compression = dv.getUint8(i + 32);
                 const fileObj = {};
                 fileObj.sh = sh;
                 fileObj.ph = ph;
                 fileObj.offset = offset;
                 fileObj.size = uncomprSize;
+                fileObj.fileId = ph | sh <<32;
                 fileObj.comprSize = (compression !== 0) ? comprSize : 0;
                 fileObj.isCompressed = compression !== 0;
                 fileObj.name = undefined;
-                const hash = sh + '|' + ph;
                 
-                gomArchive.files[hash] = fileObj
+                gomArchive.files[fileObj.fileId] = fileObj
             }
         }
 
@@ -104,7 +103,7 @@ async function loadNodes(torPath) {
 
 async function findClientGOM(gomArchive, data, torPath) {
     const gomFileHash = hashlittle2("/resources/systemgenerated/client.gom");
-    const gomFileEntr = gomArchive.files[`${gomFileHash[1]}|${gomFileHash[0]}`];
+    const gomFileEntr = gomArchive.files[gomFileHash[1] | gomFileHash[0] << 32];
 
     const dat = data.slice(gomFileEntr.offset, gomFileEntr.offset + (gomFileEntr.isCompressed ? gomFileEntr.comprSize : gomFileEntr.size));
     if (gomFileEntr.isCompressed) {

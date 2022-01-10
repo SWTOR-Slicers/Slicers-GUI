@@ -77,14 +77,14 @@ async function loadNodes(torPath) {
                 const fileObj = {};
                 fileObj.sh = sh;
                 fileObj.ph = ph;
+                fileObj.fileId = ph | sh <<32;
                 fileObj.offset = offset;
                 fileObj.size = uncomprSize;
                 fileObj.comprSize = (compression !== 0) ? comprSize : 0;
                 fileObj.isCompressed = compression !== 0;
                 fileObj.name = undefined;
-                const hash = sh + '|' + ph;
                 
-                gomArchive.files[hash] = fileObj
+                gomArchive.files[fileObj.fileId] = fileObj
             }
         }
 
@@ -98,7 +98,7 @@ async function loadNodes(torPath) {
 
 async function findPrototypes(gomArchive, data, torPath) {
     const protInfoHash = hashlittle2(`/resources/systemgenerated/prototypes.info`);
-    const protInfoEntr = gomArchive.files[`${protInfoHash[1]}|${protInfoHash[0]}`];
+    const protInfoEntr = gomArchive.files[protInfoHash[1] | protInfoHash[0] << 32];
 
     const dat = data.slice(protInfoEntr.offset, protInfoEntr.offset + (protInfoEntr.isCompressed ? protInfoEntr.comprSize : protInfoEntr.size));
     if (protInfoEntr.isCompressed) {
@@ -137,7 +137,7 @@ async function loadPrototypes(gomArchive, data, torPath, dv) {
 
         if (flag == 1) {
             const hashArr = hashlittle2(`/resources/systemgenerated/prototypes/${protId}.node`);
-            const file = gomArchive.files[`${hashArr[1]}|${hashArr[0]}`];
+            const file = gomArchive.files[hashArr[1] | hashArr[0] << 32];
 
             if (file) {
                 let fData = null;

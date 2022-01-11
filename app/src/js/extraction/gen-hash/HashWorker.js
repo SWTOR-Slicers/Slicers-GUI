@@ -3,7 +3,7 @@ import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
 import { STB } from "../../classes/formats/STB.js";
 
-import { inflateZlib, hashlittle2 } from "../../Util.js";
+import { inflateZlib, hashlittle2, uint32ToUint64 } from "../../Util.js";
 import { StaticGomTree, nodeFolderSort } from "../../viewers/node-viewer/GomTree.js";
 
 import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
@@ -126,15 +126,6 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
     for (const entrList of assets) {
         Object.assign(assetsDict, entrList);
     }
-    // console.log(Object.values(assetsDict).length);
-    // for (const archive of Object.values(archives)) {
-    //     const numEntr = Object.values(archive.entries).length;
-    //     if (archive.totalFiles == (numEntr - 1)) {
-    //         console.log(`Validated archive. Found all ${archive.totalFiles} assets.`);
-    //     } else {
-    //         console.log(`ERROR: Expected ${archive.totalFiles} assets but only found ${numEntr}.`);
-    //     }
-    // }
 
     const matches = [];
     const fileExt = new FileExtension();

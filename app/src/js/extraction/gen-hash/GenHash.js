@@ -14,6 +14,7 @@ const progressBar__baseNodes = document.getElementById('progressBar__baseNodes')
 const progressBar__protoNodes = document.getElementById('progressBar__protoNodes');
 const progressBar__assets = document.getElementById('progressBar__assets');
 
+const actualFound = document.getElementById('actualFound');
 const namesFound = document.getElementById('namesFound');
 const numSearched = document.getElementById('numSearched');
 //buttons
@@ -178,9 +179,10 @@ function initHashWorker() {
                 genHashes.innerHTML = 'Load Data';
                 genHashes.classList.toggle('disabled');
 
-                ipcRenderer.send("hashComplete", [e.data.data.numFilesFound, e.data.data.numFilesSearched]);
+                ipcRenderer.send("hashComplete", [e.data.data.numActualFound, e.data.data.numFilesFound, e.data.data.numFilesSearched]);
                 break;
             case "progress":
+                actualFound.innerHTML = e.data.data.totalActualFound;
                 namesFound.innerHTML = e.data.data.totalNamesFound;
                 numSearched.innerHTML = e.data.data.totalFilesSearched;
                 break;

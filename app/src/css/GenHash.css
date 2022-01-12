@@ -53,6 +53,9 @@
 .hash-type-label {
     margin-left: 7px;
 }
+.warn-desc {
+    font-size: 12px;
+}
 
 .buttons-container {
     margin: 15px 0px;

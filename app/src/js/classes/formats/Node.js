@@ -599,12 +599,17 @@ class Node {
             }
             this.node = node;
             this._dom = _dom;
-            this.obj = obj;
+            this.fields = obj;
         }
     }
 
+    getField(field) {
+        const res = this.fields.find((v) => v.name == field);
+        return res;
+    }
+
     render(parent, dataContainer) {
-        const data = parseNode(this.node, this.obj, this._dom);
+        const data = parseNode(this.node, this.fields, this._dom);
         parent.appendChild(data);
 
         dataContainer.innerHTML = `
@@ -639,10 +644,10 @@ class Node {
                 data = dat.buffer.slice(this.node.bkt.offset + this.node.dataOffset + 2, this.node.bkt.offset + this.node.dataOffset + this.node.dataLength - 4);
                 break;
             case "xml":
-                data = convertToXML(this.obj, this.node, this._dom);
+                data = convertToXML(this.fields, this.node, this._dom);
                 break;
             case "json":
-                data = JSON.stringify(convertToJSON(this.obj, this.node, this._dom), serializeMap, '\t');
+                data = JSON.stringify(convertToJSON(this.fields, this.node, this._dom), serializeMap, '\t');
                 break;
         }
 
@@ -721,12 +726,17 @@ class ProtoNode {
 
             this.node = node;
             this._dom = _dom;
-            this.obj = obj;
+            this.fields = obj;
         }
     }
 
+    getField(field) {
+        const res = this.fields.find((v) => v.name == field);
+        return res;
+    }
+
     render(parent, dataContainer) {
-        const data = parseNode(this.node, this.obj, this._dom);
+        const data = parseNode(this.node, this.fields, this._dom);
         parent.appendChild(data);
 
         dataContainer.innerHTML = `
@@ -774,10 +784,10 @@ class ProtoNode {
                 data = torData.slice(this.dataOffset + 2, this.dataOffset + this.dataLength - 4);
                 break;
             case "xml":
-                data = convertToXML(this.obj, this.node, this._dom);
+                data = convertToXML(this.fields, this.node, this._dom);
                 break;
             case "json":
-                data = JSON.stringify(convertToJSON(this.obj, this.node, this._dom), serializeMap, '\t');
+                data = JSON.stringify(convertToJSON(this.fields, this.node, this._dom), serializeMap, '\t');
                 break;
         }
 

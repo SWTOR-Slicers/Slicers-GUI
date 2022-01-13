@@ -27,7 +27,7 @@ class MISCParser {
      * @param {NodeEntr} ldnScreenNode ldnScreen node object
      */
     parseMISC_LdnScn(ldnScreenNode) {
-        const ldgLookup = ldnScreenNode.obj.value["ldgAreaNameToLoadScreen"];
+        const ldgLookup = ldnScreenNode.fields.value["ldgAreaNameToLoadScreen"];
         for (const kvpLdgClass of ldgLookup) {
             this.searched++;
             const areaLdgInfo = kvpLdgClass[1];
@@ -111,12 +111,12 @@ class MISCParser {
         for (const obj of worldAreas) {
             obj.readNode();
             this.searched++;
-            const areaId = obj.obj.value["mapDataContainerAreaID"] ?? 0;
+            const areaId = obj.fields.value["mapDataContainerAreaID"] ?? 0;
             if (areaId > 0) {
                 this.worldFileNames.push(`/resources/world/areas/${areaId}/area.dat`);
                 this.worldFileNames.push(`/resources/world/areas/${areaId}/mapnotes.not`);
 
-                const mapPages = obj.obj.value["mapDataContainerMapDataList"];
+                const mapPages = obj.fields.value["mapDataContainerMapDataList"];
 
                 if (mapPages != null) {
                     for (const mapPage of mapPages) {

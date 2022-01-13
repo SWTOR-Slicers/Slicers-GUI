@@ -24,7 +24,7 @@ class DYNParser {
     parseDYN(dynNodes) {
         for (const obj of dynNodes) {
             obj.readNodes();
-            const dynVisualList = obj.obj.value["dynVisualList"];
+            const dynVisualList = obj.fields.value["dynVisualList"];
             if (dynVisualList != null) {
                 for (const dynVisualListItem of dynVisualList) {
                     const visual = (dynVisualListItem.value["dynVisualFqn"] ?? "").toLowerCase();
@@ -45,7 +45,7 @@ class DYNParser {
                 }
             }
 
-            const dynLightNameToProperty = obj.obj.value["dynLightNameToProperty"];
+            const dynLightNameToProperty = obj.fields.value["dynLightNameToProperty"];
             if (dynLightNameToProperty != null) {
                 for (const dynLightNameToPropertyItem of dynLightNameToProperty) {
                     const ramp = (dynLightNameToPropertyItem.value["dynLightRampMap"] ?? "").toLowerCase();

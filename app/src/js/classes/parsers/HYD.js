@@ -24,7 +24,7 @@ class HYDParser {
     parseHYD(hydNodes) {
         for (const obj of hydNodes) {
             obj.readNode();
-            const hydScriptMap = obj.obj.value["hydScriptMap"];
+            const hydScriptMap = obj.fields.value["hydScriptMap"];
             if (hydScriptMap != null) {
                 for (const scriptMapItem of hydScriptMap) {
                     const hydScriptBlocks = scriptMapItem.value["hydScriptBlocks"];

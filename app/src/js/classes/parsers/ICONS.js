@@ -25,7 +25,7 @@ class ICONSParser {
         for (const gomItm of itmList) {
             gomItm.readNode();
             this.searched++;
-            const icon = gomItm.obj.value["itmIcon"];
+            const icon = gomItm.fields.value["itmIcon"];
             if (icon != null) {
                 this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
                 this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_120x120.dds");
@@ -40,10 +40,10 @@ class ICONSParser {
         for (const gomItm of ablList) {
             gomItm.readNode();
             this.searched++;
-            const icon = gomItm.obj.value["ablIconSpec"];
+            const icon = gomItm.fields.value["ablIconSpec"];
             if (icon != null) this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
 
-            icon = gomItm.obj.value["effIcon"];
+            icon = gomItm.fields.value["effIcon"];
             if (icon != null) this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
         }
 
@@ -51,7 +51,7 @@ class ICONSParser {
         for (const gomItm of qstList) {
             gomItm.readNode();
             this.searched++;
-            const icon = gomItm.obj.value["qstMissionIcon"];
+            const icon = gomItm.fields.value["qstMissionIcon"];
             if (icon != null) this.fileNames.push("/resources/gfx/codex/" + icon + ".dds");
         }
 
@@ -82,7 +82,7 @@ class ICONSParser {
         for (const gomItm of cdxList) {
             gomItm.readNode();
             this.searched++;
-            const icon = gomItm.obj.value["cdxImage"];
+            const icon = gomItm.fields.value["cdxImage"];
             if (icon != null) this.fileNames.push("/resources/gfx/codex/" + icon + ".dds");
         }
 
@@ -90,7 +90,7 @@ class ICONSParser {
         for (const gomItm of achList) {
             gomItm.readNode();
             this.searched++;
-            const icon = gomItm.obj.value["achIcon"];
+            const icon = gomItm.fields.value["achIcon"];
             if (icon != null) this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
         }
 
@@ -98,7 +98,7 @@ class ICONSParser {
         for (const gomItm of talList) {
             gomItm.readNode();
             this.searched++;
-            const icon = gomItm.obj.value["talTalentIcon"];
+            const icon = gomItm.fields.value["talTalentIcon"];
             if (icon != null) this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
         }
 
@@ -121,14 +121,14 @@ class ICONSParser {
             for (const gomItm of spvpList1) {
                 gomItm.readNode();
                 this.searched++;
-                const icon = gomItm.obj.value["scFFComponentIcon"];
+                const icon = gomItm.fields.value["scFFComponentIcon"];
                 if (icon != null) this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
             }
         }
 
         const shipDataProto = currentDom.getObject("scFFShipsDataPrototype");
         if (shipDataProto != null) {
-            const shipData = shipDataProto.obj.value["scFFShipsData"];
+            const shipData = shipDataProto.fields.value["scFFShipsData"];
             if (shipData != null) {
                 for (const item of shipData) {
                     this.searched++;
@@ -148,7 +148,7 @@ class ICONSParser {
 
         const shipColorOptionProto = currentDom.getObject("scFFColorOptionMasterPrototype");
         if (shipColorOptionProto != null) {
-            const shipColors = shipColorOptionProto.obj.value["scFFComponentColorUIData"];
+            const shipColors = shipColorOptionProto.fields.value["scFFComponentColorUIData"];
             if (shipColors != null) {
                 for (const item of shipColors) {
                     this.searched++;
@@ -163,7 +163,7 @@ class ICONSParser {
 
         const scffCrewProto = currentDom.getObject("scffCrewPrototype");
         if (scffCrewProto != null) {
-            const shipCrew = scffCrewProto.obj.value["scFFShipsCrewAndPatternData"];
+            const shipCrew = scffCrewProto.fields.value["scFFShipsCrewAndPatternData"];
             if (shipCrew != null) {
                 for (const item of shipCrew) {
                     this.searched++;
@@ -178,7 +178,7 @@ class ICONSParser {
 
         const mtxStore = currentDom.getObject("mtxStorefrontInfoPrototype");
         if (mtxStore != null) {
-            const mtxItems = mtxStore.obj.value["mtxStorefrontData"];
+            const mtxItems = mtxStore.fields.value["mtxStorefrontData"];
             if (mtxItems != null) {
                 for (const item of mtxItems) {
                     this.searched++;
@@ -198,7 +198,7 @@ class ICONSParser {
 
         const colCategoriesProto = currentDom.getObject("colCollectionCategoriesPrototype");
         if (colCategoriesProto != null) {
-            const colCats = colCategoriesProto.obj.value["colCollectionCategoryData"];
+            const colCats = colCategoriesProto.fields.value["colCollectionCategoryData"];
             if (colCats != null) {
                 for (const item of colCats) {
                     this.searched++;
@@ -218,7 +218,7 @@ class ICONSParser {
 
         const colCollectionItemsProto = currentDom.getObject("colCollectionItemsPrototype");
         if (colCollectionItemsProto != null) {
-            const colItems = colCollectionItemsProto.obj.value["colCollectionItemsData"];
+            const colItems = colCollectionItemsProto.fields.value["colCollectionItemsData"];
             if (colItems != null) {
                 for (const item of colItems) {
                     this.searched++;
@@ -240,7 +240,7 @@ class ICONSParser {
 
         const achCategoriesTable_Proto = currentDom.getObject("achCategoriesTable_Prototype");
         if (achCategoriesTable_Proto != null) {
-            const achCategories = achCategoriesTable_Proto.obj.value["achCategoriesData"];
+            const achCategories = achCategoriesTable_Proto.fields.value["achCategoriesData"];
             if (achCategories != null) {
                 for (const item of achCategories) {
                     this.searched++;

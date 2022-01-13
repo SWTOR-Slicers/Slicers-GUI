@@ -268,7 +268,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
             misc_parser.parseMISC_CDX(cdxNodes);
             misc_parser.parseMISC_NODE(nodesList);
             const ldgNode = dom.getObject("loadingAreaLoadScreenPrototype");
-            const itemApperances = dom.getObject("itmAppearanceDatatable").obj.value["itmAppearances"];
+            const itemApperances = dom.getObject("itmAppearanceDatatable").fields.value["itmAppearances"];
             misc_parser.parseMISC_LdnScn(ldgNode);
             misc_parser.parseMISC_ITEM(itemApperances);
             const guiTutorialsStb = new STB(assets["resources/en-us/str/gui/tutorials.stb"].getReadStream());
@@ -283,7 +283,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
             break;
         case "MISC_WORLD":
             const misc_world_parser = new MISCParser(extractPath, extension);
-            const areaList = dom.getObject("mapAreasDataProto").obj.value["mapAreasDataObjectList"];
+            const areaList = dom.getObject("mapAreasDataProto").fields.value["mapAreasDataObjectList"];
             const areaList2 = dom.getObjectsStartingWith("world.areas.");
             misc_world_parser.parseMISC_WORLD(areaList2, areaList, dom);
             if (genHash) {

@@ -37,7 +37,7 @@ class Area {
                 this.loadMapdata(mapDataObj);
 
                 this.fowGroupStringIds = {};
-                const mapDataContainerFowGroupList = mapDataObj.obj.value["mapDataContainerFowGroupList"] || null;
+                const mapDataContainerFowGroupList = mapDataObj.fields.value["mapDataContainerFowGroupList"] || null;
                 if (mapDataContainerFowGroupList != null) {
                     for (const kvp of Object.entries(mapDataContainerFowGroupList)) {
                         const fowId = kvp[0];
@@ -92,7 +92,7 @@ class Area {
      * @param  {NodeEntr} node the node obj
      */
     loadMapdata(node) {
-        const mapPages = node.obj.value["mapDataContainerMapDataList"] || null;
+        const mapPages = node.fields.value["mapDataContainerMapDataList"] || null;
         const pageLookup = new Map();
 
         if (mapPages != null) {

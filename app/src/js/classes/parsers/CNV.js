@@ -25,7 +25,7 @@ class CNVParser {
     parseCNVNodes(cnvNodes) {
         for (const cnvNode of cnvNodes) {
             const under = cnvNode.fqn.toLowerCase().replace('.', '_');
-            const slash = cnvNode.fqn.toLowerCase().ToString().Replace('.', '/');
+            const slash = cnvNode.fqn.toLowerCase().toString().replace('.', '/');
             const stb = "/resources/en-us/str/" + slash + ".stb";
             const acb = "/resources/en-us/bnk2/" + under + ".acb";
             const fxe = "/resources/en-us/fxe/" + slash + ".fxe";
@@ -36,18 +36,19 @@ class CNVParser {
             //Check for alien vo files.
             if (cnvNode.fqn.startsWith("cnv.alien_vo")) this.fileNames.push("/resources/bnk2/" + under + ".acb");
             cnvNode.readNode();
-            if (cnvNode.obj.value["cnvActionList"]) {
-                const actionData = cnvNode.obj.value["cnvActionList"];
+            if (cnvNode.node.getField("cnvActionList")) {
+                const actionData = cnvNode.node.getField("cnvActionList").value.list;
                 if (actionData != null) {
                     for (const action of actionData) {
                         if (action.contains("stg.")) continue;
-                        this.animNames.push(action.split('.').Last().toLowerCase());
+                        const as = action.split('.');
+                        this.animNames.push(as[as.length - 1].toLowerCase());
                     }
                 }
             }
 
-            if (cnvNode.obj.value["cnvActiveVFXList"]) {
-                const vfxData = cnvNode.obj.value["cnvActiveVFXList"];
+            if (cnvNode.node.getField("cnvActiveVFXList")) {
+                const vfxData = cnvNode.node.getField("cnvActiveVFXList");
                 if (vfxData != null) {
                     for (const kvp of vfxData) {
                         const value = kvp.value;

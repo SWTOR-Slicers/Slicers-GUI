@@ -23,7 +23,7 @@ class PLCParser {
     parsePLC(plcNodes) {
         for (const obj of plcNodes) {
             obj.readNode();
-            const plcModel = obj.obj.value["plcModel"];
+            const plcModel = obj.fields.value["plcModel"];
             if (plcModel != null) {
                 if (plcModel.contains("dyn.")) continue;
                 this.fileNames.push(plcModel.replace("\\", "/").replace("//", "/"));

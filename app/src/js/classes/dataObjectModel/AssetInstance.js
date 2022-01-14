@@ -49,11 +49,11 @@ class AssetInstance {
                     break;
                 case "spn":
                 case "enc":
-                    if (parsedAssetString.Contains(".spn_")) {
+                    if (parsedAssetString.includes(".spn_")) {
                         this.spawnType = parsedAssetString.substring(parsedAssetString.indexOf(".spn_") + 5);
                     }
                     parsedAssetString = parsedAssetString.replace(".spn_" + this.spawnType, "");
-                    if (parsedAssetString.EndsWith(".enc")) parsedAssetString = parsedAssetString.substring(0, parsedAssetString.length - 4);
+                    if (parsedAssetString.endsWith(".enc")) parsedAssetString = parsedAssetString.substring(0, parsedAssetString.length - 4);
                     break;
                 default:
                     break;

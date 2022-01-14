@@ -25,7 +25,7 @@ class PLCParser {
             obj.readNode();
             const plcModel = obj.fields.value["plcModel"];
             if (plcModel != null) {
-                if (plcModel.contains("dyn.")) continue;
+                if (plcModel.includes("dyn.")) continue;
                 this.fileNames.push(plcModel.replace("\\", "/").replace("//", "/"));
             }  
         }

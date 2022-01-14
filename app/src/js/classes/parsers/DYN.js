@@ -30,11 +30,11 @@ class DYNParser {
                     const visual = (dynVisualListItem.value["dynVisualFqn"] ?? "").toLowerCase();
                     if (visual != "") {
                         const output = visual.replace("\\", "/").replace("//", "/");
-                        if (visual.contains(".gr2") || visual.contains(".lit") || visual.contains(".mag")) {
+                        if (visual.includes(".gr2") || visual.includes(".lit") || visual.includes(".mag")) {
                             output = ("/resources/" + output).replace("//", "/");
-                        } else if (visual.contains(".fxspec")) {
+                        } else if (visual.includes(".fxspec")) {
                             output = ("/resources/art/fx/fxspec/" + output).replace("//", "/");
-                        } else if (visual.contains(".fxp")) {
+                        } else if (visual.includes(".fxp")) {
                             output = ("/resources/art/fx/fxspec/" + output).replace("//", "/");
                         } else {
                             this.unknownFileNames.push(visual);

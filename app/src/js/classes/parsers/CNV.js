@@ -40,7 +40,7 @@ class CNVParser {
                 const actionData = cnvNode.node.getField("cnvActionList").value.list;
                 if (actionData != null) {
                     for (const action of actionData) {
-                        if (action.contains("stg.")) continue;
+                        if (action.includes("stg.")) continue;
                         const as = action.split('.');
                         this.animNames.push(as[as.length - 1].toLowerCase());
                     }
@@ -48,7 +48,7 @@ class CNVParser {
             }
 
             if (cnvNode.node.getField("cnvActiveVFXList")) {
-                const vfxData = cnvNode.node.getField("cnvActiveVFXList");
+                const vfxData = cnvNode.node.getField("cnvActiveVFXList").value.list;
                 if (vfxData != null) {
                     for (const kvp of vfxData) {
                         const value = kvp.value;

@@ -29,6 +29,7 @@ class CNVParser {
             const stb = "/resources/en-us/str/" + slash + ".stb";
             const acb = "/resources/en-us/bnk2/" + under + ".acb";
             const fxe = "/resources/en-us/fxe/" + slash + ".fxe";
+            
             this.fileNames.push(stb);
             this.fileNames.push(acb);
             this.fileNames.push(fxe);

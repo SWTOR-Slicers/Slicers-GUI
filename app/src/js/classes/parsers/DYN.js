@@ -29,13 +29,13 @@ class DYNParser {
                 for (const dynVisualListItem of dynVisualList) {
                     const visual = (dynVisualListItem.value["dynVisualFqn"] ?? "").toLowerCase();
                     if (visual != "") {
-                        const output = visual.replace("\\", "/").replace("//", "/");
+                        const output = visual.replaceAll("\\", "/").replaceAll("//", "/");
                         if (visual.includes(".gr2") || visual.includes(".lit") || visual.includes(".mag")) {
-                            output = ("/resources/" + output).replace("//", "/");
+                            output = ("/resources/" + output).replaceAll("//", "/");
                         } else if (visual.includes(".fxspec")) {
-                            output = ("/resources/art/fx/fxspec/" + output).replace("//", "/");
+                            output = ("/resources/art/fx/fxspec/" + output).replaceAll("//", "/");
                         } else if (visual.includes(".fxp")) {
-                            output = ("/resources/art/fx/fxspec/" + output).replace("//", "/");
+                            output = ("/resources/art/fx/fxspec/" + output).replaceAll("//", "/");
                         } else {
                             this.unknownFileNames.push(visual);
                         }

@@ -67,7 +67,7 @@ class Area {
     loadMapNotes(file) {
         const assetStream = file.getReadStream();
         const xml = xmlBuffString(assetStream);
-        xml = xml.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;lt;", "<").replace("&amp;gt;", ">").replace("&amp;apos;", "'").replace("\0", "");
+        xml = xml.replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;lt;", "<").replaceAll("&amp;gt;", ">").replaceAll("&amp;apos;", "'").replaceAll("\0", "");
         const notes = new XDocument(xmlJs.xml2json(xml, {compact: false, spaces: 4}));
 
         const elements = notes.element("e").element("v").elems;

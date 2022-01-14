@@ -62,7 +62,7 @@ class ICONSParser {
             const icon = gomItm.fqn.ToString();
             if (icon != null) {
                 this.fileNames.push("/resources/gfx/icons/" + icon + ".dds");
-                this.fileNames.push("/resources/gfx/icons/" + icon.Replace("ipp.", "") + ".dds");
+                this.fileNames.push("/resources/gfx/icons/" + icon.replaceAll("ipp.", "") + ".dds");
 
                 this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_120x120.dds");
                 this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_260x260.dds");
@@ -70,11 +70,11 @@ class ICONSParser {
                 this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_328x160.dds");
                 this.fileNames.push("/resources/gfx/mtxstore/" + icon + "_400x400.dds");
 
-                this.fileNames.push("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_120x120.dds");
-                this.fileNames.push("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_260x260.dds");
-                this.fileNames.push("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_260x400.dds");
-                this.fileNames.push("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_328x160.dds");
-                this.fileNames.push("/resources/gfx/mtxstore/" + icon.Replace("ipp.", "") + "_400x400.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon.replaceAll("ipp.", "") + "_120x120.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon.replaceAll("ipp.", "") + "_260x260.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon.replaceAll("ipp.", "") + "_260x400.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon.replaceAll("ipp.", "") + "_328x160.dds");
+                this.fileNames.push("/resources/gfx/mtxstore/" + icon.replaceAll("ipp.", "") + "_400x400.dds");
             }
         }
 

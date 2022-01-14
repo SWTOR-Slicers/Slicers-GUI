@@ -35,7 +35,7 @@ class STBParser {
     genHash() {
         const res = [...this.fileNames.map(file => {
             if (file != "") {
-                return `/resources/en-us/${file.replace(".", "/")}.stb`.replace("//", "/");
+                return `/resources/en-us/${file.replaceAll(".", "/")}.stb`.replaceAll("//", "/");
             }
         })];
         return res;
@@ -48,7 +48,7 @@ class STBParser {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
-                if (file != "") outputNames.write(`/resources/en-us/${file.replace(".", "/")}.stb`.replace("//", "/"));
+                if (file != "") outputNames.write(`/resources/en-us/${file.replaceAll(".", "/")}.stb`.replaceAll("//", "/"));
             }
             outputNames.end();
         }

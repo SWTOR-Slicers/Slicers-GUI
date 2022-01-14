@@ -97,7 +97,7 @@ class GR2Parser {
             } else {
                 output += file[0] + ".gr2\r\n";
             }
-            output = output.replace("//", "/");
+            output = output.replaceAll("//", "/");
             return output;
         }),
         ...this.matNames.map(file => `/resources/art/shaders/materials/${file}.mat`)];
@@ -122,7 +122,7 @@ class GR2Parser {
                 } else {
                     output += file[0] + ".gr2\r\n";
                 }
-                output = output.replace("//", "/");
+                output = output.replaceAll("//", "/");
                 outputNames.write(output);
             }
             outputNames.end();

@@ -26,7 +26,7 @@ class EPPParser {
     parseEPP(doc, fullName) {
         try {
             const anode = doc.element("Appearance");
-            const file = "/resources/gamedata/" + anode.attribute("fqn").replace('.', '/') + ".epp";
+            const file = "/resources/gamedata/" + anode.attribute("fqn").replaceAll('.', '/') + ".epp";
             this.fileNames.push(file);
 
             let elemList = doc.elements("fxSpecString");
@@ -69,14 +69,14 @@ class EPPParser {
     parseEPPNodes(eppNodes) {
         for (const obj of eppNodes) {
             obj.readNode();
-            const slash = obj.fqn.toLowerCase().replace('.', '/');
+            const slash = obj.fqn.toLowerCase().replaceAll('.', '/');
             const epp = "/resources/gamedata/" + slash + ".epp";
             this.fileNames.push(epp);
         }
     }
 
     genHash() {
-        const res = [...this.fileNames.map(file => file.replace("\\", "/")), ...this.animNames.map(file => file.replace("\\", "/"))];
+        const res = [...this.fileNames.map(file => file.replaceAll("\\", "/")), ...this.animNames.map(file => file.replaceAll("\\", "/"))];
         return res;
     }
 
@@ -87,7 +87,7 @@ class EPPParser {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
-                outputNames.write(`${file.replace("\\", "/")}\r\n`);
+                outputNames.write(`${file.replaceAll("\\", "/")}\r\n`);
             }
             outputNames.end();
         }
@@ -97,7 +97,7 @@ class EPPParser {
                 flags: 'a'
             });
             for (const file of this.animNames) {
-                outputAnimNames.write(`${file.replace("\\", "/")}\r\n`);
+                outputAnimNames.write(`${file.replaceAll("\\", "/")}\r\n`);
             }
             outputAnimNames.end();
         }

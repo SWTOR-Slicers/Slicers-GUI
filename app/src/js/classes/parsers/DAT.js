@@ -118,7 +118,7 @@ class DATParser {
         let areaID = null;	//areaGuid not usually the correct ID in the file path
 
         if (filename.includes("/resources/world/areas")) {
-            areaID = filename.replace("/resources/world/areas/", "").replace("/area.dat", "");
+            areaID = filename.replaceAll("/resources/world/areas/", "").replaceAll("/area.dat", "");
             this.fileNames.push(`/resources/world/areas/${areaID}/mapnotes.not`);
         }
 
@@ -141,7 +141,7 @@ class DATParser {
             const assetName = reader.readString(nameLength);
             if (assetName.includes(':') || assetName.includes('#')) continue;
 
-            this.fileNames.push(`/resources${assetName.toLowerCase().replace("\\", "/")}`);
+            this.fileNames.push(`/resources${assetName.toLowerCase().replaceAll("\\", "/")}`);
         }
 
         //Paths
@@ -389,10 +389,10 @@ class DATParser {
         }
 
         for (const fxs of fxspecs) {
-            this.fileNames.push(`/resources/art/fx/fxspec/${fxs.toLowerCase().replace("\\", "/").replace("//", "/").replace(".fxspec.fxspec", ".fxspec")}.fxspec`);
+            this.fileNames.push(`/resources/art/fx/fxspec/${fxs.toLowerCase().replaceAll("\\", "/").replaceAll("//", "/").replaceAll(".fxspec.fxspec", ".fxspec")}.fxspec`);
         }
         for (const tex in textures) {
-            const file = ("/resources/" + tex.toLowerCase()).replace("\\", "/").replace("//", "/").replace(".dds", "");
+            const file = ("/resources/" + tex.toLowerCase()).replaceAll("\\", "/").replaceAll("//", "/").replaceAll(".dds", "");
             this.fileNames.push(`${file}.dds`);
             this.fileNames.push(`${file}.tiny.dds`);
             this.fileNames.push(`${file}.tex`);
@@ -456,17 +456,17 @@ class DATParser {
 
         if (Array.from(parts.keys()).includes("Model")) {
             this.fileNames.push(`/resources/art/dynamic/spec/${parts["Model"]}`);
-            this.fileNames.push(`/resources/art/dynamic/spec/${parts["Model"].replace(".dyc", ".dat")}`);
-            this.fileNames.push(`/resources/art/dynamic/spec/${parts["Model"].replace(".dyc", ".mag")}`);
+            this.fileNames.push(`/resources/art/dynamic/spec/${parts["Model"].replaceAll(".dyc", ".dat")}`);
+            this.fileNames.push(`/resources/art/dynamic/spec/${parts["Model"].replaceAll(".dyc", ".mag")}`);
         }
 
         if (Array.from(parts.keys()).includes("AnimMetadataFqn")) {
             const temp = parts["AnimMetadataFqn"].Split(',');
             for (const item of temp) {
-                const tempName = `/resources/${item.replace(/\\/g, "/").replace("//", "/")}`;
+                const tempName = `/resources/${item.replaceAll(/\\/g, "/").replaceAll("//", "/")}`;
                 this.fileNames.push(tempName);
                 if (Array.from(parts.keys()).includes("AnimNetworkFolder")) {
-                    const netfold = `/resources/${parts["AnimNetworkFolder"].replace(/\\/g, "/").replace("//", "/")}`;
+                    const netfold = `/resources/${parts["AnimNetworkFolder"].replace(/\\/g, "/").replaceAll("//", "/")}`;
                     const file = assets[tempName];
                     if (file != null) {
                         try {
@@ -537,12 +537,12 @@ class DATParser {
 
         if (Array.from(parts.keys()).includes("AnimLibraryFqn")) {
             const tempName = "/resources/" + parts["AnimLibraryFqn"];
-            this.fileNames.push(tempName.replace(/\\/g, "/").replace("//", "/"));
+            this.fileNames.push(tempName.replace(/\\/g, "/").replaceAll("//", "/"));
         }
 
         if (Array.from(parts.keys()).includes("AnimShareMetadataFqn")) {
             const tempName = "/resources/" + parts["AnimShareMetadataFqn"];
-            this.fileNames.push(tempName.replace(/\\/g, "/").replace("//", "/"));
+            this.fileNames.push(tempName.replace(/\\/g, "/").replaceAll("//", "/"));
         }
 
         /** 
@@ -566,7 +566,7 @@ class DATParser {
     }
 
     genHash() {
-        const res = [...this.fileNames.map(file => file.replace("\\", "/")), ...this.animNames.map(file => file.replace("\\", "/"))];
+        const res = [...this.fileNames.map(file => file.replaceAll("\\", "/")), ...this.animNames.map(file => file.replaceAll("\\", "/"))];
         return res;
     }
 
@@ -577,7 +577,7 @@ class DATParser {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
-                outputNames.write(file.replace("\\", "/"));
+                outputNames.write(file.replaceAll("\\", "/"));
             }
             outputNames.end();
         }
@@ -587,7 +587,7 @@ class DATParser {
                 flags: 'a'
             });
             for (const file of this.animNames) {
-                outputNames.write(file.replace("\\", "/"));
+                outputNames.write(file.replaceAll("\\", "/"));
             }
             outputNames.end();
         }

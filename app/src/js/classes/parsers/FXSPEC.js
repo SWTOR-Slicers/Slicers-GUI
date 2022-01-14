@@ -40,16 +40,16 @@ class FXSPECParser {
                 const resource = node.innerText;
                 if (resource.includes(".prt")) {
                     const output = "/resources/art/fx/particles/" + resource.replace(/\\/g, "/").toLower();
-                    output = output.replace("//", "/");
-                    output = output.replace("/resources/art/fx/particles/art/fx/particles/", "/resources/art/fx/particles/");
+                    output = output.replaceAll("//", "/");
+                    output = output.replaceAll("/resources/art/fx/particles/art/fx/particles/", "/resources/art/fx/particles/");
                     resourceFileNames.push(output);
                 } else if (resource.includes(".gr2")) {
                     const output = "/resources/" + resource.replace(/\\/g, "/").toLower();
-                    output = output.replace("//", "/");
+                    output = output.replaceAll("//", "/");
                     resourceFileNames.push(output);
                 } else if (resource.includes(".lit") || resource.includes(".ext") || resource.includes(".zzp")) {
                     const output = "/resources/" + resource.replace(/\\/g, "/").toLower();
-                    output = output.replace("//", "/");
+                    output = output.replaceAll("//", "/");
                     resourceFileNames.push(output);
 
                 } else if (resource.includes("Play_") || resource.includes("play_") || resource.includes("Stop_") || resource.includes("stop_") || resource == "" || resource.includes(".sgt") || resource.includes(".wav")) {
@@ -59,7 +59,7 @@ class FXSPECParser {
 
             const projTexElemList = document.evaluate("//node()[@name='_fxProjectionTexture']", docAsNodes, nsResolver, 7, null);
             for (const node of projTexElemList) {
-                const resource = node.innerText.replace(".tiny.dds", "").replace(".dds", "").replace(".tex", "");
+                const resource = node.innerText.replaceAll(".tiny.dds", "").replaceAll(".dds", "").replaceAll(".tex", "");
                 const output = "/resources" + resource.replace(/\\/g, "/").toLower();
                 resourceFileNames.push(output + ".dds");
                 resourceFileNames.push(output + ".tiny.dds");
@@ -68,7 +68,7 @@ class FXSPECParser {
 
             const projTex1ElemList = document.evaluate("//node()[@name='_fxProjectionTexture_layer1']", docAsNodes, nsResolver, 7, null);
             for (const node in projTex1ElemList) {
-                const resource = node.innerText.replace(".tiny.dds", "").replace(".dds", "").replace(".tex", "");
+                const resource = node.innerText.replaceAll(".tiny.dds", "").replaceAll(".dds", "").replaceAll(".tex", "");
                 const output = "/resources" + resource.replace(/\\/g, "/").toLower();
                 resourceFileNames.push(output + ".dds");
                 resourceFileNames.push(output + ".tiny.dds");
@@ -77,7 +77,7 @@ class FXSPECParser {
 
             const texNameElemList = document.evaluate("//node()[@name='_fxTextureName']", docAsNodes, nsResolver, 7, null);
             for (const node of texNameElemList) {
-                const resource = node.innerText.replace(".tiny.dds", "").replace(".dds", "").replace(".tex", "");
+                const resource = node.innerText.replaceAll(".tiny.dds", "").replaceAll(".dds", "").replaceAll(".tex", "");
                 const output = "/resources" + resource.replace(/\\/g, "/").toLower();
                 resourceFileNames.push(output + ".dds");
                 resourceFileNames.push(output + ".tiny.dds");
@@ -92,7 +92,7 @@ class FXSPECParser {
     }
 
     genHash() {
-        const res = [...this.fileNames.map(file => file.replace("\\", "/")), ...this.resourceFileNames.map(file => file.replace("\\", "/"))];
+        const res = [...this.fileNames.map(file => file.replaceAll("\\", "/")), ...this.resourceFileNames.map(file => file.replaceAll("\\", "/"))];
         return res;
     }
 
@@ -103,7 +103,7 @@ class FXSPECParser {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
-                outputNames.write(`${file.replace("\\", "/")}\r\n`);
+                outputNames.write(`${file.replaceAll("\\", "/")}\r\n`);
             }
             outputNames.end();
         }
@@ -113,7 +113,7 @@ class FXSPECParser {
                 flags: 'a'
             });
             for (const file of this.resourceFileNames) {
-                outputResourceNames.write(`${file.replace("\\", "/")}\r\n`);
+                outputResourceNames.write(`${file.replaceAll("\\", "/")}\r\n`);
             }
             outputResourceNames.end();
         }

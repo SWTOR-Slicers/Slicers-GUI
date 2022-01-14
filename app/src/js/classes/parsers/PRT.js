@@ -26,24 +26,24 @@ class PRTParser {
         });
 
         for await (const line of rl) {
-            let test = line.replace("  .", "");
-            test = test.replace("Name=", "");
-            test = test.replace("EmitSpec=", "");
-            test = test.replace("Trail", "");
-            test = test.replace("Texture_Purple", "");
-            test = test.replace("Texture_Blue", "");
-            test = test.replace("Texture_Red", "");
-            test = test.replace("Texture_Green", "");
-            test = test.replace("Texture_White", "");
-            test = test.replace("Texture_Yellow", "");
-            test = test.replace("Texture_Orange", "");
-            test = test.replace("Texture", "/");
-            test = test.replace("GrannyFile", "");
-            test = test.replace("EmitFXSpec=", "");
-            test = test.replace("EmitAtDeathSpec=", "");
-            test = test.replace("=", "");
-            test = test.replace("\\", "/");
-            test = test.replace("//", "/");
+            let test = line.replaceAll("  .", "");
+            test = test.replaceAll("Name=", "");
+            test = test.replaceAll("EmitSpec=", "");
+            test = test.replaceAll("Trail", "");
+            test = test.replaceAll("Texture_Purple", "");
+            test = test.replaceAll("Texture_Blue", "");
+            test = test.replaceAll("Texture_Red", "");
+            test = test.replaceAll("Texture_Green", "");
+            test = test.replaceAll("Texture_White", "");
+            test = test.replaceAll("Texture_Yellow", "");
+            test = test.replaceAll("Texture_Orange", "");
+            test = test.replaceAll("Texture", "/");
+            test = test.replaceAll("GrannyFile", "");
+            test = test.replaceAll("EmitFXSpec=", "");
+            test = test.replaceAll("EmitAtDeathSpec=", "");
+            test = test.replaceAll("=", "");
+            test = test.replaceAll("\\", "/");
+            test = test.replaceAll("//", "/");
             test = test.toLowerCase();
 
             if (test.includes(".prt")) {
@@ -54,8 +54,8 @@ class PRTParser {
                 }
             } else if (test.includes(".dds")) {
                 this.fileNames.push("/resources" + test);
-                this.fileNames.push("/resources" + test.replace(".dds", ".tiny.dds"));
-                this.fileNames.push("/resources" + test.replace(".dds", ".tex"));
+                this.fileNames.push("/resources" + test.replaceAll(".dds", ".tiny.dds"));
+                this.fileNames.push("/resources" + test.replaceAll(".dds", ".tex"));
             } else if (test.includes(".fxspec")) {
                 this.fileNames.push("/resources" + test);
             } else if (test.includes(".gr2")) {
@@ -65,7 +65,7 @@ class PRTParser {
     }
 
     genHash() {
-        const res = [...this.fileNames.map(file => file.replace("\\", "/"))];
+        const res = [...this.fileNames.map(file => file.replaceAll("\\", "/"))];
         return res;
     }
 
@@ -76,7 +76,7 @@ class PRTParser {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
-                outputNames.write(`${file.replace("\\", "/")}\r\n`);
+                outputNames.write(`${file.replaceAll("\\", "/")}\r\n`);
             }
             outputNames.end();
         }

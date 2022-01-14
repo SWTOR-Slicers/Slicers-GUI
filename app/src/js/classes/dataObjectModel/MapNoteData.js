@@ -99,7 +99,7 @@ class MapNoteData {
                     this.ignoreFoW = new Boolean(f.value);
                     break;
                 case "mpnTemplateFQN":
-                    const fqn = f.value.replace("\\server\\mpn\\", "mpn.").replace(".mpn", "").replace("\\", ".");
+                    const fqn = f.value.replaceAll("\\server\\mpn\\", "mpn.").replaceAll(".mpn", "").replaceAll("\\", ".");
                     this.templateFQN = fqn;
                     //const objId = _dom.GetObjectId(fqn);
                     //if(objId != null)

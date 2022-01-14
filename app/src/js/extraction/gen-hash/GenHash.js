@@ -310,7 +310,7 @@ function genEntr(hashType, isChecked) {
     const lbl = document.createElement('label');
     lbl.className = "hash-type-label";
     lbl.for = `${hashType}`;
-    lbl.innerHTML = `${hashType}${hashType == "DAT" || hashType == "MISC_WORLD" ? "**" : ""}`;
+    lbl.innerHTML = `${hashType}${hashType == "DAT" || hashType == "MISC_WORLD" || hashType == "CNV" ? "**" : ""}`;
     famCont.appendChild(lbl);
 
     return famCont

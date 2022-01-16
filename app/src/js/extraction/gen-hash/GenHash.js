@@ -14,6 +14,7 @@ const progressBar__baseNodes = document.getElementById('progressBar__baseNodes')
 const progressBar__protoNodes = document.getElementById('progressBar__protoNodes');
 const progressBar__assets = document.getElementById('progressBar__assets');
 
+const actualFound = document.getElementById('actualFound');
 const namesFound = document.getElementById('namesFound');
 const numSearched = document.getElementById('numSearched');
 //buttons
@@ -40,6 +41,13 @@ async function init() {
         const typeCont = genEntr(hType, cache["checked"][hType]);
         hashTypeCont.appendChild(typeCont);
     }
+
+    const warningDiv = document.createElement('div');
+    warningDiv.className = "warn-desc";
+    warningDiv.innerHTML = "** = gonna take a while"
+
+    hashTypeCont.appendChild(warningDiv);
+
     initListeners();
     initSubs();
     initHashWorker();
@@ -172,15 +180,10 @@ function initHashWorker() {
             case "complete":
                 const names = e.data.data.names;
                 console.log(names);
-
-                document.querySelector('.header-container').innerHTML = 'Select file types to generate';
-                hashTypeCont.classList.toggle('hidden');
-                genHashes.innerHTML = 'Load Data';
                 genHashes.classList.toggle('disabled');
-
-                ipcRenderer.send("hashComplete", [e.data.data.numFilesFound, e.data.data.numFilesSearched]);
                 break;
             case "progress":
+                actualFound.innerHTML = e.data.data.totalActualFound;
                 namesFound.innerHTML = e.data.data.totalNamesFound;
                 numSearched.innerHTML = e.data.data.totalFilesSearched;
                 break;
@@ -235,6 +238,7 @@ function initListeners() {
         }
     }
 
+
     cancelGen.addEventListener('click', (e) => {
         ipcRenderer.send('cancelHashGen', '');
         document.querySelector('.header-container').innerHTML = 'Select file types to generate';
@@ -260,7 +264,7 @@ function initListeners() {
             genHashes.classList.toggle('disabled');
         
             ipcRenderer.send('readAllDataHashPrep');
-        } else {
+        } else if (genHashes.innerHTML == 'Generate') {
             hashWorker.postMessage({
                 "message": 'genHash',
                 "data": {
@@ -269,6 +273,12 @@ function initListeners() {
             });
 
             genHashes.classList.toggle('disabled');
+        } else {
+            document.querySelector('.header-container').innerHTML = 'Select file types to generate';
+            hashTypeCont.classList.toggle('hidden');
+            genHashes.innerHTML = 'Load Data';
+
+            ipcRenderer.send("hashComplete", [e.data.data.numActualFound, e.data.data.numFilesFound, e.data.data.numFilesSearched]);
         }
     });
 }
@@ -300,7 +310,7 @@ function genEntr(hashType, isChecked) {
     const lbl = document.createElement('label');
     lbl.className = "hash-type-label";
     lbl.for = `${hashType}`;
-    lbl.innerHTML = `${hashType}`;
+    lbl.innerHTML = `${hashType}${hashType == "DAT" || hashType == "MISC_WORLD" ? "**" : ""}`;
     famCont.appendChild(lbl);
 
     return famCont

@@ -24,18 +24,18 @@ class DYNParser {
     parseDYN(dynNodes) {
         for (const obj of dynNodes) {
             obj.readNodes();
-            const dynVisualList = obj.obj.value["dynVisualList"];
+            const dynVisualList = obj.fields.value["dynVisualList"];
             if (dynVisualList != null) {
                 for (const dynVisualListItem of dynVisualList) {
                     const visual = (dynVisualListItem.value["dynVisualFqn"] ?? "").toLowerCase();
                     if (visual != "") {
-                        const output = visual.replace("\\", "/").replace("//", "/");
-                        if (visual.contains(".gr2") || visual.contains(".lit") || visual.contains(".mag")) {
-                            output = ("/resources/" + output).replace("//", "/");
-                        } else if (visual.contains(".fxspec")) {
-                            output = ("/resources/art/fx/fxspec/" + output).replace("//", "/");
-                        } else if (visual.contains(".fxp")) {
-                            output = ("/resources/art/fx/fxspec/" + output).replace("//", "/");
+                        const output = visual.replaceAll("\\", "/").replaceAll("//", "/");
+                        if (visual.includes(".gr2") || visual.includes(".lit") || visual.includes(".mag")) {
+                            output = ("/resources/" + output).replaceAll("//", "/");
+                        } else if (visual.includes(".fxspec")) {
+                            output = ("/resources/art/fx/fxspec/" + output).replaceAll("//", "/");
+                        } else if (visual.includes(".fxp")) {
+                            output = ("/resources/art/fx/fxspec/" + output).replaceAll("//", "/");
                         } else {
                             this.unknownFileNames.push(visual);
                         }
@@ -45,7 +45,7 @@ class DYNParser {
                 }
             }
 
-            const dynLightNameToProperty = obj.obj.value["dynLightNameToProperty"];
+            const dynLightNameToProperty = obj.fields.value["dynLightNameToProperty"];
             if (dynLightNameToProperty != null) {
                 for (const dynLightNameToPropertyItem of dynLightNameToProperty) {
                     const ramp = (dynLightNameToPropertyItem.value["dynLightRampMap"] ?? "").toLowerCase();

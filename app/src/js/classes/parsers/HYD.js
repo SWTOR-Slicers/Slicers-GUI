@@ -24,7 +24,7 @@ class HYDParser {
     parseHYD(hydNodes) {
         for (const obj of hydNodes) {
             obj.readNode();
-            const hydScriptMap = obj.obj.value["hydScriptMap"];
+            const hydScriptMap = obj.fields.value["hydScriptMap"];
             if (hydScriptMap != null) {
                 for (const scriptMapItem of hydScriptMap) {
                     const hydScriptBlocks = scriptMapItem.value["hydScriptBlocks"];
@@ -64,10 +64,10 @@ class HYDParser {
             if (file != "") {
                 if (file.includes("art/")) {
                     const output = "/resources/" + file + ".fxspec";
-                    return output.replace("//", "/").replace(".fxspec.fxspec", ".fxspec");
+                    return output.replaceAll("//", "/").replaceAll(".fxspec.fxspec", ".fxspec");
                 } else {
                     const output = "/resources/art/fx/fxspec/" + file + ".fxspec";
-                    return output.replace("//", "/").replace(".fxspec.fxspec", ".fxspec");
+                    return output.replaceAll("//", "/").replaceAll(".fxspec.fxspec", ".fxspec");
                 }
             }
         })];
@@ -97,10 +97,10 @@ class HYDParser {
                 if (file != "") {
                     if (file.includes("art/")) {
                         const output = "/resources/" + file + ".fxspec";
-                        outputVfxFileNames.write(output.replace("//", "/").replace(".fxspec.fxspec", ".fxspec"));
+                        outputVfxFileNames.write(output.replaceAll("//", "/").replaceAll(".fxspec.fxspec", ".fxspec"));
                     } else {
                         const output = "/resources/art/fx/fxspec/" + file + ".fxspec";
-                        outputVfxFileNames.write(output.replace("//", "/").replace(".fxspec.fxspec", ".fxspec"));
+                        outputVfxFileNames.write(output.replaceAll("//", "/").replaceAll(".fxspec.fxspec", ".fxspec"));
                     }
                 }
             }

@@ -762,6 +762,14 @@ export function uint64(intLo, intHi) {
     return out.join('').replace(/^0+/, '')
 }
 /**
+ * converts 2 uint32s to a single uint64
+ * @param  {Number} p first Uint32
+ * @param  {Number} s second Uint32
+ */
+export function uint32ToUint64(p, s) {
+    return BigInt(p) << 32n | BigInt(s);
+}
+/**
  * Converts 2 uitn32 values to a uint64, taking an obj as the argument
  * @param  {Object} obj Object wrapper for the uint32s.
  */

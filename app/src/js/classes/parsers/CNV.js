@@ -24,11 +24,12 @@ class CNVParser {
      */
     parseCNVNodes(cnvNodes) {
         for (const cnvNode of cnvNodes) {
-            const under = cnvNode.fqn.toLowerCase().replace('.', '_');
-            const slash = cnvNode.fqn.toLowerCase().ToString().Replace('.', '/');
+            const under = cnvNode.fqn.toLowerCase().replaceAll('.', '_');
+            const slash = cnvNode.fqn.toLowerCase().replaceAll('.', '/');
             const stb = "/resources/en-us/str/" + slash + ".stb";
             const acb = "/resources/en-us/bnk2/" + under + ".acb";
             const fxe = "/resources/en-us/fxe/" + slash + ".fxe";
+            
             this.fileNames.push(stb);
             this.fileNames.push(acb);
             this.fileNames.push(fxe);
@@ -36,21 +37,22 @@ class CNVParser {
             //Check for alien vo files.
             if (cnvNode.fqn.startsWith("cnv.alien_vo")) this.fileNames.push("/resources/bnk2/" + under + ".acb");
             cnvNode.readNode();
-            if (cnvNode.obj.value["cnvActionList"]) {
-                const actionData = cnvNode.obj.value["cnvActionList"];
+            if (cnvNode.node.getField("cnvActionList")) {
+                const actionData = cnvNode.node.getField("cnvActionList").value.list;
                 if (actionData != null) {
                     for (const action of actionData) {
-                        if (action.contains("stg.")) continue;
-                        this.animNames.push(action.split('.').Last().toLowerCase());
+                        if (action.includes("stg.")) continue;
+                        const as = action.split('.');
+                        this.animNames.push(as[as.length - 1].toLowerCase());
                     }
                 }
             }
 
-            if (cnvNode.obj.value["cnvActiveVFXList"]) {
-                const vfxData = cnvNode.obj.value["cnvActiveVFXList"];
+            if (cnvNode.node.getField("cnvActiveVFXList")) {
+                const vfxData = cnvNode.node.getField("cnvActiveVFXList").value.list;
                 if (vfxData != null) {
-                    for (const kvp of vfxData) {
-                        const value = kvp.value;
+                    for (const entr of vfxData) {
+                        const value = entr.val;
                         if (value.length > 0) {
                             for (const vfx of value) {
                                 this.fxSpecNames.push(vfx.toLowerCase());
@@ -63,7 +65,7 @@ class CNVParser {
     }
 
     genHash() {
-        const res = [...this.fileNames.map(file => file.replace("\\", "/")), ...this.animNames.map(file => file.replace("\\", "/")), ...this.fxSpecNames.map(file => file.replace("\\", "/"))];
+        const res = [...this.fileNames.map(file => file.replaceAll("\\", "/")), ...this.animNames.map(file => file.replaceAll("\\", "/")), ...this.fxSpecNames.map(file => file.replaceAll("\\", "/"))];
         return res;
     }
 
@@ -74,7 +76,7 @@ class CNVParser {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
-                outputNames.write(`${file.replace("\\", "/")}\r\n`);
+                outputNames.write(`${file.replaceAll("\\", "/")}\r\n`);
             }
             outputNames.end();
         }
@@ -84,7 +86,7 @@ class CNVParser {
                 flags: 'a'
             });
             for (const file of this.animNames) {
-                outputAnimNames.write(`${file.replace("\\", "/")}\r\n`);
+                outputAnimNames.write(`${file.replaceAll("\\", "/")}\r\n`);
             }
             outputAnimNames.end();
         }
@@ -94,7 +96,7 @@ class CNVParser {
                 flags: 'a'
             });
             for (const file of this.fxSpecNames) {
-                outputFxSpecNames.write(`${file.replace("\\", "/")}\r\n`);
+                outputFxSpecNames.write(`${file.replaceAll("\\", "/")}\r\n`);
             }
             outputFxSpecNames.end();
         }

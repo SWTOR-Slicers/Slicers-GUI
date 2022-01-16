@@ -37,7 +37,7 @@ class Area {
                 this.loadMapdata(mapDataObj);
 
                 this.fowGroupStringIds = {};
-                const mapDataContainerFowGroupList = mapDataObj.obj.value["mapDataContainerFowGroupList"] || null;
+                const mapDataContainerFowGroupList = mapDataObj.fields.value["mapDataContainerFowGroupList"] || null;
                 if (mapDataContainerFowGroupList != null) {
                     for (const kvp of Object.entries(mapDataContainerFowGroupList)) {
                         const fowId = kvp[0];
@@ -67,7 +67,7 @@ class Area {
     loadMapNotes(file) {
         const assetStream = file.getReadStream();
         const xml = xmlBuffString(assetStream);
-        xml = xml.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;lt;", "<").replace("&amp;gt;", ">").replace("&amp;apos;", "'").replace("\0", "");
+        xml = xml.replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;lt;", "<").replaceAll("&amp;gt;", ">").replaceAll("&amp;apos;", "'").replaceAll("\0", "");
         const notes = new XDocument(xmlJs.xml2json(xml, {compact: false, spaces: 4}));
 
         const elements = notes.element("e").element("v").elems;
@@ -92,7 +92,7 @@ class Area {
      * @param  {NodeEntr} node the node obj
      */
     loadMapdata(node) {
-        const mapPages = node.obj.value["mapDataContainerMapDataList"] || null;
+        const mapPages = node.fields.value["mapDataContainerMapDataList"] || null;
         const pageLookup = new Map();
 
         if (mapPages != null) {

@@ -643,7 +643,7 @@ function changeFiles() {
                     "isCompressed": change.fileData != null
                 });
             } catch (e) {
-                log(`Unable to get the hash for change: ${i}`, 'error');
+                log(`Unable to get the hash for change: ${i}. Error: ${e.message}`, 'error');
                 completed = false;
                 break;
             }

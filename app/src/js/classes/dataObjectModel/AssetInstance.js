@@ -49,16 +49,16 @@ class AssetInstance {
                     break;
                 case "spn":
                 case "enc":
-                    if (parsedAssetString.Contains(".spn_")) {
+                    if (parsedAssetString.includes(".spn_")) {
                         this.spawnType = parsedAssetString.substring(parsedAssetString.indexOf(".spn_") + 5);
                     }
-                    parsedAssetString = parsedAssetString.replace(".spn_" + this.spawnType, "");
-                    if (parsedAssetString.EndsWith(".enc")) parsedAssetString = parsedAssetString.substring(0, parsedAssetString.length - 4);
+                    parsedAssetString = parsedAssetString.replaceAll(".spn_" + this.spawnType, "");
+                    if (parsedAssetString.endsWith(".enc")) parsedAssetString = parsedAssetString.substring(0, parsedAssetString.length - 4);
                     break;
                 default:
                     break;
             }
-            parsedAssetString = parsedAssetString.replace('\\', '.');
+            parsedAssetString = parsedAssetString.replaceAll('\\', '.');
             const obj = this.roomDat.dom.getObject(parsedAssetString);
             if (obj == null) {
                 this.failed = true;

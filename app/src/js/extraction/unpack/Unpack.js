@@ -401,15 +401,15 @@ function getZFileURLFromFileName(fileName) {
 
     if (relivantSub === "retailclient_swtor") {
         url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/retailclient_swtor_${parts[2]}/${fileName}`;
-    } else if (relivantSub.contains("assets_swtor")) {
+    } else if (relivantSub.includes("assets_swtor")) {
         url = `http://cdn-patch.swtor.com/patch/assets_swtor_${parts[2]}/assets_swtor_${parts[2]}_${parts[3]}/${fileName}`;
     } else if (relivantSub === "retailclient_publictest") {
         url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/retailclient_publictest_${parts[2]}/${fileName}`;
-    } else if (relivantSub.contains("assets_swtor_test")) {
+    } else if (relivantSub.includes("assets_swtor_test")) {
         url = `http://cdn-patch.swtor.com/patch/assets_swtor_test_${parts[3]}/assets_swtor_test_${parts[3]}_${parts[4]}/${fileName}`;
-    } else if (relivantSub.contains("movies")) {
+    } else if (relivantSub.includes("movies")) {
         url = `http://cdn-patch.swtor.com/patch/movies_${parts[1]}/movies_${parts[1]}_${parts[2]}/${fileName}`;
-    } else if (relivantSub.contains('retailclient')) {
+    } else if (relivantSub.includes('retailclient')) {
         const clientID = relivantSub.substring(relivantSub.lastIndexOf('_'));
         url = `http://cdn-patch.swtor.com/patch/${parts[1]}/retailclient_${parts[1]}/retailclient_${parts[1]}_${parts[2]}/${fileName}`;
     }
@@ -431,21 +431,21 @@ function getSolidPkgURLFromFileName(patchFileName) {
 
     if (relivantSub === "retailclient_swtor") {
         url = `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/${fileName}.solidpkg`;
-    } else if (relivantSub.contains("assets_swtor")) {
+    } else if (relivantSub.includes("assets_swtor")) {
         url = `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg`;
     } else if (relivantSub === "retailclient_publictest") {
         url = `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/${fileName}.solidpkg`;
-    } else if (relivantSub.contains("assets_swtor_test")) {
+    } else if (relivantSub.includes("assets_swtor_test")) {
         url = `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg`;
-    } else if (relivantSub.contains("movies")) {
+    } else if (relivantSub.includes("movies")) {
         url = `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg`;
-    } else if (relivantSub.contains('retailclient')) {
+    } else if (relivantSub.includes('retailclient')) {
         const clientID = relivantSub.substring(relivantSub.lastIndexOf('_'));
         url = `http://cdn-patch.swtor.com/patch/${clientID}/${relivantSub}/${fileName}.solidpkg`;
     }
 
     //for the memes
-    //const url = (relivantSub === "retailclient_swtor") ? `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/${fileName}.solidpkg` : (relivantSub.contains("assets_swtor")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub === "retailclient_publictest") ? `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/${fileName}.solidpkg` : (relivantSub.contains("assets_swtor_test")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub.contains("movies")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub.contains('retailclient')) ? `http://cdn-patch.swtor.com/patch/${relivantSub.substring(relivantSub.lastIndexOf('_'))}/${relivantSub}/${fileName}.solidpkg` : null;
+    //const url = (relivantSub === "retailclient_swtor") ? `http://cdn-patch.swtor.com/patch/swtor/retailclient_swtor/${fileName}.solidpkg` : (relivantSub.includes("assets_swtor")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub === "retailclient_publictest") ? `http://cdn-patch.swtor.com/patch/publictest/retailclient_publictest/${fileName}.solidpkg` : (relivantSub.includes("assets_swtor_test")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub.includes("movies")) ? `http://cdn-patch.swtor.com/patch/${relivantSub}/${fileName}.solidpkg` : (relivantSub.includes('retailclient')) ? `http://cdn-patch.swtor.com/patch/${relivantSub.substring(relivantSub.lastIndexOf('_'))}/${relivantSub}/${fileName}.solidpkg` : null;
 
     return url;
 }

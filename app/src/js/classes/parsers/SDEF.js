@@ -66,7 +66,7 @@ class SDEFParser {
     }
 
     genHash() {
-        const res = [...this.fileNames.map(file => file.replace("\\", "/"))];
+        const res = [...this.fileNames.map(file => file.replaceAll("\\", "/"))];
         return res;
     }
 
@@ -77,7 +77,7 @@ class SDEFParser {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
-                outputNames.write(`${file.replace("\\", "/")}`);
+                outputNames.write(`${file.replaceAll("\\", "/")}`);
             }
             outputNames.end();
         }

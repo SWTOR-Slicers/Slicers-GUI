@@ -47,7 +47,7 @@ class BNKParser {
 
     genHash() {
         const namesArr = Array.from(this.fileNames.keys());
-        const res = namesArr.map(file => file.replace("\\", "/"));
+        const res = namesArr.map(file => file.replaceAll("\\", "/"));
         return res;
     }
 
@@ -59,7 +59,7 @@ class BNKParser {
                 flags: 'a'
             });
             for (const file of namesArr) {
-                outputNames.write(`${file.replace("\\", "/")}\r\n`);
+                outputNames.write(`${file.replaceAll("\\", "/")}\r\n`);
             }
             outputNames.end();
         }

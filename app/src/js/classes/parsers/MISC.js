@@ -27,7 +27,7 @@ class MISCParser {
      * @param {NodeEntr} ldnScreenNode ldnScreen node object
      */
     parseMISC_LdnScn(ldnScreenNode) {
-        const ldgLookup = ldnScreenNode.obj.value["ldgAreaNameToLoadScreen"];
+        const ldgLookup = ldnScreenNode.fields.value["ldgAreaNameToLoadScreen"];
         for (const kvpLdgClass of ldgLookup) {
             this.searched++;
             const areaLdgInfo = kvpLdgClass[1];
@@ -52,7 +52,7 @@ class MISCParser {
             obj.readNode();
             this.searched++;
             const full = obj.fqn.toLowerCase();
-            const partial = obj.fqn.toLowerCase().replace("ipp.", "");
+            const partial = obj.fqn.toLowerCase().replaceAll("ipp.", "");
 
             this.fileNames.push("/resources/gfx/icons/" + full + ".dds");
             this.fileNames.push("/resources/gfx/icons/" + partial + ".dds");
@@ -94,10 +94,10 @@ class MISCParser {
             const itm = kvp[1];
 
             const itmModel = itm.value["itmModel"] ? itm.value["itmModel"] : null;
-            if (itmModel) this.fileNames.push(("/resources/" + (itmModel.replace("\\", "/"))).replace("//", "/"));
+            if (itmModel) this.fileNames.push(("/resources/" + (itmModel.replaceAll("\\", "/"))).replaceAll("//", "/"));
 
             const itmFxSpec = itm.value["itmFxSpec"] ? itm.value["itmFxSpec"] : null;
-            if (itmFxSpec) this.fileNames.push(("/resources/art/fx/fxspec/" + itmFxSpec + ".fxspec").replace("//", "/").replace(".fxspec.fxspec", ".fxspec"));
+            if (itmFxSpec) this.fileNames.push(("/resources/art/fx/fxspec/" + itmFxSpec + ".fxspec").replaceAll("//", "/").replaceAll(".fxspec.fxspec", ".fxspec"));
         }
     }
 
@@ -111,12 +111,12 @@ class MISCParser {
         for (const obj of worldAreas) {
             obj.readNode();
             this.searched++;
-            const areaId = obj.obj.value["mapDataContainerAreaID"] ?? 0;
+            const areaId = obj.fields.value["mapDataContainerAreaID"] ?? 0;
             if (areaId > 0) {
                 this.worldFileNames.push(`/resources/world/areas/${areaId}/area.dat`);
                 this.worldFileNames.push(`/resources/world/areas/${areaId}/mapnotes.not`);
 
-                const mapPages = obj.obj.value["mapDataContainerMapDataList"];
+                const mapPages = obj.fields.value["mapDataContainerMapDataList"];
 
                 if (mapPages != null) {
                     for (const mapPage of mapPages) {
@@ -158,7 +158,7 @@ class MISCParser {
                         let end = text.indexOf(".dds", start);
                         if (end != -1) {
                             let temp = text.substring(start, ((end - start) + 4)).toLowerCase();
-                            temp = temp.replace("img://", "/resources/").replace("//", "/").replace("<<grammar::locpath>>", "en-us");
+                            temp = temp.replaceAll("img://", "/resources/").replaceAll("//", "/").replaceAll("<<grammar::locpath>>", "en-us");
                             this.fileNames.push(temp);
                             start++;
                         }
@@ -169,7 +169,7 @@ class MISCParser {
                         let end = text.indexOf("'", start);
                         if (end != -1) {
                             let temp = text.substring(start, ((end - start) + 1)).toLowerCase();
-                            temp = temp.replace("img://", "/resources/").replace("//", "/").replace("<<grammar::locpath>>", "en-us");
+                            temp = temp.replaceAll("img://", "/resources/").replaceAll("//", "/").replaceAll("<<grammar::locpath>>", "en-us");
                             this.fileNames.push(temp + ".dds");
                             start++;
                         }
@@ -196,22 +196,22 @@ class MISCParser {
         this.found = this.fileNames.length;
         const res = [...this.fileNames.map(file => {
             if (file != "") {
-                return file.replace("\\", "/");
+                return file.replaceAll("\\", "/");
             }
         })];
 
         this.found += this.worldFileNames.length;
         for (const file of this.worldFileNames.length) {
-            res.push(file.replace("\\", "/"));
+            res.push(file.replaceAll("\\", "/"));
         }
         
         this.found += Object.keys(this.mapNames);
         for (const kvp of Object.entries(this.mapNames)) {
             for (const line of kvp[1]) {
-                res.push(`/resources/world/areas/${kvp[0]}/${line}_r.dds`.replace("\\", "/"));
+                res.push(`/resources/world/areas/${kvp[0]}/${line}_r.dds`.replaceAll("\\", "/"));
                 for (let m = 0; m <= 50; m++) {
                     for (let mm = 0; mm <= 50; mm++) {
-                        res.push(`/resources/world/areas/${kvp[0]}/minimaps/${line}_${m}_${mm}_r.dds`.replace("\\", "/"));
+                        res.push(`/resources/world/areas/${kvp[0]}/minimaps/${line}_${m}_${mm}_r.dds`.replaceAll("\\", "/"));
                     }
                 }
             }
@@ -228,7 +228,7 @@ class MISCParser {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
-                outputNames.write(`${file.replace("\\", "/")}\r\n`);
+                outputNames.write(`${file.replaceAll("\\", "/")}\r\n`);
             }
             outputNames.end();
         }
@@ -249,7 +249,7 @@ class MISCParser {
                     });
                     lineCount = 0;
                 }
-                outputWorldNames.write(`${file.replace("\\", "/")}`);
+                outputWorldNames.write(`${file.replaceAll("\\", "/")}`);
                 lineCount++
             }
             outputWorldNames.end();
@@ -272,11 +272,11 @@ class MISCParser {
                         });
                         lineCount = 0;
                     }
-                    outputMapNames.write(`/resources/world/areas/${kvp[0]}/${line}_r.dds`.replace("\\", "/"));
+                    outputMapNames.write(`/resources/world/areas/${kvp[0]}/${line}_r.dds`.replaceAll("\\", "/"));
                     lineCount++;
                     for (let m = 0; m <= 50; m++) {
                         for (let mm = 0; mm <= 50; mm++) {
-                            outputMapNames.write(`/resources/world/areas/${kvp[0]}/minimaps/${line}_${m}_${mm}_r.dds`.replace("\\", "/"));
+                            outputMapNames.write(`/resources/world/areas/${kvp[0]}/minimaps/${line}_${m}_${mm}_r.dds`.replaceAll("\\", "/"));
                             lineCount++;
                         }
                     }

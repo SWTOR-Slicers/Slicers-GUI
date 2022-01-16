@@ -1,4 +1,4 @@
-import { hashlittle2, readString as readStr, readVarInt, uint64C } from "../../Util.js";
+import { hashlittle2, readString as readStr, readVarInt, uint64C, uint32ToUint64 } from "../../Util.js";
 
 const path = require('path');
 const zlib = require('zlib');
@@ -67,6 +67,7 @@ async function loadNodes(torPath) {
                 const uncomprSize = dv.getUint32(i + 16, !0);
                 const sh = dv.getUint32(i + 20, !0);
                 const ph = dv.getUint32(i + 24, !0);
+                const fileId = dv.getBigUint64(i+20, true);
                 if (sh === 0xC75A71E6 && ph === 0xE4B96113)
                     continue;
                 if (sh === 0xCB34F836 && ph === 0x8478D2E1)
@@ -77,14 +78,14 @@ async function loadNodes(torPath) {
                 const fileObj = {};
                 fileObj.sh = sh;
                 fileObj.ph = ph;
+                fileObj.fileId = fileId;
                 fileObj.offset = offset;
                 fileObj.size = uncomprSize;
                 fileObj.comprSize = (compression !== 0) ? comprSize : 0;
                 fileObj.isCompressed = compression !== 0;
                 fileObj.name = undefined;
-                const hash = sh + '|' + ph;
                 
-                gomArchive.files[hash] = fileObj
+                gomArchive.files[fileObj.fileId] = fileObj
             }
         }
 
@@ -98,7 +99,7 @@ async function loadNodes(torPath) {
 
 async function findPrototypes(gomArchive, data, torPath) {
     const protInfoHash = hashlittle2(`/resources/systemgenerated/prototypes.info`);
-    const protInfoEntr = gomArchive.files[`${protInfoHash[1]}|${protInfoHash[0]}`];
+    const protInfoEntr = gomArchive.files[uint32ToUint64(protInfoHash[0], protInfoHash[1])];
 
     const dat = data.slice(protInfoEntr.offset, protInfoEntr.offset + (protInfoEntr.isCompressed ? protInfoEntr.comprSize : protInfoEntr.size));
     if (protInfoEntr.isCompressed) {
@@ -137,7 +138,7 @@ async function loadPrototypes(gomArchive, data, torPath, dv) {
 
         if (flag == 1) {
             const hashArr = hashlittle2(`/resources/systemgenerated/prototypes/${protId}.node`);
-            const file = gomArchive.files[`${hashArr[1]}|${hashArr[0]}`];
+            const file = gomArchive.files[uint32ToUint64(hashArr[0], hashArr[1])];
 
             if (file) {
                 let fData = null;

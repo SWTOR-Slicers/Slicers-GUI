@@ -45,7 +45,7 @@ class AMXParser {
                     const dirName = Buffer.from(dirNameBytes).toString('ascii');
 
                     let fullName = "/resources/anim/" + dirName.replace(/\\/g, "/") + fileName;
-                    fullName = fullName.replace("//", "/");
+                    fullName = fullName.replaceAll("//", "/");
 
                     //humanoid\bfanew
                     //em_wookiee_10
@@ -63,7 +63,7 @@ class AMXParser {
 
     genHash() {
         const namesArr = Array.from(this.fileNames.keys());
-        const res = namesArr.map(file => file.replace("\\", "/"));
+        const res = namesArr.map(file => file.replaceAll("\\", "/"));
         return res;
     }
 

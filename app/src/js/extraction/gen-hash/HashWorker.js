@@ -3,7 +3,7 @@ import { HashDictionary } from "../../classes/hash/HashDictionary.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
 import { STB } from "../../classes/formats/STB.js";
 
-import { inflateZlib, hashlittle2 } from "../../Util.js";
+import { inflateZlib, hashlittle2, uint32ToUint64 } from "../../Util.js";
 import { StaticGomTree, nodeFolderSort } from "../../viewers/node-viewer/GomTree.js";
 
 import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
@@ -37,6 +37,7 @@ const cache = {
 }
 let totalFilesSearched;
 let totalNamesFound;
+let totalActualFound;
 let hash;
 let GTree;
 let _dom = null;
@@ -60,11 +61,13 @@ onmessage = (e) => {
         case "genHash":
             totalFilesSearched = 0;
             totalNamesFound = 0;
+            totalActualFound = 0;
             generateNames(GTree.nodesByFqn, GTree.nodesList, archives, e.data.data.checked, true);
             break;
         case "findFileNames":
             totalFilesSearched = 0;
             totalNamesFound = 0;
+            totalActualFound = 0;
             generateNames(GTree.nodesByFqn, GTree.nodesList, archives, e.data.data.checked, false, e.data.data.extractPath);
             break;
         case "setDOM":
@@ -102,6 +105,7 @@ async function generateNames(nodesByFqn, nodesList, assets, checked, genHash, ex
         "message": "complete",
         "data": {
             "names": (genHash) ? names : `File name output complete. Found ${totalNamesFound} names, and searched ${totalFilesSearched} files.`,
+            "numActualFound": totalActualFound,
             "numFilesFound": totalNamesFound,
             "numFilesSearched": totalFilesSearched
         }
@@ -126,15 +130,6 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
     for (const entrList of assets) {
         Object.assign(assetsDict, entrList);
     }
-    // console.log(Object.values(assetsDict).length);
-    // for (const archive of Object.values(archives)) {
-    //     const numEntr = Object.values(archive.entries).length;
-    //     if (archive.totalFiles == (numEntr - 1)) {
-    //         console.log(`Validated archive. Found all ${archive.totalFiles} assets.`);
-    //     } else {
-    //         console.log(`ERROR: Expected ${archive.totalFiles} assets but only found ${numEntr}.`);
-    //     }
-    // }
 
     const matches = [];
     const fileExt = new FileExtension();
@@ -157,6 +152,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
 
     let filesSearched = 0;
     let namesFound = 0;
+    let actualFound = 0;
 
     switch (extension) {
         case "XML":
@@ -272,7 +268,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
             misc_parser.parseMISC_CDX(cdxNodes);
             misc_parser.parseMISC_NODE(nodesList);
             const ldgNode = dom.getObject("loadingAreaLoadScreenPrototype");
-            const itemApperances = dom.getObject("itmAppearanceDatatable").obj.value["itmAppearances"];
+            const itemApperances = dom.getObject("itmAppearanceDatatable").fields.value["itmAppearances"];
             misc_parser.parseMISC_LdnScn(ldgNode);
             misc_parser.parseMISC_ITEM(itemApperances);
             const guiTutorialsStb = new STB(assets["resources/en-us/str/gui/tutorials.stb"].getReadStream());
@@ -287,7 +283,7 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
             break;
         case "MISC_WORLD":
             const misc_world_parser = new MISCParser(extractPath, extension);
-            const areaList = dom.getObject("mapAreasDataProto").obj.value["mapAreasDataObjectList"];
+            const areaList = dom.getObject("mapAreasDataProto").fields.value["mapAreasDataObjectList"];
             const areaList2 = dom.getObjectsStartingWith("world.areas.");
             misc_world_parser.parseMISC_WORLD(areaList2, areaList, dom);
             if (genHash) {
@@ -405,31 +401,34 @@ async function parseFiles(extension, archives, nodesByFqn, nodesList, genHash, n
     totalFilesSearched += filesSearched;
     totalNamesFound += namesFound;
 
+    let namesNotFound = [];
+
     if (parseReturns.length > 0 && genHash) {
         for (const n of parseReturns) {
             if (n) {
                 const hash = hashlittle2(n);
-                const file = assetsDict[`${hash[1]}|${hash[0]}`];
-                names.push([hash[0].toString(16).toUpperCase(), hash[1].toString(16).toUpperCase(), n, file ? file.crc.toString(16).toUpperCase() : 'DEADBEEF'].join('#'));
+                const file = assetsDict[uint32ToUint64(hash[0], hash[1])];
+                if (file) {
+                    actualFound++;
+                    names.push([hash[0].toString(16).toUpperCase(), hash[1].toString(16).toUpperCase(), n, file.crc.toString(16).toUpperCase()].join('#'));
+                } else {
+                    namesNotFound.push(n);
+                    console.log(`File name ${n} has no matching file. Need to check parser ${extension}`);
+                }
             }
         }
     }
 
+    console.log(namesNotFound);
+
+    totalActualFound += actualFound;
+
     postMessage({
         "message": "progress",
         "data": {
+            "totalActualFound": totalActualFound,
             "totalNamesFound": totalNamesFound,
             "totalFilesSearched": totalFilesSearched
         }
     });
 }
-
-// function deserializer(k, v) {
-//     if (v instanceof Object && v._class == 'NodeEntr') {
-//         return v._decompr ? new NodeEntr(v, _dom, decomprFunc) : new NodeEntr(v, _dom);
-//     } else if (v instanceof Object && v._class == 'NodesByFqn') {
-//         return new NodesByFqn(v, deserializer);
-//     }
-//     // default to returning the value unaltered
-//     return v;
-// }

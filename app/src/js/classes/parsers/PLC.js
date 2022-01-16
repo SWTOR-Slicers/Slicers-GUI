@@ -23,10 +23,10 @@ class PLCParser {
     parsePLC(plcNodes) {
         for (const obj of plcNodes) {
             obj.readNode();
-            const plcModel = obj.obj.value["plcModel"];
+            const plcModel = obj.fields.value["plcModel"];
             if (plcModel != null) {
-                if (plcModel.contains("dyn.")) continue;
-                this.fileNames.push(plcModel.replace("\\", "/").replace("//", "/"));
+                if (plcModel.includes("dyn.")) continue;
+                this.fileNames.push(plcModel.replaceAll("\\", "/").replaceAll("//", "/"));
             }  
         }
     }
@@ -34,7 +34,7 @@ class PLCParser {
     genHash() {
         const res = [...this.fileNames.map(file => {
             if (file != "") {
-                return ("/resources/" + file).replace("//", "/");
+                return ("/resources/" + file).replaceAll("//", "/");
             }
         })];
         return res;
@@ -47,7 +47,7 @@ class PLCParser {
                 flags: 'a'
             });
             for (const file of this.fileNames) {
-                if (item != "") outputNames.write(("/resources/" + file).replace("//", "/"));
+                if (item != "") outputNames.write(("/resources/" + file).replaceAll("//", "/"));
             }
             outputNames.end();
         }

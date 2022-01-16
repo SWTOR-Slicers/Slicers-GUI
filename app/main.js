@@ -481,7 +481,7 @@ function initMainListeners() {
 function initSetupUI() {
   setupWindow = new BrowserWindow({
     width: 453,
-    height: 376,
+    height: 406,
     frame: false,
     webPreferences: {
       nodeIntegration: true,
@@ -517,6 +517,7 @@ function initSetupListeners(window) {
     const resVal = {"resourceDirPath": data[0]};
     const astVal = data[1];
     const outVal = data[2];
+    const lang = data[3];
 
     //copy resources to new location
     await copyResourcesRecursive(sourceResourceDir, data[0]);
@@ -525,8 +526,19 @@ function initSetupListeners(window) {
     resourcePath = data[0];
 
     fs.writeFileSync(path.join(sourceResourceDir, 'resources.json'), JSON.stringify(resVal, null, '\t'));
-    updateJSON('assetsFolder', astVal);
-    updateJSON('outputFolder', outVal);
+
+    let res = fs.readFileSync(path.join(resourcePath, 'config.json'));
+    let json = JSON.parse(res);
+    json.extraction.lang = lang;
+    cache.extraction.lang = lang;
+
+    json.assetsFolder = astVal;
+    cache.assetsFolder = astVal;
+
+    json.outputFolder = outVal;
+    cache.outputFolder = outVal;
+
+    fs.writeFileSync(path.join(resourcePath, 'config.json'), JSON.stringify(json, null, '\t'), 'utf-8');
 
     //complete boot
     handleBootUp();

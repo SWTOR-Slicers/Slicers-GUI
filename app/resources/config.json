@@ -4,6 +4,7 @@
     "dataFolder": "",
     "extraction": {
         "extractionPreset": "All",
+        "lang": "en_us",
         "version": "Live"
     },
     "unpacker": {

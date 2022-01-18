@@ -72,7 +72,7 @@ const pts = document.getElementById('pts');
 
 //functions
 function initialize() {
-    initSubscribes();
+    initSubs();
     setConfigData();
 
     setupListeners();
@@ -303,7 +303,7 @@ function setupListeners() {
         });
     });
 }
-function initSubscribes() {
+function initSubs() {
     ipcRenderer.on('updateProgBar', (event, data) => { document.getElementById(data[0]).style.width = data[1]; });
     ipcRenderer.on('restoredMain', (event, data) => { if (settingsJSON.ambientMusic.enabled && !settingsJSON.ambientMusic.playMinimized) playAudio(); });
     ipcRenderer.on('minimizedMain', (event, data) => { if (settingsJSON.ambientMusic.enabled && !settingsJSON.ambientMusic.playMinimized) pauseAudio(); });
@@ -445,11 +445,14 @@ function initSubscribes() {
             live.checked = false;
             pts.checked = true;
         }
-
-        if (data[1]) {
-            extractionPreset.nextElementSibling.classList.add('disabled');
-        }
     });
+    ipcRenderer.on("calcDrop", (event, data) => {
+        if (data[0]) {
+            extractionPreset.nextElementSibling.classList.add('disabled');
+        } else {
+            extractionPreset.nextElementSibling.classList.remove('disabled');
+        }
+    })
     ipcRenderer.on('assetsFolderReply', (event, data) => {
         if (!data[1]) {
             document.getElementById('All').click();

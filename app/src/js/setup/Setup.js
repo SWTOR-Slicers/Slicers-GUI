@@ -11,6 +11,7 @@ const {ipcRenderer} = require('electron');
 const changeEvent = new Event('change');
 
 //config variables
+const langDrop = document.getElementById("langDrop");
 const resourceDirLabel = document.getElementById('resourceDirLabel');
 const resourceDirField = document.getElementById('resourceDirField');
 const resourceDirFieldBtn = document.getElementById('resourceDirFieldBtn');
@@ -28,7 +29,8 @@ const proceedToGUI = document.getElementById('proceedToGUI');
 const cache = {
     "resourceDirField": "",
     "assetsDirField": "",
-    "outputDirField": ""
+    "outputDirField": "",
+    "lang": "en_us"
 }
 //init
 function init() {
@@ -82,10 +84,12 @@ function initListeners() {
     outputDirFieldBtn.addEventListener('click', (e) => {
         ipcRenderer.send('showBootConfigDialog', 'outputDirBootConfig');
     });
+
+    langDrop.clickCallback = (e) => { cache["lang"] = e.currentTarget.innerHTML; }
     
     proceedToGUI.addEventListener('click', (e) => {
         updateResourcePath(resourceDirField.value);
-        ipcRenderer.send('proceedToMain', [resourceDirField.value, assetsDirField.value, outputDirField.value]);
+        ipcRenderer.send('proceedToMain', [resourceDirField.value, assetsDirField.value, outputDirField.value, cache["lang"]]);
     });
 }
 function initSubs() {

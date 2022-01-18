@@ -43,6 +43,15 @@
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
                     </div>
+                    <div class="config">
+                        <label class="config-option-label" for="langDrop" id="langDropLabel" style="margin-right: 50px;">Install Language: </label>
+                        <select name="langDrop" id="langDrop" is="drop-down">
+                            <option value="0">en_us</option>
+                            <option value="en_us">en_us</option>
+                            <option value="fr_fr">fr_fr</option>
+                            <option value="de_de">de_de</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="setup-proceed-container">
@@ -51,6 +60,7 @@
         </div>
     </div>
 
+    <script type="module" src="../api/components/drop-down/DropDown.js"></script>
     <script type="module" src="../api/components/alert/Alert.js"></script>
     <script type="module" src="../api/components/title-bar/WindowTitleBar.js"></script>
     <script type="module" src="../js/setup/Setup.js"></script>

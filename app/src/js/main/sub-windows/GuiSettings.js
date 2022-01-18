@@ -1,6 +1,8 @@
 import { getSetting, updateSettings } from "../../../api/config/settings/Settings.js";
+import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 
 const fs = require("fs");
+const path = require("path");
 const { ipcRenderer } = require("electron");
 const changeEvent = new Event('change');
 
@@ -8,11 +10,12 @@ let settingsJSON = getSetting();
 
 //DOM elements
 
+// General settings
+const langDrop = document.getElementById("langDrop");
+
 //Accessibility settings
 const alertNotif = document.getElementById('alertNotif');
-
 const useLabelTooltips = document.getElementById('useLabelTooltips');
-
 const usePathTooltips = document.getElementById('usePathTooltips');
 
 //Sound Settings
@@ -36,7 +39,9 @@ const cancelModalBackground = document.getElementById('cancelModalBackground');
 const confirmCancel = document.getElementById('confirmCancel');
 const cancelCancel = document.getElementById('cancelCancel');
 
+const configPath = path.normalize(path.join(resourcePath, "config.json"));
 const cache = {
+    "lang": "",
     "alerts": "",
     "useLabelTooltips": "",
     "usePathTooltips": "",
@@ -50,10 +55,22 @@ const cache = {
 let changedFields = [];
 
 async function loadCache() {
+    let res = fs.readFileSync(configPath);
+    let jsonObj = await JSON.parse(res);
+    cache["lang"] = jsonObj["extraction"]["lang"];
+
     cache.alerts = settingsJSON.alerts;
     cache.useLabelTooltips = settingsJSON.useLabelTooltips;
     cache.usePathTooltips = settingsJSON.usePathTooltips;
     cache.ambientMusic = settingsJSON.ambientMusic;
+
+    //set lang setting
+    langDrop.options[0].innerHTML = cache.lang;
+    console.log(cache);
+
+    langDrop.nextElementSibling.innerHTML = langDrop.options[0].innerHTML;
+    langDrop.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
+    langDrop.nextElementSibling.nextElementSibling.querySelector(`#${langDrop.options[0].innerHTML}`).classList.toggle('same-as-selected');
 
     //set allert settings
     alertNotif.options[0].innerHTML = cache.alerts;
@@ -87,24 +104,38 @@ async function loadCache() {
     playWhenMin.checked = cache['ambientMusic']['playMinimized'];
 }
 function updateCache(field, value, parent=null) {
-    if (field == "selected") {
-        if (value == "Custom") {
-            customMusicCont.style.display = '';
-        } else if (cache['ambientMusic']['selected'] == "Custom") {
-            customMusicCont.style.display = 'none';
-        }
-    }
-    if (parent) {
-        const data = [parent, field];
-        cache[parent][field] = value;
-        if (changedFields.filter(e => e.toString() === data.toString()).length == 1) {
-            changedFields.splice(changedFields.indexOf(data), 1);
-        } else {
-            changedFields.push(data);
-        }
-    } else {
+    if (field == "lang") {
+        let res = fs.readFileSync(configPath);
+        let json = JSON.parse(res);
+        json["extraction"][field] = value;
         cache[field] = value;
-        if (changedFields.includes(field)) changedFields.splice(changedFields.indexOf(field), 1); else changedFields.push(field);
+
+        fs.writeFileSync(configPath, JSON.stringify(json, null, '\t'), 'utf-8');
+        if (!changedFields.includes(field)) changedFields.push(field);
+    } else {
+        if (field == "selected") {
+            if (value == "Custom") {
+                customMusicCont.style.display = '';
+            } else if (cache['ambientMusic']['selected'] == "Custom") {
+                customMusicCont.style.display = 'none';
+            }
+        }
+        if (parent) {
+            const data = [parent, field];
+            cache[parent][field] = value;
+            if (changedFields.filter(e => e.toString() === data.toString()).length == 1) {
+                changedFields.splice(changedFields.indexOf(data), 1);
+            } else {
+                changedFields.push(data);
+            }
+        } else {
+            cache[field] = value;
+            if (field == "alerts") {
+                if (!changedFields.includes(field)) changedFields.push(field);
+            } else {
+                if (changedFields.includes(field)) changedFields.splice(changedFields.indexOf(field), 1); else changedFields.push(field);
+            }
+        }
     }
     if (changedFields.length > 0) {
         saveAll.classList.remove('disabled');
@@ -133,6 +164,9 @@ function initListeners() {
         saveAll.blur();
     });
     cancelAll.addEventListener('click', (e) => { cancelModalBackground.style.display = ''; });
+
+    //language
+    langDrop.clickCallback = (e) => { updateCache("lang", e.currentTarget.innerHTML); }
 
     //alerts
     alertNotif.clickCallback = (e) => { updateCache('alerts', e.currentTarget.innerHTML); }

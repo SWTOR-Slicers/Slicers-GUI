@@ -45,23 +45,58 @@ const cache = {
   dataFolder:"",
   extraction: {
     extractionPreset: "",
+    lang: "",
     version: ""
   }
 }
 const extractionPresetConsts = {
-  "Live": {
-    "names": [],
-    "dynamic": [],
-    "static": [],
-    "sound": [],
-    "gui": []
+  "en_us": {
+    "Live": {
+      "names": [],
+      "dynamic": [],
+      "static": [],
+      "sound": [],
+      "gui": []
+    },
+    "pts": {
+      "names": [],
+      "dynamic": [],
+      "static": [],
+      "sound": [],
+      "gui": []
+    }
   },
-  "pts": {
-    "names": [],
-    "dynamic": [],
-    "static": [],
-    "sound": [],
-    "gui": []
+  "fr_fr": {
+    "Live": {
+      "names": [],
+      "dynamic": [],
+      "static": [],
+      "sound": [],
+      "gui": []
+    },
+    "pts": {
+      "names": [],
+      "dynamic": [],
+      "static": [],
+      "sound": [],
+      "gui": []
+    }
+  },
+  "de_de": {
+    "Live": {
+      "names": [],
+      "dynamic": [],
+      "static": [],
+      "sound": [],
+      "gui": []
+    },
+    "pts": {
+      "names": [],
+      "dynamic": [],
+      "static": [],
+      "sound": [],
+      "gui": []
+    }
   }
 };
 
@@ -202,17 +237,14 @@ function initApp() {
   //grab resources
   let res = fs.readFileSync(path.join(resourcePath, "extractionPresets.json"));
   let json = JSON.parse(res);
-  extractionPresetConsts.Live.names = json.Live.names;
-  extractionPresetConsts.Live.dynamic = json.Live.dynamic;
-  extractionPresetConsts.Live.static = json.Live.static;
-  extractionPresetConsts.Live.sound = json.Live.sound;
-  extractionPresetConsts.Live.gui = json.Live.gui;
-  
-  extractionPresetConsts.pts.names = json.pts.names;
-  extractionPresetConsts.pts.dynamic = json.pts.dynamic;
-  extractionPresetConsts.pts.static = json.pts.static;
-  extractionPresetConsts.pts.sound = json.pts.sound;
-  extractionPresetConsts.pts.gui = json.pts.gui;
+
+  for (const langKVP of Object.entries(json)) {
+    for (const envKVP of Object.entries(langKVP[1])) {
+      for (const presetKVP of Object.entries(envKVP[1])) {
+        extractionPresetConsts[langKVP[0]][envKVP[0]][presetKVP[0]] = presetKVP[1];
+      }
+    }
+  }
 }
 function initMainListeners() {
   ipcMain.on('getWindowStatus', (event, data) => {
@@ -226,19 +258,13 @@ function initMainListeners() {
     cache.outputFolder = json.outputFolder;
     cache.dataFolder = json.dataFolder;
     cache.extraction.extractionPreset = json.extraction.extractionPreset;
+    cache.extraction.lang = json.extraction.lang;
     cache.extraction.version = json.extraction.version;
 
-    let dropIsEnabled = false;
-    if (cache.assetsFolder != "") {
-      if (fs.statSync(cache.assetsFolder).isDirectory()) {
-        const contents = fs.readdirSync(cache.assetsFolder);
-        dropIsEnabled = extractionPresetConsts[cache.extraction.version].names.every((elem) => {
-          return contents.includes(elem);
-        });
-      }
-    }
+    let dropIsEnabled = calcDrop();
 
-    mainWindow.webContents.send("sendConfigJSON", [json, !dropIsEnabled]);
+    mainWindow.webContents.send("sendConfigJSON", [json]);
+    mainWindow.webContents.send("calcDrop", [!dropIsEnabled]);
   });
   ipcMain.on("showDialog", async (event, data) => {
     dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] }).then(async (dir) => {
@@ -455,7 +481,7 @@ function initMainListeners() {
 function initSetupUI() {
   setupWindow = new BrowserWindow({
     width: 453,
-    height: 376,
+    height: 406,
     frame: false,
     webPreferences: {
       nodeIntegration: true,
@@ -491,6 +517,7 @@ function initSetupListeners(window) {
     const resVal = {"resourceDirPath": data[0]};
     const astVal = data[1];
     const outVal = data[2];
+    const lang = data[3];
 
     //copy resources to new location
     await copyResourcesRecursive(sourceResourceDir, data[0]);
@@ -499,8 +526,19 @@ function initSetupListeners(window) {
     resourcePath = data[0];
 
     fs.writeFileSync(path.join(sourceResourceDir, 'resources.json'), JSON.stringify(resVal, null, '\t'));
-    updateJSON('assetsFolder', astVal);
-    updateJSON('outputFolder', outVal);
+
+    let res = fs.readFileSync(path.join(resourcePath, 'config.json'));
+    let json = JSON.parse(res);
+    json.extraction.lang = lang;
+    cache.extraction.lang = lang;
+
+    json.assetsFolder = astVal;
+    cache.assetsFolder = astVal;
+
+    json.outputFolder = outVal;
+    cache.outputFolder = outVal;
+
+    fs.writeFileSync(path.join(resourcePath, 'config.json'), JSON.stringify(json, null, '\t'), 'utf-8');
 
     //complete boot
     handleBootUp();
@@ -684,6 +722,11 @@ function initSettingsListeners(window) {
       if (win) {
         win.webContents.send('updateSettings', [changedFields, data[1]]);
       }
+    }
+
+    if (changedFields.includes("lang")) {
+      cache["extraction"]["lang"] = data[1].lang;
+      mainWindow.webContents.send("calcDrop", [!calcDrop()]);
     }
 
     window.close();
@@ -1318,6 +1361,19 @@ async function updateJSON(param, val) {
   cache[param] = val;
 
   fs.writeFileSync(path.join(resourcePath, "config.json"), JSON.stringify(json, null, '\t'), 'utf-8');
+}
+function calcDrop() {
+  let isEnabled = false
+  if (cache.assetsFolder != "") {
+    if (fs.statSync(cache.assetsFolder).isDirectory()) {
+      const contents = fs.readdirSync(cache.assetsFolder);
+      isEnabled = extractionPresetConsts[cache.extraction.lang][cache.extraction.version].names.every((elem) => {
+        return contents.includes(elem);
+      });
+    }
+  }
+
+  return isEnabled;
 }
 
 async function readAllNodes(window) {

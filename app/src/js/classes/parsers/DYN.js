@@ -23,10 +23,10 @@ class DYNParser {
      */
     parseDYN(dynNodes) {
         for (const obj of dynNodes) {
-            obj.readNodes();
-            const dynVisualList = obj.fields.value["dynVisualList"];
+            obj.readNode();
+            const dynVisualList = obj.node.getField("dynVisualList");
             if (dynVisualList != null) {
-                for (const dynVisualListItem of dynVisualList) {
+                for (const dynVisualListItem of dynVisualList.list.value) {
                     const visual = (dynVisualListItem.value["dynVisualFqn"] ?? "").toLowerCase();
                     if (visual != "") {
                         const output = visual.replaceAll("\\", "/").replaceAll("//", "/");

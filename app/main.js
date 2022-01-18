@@ -274,7 +274,7 @@ function initMainListeners() {
             let dropIsEnabled = false;
             if (fs.statSync(dir.filePaths[0]).isDirectory()) {
               const contents = fs.readdirSync(dir.filePaths[0]);
-              dropIsEnabled = extractionPresetConsts[cache.extraction.version].names.every((elem) => {
+              dropIsEnabled = extractionPresetConsts[cache.extraction.lang][cache.extraction.version].names.every((elem) => {
                 return contents.includes(elem);
               });
             }
@@ -300,7 +300,7 @@ function initMainListeners() {
         let dropIsEnabled = false;
         if (exists && fs.statSync(data[1]).isDirectory()) {
           const contents = fs.readdirSync(data[1]);
-          dropIsEnabled = extractionPresetConsts[cache.extraction.version].names.every((elem) => {
+          dropIsEnabled = extractionPresetConsts[cache.extraction.lang][cache.extraction.version].names.every((elem) => {
             return contents.includes(elem);
           });
         }
@@ -458,7 +458,7 @@ function initMainListeners() {
     let dropIsEnabled = false;
     if (fs.statSync(cache.assetsFolder).isDirectory()) {
       const contents = fs.readdirSync(cache.assetsFolder);
-      dropIsEnabled = extractionPresetConsts[cache.extraction.version].names.every((elem) => {
+      dropIsEnabled = extractionPresetConsts[cache.extraction.lang][cache.extraction.version].names.every((elem) => {
         return contents.includes(elem);;
       });
     }
@@ -1277,7 +1277,7 @@ async function extract(progBarId) {
     const lastPath = path.normalize(path.join(temp, `../${cache.extraction.version == 'Live' ? 'swtor' : 'publictest'}/retailclient/main_gfx_1.tor`));
     if (cache.extraction.extractionPreset != 'All' && cache.extraction.extractionPreset != 'Unnamed') {
       values = [];
-      const tors = extractionPresetConsts[cache.extraction.version][cache.extraction.extractionPreset.toLowerCase()];
+      const tors = extractionPresetConsts[cache.extraction.lang][cache.extraction.version][cache.extraction.extractionPreset.toLowerCase()];
       for (const tor of tors) {
         values.push(path.join(temp, tor));
       }
@@ -1286,7 +1286,7 @@ async function extract(progBarId) {
       }
     } else {
       values = [];
-      const tors = extractionPresetConsts[cache.extraction.version]["names"];
+      const tors = extractionPresetConsts[cache.extraction.lang][cache.extraction.version]["names"];
       for (const tor of tors) {
         if (fs.existsSync(path.join(cache['assetsFolder'], tor))) {
           values.push(path.join(temp, tor));
@@ -1393,7 +1393,7 @@ async function readAllDataPrep(window) {
 
     let values = [];
     const lastPath = path.normalize(path.join(cache.assetsFolder, `../${cache.extraction.version == 'Live' ? 'swtor' : 'publictest'}/retailclient/main_gfx_1.tor`));
-    const tors = extractionPresetConsts[cache.extraction.version]["names"];
+    const tors = extractionPresetConsts[cache.extraction.lang][cache.extraction.version]["names"];
     for (const tor of tors) {
       values.push(path.join(cache.assetsFolder, tor));
     }

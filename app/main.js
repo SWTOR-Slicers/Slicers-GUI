@@ -1,4 +1,7 @@
 const {app, BrowserWindow, dialog, ipcMain, screen, shell} = require('electron');
+
+require('./src/js/classes/MainDom.js'); // Dom Manager for main process
+
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 const fs = require('fs');

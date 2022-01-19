@@ -45,9 +45,9 @@ class DYNParser {
                 }
             }
 
-            const dynLightNameToProperty = obj.fields.value["dynLightNameToProperty"];
+            const dynLightNameToProperty = obj.node.getField("dynLightNameToProperty");
             if (dynLightNameToProperty != null) {
-                for (const dynLightNameToPropertyItem of dynLightNameToProperty) {
+                for (const dynLightNameToPropertyItem of dynLightNameToProperty.list.value) {
                     const ramp = (dynLightNameToPropertyItem.value["dynLightRampMap"] ?? "").toLowerCase();
                     const illum = (dynLightNameToPropertyItem.value["dynLightIlluminationMap"] ?? "").toLowerCase();
                     const fall = (dynLightNameToPropertyItem.value["dynLightFalloff"] ?? "").toLowerCase();

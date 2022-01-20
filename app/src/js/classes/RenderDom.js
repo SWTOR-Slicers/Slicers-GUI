@@ -34,7 +34,8 @@ class Dom {
 
     constructor() {
         // assets
-        this.assets = [];
+        this.archives = {}
+        this.assets = {};
 
         // GOM Tree
         this._dom = {};
@@ -42,7 +43,7 @@ class Dom {
         this.protos = [];
 
         // status props
-        this.assetsLoad = "0.0%";
+        this.archivesLoad = "0.0%";
         this._domLoad = "0.0%";
         this.nodesLoad = "0.0%";
         this.protosLoad = "0.0%";
@@ -60,16 +61,23 @@ class Dom {
         this.#gomCompleteCheck = null;
     }
 
+    // get assetsProgress() { return this.#assetsProgress; }
+    // get assetsComplete() { return this.#assetsComplete; }
+    // get domUpdate() { return this.#domUpdate; }
+    // get nodesUpdate() { return this.#nodesUpdate; }
+    // get protosUpdate() { return this.#protosUpdate; }
+    // get gomCompleteCheck() { return this.#gomCompleteCheck; }
+
     set assetsProgress(newHook) {
         this.#assetsProgress = (progress) => {
-            this.assetsLoad = progress;
+            this.archivesLoad = progress;
             newHook(progress);
         }
     }
 
     set assetsComplete(newHook) {
         this.#assetsComplete = () => {
-            if (this.assetsLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
+            if (this.archivesLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
                 this.hasLoaded = true;
                 this.isLoading = false;
             }
@@ -100,7 +108,7 @@ class Dom {
 
     set gomCompleteCheck(newHook) {
         this.#gomCompleteCheck = () => {
-            if (this.assetsLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
+            if (this.archivesLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
                 this.hasLoaded = true;
                 this.isLoading = false;
             }
@@ -181,6 +189,7 @@ class Dom {
                     this.#assetsProgress(`${e.data.data.numLoaded / e.data.data.totalTors * 100}%`);
                     break;
                 case "complete":
+                    this.archives = e.data.data.archives;
                     this.#assetsComplete(e.data.data.archives);
                     break;
             }
@@ -196,7 +205,11 @@ class Dom {
      * @param  {UpdateHooks} hooks
      */
     hook(hooks) {
-        this.assetsProgress = hooks.assetHooks.assetsProgress;
+        this.#assetsProgress = (progress) => {
+            this.archivesLoad = progress;
+            hooks.assetHooks.assetsProgress(progress);
+        }
+        // this.assetsProgress = hooks.assetHooks.assetsProgress;
         this.assetsComplete = hooks.assetHooks.assetsComplete;
         
         this.domUpdate = hooks.gomHooks.domUpdate;
@@ -221,6 +234,8 @@ class Dom {
     toJSON() {
         return {
             "_class": "DOM",
+            "archives": this.archives,
+            "assets": this.assets,
             "_dom": this._dom,
             "nodes": this.nodes,
             "protos": this.protos,
@@ -239,6 +254,7 @@ class Dom {
         if (json._class === "DOM") {
             const res = new Dom();
             res.archives = json.archives;
+            res.assets = json.assets;
             res._dom = json._dom;
             res.nodes = json.nodes;
             res.protos = json.protos;
@@ -267,10 +283,23 @@ class RenderDomFactory {
         return this.DOM;
     }
 }
-
+const ignore = [
+    "assetsProgress",
+    "assetsComplete",
+    "domUpdate",
+    "nodesUpdate",
+    "protosUpdate",
+    "gomCompleteCheck"
+]
 const RenderDom = new Proxy(RenderDomFactory.getDom(), {
+    get(target, prop, receiver) {
+        let value = Reflect.get(...arguments);
+        return typeof value == 'function' ? value.bind(target) : value;
+    },
     set: (target, prop, val) => {
-        if (prop.includes("Load")) {
+        if (ignore.includes(prop)) {
+            Reflect.set(target, prop, val);
+        } else if (prop.includes("Load")) {
             Reflect.set(target, prop, val);
         } else if (prop.includes("update_")) {
             const trueProp = prop.substring(7);

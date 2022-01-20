@@ -68,7 +68,6 @@ class Dom {
 const { ipcMain } = require("electron");
 
 const updateSubs = [];
-const progressSubs = [];
 const MainDom = new Dom();
 
 // main listeners

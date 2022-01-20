@@ -55,8 +55,6 @@ async function init() {
     initSubs();
     initHashWorker();
     globalThis.DOM.initWorkers(resourcePath, sourcePath);
-    // initNodeWorker();
-    // initAssetWorker();
 }
 
 // Caching functions
@@ -78,100 +76,6 @@ function updateCache(field, val, sec) {
     }
 }
 
-function initNodeWorker() {
-    gomWorker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "GomWorker.js"), {
-        type: "module"
-    });
-
-    gomWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    gomWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    gomWorker.onmessage = (e) => {
-        switch (e.data.message) {
-            case "DomElements":
-                hashWorker.postMessage({
-                    "message": "setDOM",
-                    "data": e.data.data
-                });
-                progressBar__clientGOM.style.width = '100%';
-                break;
-            case "NODES":
-                hashWorker.postMessage({
-                    "message": "nodesProgress",
-                    "data": {
-                        "nodes": e.data.data,
-                        "isBkt": true
-                    }
-                });
-                bktsLoaded++;
-                progressBar__baseNodes.style.width = `${bktsLoaded / 500 * 100}%`;
-                break;
-            case "PROTO":
-                hashWorker.postMessage({
-                    "message": "nodesProgress",
-                    "data": {
-                        "nodes": e.data.data.nodes,
-                        "isBkt": false
-                    }
-                });
-                progressBar__protoNodes.style.width = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
-                break;
-        }
-        
-        if (progressBar__assets.style.width == '100%' &&
-            progressBar__baseNodes.style.width == '100%' &&
-            progressBar__clientGOM.style.width == '100%' &&
-            progressBar__protoNodes.style.width == '100%') {
-            document.querySelector('.header-container').innerHTML = 'Loading Complete!';
-            spinner.classList.toggle('hidden');
-            generate.classList.toggle('hidden');
-            genHashes.innerHTML = 'Generate';
-            genHashes.classList.toggle('disabled');
-        }
-    }
-
-    gomWorker.postMessage({
-        "message": "init",
-        "data": [ resourcePath, sourcePath ]
-    });
-}
-function initAssetWorker() {
-    assetWorker = new Worker(path.join(sourcePath, "js", "viewers", "asset-viewer", "AssetWorker.js"), {
-        type: "module"
-    });
-
-    assetWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    assetWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    assetWorker.onmessage = (e) => {
-        switch (e.data.message) {
-            case "progress":
-                progressBar__assets.style.width = `${e.data.data.numLoaded / e.data.data.totalTors * 100}%`;
-                break;
-            case "complete":
-                archives = e.data.data.archives;
-                hashWorker.postMessage({
-                    "message": "archivesComplete",
-                    "data": archives
-                });
-                if (progressBar__assets.style.width == '100%' &&
-                    progressBar__baseNodes.style.width == '100%' &&
-                    progressBar__clientGOM.style.width == '100%' &&
-                    progressBar__protoNodes.style.width == '100%') {
-
-                    document.querySelector('.header-container').innerHTML = 'Loading Complete!';
-                    spinner.classList.toggle('hidden');
-                    generate.classList.toggle('hidden');
-                    genHashes.innerHTML = 'Generate';
-                    genHashes.classList.toggle('disabled');
-                }
-                break;
-        }
-    }
-
-    assetWorker.postMessage({
-        "message": "init",
-        "data": resourcePath
-    });
-}
 function initHashWorker() {
     hashWorker = new Worker(path.join(sourcePath, "js", "extraction", "gen-hash", "HashWorker.js"), {
         type: "module"
@@ -293,10 +197,10 @@ function initSubs() {
         const json = JSON.parse(dat);
         globalThis.DOM.hook({
             assetHooks: {
-                assetProgress: (progress) => {
+                assetsProgress: (progress) => {
                     progressBar__assets.style.width = progress;
                 },
-                assetComplete: (data) => {
+                assetsComplete: (data) => {
                     archives = data;
                     hashWorker.postMessage({
                         "message": "archivesComplete",
@@ -353,19 +257,6 @@ function initSubs() {
             }
         });
         globalThis.DOM.load(json);
-
-        // gomWorker.postMessage({
-        //     "message": 'loadNodes',
-        //     "data": json.nodeTors,
-        //     "prots": true
-        // });
-
-        // assetWorker.postMessage({
-        //     "message": 'loadAssets',
-        //     "data": {
-        //         "torFiles": json.torFiles
-        //     }
-        // });
     });
 }
 

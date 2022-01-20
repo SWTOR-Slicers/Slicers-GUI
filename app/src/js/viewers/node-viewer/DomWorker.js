@@ -1,6 +1,6 @@
 import { hashlittle2, uint32ToUint64 } from "../../Util.js";
 import { GOM } from "../../classes/util/Gom.js";
-import { DomLoader } from "../../classes/DomLoaders.js";
+import { DomLoader } from "../../classes/dataObjectModel/DomLoaders.js";
 
 const path = require('path');
 const zlib = require('zlib');

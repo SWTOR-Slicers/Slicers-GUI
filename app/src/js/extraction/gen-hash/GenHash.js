@@ -54,8 +54,9 @@ async function init() {
     initListeners();
     initSubs();
     initHashWorker();
-    initNodeWorker();
-    initAssetWorker();
+    globalThis.DOM.initWorkers(resourcePath, sourcePath);
+    // initNodeWorker();
+    // initAssetWorker();
 }
 
 // Caching functions
@@ -290,17 +291,81 @@ function initSubs() {
     ipcRenderer.on('dataTorPaths', (event, data) => {
         const dat = fs.readFileSync(data[0]);
         const json = JSON.parse(dat);
-        gomWorker.postMessage({
-            "message": 'loadNodes',
-            "data": json.nodeTors,
-            "prots": true
-        });
-        assetWorker.postMessage({
-            "message": 'loadAssets',
-            "data": {
-                "torFiles": json.torFiles
+        globalThis.DOM.hook({
+            assetHooks: {
+                assetProgress: (progress) => {
+                    progressBar__assets.style.width = progress;
+                },
+                assetComplete: (data) => {
+                    archives = data;
+                    hashWorker.postMessage({
+                        "message": "archivesComplete",
+                        "data": archives
+                    });
+                    if (progressBar__assets.style.width == '100%' &&
+                        progressBar__baseNodes.style.width == '100%' &&
+                        progressBar__clientGOM.style.width == '100%' &&
+                        progressBar__protoNodes.style.width == '100%') {
+    
+                        document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+                        spinner.classList.toggle('hidden');
+                        generate.classList.toggle('hidden');
+                        genHashes.innerHTML = 'Generate';
+                        genHashes.classList.toggle('disabled');
+                    }
+                }
+            },
+            gomHooks: {
+                domUpdate: (progress, data) => {
+                    hashWorker.postMessage({
+                        "message": "setDOM",
+                        "data": data
+                    });
+                    progressBar__clientGOM.style.width = progress;
+                },
+                nodesUpdate: (progress, data) => {
+                    hashWorker.postMessage({
+                        "message": "nodesProgress",
+                        "data": data
+                    });
+                    progressBar__baseNodes.style.width = progress;
+                },
+                protosUpdate: (progress, data) => {
+                    hashWorker.postMessage({
+                        "message": "nodesProgress",
+                        "data": data
+                    });
+                    progressBar__protoNodes.style.width = progress;
+                },
+                gomCompleteCheck: () => {
+                    if (progressBar__assets.style.width == '100%' &&
+                        progressBar__baseNodes.style.width == '100%' &&
+                        progressBar__clientGOM.style.width == '100%' &&
+                        progressBar__protoNodes.style.width == '100%') {
+
+                        document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+                        spinner.classList.toggle('hidden');
+                        generate.classList.toggle('hidden');
+                        genHashes.innerHTML = 'Generate';
+                        genHashes.classList.toggle('disabled');
+                    }
+                }
             }
         });
+        globalThis.DOM.load(json);
+
+        // gomWorker.postMessage({
+        //     "message": 'loadNodes',
+        //     "data": json.nodeTors,
+        //     "prots": true
+        // });
+
+        // assetWorker.postMessage({
+        //     "message": 'loadAssets',
+        //     "data": {
+        //         "torFiles": json.torFiles
+        //     }
+        // });
     });
 }
 

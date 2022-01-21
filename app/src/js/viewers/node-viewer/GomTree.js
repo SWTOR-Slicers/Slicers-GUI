@@ -310,9 +310,18 @@ class NodeTree {
 class GomTree {
     constructor (treeList, viewContainer, dataContainer) {
         this.nodesByFqn = new NodesByFqn();
+        this.nodesList = {};
+        this.loadedBuckets = 0;
         this.viewContainer = viewContainer;
         this.dataContainer = dataContainer;
         this.nodeTree = new NodeTree(treeList, viewContainer, dataContainer, this.nodesByFqn);
+    }
+
+    static fromStatic(sGTree, treeList, viewContainer, dataContainer) {
+        const res = new GomTree(treeList, viewContainer, dataContainer);
+        res.nodesByFqn = sGTree.nodesByFqn;
+        res.nodesList = sGTree.nodesList;
+        res.loadedBuckets = sGTree.loadedBuckets;
     }
 
     /**

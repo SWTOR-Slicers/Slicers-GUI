@@ -31,11 +31,7 @@ const cache = {
     "checked": {}
 }
 
-let gomWorker;
-let assetWorker;
 let hashWorker;
-let bktsLoaded = 0;
-let archives = [];
 
 async function init() {
     await loadCache();
@@ -200,11 +196,10 @@ function initSubs() {
                 assetsProgress: (progress) => {
                     progressBar__assets.style.width = progress;
                 },
-                assetsComplete: (data) => {
-                    archives = data;
+                assetsComplete: () => {
                     hashWorker.postMessage({
                         "message": "archivesComplete",
-                        "data": archives
+                        "data": globalThis.DOM.archives
                     });
                     if (progressBar__assets.style.width == '100%' &&
                         progressBar__baseNodes.style.width == '100%' &&
@@ -220,10 +215,10 @@ function initSubs() {
                 }
             },
             gomHooks: {
-                domUpdate: (progress, data) => {
+                domUpdate: (progress) => {
                     hashWorker.postMessage({
                         "message": "setDOM",
-                        "data": data
+                        "data": globalThis.DOM._dom
                     });
                     progressBar__clientGOM.style.width = progress;
                 },

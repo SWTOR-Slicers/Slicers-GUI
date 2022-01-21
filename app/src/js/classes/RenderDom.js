@@ -1,3 +1,9 @@
+import { StaticGomTree, nodeFolderSort } from "../viewers/node-viewer/GomTree.js";
+import { NodeEntr } from "./formats/Node.js";
+
+import { inflateZlib } from "../Util.js";
+import { Archive } from "./formats/Archive.js";
+
 /**
  * AssetsUpdateHooks type definition
  * @typedef {Object} AssetsUpdateHooks
@@ -22,7 +28,8 @@
  */
 
 let gomWorker, assetWorker;
-let bktsLoaded = 0;
+
+let decompressZlib = (params) => {}
 
 class Dom {
     #assetsProgress;
@@ -34,13 +41,12 @@ class Dom {
 
     constructor() {
         // assets
-        this.archives = {}
+        this.archives = {};
         this.assets = {};
 
         // GOM Tree
         this._dom = {};
-        this.nodes = [];
-        this.protos = [];
+        this.gomTree = new StaticGomTree();
 
         // status props
         this.archivesLoad = "0.0%";
@@ -61,51 +67,49 @@ class Dom {
         this.#gomCompleteCheck = null;
     }
 
-    // get assetsProgress() { return this.#assetsProgress; }
-    // get assetsComplete() { return this.#assetsComplete; }
-    // get domUpdate() { return this.#domUpdate; }
-    // get nodesUpdate() { return this.#nodesUpdate; }
-    // get protosUpdate() { return this.#protosUpdate; }
-    // get gomCompleteCheck() { return this.#gomCompleteCheck; }
-
+    /**
+     * @param {Function} newHook
+     */
     set assetsProgress(newHook) {
         this.#assetsProgress = (progress) => {
-            this.archivesLoad = progress;
             newHook(progress);
         }
     }
-
+    /**
+     * @param {Function} newHook
+     */
     set assetsComplete(newHook) {
         this.#assetsComplete = () => {
-            if (this.archivesLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
-                this.hasLoaded = true;
-                this.isLoading = false;
-            }
             newHook();
         }
     }
-
+    /**
+     * @param {Function} newHook
+     */
     set domUpdate(newHook) {
         this.#domUpdate = (progress) => {
-            this._domLoad = progress;
             newHook(progress);
         }
     }
-
+    /**
+     * @param {Function} newHook
+     */
     set nodesUpdate(newHook) {
-        this.#nodesUpdate = (progress) => {
-            this.nodesLoad = progress;
-            newHook(progress);
+        this.#nodesUpdate = (progress, data) => {
+            newHook(progress, data);
         }
     }
-
+    /**
+     * @param {Function} newHook
+     */
     set protosUpdate(newHook) {
-        this.#protosUpdate = (progress) => {
-            this.protosLoad = progress;
-            newHook(progress);
+        this.#protosUpdate = (progress, data) => {
+            newHook(progress, data);
         }
     }
-
+    /**
+     * @param {Function} newHook
+     */
     set gomCompleteCheck(newHook) {
         this.#gomCompleteCheck = () => {
             if (this.archivesLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
@@ -135,6 +139,10 @@ class Dom {
 
     initWorkers(resourcePath, sourcePath) {
         if (!this.isLoading) {
+            decompressZlib = (params) => {
+                const ret = inflateZlib(path.dirname(path.join(resourcePath, "config.json")), params);
+                return ret;
+            }
             this.initAssetWorker(resourcePath, sourcePath);
             this.initGomWorker(resourcePath, sourcePath);
         }
@@ -150,21 +158,57 @@ class Dom {
         gomWorker.onmessage = (e) => {
             switch (e.data.message) {
                 case "DomElements":
-                    this.#domUpdate('100%', e.data.data);
+                    this._domLoad = "100%";
+                    this._dom = e.data.data;
+                    this.#domUpdate('100%');
                     break;
-                case "NODES":
-                    bktsLoaded++;
-                    this.#nodesUpdate(`${bktsLoaded / 500 * 100}%`, {
+                case "NODES": {
+                    for (const n of e.data.data) {
+                        const node = new NodeEntr(n.node, n.torPath, this._dom, decompressZlib);
+                        this.gomTree.addNode(node);
+                    }
+                    this.gomTree.loadedBuckets++;
+                    ipcRenderer.sendSync("domUpdate", {
+                        "prop": "loadedBuckets",
+                        "value": this.gomTree.loadedBuckets
+                    });
+                    this.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+
+                    const progress = `${this.gomTree.loadedBuckets / 500 * 100}%`;
+                    this.nodesLoad = progress;
+                    this.nodes.push(...e.data.data);
+                    this.nodes = Array.from(this.nodes);
+
+                    const ext = {
                         "nodes": e.data.data,
                         "isBkt": true
+                    };
+                    ipcRenderer.sendSync("domUpdate", {
+                        "prop": "nodes",
+                        "value": ext
                     });
+                    this.#nodesUpdate(progress, ext);
                     break;
-                case "PROTO":
-                    this.#protosUpdate(`${e.data.data.numLoaded / e.data.data.total * 100}%`, {
-                        "nodes": e.data.data.nodes,
-                        "isBkt": false
+                }
+                case "PROTO": {
+                    for (const n of e.data.data.nodes) {
+                        const testProto = new NodeEntr(n.node, n.torPath,this._dom, decompressZlib);
+                        this.gomTree.addNode(testProto);
+                    }
+                    this.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+
+                    const progress = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
+                    this.protosLoad = progress;
+                    this.protos.push(...e.data.data.nodes);
+                    this.protos = Array.from(this.protos);
+
+                    ipcRenderer.sendSync("domUpdate", {
+                        "prop": "nodes",
+                        "value": e.data.data
                     });
+                    this.#protosUpdate(progress, e.data.data);
                     break;
+                }
             }
             
             this.#gomCompleteCheck();
@@ -186,11 +230,16 @@ class Dom {
         assetWorker.onmessage = (e) => {
             switch (e.data.message) {
                 case "progress":
+                    this.archivesLoad = `${e.data.data.numLoaded / e.data.data.totalTors * 100}%`;
                     this.#assetsProgress(`${e.data.data.numLoaded / e.data.data.totalTors * 100}%`);
                     break;
                 case "complete":
+                    if (this.archivesLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
+                        this.hasLoaded = true;
+                        this.isLoading = false;
+                    }
                     this.archives = e.data.data.archives;
-                    this.#assetsComplete(e.data.data.archives);
+                    this.#assetsComplete();
                     break;
             }
         }
@@ -205,11 +254,7 @@ class Dom {
      * @param  {UpdateHooks} hooks
      */
     hook(hooks) {
-        this.#assetsProgress = (progress) => {
-            this.archivesLoad = progress;
-            hooks.assetHooks.assetsProgress(progress);
-        }
-        // this.assetsProgress = hooks.assetHooks.assetsProgress;
+        this.assetsProgress = hooks.assetHooks.assetsProgress;
         this.assetsComplete = hooks.assetHooks.assetsComplete;
         
         this.domUpdate = hooks.gomHooks.domUpdate;
@@ -231,16 +276,39 @@ class Dom {
         }
     }
 
+    detHandler(prop, data) {
+        switch (prop) {
+            case "archivesLoad":
+                if (this.archivesLoad === "100%") {
+                    return (this.#assetsComplete) ? () => { this.#assetsComplete() } : null;
+                } else {
+                    return (this.#assetsProgress) ? () => { this.#assetsProgress(this.archivesLoad) } : null;
+                }
+            case "_domLoad": {
+                return (this.#domUpdate) ? () => { this.#domUpdate(this._domLoad) } : null;
+            }
+            case "nodesLoad": {
+                return (this.#nodesUpdate) ? () => { this.#nodesUpdate(this.nodesLoad, data) } : null;
+            }
+            case "protosLoad": {
+                return (this.#protosUpdate) ? () => { this.#protosUpdate(this.protosLoad, data) } : null;
+            }
+        }
+    
+        return null;
+    }
+
     toJSON() {
         return {
             "_class": "DOM",
             "archives": this.archives,
             "assets": this.assets,
+
             "_dom": this._dom,
-            "nodes": this.nodes,
-            "protos": this.protos,
+            "nodesList": this.gomTree.nodesList,
 
             "archivesLoad": this.archivesLoad,
+
             "_domLoad": this._domLoad,
             "nodesLoad": this.nodesLoad,
             "protosLoad": this.protosLoad,
@@ -255,14 +323,24 @@ class Dom {
             const res = new Dom();
             res.archives = json.archives;
             res.assets = json.assets;
+
             res._dom = json._dom;
-            res.nodes = json.nodes;
-            res.protos = json.protos;
+            for (const n of json.nodesList) {
+                const node = new NodeEntr(n.node, n.torPath, res._dom, decompressZlib);
+                res.gomTree.addNode(node);
+
+                res.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+            }
+            res.gomTree.loadedBuckets = json.nodesList.length > 0 ? 500 : 0;
 
             res.archivesLoad = json.archivesLoad;
+
             res._domLoad = json._domLoad;
             res.nodesLoad = json.nodesLoad;
             res.protosLoad = json.protosLoad;
+
+            res.isLoading = json.isLoading;
+            res.hasLoaded = json.hasLoaded;
 
             return res;
         } else {
@@ -290,7 +368,7 @@ const ignore = [
     "nodesUpdate",
     "protosUpdate",
     "gomCompleteCheck"
-]
+];
 const RenderDom = new Proxy(RenderDomFactory.getDom(), {
     get(target, prop, receiver) {
         let value = Reflect.get(...arguments);
@@ -306,10 +384,17 @@ const RenderDom = new Proxy(RenderDomFactory.getDom(), {
 
             Reflect.set(target, trueProp, val);
         } else {
-            ipcRenderer.sendSync("domUpdate", {
-                "prop": prop,
-                "value": val
-            });
+            if (prop === "Archive") {
+                ipcRenderer.sendSync("domUpdate", {
+                    "prop": prop,
+                    "value": JSON.stringify(val)
+                });
+            } else {
+                ipcRenderer.sendSync("domUpdate", {
+                    "prop": prop,
+                    "value": val
+                });
+            }
 
             Reflect.set(target, prop, val);
         }
@@ -320,7 +405,36 @@ const RenderDom = new Proxy(RenderDomFactory.getDom(), {
 
 // render listeners
 ipcRenderer.on("mainUpdated", (event, data) => {
-    RenderDom[`update_${data.prop}`] = data.value;
+    let dat = data.value
+    
+    if (data.prop === "nodes" || data.prop === "protos") {
+        if (data.ext.isBkt) {
+            for (const n of data.value.nodes) {
+                const node = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
+                RenderDom.gomTree.addNode(node);
+            }
+            RenderDom.gomTree.loadedBuckets++;
+            RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+        } else {
+            for (const n of data.value.nodes) {
+                const testProto = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
+                RenderDom.gomTree.addNode(testProto);
+            }
+            RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+        }
+    } else {
+        if (prop === "archives") {
+            dat.map((dat) => {
+                Archive.fromJSON(dat);
+            });
+        }
+        RenderDom[`update_${data.prop}`] = dat;
+        
+        if (data.prop.includes("Load")) {
+            const handler = RenderDom.detHandler(data.prop, data.value);
+            if (handler) handler();
+        }
+    }
 });
 
 export { RenderDom };

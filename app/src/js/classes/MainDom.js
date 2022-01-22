@@ -80,19 +80,20 @@ ipcMain.on("domUpdate", (event, data) => {
     switch (data.prop) {
         case "nodes":
         case "protos": {
-            if (val.isBkt) {
-                
-                MainDom.loadedBuckets++;
-            } else {
-                
-                RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+            let tempDict = {};
+            for (const n of val.nodes) {
+                const t = {};
+                t[n.fqn] = n
+                Object.assign(tempDict, t);
             }
+            MainDom.nodesList = tempDict;
+            if (val.isBkt) MainDom.loadedBuckets++;
         }
         case "archives": {
-
+            MainDom.archives = val;
         }
         default: {
-            MainDom[data.prop] = data.val;
+            MainDom[data.prop] = val;
         }
     }
 

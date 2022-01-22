@@ -321,13 +321,14 @@ class Dom {
             res.assets = json.assets;
 
             res._dom = json._dom;
-            for (const n of json.nodesList) {
+            const itter = Object.values(json.nodesList);
+            for (const n of itter) {
                 const node = new NodeEntr(n.node, n.torPath, res._dom, decompressZlib);
                 res.gomTree.addNode(node);
 
                 res.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
             }
-            res.gomTree.loadedBuckets = json.nodesList.length > 0 ? 500 : 0;
+            res.gomTree.loadedBuckets = itter.length > 0 ? 500 : 0;
 
             res.archivesLoad = json.archivesLoad;
 
@@ -404,15 +405,15 @@ ipcRenderer.on("mainUpdated", (event, data) => {
     let dat = data.value
     
     if (data.prop === "nodes" || data.prop === "protos") {
-        if (data.value.isBkt) {
-            for (const n of data.value.nodes) {
+        if (dat.isBkt) {
+            for (const n of dat.nodes) {
                 const node = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
                 RenderDom.gomTree.addNode(node);
             }
             RenderDom.gomTree.loadedBuckets++;
             RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
         } else {
-            for (const n of data.value.nodes) {
+            for (const n of dat.nodes) {
                 const testProto = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
                 RenderDom.gomTree.addNode(testProto);
             }

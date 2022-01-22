@@ -104,6 +104,7 @@ const extractionPresetConsts = {
 };
 
 function initGlobalListeners() {
+  // window ccontrols
   ipcMain.on('minimizeWindow', (event, data) => {
     const win = getWindowFromArg(data);
     win.minimize();
@@ -126,7 +127,10 @@ function initGlobalListeners() {
         event.returnValue = fs.existsSync(path.join(cache['assetsFolder'], `swtor_${cache.extraction.version == 'Live' ? "main" : "test"}_systemgenerated_gom_1.tor`)) && fs.existsSync(path.join(cache['assetsFolder'], `swtor_${cache.extraction.version == 'Live' ? "main" : "test"}_global_1.tor`));
         break;
     }
-  })
+  });
+
+  // utility
+  ipcMain.on('readAllDataPrep', (event, data) => { readAllDataPrep(event.sender); });
 }
 function getWindowFromArg(arg) {
   let win;
@@ -1119,9 +1123,7 @@ function initNodeViewer () {
   
   initNodeViewerListeners(nodeViewerWin);
 }
-function initNodeViewerListeners(window) {
-  ipcMain.on('readAllNodes', (event, data) => { readAllNodes(window); });
-}
+function initNodeViewerListeners(window) {}
 //Gen Hash
 function initGenHash () {
   genHashWin = new BrowserWindow({
@@ -1158,7 +1160,6 @@ function initGenHash () {
   initGenHashListeners(genHashWin);
 }
 function initGenHashListeners(window) {
-  ipcMain.on('readAllDataHashPrep', (event, data) => { readAllDataPrep(window); });
   ipcMain.on('genHash', (event, data) => {
     mainWindow.webContents.send('genHashStarted');
   });
@@ -1380,17 +1381,7 @@ function calcDrop() {
   return isEnabled;
 }
 
-async function readAllNodes(window) {
-  try {
-    let torFile = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_global_1.tor' : 'swtor_test_main_global_1.tor');
-    let torFile2 = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_systemgenerated_gom_1.tor' : 'swtor_test_main_systemgenerated_gom_1.tor');
-
-    window.webContents.send('nodeTorPath', [torFile, torFile2]);
-  } catch (err) {
-    console.log(err);
-  }
-}
-async function readAllDataPrep(window) {
+async function readAllDataPrep(webCont) {
   try {
     let torFile = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_global_1.tor' : 'swtor_test_main_global_1.tor');
     let torFile2 = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_systemgenerated_gom_1.tor' : 'swtor_test_main_systemgenerated_gom_1.tor');
@@ -1415,7 +1406,7 @@ async function readAllDataPrep(window) {
       "torFiles": values
     }));
 
-    window.webContents.send('dataTorPaths', [torsName]);
+    webCont.send('dataTorPaths', [torsName]);
   } catch (err) {
     console.log(err);
   }

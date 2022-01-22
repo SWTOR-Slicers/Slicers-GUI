@@ -170,7 +170,7 @@ function initListeners() {
             document.querySelector('.header-container').innerHTML = 'Loading Data...';
             genHashes.classList.toggle('disabled');
         
-            ipcRenderer.send('readAllDataHashPrep');
+            ipcRenderer.send('readAllDataPrep');
         } else if (genHashes.innerHTML == 'Generate') {
             hashWorker.postMessage({
                 "message": 'genHash',

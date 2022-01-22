@@ -114,12 +114,12 @@ class NodesByFqn {
 let currentNode;
 
 class NodeTree {
-    constructor(treeList, renderTarg, dataContainer, nodesByFqn) {
-        this.nodesByFqn = nodesByFqn;
+    constructor(treeList, renderTarg, dataContainer, gomTree) {
+        this.nodesByFqn = gomTree.nodesByFqn;
+        this.parent = gomTree;
         this.renderTarg = renderTarg;
         this.dataContainer = dataContainer;
 
-        this.loadedBuckets = 0;
         this.hoverEle = -1;
 
         this.scroller = document.getElementById('nav_nodes_scroller');
@@ -152,7 +152,7 @@ class NodeTree {
         if (e) {
             this.hoverEle = 15 - this.scroller.scrollTop + (e.offsetY & 0xFFFFF0)
         }
-        if (this.loadedBuckets === 0) {
+        if (this.parent.loadedBuckets === 0) {
             this.ctx.fillStyle = 'rgb(255, 255, 255)';
             this.ctx.fillText('Loading...', 170, 26)
         } else {
@@ -308,23 +308,16 @@ class NodeTree {
 }
 
 class GomTree {
-    constructor (treeList, viewContainer, dataContainer) {
+    constructor () {
         this.nodesByFqn = new NodesByFqn();
         this.nodesList = {};
         this.loadedBuckets = 0;
     }
 
-    static fromStatic(sGTree, treeList, viewContainer, dataContainer) {
-        const res = new GomTree(treeList, viewContainer, dataContainer);
-        res.nodesByFqn = sGTree.nodesByFqn;
-        res.nodesList = sGTree.nodesList;
-        res.loadedBuckets = sGTree.loadedBuckets;
-    }
-
     initRenderer(treeList, viewContainer, dataContainer) {
         this.viewContainer = viewContainer;
         this.dataContainer = dataContainer;
-        this.nodeTree = new NodeTree(treeList, viewContainer, dataContainer, this.nodesByFqn);
+        this.nodeTree = new NodeTree(treeList, viewContainer, dataContainer, this);
     }
 
     /**

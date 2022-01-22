@@ -1,8 +1,10 @@
-import { GomTree, nodeFolderSort, currentNode } from "./GomTree.js";
+import { currentNode } from "./GomTree.js";
 import { log } from "../../universal/Logger.js";
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
-import { NodeEntr } from "../../classes/formats/Node.js";
 import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { RenderDom } from "../../classes/RenderDom.js";
+
+globalThis.DOM = RenderDom;
 
 // Node.js imports
 const { ipcRenderer } = require("electron");
@@ -31,7 +33,7 @@ const extrFormat = document.getElementById('extrFormat');
 const loadPrototypeNodes = document.getElementById('loadPrototypeNodes');
 
 // Constants
-const GTree = new GomTree();
+const GTree = globalThis.DOM.gomTree;
 GTree.initRenderer(treeList, viewDisplay, dataContainer)
 const configPath = path.normalize(path.join(resourcePath, "config.json"));
 const cache = {
@@ -39,8 +41,6 @@ const cache = {
     "loadPrototypes": false,
     "outputType": "raw"
 }
-let worker;
-let _dom = null;
 
 async function init() {
     await loadCache();
@@ -51,10 +51,14 @@ async function init() {
     extrFormat.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
     extrFormat.nextElementSibling.nextElementSibling.querySelector(`#${extrFormat.options[0].innerHTML}`).classList.toggle('same-as-selected');
     
-    initWorker();
     initListeners();
     initSubs();
-    initGomTree();
+
+    if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
+        globalThis.DOM.initWorkers(resourcePath, sourcePath);
+    }
+
+    ipcRenderer.send('readAllDataPrep');
 }
 
 async function loadCache() {
@@ -145,82 +149,39 @@ function initListeners() {
     outputField.addEventListener('change', (e) => { updateCache('output', outputField.value); });
 }
 
-const decomprFunc = (params) => {
-    return ipcRenderer.sendSync('decompressZlib', [params]);
-}
-
-function initWorker() {
-    worker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "GomWorker.js"), {
-        type: "module"
-    });
-    worker.onerror = (e) => {
-        console.log(e);
-        throw new Error(`${e.message} on line ${e.lineno}`);
-    }
-    worker.onmessageerror = (e) => {
-        console.log(e);
-        throw new Error(`${e.message} on line ${e.lineno}`);
-    }
-    worker.onmessage = (e) => {
-        switch (e.data.message) {
-            case "DomElements":
-                _dom = e.data.data;
-                break;
-            case "NODES":
-                for (const n of e.data.data) {
-                    const node = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
-                    GTree.addNode(node);
-                }
-                GTree.nodeTree.loadedBuckets++;
-                GTree.nodesByFqn.$F.sort(nodeFolderSort);
-                GTree.nodeTree.resizefull();
-                GTree.nodeTree.redraw();
-                document.getElementById('numBucketsLeft').innerHTML = 500 - GTree.nodeTree.loadedBuckets;
-                if (GTree.nodeTree.loadedBuckets === 500) {
-                    document.getElementById('numBucketsLeft').innerHTML = "Done";
-                    setTimeout(() => {
-                        document.getElementById('numBucketsLeft').innerHTML = "";
-                    }, 2000);
-                }
-                break;
-            case "PROTO":
-                for (const n of e.data.data.nodes) {
-                    const testProto = new NodeEntr(n.node, n.torPath, _dom, decomprFunc);
-                    GTree.addNode(testProto);
-                }
-                GTree.nodesByFqn.$F.sort(nodeFolderSort);
-                GTree.nodeTree.resizefull();
-                GTree.nodeTree.redraw();
-                break;
-        }
-    }
-
-    worker.postMessage({
-        "message": "init",
-        "data": [ resourcePath, sourcePath ]
-    });
-}
-
 function initSubs() {
-    ipcRenderer.on('nodeTorPath', (event, data) => {
-        worker.postMessage({
-            "message": 'loadNodes',
-            "data": data,
-            "prots": loadPrototypeNodes.checked
+    ipcRenderer.on('dataTorPaths', (event, data) => {
+        const dat = fs.readFileSync(data[0]);
+        const json = JSON.parse(dat);
+        globalThis.DOM.hook({
+            assetHooks: {
+                assetsProgress: (progress) => {},
+                assetsComplete: () => {}
+            },
+            gomHooks: {
+                domUpdate: (progress) => {},
+                nodesUpdate: (progress, data) => {
+                    globalThis.DOM.gomTree.nodeTree.resizefull();
+                    globalThis.DOM.gomTree.nodeTree.redraw();
+                    document.getElementById('numBucketsLeft').innerHTML = 500 - globalThis.DOM.gomTree.loadedBuckets;
+                    if (globalThis.DOM.gomTree.loadedBuckets === 500) {
+                        document.getElementById('numBucketsLeft').innerHTML = "Done";
+                        setTimeout(() => {
+                            document.getElementById('numBucketsLeft').innerHTML = "";
+                        }, 2000);
+                    }
+                },
+                protosUpdate: (progress, data) => {
+                    if (loadPrototypeNodes.checked) {
+                        globalThis.DOM.gomTree.nodeTree.resizefull();
+                        globalThis.DOM.gomTree.nodeTree.redraw();
+                    }
+                },
+                gomCompleteCheck: () => {}
+            }
         });
+        globalThis.DOM.load(json);
     });
-    ipcRenderer.on('errorPathNotExist', (event, data) => { log("The required .tor file is not in your assets directory.", "error"); });
-    ipcRenderer.on('nodeReadComplete', (event, data) => {
-        if (data[0] == 0) {
-            log("Node names generated.", "info");
-        } else {
-            log("Error generating node names.", "error");
-        }
-    });
-}
-
-function initGomTree() {
-    ipcRenderer.send('readAllNodes');
 }
 
 init();

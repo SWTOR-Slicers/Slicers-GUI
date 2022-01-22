@@ -9,6 +9,7 @@ class Dom {
         // GOM Tree
         this._dom = {};
         this.nodesList = {};
+        this.manSec = [];
 
         // status props
         this.archivesLoad = "0.0%";
@@ -75,25 +76,38 @@ const MainDom = new Dom();
 // main listeners
 ipcMain.on("domUpdate", (event, data) => {
     // update self
-    
+    const val = data.value;
+    switch (data.prop) {
+        case "nodes":
+        case "protos": {
+            if (val.isBkt) {
+                
+                MainDom.loadedBuckets++;
+            } else {
+                
+                RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+            }
+        }
+        case "archives": {
+
+        }
+        default: {
+            MainDom[data.prop] = data.val;
+        }
+    }
 
     // push updates
-    // for (const webCont of updateSubs) {
-    //     if (webCont.id !== event.sender.id) {
-    //         webCont.send("mainUpdated", data);
-    //     }
-    // }
+    for (const webCont of updateSubs) {
+        if (webCont.id !== event.sender.id) {
+            webCont.send("mainUpdated", data);
+        }
+    }
     console.log('triggered dom update');
 
     event.returnValue = true;
 });
-ipcMain.on("getDom", (event) => {
-    event.returnValue = JSON.stringify(MainDom);
-});
-ipcMain.on("subscribeDom", (event) => {
-    updateSubs.push(event.sender);
-    event.returnValue = true;
-});
+ipcMain.on("getDom", (event) => { event.returnValue = JSON.stringify(MainDom); });
+ipcMain.on("subscribeDom", (event) => { updateSubs.push(event.sender); event.returnValue = true; });
 
 module.exports = {
     "MainDom": MainDom

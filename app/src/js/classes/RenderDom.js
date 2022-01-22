@@ -176,8 +176,6 @@ class Dom {
 
                     const progress = `${this.gomTree.loadedBuckets / 500 * 100}%`;
                     this.nodesLoad = progress;
-                    this.nodes.push(...e.data.data);
-                    this.nodes = Array.from(this.nodes);
 
                     const ext = {
                         "nodes": e.data.data,
@@ -199,11 +197,9 @@ class Dom {
 
                     const progress = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
                     this.protosLoad = progress;
-                    this.protos.push(...e.data.data.nodes);
-                    this.protos = Array.from(this.protos);
 
                     ipcRenderer.sendSync("domUpdate", {
-                        "prop": "nodes",
+                        "prop": "protos",
                         "value": e.data.data
                     });
                     this.#protosUpdate(progress, e.data.data);
@@ -408,7 +404,7 @@ ipcRenderer.on("mainUpdated", (event, data) => {
     let dat = data.value
     
     if (data.prop === "nodes" || data.prop === "protos") {
-        if (data.ext.isBkt) {
+        if (data.value.isBkt) {
             for (const n of data.value.nodes) {
                 const node = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
                 RenderDom.gomTree.addNode(node);

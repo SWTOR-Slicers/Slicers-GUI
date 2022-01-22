@@ -418,4 +418,4 @@ function nodeFolderSort(a, b) {
     return 1
 }
 
-export {GomTree, StaticGomTree, NodesByFqn, nodeFolderSort, currentNode};
+export {GomTree, NodesByFqn, nodeFolderSort, currentNode};

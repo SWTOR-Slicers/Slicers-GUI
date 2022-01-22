@@ -3,6 +3,7 @@ import { NodeEntr } from "./formats/Node.js";
 
 import { inflateZlib } from "../Util.js";
 import { Archive } from "./formats/Archive.js";
+import { deserializeBigInt } from "../Util.js";
 
 /**
  * AssetsUpdateHooks type definition
@@ -353,7 +354,7 @@ class RenderDomFactory {
     static DOM;
     static getDom() {
         ipcRenderer.sendSync("subscribeDom");
-        const jDom = JSON.parse(ipcRenderer.sendSync("getDom"));
+        const jDom = JSON.parse(ipcRenderer.sendSync("getDom"), deserializeBigInt);
         this.DOM = Dom.fromJSON(jDom);
         return this.DOM;
     }
@@ -403,8 +404,9 @@ const RenderDom = new Proxy(RenderDomFactory.getDom(), {
 // render listeners
 ipcRenderer.on("mainUpdated", (event, data) => {
     let dat = data.value
+    const prop = data.prop;
     
-    if (data.prop === "nodes" || data.prop === "protos") {
+    if (prop === "nodes" || prop === "protos") {
         if (dat.isBkt) {
             for (const n of dat.nodes) {
                 const node = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
@@ -427,8 +429,8 @@ ipcRenderer.on("mainUpdated", (event, data) => {
         }
         RenderDom[`update_${data.prop}`] = dat;
         
-        if (data.prop.includes("Load")) {
-            const handler = RenderDom.detHandler(data.prop, data.value);
+        if (prop.includes("Load")) {
+            const handler = RenderDom.detHandler(prop, val);
             if (handler) handler();
         }
     }

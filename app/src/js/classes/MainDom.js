@@ -70,6 +70,16 @@ class Dom {
 
 const { ipcMain } = require("electron");
 
+function serializeBigInt(key, value) {
+    return typeof value === "bigint" ? `BIGINT::${value}` : value
+}
+function deserializeBigInt(key, value) {
+    if (typeof value === "string" && value.startsWith('BIGINT::')) {
+        return BigInt(value.substring(8));
+    }
+    return value;
+}
+
 const updateSubs = [];
 const MainDom = new Dom();
 
@@ -109,7 +119,7 @@ ipcMain.on("domUpdate", (event, data) => {
 
     event.returnValue = true;
 });
-ipcMain.on("getDom", (event) => { event.returnValue = JSON.stringify(MainDom); });
+ipcMain.on("getDom", (event) => { event.returnValue = JSON.stringify(MainDom, serializeBigInt) });
 ipcMain.on("subscribeDom", (event) => { updateSubs.push(event.sender); event.returnValue = true; });
 
 module.exports = {

@@ -993,6 +993,16 @@ function byteArrayToLong(/*byte[]*/byteArray) {
     return value;
 }
 
+export function serializeBigInt(key, value) {
+    return typeof value === "bigint" ? `BIGINT::${value}` : value
+}
+export function deserializeBigInt(key, value) {
+    if (typeof value === "string" && value.startsWith('BIGINT::')) {
+        return BigInt(value.substring(8));
+    }
+    return value;
+}
+
 class BitReader {
     constructor(dv) {
         this.dv = dv;

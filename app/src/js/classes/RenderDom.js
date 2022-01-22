@@ -1,4 +1,4 @@
-import { StaticGomTree, nodeFolderSort } from "../viewers/node-viewer/GomTree.js";
+import { GomTree, nodeFolderSort } from "../viewers/node-viewer/GomTree.js";
 import { NodeEntr } from "./formats/Node.js";
 
 import { inflateZlib } from "../Util.js";
@@ -46,7 +46,7 @@ class Dom {
 
         // GOM Tree
         this._dom = {};
-        this.gomTree = new StaticGomTree();
+        this.gomTree = new GomTree();
 
         // status props
         this.archivesLoad = "0.0%";

@@ -4,7 +4,7 @@ import { NodeEntr } from "../../classes/formats/Node.js";
 import { STB } from "../../classes/formats/STB.js";
 
 import { inflateZlib, hashlittle2, uint32ToUint64 } from "../../Util.js";
-import { StaticGomTree, nodeFolderSort } from "../../viewers/node-viewer/GomTree.js";
+import { GomTree, nodeFolderSort } from "../../viewers/node-viewer/GomTree.js";
 
 import { FXSPECParser } from "../../classes/parsers/FXSPEC.js";
 import { ICONSParser } from "../../classes/parsers/ICONS.js";
@@ -51,7 +51,7 @@ let decompressZlib = (params) => {
 onmessage = (e) => {
     switch (e.data.message) {
         case "init":
-            GTree = new StaticGomTree();
+            GTree = new GomTree();
             cache['configPath'] = path.normalize(path.join(e.data.data, "config.json"));
             cache['hashPath'] = path.join(e.data.data, "hash");
 

@@ -50,7 +50,10 @@ async function init() {
     initListeners();
     initSubs();
     initHashWorker();
-    globalThis.DOM.initWorkers(resourcePath, sourcePath);
+    
+    if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
+        globalThis.DOM.initWorkers(resourcePath, sourcePath);
+    }
 }
 
 // Caching functions

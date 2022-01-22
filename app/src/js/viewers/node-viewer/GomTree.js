@@ -18,7 +18,7 @@ class NodesByFqn {
             this.$O = 2;
             this._misc = {
                 "$F": [], //files
-                "$O": 0
+                "$O": 0 //open
             }
         }
     }
@@ -312,9 +312,6 @@ class GomTree {
         this.nodesByFqn = new NodesByFqn();
         this.nodesList = {};
         this.loadedBuckets = 0;
-        this.viewContainer = viewContainer;
-        this.dataContainer = dataContainer;
-        this.nodeTree = new NodeTree(treeList, viewContainer, dataContainer, this.nodesByFqn);
     }
 
     static fromStatic(sGTree, treeList, viewContainer, dataContainer) {
@@ -324,12 +321,19 @@ class GomTree {
         res.loadedBuckets = sGTree.loadedBuckets;
     }
 
+    initRenderer(treeList, viewContainer, dataContainer) {
+        this.viewContainer = viewContainer;
+        this.dataContainer = dataContainer;
+        this.nodeTree = new NodeTree(treeList, viewContainer, dataContainer, this.nodesByFqn);
+    }
+
     /**
      * Adds a node to the Gom tree, and saves the created nodeElem to a dictionary
      * @param {NodeEntr} node A Node object representing the node entry data from the node reader.
      */
     addNode(node) {
         let name = node.fqn;
+        this.nodesList[name] = node;
         let curFolder = this.nodesByFqn;
         let folderStart = 0;
         let i = 0;
@@ -368,7 +372,7 @@ class GomTree {
         }
     }
 
-    getNodeByFQN(fqn) {
+    renderNodeByFQN(fqn) {
         let hasFound = false;
         console.log(this.nodesByFqn);
         const tree = fqn.split(".");
@@ -403,59 +407,6 @@ class GomTree {
         }
     
         return hasFound;
-    }
-}
-
-class StaticGomTree {
-    constructor () {
-        this.nodesByFqn = new NodesByFqn();
-        this.nodesList = {};
-        this.loadedBuckets = 0;
-    }
-
-    /**
-     * Adds a node to the Gom tree, and saves the created nodeElem to a dictionary
-     * @param {NodeEntr} node A Node object representing the node entry data from the node reader.
-     */
-    addNode(node) {
-        this.nodesList[node.fqn] = node;
-        let name = node.fqn;
-        let curFolder = this.nodesByFqn;
-        let folderStart = 0;
-        let i = 0;
-        for (; i < name.length; i++) {
-            if (name[i] === '.') {
-                const folderName = name.substring(folderStart, i);
-                if (folderStart === 0 && i > 8) {
-                    curFolder = curFolder._misc
-                }
-                let tmpFolder = curFolder[folderName];
-                if (!tmpFolder) {
-                    tmpFolder = Object.create(null);
-                    tmpFolder.$F = [];
-                    tmpFolder.$O = 0;
-                    curFolder[folderName] = tmpFolder
-                }
-                curFolder = tmpFolder;
-                folderStart = i + 1
-            }
-        }
-        node.path = name.substring(0, folderStart);
-        const fileName = name.substring(folderStart, i);
-        node.fileName = fileName;
-        if (curFolder.$O === 0) {
-            curFolder.$F.push(node)
-        } else {
-            let insertIndex = 0;
-            for (let j = 0, l = curFolder.$F.length; j < l; j++) {
-                if (curFolder.$F[j].fileName <= fileName) {
-                    insertIndex++
-                } else {
-                    break
-                }
-            }
-            curFolder.$F.splice(insertIndex, 0, node)
-        }
     }
 }
 

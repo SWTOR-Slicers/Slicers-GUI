@@ -31,7 +31,8 @@ const extrFormat = document.getElementById('extrFormat');
 const loadPrototypeNodes = document.getElementById('loadPrototypeNodes');
 
 // Constants
-const GTree = new GomTree(treeList, viewDisplay, dataContainer);
+const GTree = new GomTree();
+GTree.initRenderer(treeList, viewDisplay, dataContainer)
 const configPath = path.normalize(path.join(resourcePath, "config.json"));
 const cache = {
     "output": "",
@@ -119,7 +120,7 @@ function initListeners() {
     });
     fqnField.addEventListener('change', (e) => {
         if (fqnField.value != "") {
-            const found = GTree.getNodeByFQN(fqnField.value);
+            const found = GTree.renderNodeByFQN(fqnField.value);
             if (found) {
                 log("Found node. It has been opened in the viewer.", "info");
             } else {

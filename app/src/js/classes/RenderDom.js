@@ -1,7 +1,7 @@
 import { GomTree, nodeFolderSort } from "../viewers/node-viewer/GomTree.js";
 import { NodeEntr } from "./formats/Node.js";
 
-import { inflateZlib } from "../Util.js";
+import { inflateZlib, serializeBigInt } from "../Util.js";
 import { Archive } from "./formats/Archive.js";
 import { deserializeBigInt } from "../Util.js";
 
@@ -115,7 +115,15 @@ class Dom {
         this.#gomCompleteCheck = () => {
             if (this.archivesLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
                 this.hasLoaded = true;
+                ipcRenderer.sendSync("domUpdate", {
+                    "prop": "hasLoaded",
+                    "value": this.hasLoaded
+                });
                 this.isLoading = false;
+                ipcRenderer.sendSync("domUpdate", {
+                    "prop": "isLoading",
+                    "value": this.isLoading
+                });
             }
             newHook();
         }
@@ -123,6 +131,10 @@ class Dom {
 
     load(json) {
         this.isLoading = true;
+        ipcRenderer.sendSync("domUpdate", {
+            "prop": "isLoading",
+            "value": this.isLoading
+        });
 
         gomWorker.postMessage({
             "message": 'loadNodes',
@@ -160,7 +172,15 @@ class Dom {
             switch (e.data.message) {
                 case "DomElements":
                     this._domLoad = "100%";
+                    ipcRenderer.sendSync("domUpdate", {
+                        "prop": "_domLoad",
+                        "value": this._domLoad
+                    });
                     this._dom = e.data.data;
+                    ipcRenderer.sendSync("domUpdate", {
+                        "prop": "_dom",
+                        "value": this._dom
+                    });
                     this.#domUpdate('100%');
                     break;
                 case "NODES": {
@@ -172,6 +192,10 @@ class Dom {
 
                     const progress = `${this.gomTree.loadedBuckets / 500 * 100}%`;
                     this.nodesLoad = progress;
+                    ipcRenderer.sendSync("domUpdate", {
+                        "prop": "nodesLoad",
+                        "value": this.nodesLoad
+                    });
 
                     const ext = {
                         "nodes": e.data.data,
@@ -183,8 +207,6 @@ class Dom {
                     });
                     
                     this.gomTree.loadedBuckets++;
-                    console.log(this.gomTree.loadedBuckets);
-                    // ! this is where the error is
                     ipcRenderer.sendSync("domUpdate", {
                         "prop": "loadedBuckets",
                         "value": this.gomTree.loadedBuckets
@@ -202,6 +224,10 @@ class Dom {
 
                     const progress = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
                     this.protosLoad = progress;
+                    ipcRenderer.sendSync("domUpdate", {
+                        "prop": "protosLoad",
+                        "value": this.protosLoad
+                    });
 
                     ipcRenderer.sendSync("domUpdate", {
                         "prop": "protos",
@@ -232,14 +258,31 @@ class Dom {
             switch (e.data.message) {
                 case "progress":
                     this.archivesLoad = `${e.data.data.numLoaded / e.data.data.totalTors * 100}%`;
+                    ipcRenderer.sendSync("domUpdate", {
+                        "prop": "archivesLoad",
+                        "value": this.archivesLoad
+                    });
                     this.#assetsProgress(`${e.data.data.numLoaded / e.data.data.totalTors * 100}%`);
                     break;
                 case "complete":
                     if (this.archivesLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
                         this.hasLoaded = true;
+                        ipcRenderer.sendSync("domUpdate", {
+                            "prop": "hasLoaded",
+                            "value": this.hasLoaded
+                        });
                         this.isLoading = false;
+                        ipcRenderer.sendSync("domUpdate", {
+                            "prop": "isLoading",
+                            "value": this.isLoading
+                        });
                     }
                     this.archives = e.data.data.archives;
+                    ipcRenderer.sendSync("domUpdate", {
+                        "prop": "archives",
+                        "value": JSON.stringify(this.archives, serializeBigInt)
+                    });
+                        
                     this.#assetsComplete();
                     break;
             }
@@ -379,8 +422,6 @@ const RenderDom = new Proxy(RenderDomFactory.getDom(), {
     set: (target, prop, val) => {
         if (ignore.includes(prop)) {
             Reflect.set(target, prop, val);
-        } else if (prop.includes("Load")) {
-            Reflect.set(target, prop, val);
         } else if (prop.includes("update_")) {
             const trueProp = prop.substring(7);
 
@@ -427,12 +468,12 @@ ipcRenderer.on("mainUpdated", (event, data) => {
         }
     } else {
         if (prop === "archives") {
-            dat.map(arc => Archive.fromJSON(arc) );
+            dat = JSON.parse(dat).map(arc => Archive.fromJSON(arc) );
         }
         RenderDom[`update_${data.prop}`] = dat;
         
-        if (prop.includes("Load")) {
-            const handler = RenderDom.detHandler(prop, val);
+        if (prop.endsWith("Load")) {
+            const handler = RenderDom.detHandler(prop, dat);
             if (handler) handler();
         }
     }

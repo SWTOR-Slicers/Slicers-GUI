@@ -254,7 +254,21 @@ function initSubs() {
                 }
             }
         });
-        globalThis.DOM.load(json);
+        if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
+            globalThis.DOM.load(json);
+        } else if (globalThis.DOM.hasLoaded) {
+            globalThis.DOM.getLoadStatus([
+                "archives",
+                "_dom",
+                "nodes",
+                "protos"
+            ], [
+                progressBar__assets,
+                progressBar__clientGOM,
+                progressBar__baseNodes,
+                progressBar__protoNodes
+            ]);
+        }
     });
 }
 

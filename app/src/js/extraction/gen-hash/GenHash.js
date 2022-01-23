@@ -224,6 +224,18 @@ function initSubs() {
                         "data": globalThis.DOM._dom
                     });
                     progressBar__clientGOM.style.width = progress;
+
+                    if (progressBar__assets.style.width == '100%' &&
+                        progressBar__baseNodes.style.width == '100%' &&
+                        progressBar__clientGOM.style.width == '100%' &&
+                        progressBar__protoNodes.style.width == '100%') {
+
+                        document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+                        spinner.classList.toggle('hidden');
+                        generate.classList.toggle('hidden');
+                        genHashes.innerHTML = 'Generate';
+                        genHashes.classList.toggle('disabled');
+                    }
                 },
                 nodesUpdate: (progress, data) => {
                     hashWorker.postMessage({
@@ -231,6 +243,18 @@ function initSubs() {
                         "data": data
                     });
                     progressBar__baseNodes.style.width = progress;
+
+                    if (progressBar__assets.style.width == '100%' &&
+                        progressBar__baseNodes.style.width == '100%' &&
+                        progressBar__clientGOM.style.width == '100%' &&
+                        progressBar__protoNodes.style.width == '100%') {
+
+                        document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+                        spinner.classList.toggle('hidden');
+                        generate.classList.toggle('hidden');
+                        genHashes.innerHTML = 'Generate';
+                        genHashes.classList.toggle('disabled');
+                    }
                 },
                 protosUpdate: (progress, data) => {
                     hashWorker.postMessage({
@@ -238,8 +262,7 @@ function initSubs() {
                         "data": data
                     });
                     progressBar__protoNodes.style.width = progress;
-                },
-                gomCompleteCheck: () => {
+
                     if (progressBar__assets.style.width == '100%' &&
                         progressBar__baseNodes.style.width == '100%' &&
                         progressBar__clientGOM.style.width == '100%' &&
@@ -256,7 +279,7 @@ function initSubs() {
         });
         if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
             globalThis.DOM.load(json);
-        } else if (globalThis.DOM.hasLoaded) {
+        } else {
             globalThis.DOM.getLoadStatus([
                 "archives",
                 "_dom",

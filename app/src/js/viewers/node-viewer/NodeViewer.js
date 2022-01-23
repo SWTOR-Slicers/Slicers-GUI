@@ -176,8 +176,7 @@ function initSubs() {
                         globalThis.DOM.gomTree.nodeTree.resizefull();
                         globalThis.DOM.gomTree.nodeTree.redraw();
                     }
-                },
-                gomCompleteCheck: () => {}
+                }
             }
         });
         globalThis.DOM.load(json);

@@ -38,7 +38,6 @@ class Dom {
     #domUpdate;
     #nodesUpdate;
     #protosUpdate;
-    #gomCompleteCheck;
 
     constructor() {
         // assets
@@ -65,7 +64,6 @@ class Dom {
         this.#domUpdate = null;
         this.#nodesUpdate = null;
         this.#protosUpdate = null;
-        this.#gomCompleteCheck = null;
     }
 
     /**
@@ -106,26 +104,6 @@ class Dom {
     set protosUpdate(newHook) {
         this.#protosUpdate = (progress, data) => {
             newHook(progress, data);
-        }
-    }
-    /**
-     * @param {Function} newHook
-     */
-    set gomCompleteCheck(newHook) {
-        this.#gomCompleteCheck = () => {
-            if (this.archivesLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
-                this.hasLoaded = true;
-                ipcRenderer.sendSync("domUpdate", {
-                    "prop": "hasLoaded",
-                    "value": this.hasLoaded
-                });
-                this.isLoading = false;
-                ipcRenderer.sendSync("domUpdate", {
-                    "prop": "isLoading",
-                    "value": this.isLoading
-                });
-            }
-            newHook();
         }
     }
 
@@ -237,8 +215,6 @@ class Dom {
                     break;
                 }
             }
-            
-            this.#gomCompleteCheck();
         }
 
         gomWorker.postMessage({
@@ -322,19 +298,19 @@ class Dom {
 
     detHandler(prop, data) {
         switch (prop) {
-            case "archivesLoad":
+            case "archives":
                 if (this.archivesLoad === "100%") {
                     return (this.#assetsComplete) ? () => { this.#assetsComplete() } : null;
                 } else {
                     return (this.#assetsProgress) ? () => { this.#assetsProgress(this.archivesLoad) } : null;
                 }
-            case "_domLoad": {
+            case "_dom": {
                 return (this.#domUpdate) ? () => { this.#domUpdate(this._domLoad) } : null;
             }
-            case "nodesLoad": {
+            case "nodes": {
                 return (this.#nodesUpdate) ? () => { this.#nodesUpdate(this.nodesLoad, data) } : null;
             }
-            case "protosLoad": {
+            case "protos": {
                 return (this.#protosUpdate) ? () => { this.#protosUpdate(this.protosLoad, data) } : null;
             }
         }
@@ -411,8 +387,7 @@ const ignore = [
     "assetsComplete",
     "domUpdate",
     "nodesUpdate",
-    "protosUpdate",
-    "gomCompleteCheck"
+    "protosUpdate"
 ];
 const RenderDom = new Proxy(RenderDomFactory.getDom(), {
     get(target, prop, receiver) {
@@ -471,11 +446,11 @@ ipcRenderer.on("mainUpdated", (event, data) => {
             dat = JSON.parse(dat).map(arc => Archive.fromJSON(arc) );
         }
         RenderDom[`update_${data.prop}`] = dat;
-        
-        if (prop.endsWith("Load")) {
-            const handler = RenderDom.detHandler(prop, dat);
-            if (handler) handler();
-        }
+    }
+
+    if (prop === "archives" || prop === "_dom" || prop === "nodes" || prop === "protos") {
+        const handler = RenderDom.detHandler(prop, dat);
+        if (handler) handler();
     }
 });
 

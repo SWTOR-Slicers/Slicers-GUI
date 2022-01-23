@@ -179,6 +179,14 @@ function initSubs() {
                 }
             }
         });
+        if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
+            globalThis.DOM.load(json);
+        } else if (globalThis.DOM.nodesLoad === "100%") {
+            document.getElementById('numBucketsLeft').innerHTML = "Done";
+            setTimeout(() => {
+                document.getElementById('numBucketsLeft').innerHTML = "";
+            }, 2000);
+        }
         globalThis.DOM.load(json);
     });
 }

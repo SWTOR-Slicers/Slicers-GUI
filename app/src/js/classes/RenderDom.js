@@ -168,11 +168,6 @@ class Dom {
                         const node = new NodeEntr(n.node, n.torPath, this._dom, decompressZlib);
                         this.gomTree.addNode(node);
                     }
-                    this.gomTree.loadedBuckets++;
-                    ipcRenderer.sendSync("domUpdate", {
-                        "prop": "loadedBuckets",
-                        "value": this.gomTree.loadedBuckets
-                    });
                     this.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
 
                     const progress = `${this.gomTree.loadedBuckets / 500 * 100}%`;
@@ -186,6 +181,15 @@ class Dom {
                         "prop": "nodes",
                         "value": ext
                     });
+                    
+                    this.gomTree.loadedBuckets++;
+                    console.log(this.gomTree.loadedBuckets);
+                    // ! this is where the error is
+                    ipcRenderer.sendSync("domUpdate", {
+                        "prop": "loadedBuckets",
+                        "value": this.gomTree.loadedBuckets
+                    });
+
                     this.#nodesUpdate(progress, ext);
                     break;
                 }
@@ -329,7 +333,7 @@ class Dom {
 
                 res.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
             }
-            res.gomTree.loadedBuckets = itter.length > 0 ? 500 : 0;
+            res.gomTree.loadedBuckets = json.loadedBuckets;
 
             res.archivesLoad = json.archivesLoad;
 
@@ -382,7 +386,7 @@ const RenderDom = new Proxy(RenderDomFactory.getDom(), {
 
             Reflect.set(target, trueProp, val);
         } else {
-            if (prop === "Archive") {
+            if (prop === "archives") {
                 ipcRenderer.sendSync("domUpdate", {
                     "prop": prop,
                     "value": JSON.stringify(val)
@@ -423,9 +427,7 @@ ipcRenderer.on("mainUpdated", (event, data) => {
         }
     } else {
         if (prop === "archives") {
-            dat.map((dat) => {
-                Archive.fromJSON(dat);
-            });
+            dat.map(arc => Archive.fromJSON(arc) );
         }
         RenderDom[`update_${data.prop}`] = dat;
         

@@ -30,6 +30,8 @@ class Dom {
 
             "_dom": this._dom,
             "nodesList": this.nodesList,
+            "loadedBuckets": this.loadedBuckets,
+
 
             "archivesLoad": this.archivesLoad,
 
@@ -100,6 +102,7 @@ ipcMain.on("domUpdate", (event, data) => {
             }
             MainDom.nodesList = tempDict;
             if (val.isBkt) MainDom.loadedBuckets++;
+            console.log(MainDom.loadedBuckets);
         }
         case "archives": {
             MainDom.archives = val;
@@ -115,7 +118,7 @@ ipcMain.on("domUpdate", (event, data) => {
             webCont.send("mainUpdated", data);
         }
     }
-    console.log('triggered dom update');
+    // console.log('triggered dom update');
 
     event.returnValue = true;
 });

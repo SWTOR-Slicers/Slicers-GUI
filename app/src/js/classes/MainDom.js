@@ -87,7 +87,6 @@ ipcMain.on("domUpdate", (event, data) => {
         case "nodes":
         case "protos": {
             let tempDict = {};
-            // MainDom.manSec.push(val);
             
             for (const n of val.nodes) {
                 const t = {};

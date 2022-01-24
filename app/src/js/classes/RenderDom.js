@@ -171,9 +171,9 @@ class Dom {
                     }
                     this.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
 
+                    this.gomTree.loadedBuckets++;
                     const progress = `${this.gomTree.loadedBuckets / 500 * 100}%`;
                     this.nodesLoad = progress;
-                    this.gomTree.loadedBuckets++;
 
                     const ext = {
                         "nodes": e.data.data,
@@ -440,7 +440,7 @@ ipcRenderer.on("mainUpdated", (event, data) => {
                 const node = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
                 RenderDom.gomTree.addNode(node);
             }
-            RenderDom.gomTree.loadedBuckets++;
+            // RenderDom.gomTree.loadedBuckets++;
             RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
             RenderDom[`update_nodesLoad`] = dat.nodesLoad;
             RenderDom.gomTree.loadedBuckets = dat.loadedBuckets;
@@ -463,7 +463,7 @@ ipcRenderer.on("mainUpdated", (event, data) => {
     }
 
     if (prop === "archives" || prop === "_dom" || prop === "nodes" || prop === "protos") {
-        console.log(domCounter++);
+        console.log("detected handler trigger");
         const handler = RenderDom.detHandler(prop, dat);
         if (handler) handler();
     }

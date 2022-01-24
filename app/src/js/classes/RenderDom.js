@@ -150,15 +150,14 @@ class Dom {
             switch (e.data.message) {
                 case "DomElements":
                     this._domLoad = "100%";
-                    ipcRenderer.sendSync("domUpdate", {
-                        "prop": "_domLoad",
-                        "value": this._domLoad
-                    });
                     this._dom = e.data.data;
+
                     ipcRenderer.sendSync("domUpdate", {
                         "prop": "_dom",
-                        "value": this._dom
+                        "value": this._dom,
+                        "_domLoad": this._domLoad
                     });
+
                     this.#domUpdate('100%');
                     break;
                 case "NODES": {
@@ -170,10 +169,7 @@ class Dom {
 
                     const progress = `${this.gomTree.loadedBuckets / 500 * 100}%`;
                     this.nodesLoad = progress;
-                    ipcRenderer.sendSync("domUpdate", {
-                        "prop": "nodesLoad",
-                        "value": this.nodesLoad
-                    });
+                    this.gomTree.loadedBuckets++;
 
                     const ext = {
                         "nodes": e.data.data,
@@ -181,13 +177,9 @@ class Dom {
                     };
                     ipcRenderer.sendSync("domUpdate", {
                         "prop": "nodes",
-                        "value": ext
-                    });
-                    
-                    this.gomTree.loadedBuckets++;
-                    ipcRenderer.sendSync("domUpdate", {
-                        "prop": "loadedBuckets",
-                        "value": this.gomTree.loadedBuckets
+                        "value": ext,
+                        "nodesLoad": this.nodesLoad,
+                        "loadedBuckets": this.gomTree.loadedBuckets
                     });
 
                     this.#nodesUpdate(progress, ext);
@@ -202,15 +194,13 @@ class Dom {
 
                     const progress = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
                     this.protosLoad = progress;
-                    ipcRenderer.sendSync("domUpdate", {
-                        "prop": "protosLoad",
-                        "value": this.protosLoad
-                    });
 
                     ipcRenderer.sendSync("domUpdate", {
                         "prop": "protos",
-                        "value": e.data.data
+                        "value": e.data.data,
+                        "protosLoad": this.protosLoad
                     });
+
                     this.#protosUpdate(progress, e.data.data);
                     break;
                 }
@@ -434,13 +424,19 @@ ipcRenderer.on("mainUpdated", (event, data) => {
             }
             RenderDom.gomTree.loadedBuckets++;
             RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+            RenderDom[`update_nodesLoad`] = data.nodesLoad;
+            RenderDom.gomTree.loadedBuckets = data.loadedBuckets;
         } else {
             for (const n of dat.nodes) {
                 const testProto = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
                 RenderDom.gomTree.addNode(testProto);
             }
             RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+            RenderDom[`update_nodesLoad`] = data.nodesLoad;
         }
+    } else if (prop === "_dom") {
+        RenderDom[`update__dom`] = dat;
+        RenderDom[`update__domLoad`] = data._domLoad;
     } else {
         if (prop === "archives") {
             dat = JSON.parse(dat).map(arc => Archive.fromJSON(arc) );

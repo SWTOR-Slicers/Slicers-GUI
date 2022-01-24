@@ -99,8 +99,16 @@ ipcMain.on("domUpdate", (event, data) => {
                 Object.assign(tempDict, t);
             }
             MainDom.nodesList = tempDict;
-            if (val.isBkt) MainDom.loadedBuckets++;
-            console.log(MainDom.loadedBuckets);
+            if (val.isBkt) {
+                MainDom.nodesLoad = data.nodesLoad;
+                MainDom.loadedBuckets++;
+            } else {
+                MainDom.protosLoad = data.protosLoad;
+            }
+        }
+        case "_dom": {
+            MainDom._dom = val;
+            MainDom._domLoad = data._domLoad;
         }
         case "archives": {
             MainDom.archives = val;

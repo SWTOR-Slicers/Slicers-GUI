@@ -34,7 +34,7 @@ const loadPrototypeNodes = document.getElementById('loadPrototypeNodes');
 
 // Constants
 const GTree = globalThis.DOM.gomTree;
-GTree.initRenderer(treeList, viewDisplay, dataContainer)
+GTree.initRenderer(treeList, viewDisplay, dataContainer);
 const configPath = path.normalize(path.join(resourcePath, "config.json"));
 const cache = {
     "output": "",

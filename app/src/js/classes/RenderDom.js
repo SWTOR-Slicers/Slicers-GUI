@@ -213,6 +213,21 @@ class Dom {
                     break;
                 }
             }
+
+            if (this.archivesLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
+                this.hasLoaded = true;
+
+                ipcRenderer.sendSync("domUpdate", {
+                    "prop": "hasLoaded",
+                    "value": this.hasLoaded
+                });
+
+                this.isLoading = false;
+                ipcRenderer.sendSync("domUpdate", {
+                    "prop": "isLoading",
+                    "value": this.isLoading
+                });
+            }
         }
 
         gomWorker.postMessage({
@@ -297,6 +312,26 @@ class Dom {
                 throw `Unkown field ${field}. Expected archives, nodes, protos or _dom.`;
             }
         }
+    }
+
+    invokeHandlerPost(prop) {
+        switch (prop) {
+            case "archives":
+                if (this.archivesLoad === "100%") {
+                    return (this.#assetsComplete) ? () => { this.#assetsComplete() } : null;
+                } else {
+                    return (this.#assetsProgress) ? () => { this.#assetsProgress(this.archivesLoad) } : null;
+                }
+            case "_dom": {
+                return (this.#domUpdate) ? () => { this.#domUpdate(this._domLoad) } : null;
+            }
+            case "nodes": 
+            case "protos": {
+                return (this.#nodesUpdate) ? () => { this.#nodesUpdate(this.nodesLoad, this.gomTree.nodesList) } : null;
+            }
+        }
+    
+        return null;
     }
 
     detHandler(prop, data) {
@@ -397,6 +432,7 @@ const ignore = [
     "nodesLoad",
     "protosLoad"
 ];
+
 const RenderDom = new Proxy(RenderDomFactory.getDom(), {
     get(target, prop, receiver) {
         let value = Reflect.get(...arguments);
@@ -413,7 +449,7 @@ const RenderDom = new Proxy(RenderDomFactory.getDom(), {
             if (prop === "archives") {
                 ipcRenderer.sendSync("domUpdate", {
                     "prop": prop,
-                    "value": JSON.stringify(val)
+                    "value": JSON.stringify(val, serializeBigInt)
                 });
             } else {
                 ipcRenderer.sendSync("domUpdate", {
@@ -440,7 +476,7 @@ ipcRenderer.on("mainUpdated", (event, data) => {
                 const node = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
                 RenderDom.gomTree.addNode(node);
             }
-            // RenderDom.gomTree.loadedBuckets++;
+            
             RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
             RenderDom[`update_nodesLoad`] = dat.nodesLoad;
             RenderDom.gomTree.loadedBuckets = dat.loadedBuckets;
@@ -457,13 +493,12 @@ ipcRenderer.on("mainUpdated", (event, data) => {
         RenderDom[`update__domLoad`] = dat._domLoad;
     } else {
         if (prop === "archives") {
-            dat = JSON.parse(dat).map(arc => Archive.fromJSON(arc) );
+            dat = JSON.parse(dat, deserializeBigInt).map(arc => Archive.fromJSON(arc) );
         }
         RenderDom[`update_${data.prop}`] = dat;
     }
 
     if (prop === "archives" || prop === "_dom" || prop === "nodes" || prop === "protos") {
-        console.log("detected handler trigger");
         const handler = RenderDom.detHandler(prop, dat);
         if (handler) handler();
     }

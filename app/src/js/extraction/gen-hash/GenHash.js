@@ -280,17 +280,16 @@ function initSubs() {
         if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
             globalThis.DOM.load(json);
         } else {
-            globalThis.DOM.getLoadStatus([
-                "archives",
-                "_dom",
-                "nodes",
-                "protos"
-            ], [
-                progressBar__assets,
-                progressBar__clientGOM,
-                progressBar__baseNodes,
-                progressBar__protoNodes
-            ]);
+            const fields = [ "archives", "_dom", "nodes", "protos" ];
+
+            globalThis.DOM.getLoadStatus(fields, [ progressBar__assets, progressBar__clientGOM, progressBar__baseNodes, progressBar__protoNodes ]);
+
+            if (globalThis.DOM.hasLoaded) {
+                for (const field of fields) {
+                    const handler = globalThis.DOM.invokeHandlerPost(field);
+                    if (handler) handler();
+                }
+            }
         }
     });
 }

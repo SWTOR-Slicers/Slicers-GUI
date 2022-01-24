@@ -35,6 +35,7 @@ const cache = {
     "hashPath": "",
     "store": {}
 }
+
 let totalFilesSearched;
 let totalNamesFound;
 let totalActualFound;

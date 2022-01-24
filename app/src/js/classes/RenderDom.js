@@ -379,7 +379,7 @@ class Dom {
     static fromJSON(json) {
         if (json._class === "DOM") {
             const res = new Dom();
-            res.archives = json.archives;
+            res.archives = (json.archives.length > 0) ? JSON.parse(json.archives, deserializeBigInt).map(arc => Archive.fromJSON(arc) ) : [];
             res.assets = json.assets;
 
             res._dom = json._dom;

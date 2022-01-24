@@ -1,7 +1,4 @@
-import { RenderDom } from "../../classes/RenderDom.js";
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
-
-globalThis.DOM = RenderDom;
 
 const { ipcRenderer } = require("electron");
 const path = require("path");
@@ -50,10 +47,6 @@ async function init() {
     initListeners();
     initSubs();
     initHashWorker();
-    
-    if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
-        globalThis.DOM.initWorkers(resourcePath, sourcePath);
-    }
 }
 
 // Caching functions
@@ -191,106 +184,113 @@ function initListeners() {
 }
 
 function initSubs() {
-    ipcRenderer.on('dataTorPaths', (event, data) => {
-        const dat = fs.readFileSync(data[0]);
-        const json = JSON.parse(dat);
-        globalThis.DOM.hook({
-            assetHooks: {
-                assetsProgress: (progress) => {
-                    progressBar__assets.style.width = progress;
-                },
-                assetsComplete: () => {
-                    hashWorker.postMessage({
-                        "message": "archivesComplete",
-                        "data": globalThis.DOM.archives
-                    });
-                    if (progressBar__assets.style.width == '100%' &&
-                        progressBar__baseNodes.style.width == '100%' &&
-                        progressBar__clientGOM.style.width == '100%' &&
-                        progressBar__protoNodes.style.width == '100%') {
+    ipcRenderer.on('dataTorPaths', async (event, data) => {
+        await import("../../classes/RenderDom.js").then((module) => {
+            globalThis.DOM = module.RenderDom;
     
-                        document.querySelector('.header-container').innerHTML = 'Loading Complete!';
-                        spinner.classList.toggle('hidden');
-                        generate.classList.toggle('hidden');
-                        genHashes.innerHTML = 'Generate';
-                        genHashes.classList.toggle('disabled');
+            if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
+                globalThis.DOM.initWorkers(resourcePath, sourcePath);
+            }
+            const dat = fs.readFileSync(data[0]);
+            const json = JSON.parse(dat);
+            globalThis.DOM.hook({
+                assetHooks: {
+                    assetsProgress: (progress) => {
+                        progressBar__assets.style.width = progress;
+                    },
+                    assetsComplete: () => {
+                        hashWorker.postMessage({
+                            "message": "archivesComplete",
+                            "data": globalThis.DOM.archives
+                        });
+                        if (progressBar__assets.style.width == '100%' &&
+                            progressBar__baseNodes.style.width == '100%' &&
+                            progressBar__clientGOM.style.width == '100%' &&
+                            progressBar__protoNodes.style.width == '100%') {
+        
+                            document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+                            spinner.classList.toggle('hidden');
+                            generate.classList.toggle('hidden');
+                            genHashes.innerHTML = 'Generate';
+                            genHashes.classList.toggle('disabled');
+                        }
+                    }
+                },
+                gomHooks: {
+                    domUpdate: (progress) => {
+                        hashWorker.postMessage({
+                            "message": "setDOM",
+                            "data": globalThis.DOM._dom
+                        });
+                        progressBar__clientGOM.style.width = progress;
+
+                        if (progressBar__assets.style.width == '100%' &&
+                            progressBar__baseNodes.style.width == '100%' &&
+                            progressBar__clientGOM.style.width == '100%' &&
+                            progressBar__protoNodes.style.width == '100%') {
+
+                            document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+                            spinner.classList.toggle('hidden');
+                            generate.classList.toggle('hidden');
+                            genHashes.innerHTML = 'Generate';
+                            genHashes.classList.toggle('disabled');
+                        }
+                    },
+                    nodesUpdate: (progress, data) => {
+                        hashWorker.postMessage({
+                            "message": "nodesProgress",
+                            "data": data
+                        });
+                        progressBar__baseNodes.style.width = progress;
+
+                        if (progressBar__assets.style.width == '100%' &&
+                            progressBar__baseNodes.style.width == '100%' &&
+                            progressBar__clientGOM.style.width == '100%' &&
+                            progressBar__protoNodes.style.width == '100%') {
+
+                            document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+                            spinner.classList.toggle('hidden');
+                            generate.classList.toggle('hidden');
+                            genHashes.innerHTML = 'Generate';
+                            genHashes.classList.toggle('disabled');
+                        }
+                    },
+                    protosUpdate: (progress, data) => {
+                        hashWorker.postMessage({
+                            "message": "nodesProgress",
+                            "data": data
+                        });
+                        progressBar__protoNodes.style.width = progress;
+
+                        if (progressBar__assets.style.width == '100%' &&
+                            progressBar__baseNodes.style.width == '100%' &&
+                            progressBar__clientGOM.style.width == '100%' &&
+                            progressBar__protoNodes.style.width == '100%') {
+
+                            document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+                            spinner.classList.toggle('hidden');
+                            generate.classList.toggle('hidden');
+                            genHashes.innerHTML = 'Generate';
+                            genHashes.classList.toggle('disabled');
+                        }
                     }
                 }
-            },
-            gomHooks: {
-                domUpdate: (progress) => {
-                    hashWorker.postMessage({
-                        "message": "setDOM",
-                        "data": globalThis.DOM._dom
-                    });
-                    progressBar__clientGOM.style.width = progress;
+            });
+            if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
+                globalThis.DOM.load(json);
+            } else {
+                const fields = [ "archives", "_dom", "nodes", "protos" ];
 
-                    if (progressBar__assets.style.width == '100%' &&
-                        progressBar__baseNodes.style.width == '100%' &&
-                        progressBar__clientGOM.style.width == '100%' &&
-                        progressBar__protoNodes.style.width == '100%') {
+                globalThis.DOM.getLoadStatus(fields, [ progressBar__assets, progressBar__clientGOM, progressBar__baseNodes, progressBar__protoNodes ]);
 
-                        document.querySelector('.header-container').innerHTML = 'Loading Complete!';
-                        spinner.classList.toggle('hidden');
-                        generate.classList.toggle('hidden');
-                        genHashes.innerHTML = 'Generate';
-                        genHashes.classList.toggle('disabled');
-                    }
-                },
-                nodesUpdate: (progress, data) => {
-                    hashWorker.postMessage({
-                        "message": "nodesProgress",
-                        "data": data
-                    });
-                    progressBar__baseNodes.style.width = progress;
-
-                    if (progressBar__assets.style.width == '100%' &&
-                        progressBar__baseNodes.style.width == '100%' &&
-                        progressBar__clientGOM.style.width == '100%' &&
-                        progressBar__protoNodes.style.width == '100%') {
-
-                        document.querySelector('.header-container').innerHTML = 'Loading Complete!';
-                        spinner.classList.toggle('hidden');
-                        generate.classList.toggle('hidden');
-                        genHashes.innerHTML = 'Generate';
-                        genHashes.classList.toggle('disabled');
-                    }
-                },
-                protosUpdate: (progress, data) => {
-                    hashWorker.postMessage({
-                        "message": "nodesProgress",
-                        "data": data
-                    });
-                    progressBar__protoNodes.style.width = progress;
-
-                    if (progressBar__assets.style.width == '100%' &&
-                        progressBar__baseNodes.style.width == '100%' &&
-                        progressBar__clientGOM.style.width == '100%' &&
-                        progressBar__protoNodes.style.width == '100%') {
-
-                        document.querySelector('.header-container').innerHTML = 'Loading Complete!';
-                        spinner.classList.toggle('hidden');
-                        generate.classList.toggle('hidden');
-                        genHashes.innerHTML = 'Generate';
-                        genHashes.classList.toggle('disabled');
+                if (globalThis.DOM.hasLoaded) {
+                    for (const field of fields) {
+                        const handler = globalThis.DOM.invokeHandlerPost(field);
+                        if (handler) handler();
                     }
                 }
             }
         });
-        if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
-            globalThis.DOM.load(json);
-        } else {
-            const fields = [ "archives", "_dom", "nodes", "protos" ];
-
-            globalThis.DOM.getLoadStatus(fields, [ progressBar__assets, progressBar__clientGOM, progressBar__baseNodes, progressBar__protoNodes ]);
-
-            if (globalThis.DOM.hasLoaded) {
-                for (const field of fields) {
-                    const handler = globalThis.DOM.invokeHandlerPost(field);
-                    if (handler) handler();
-                }
-            }
-        }
     });
 }
 

@@ -73,10 +73,6 @@ class Dom {
 const { ipcMain } = require("electron");
 
 function serializeBigInt(key, value) { return typeof value === "bigint" ? `BIGINT::${value}` : value }
-function deserializeBigInt(key, value) {
-    if (typeof value === "string" && value.startsWith('BIGINT::')) return BigInt(value.substring(8));
-    return value;
-}
 
 const updateSubs = [];
 const MainDom = new Dom();
@@ -100,21 +96,29 @@ ipcMain.on("domUpdate", (event, data) => {
             }
             MainDom.nodesList = tempDict;
             if (val.isBkt) {
-                MainDom.nodesLoad = data.nodesLoad;
+                MainDom.nodesLoad = val.nodesLoad;
                 MainDom.loadedBuckets++;
             } else {
-                MainDom.protosLoad = data.protosLoad;
+                MainDom.protosLoad = val.protosLoad;
             }
+
+            break;
         }
         case "_dom": {
-            MainDom._dom = val;
-            MainDom._domLoad = data._domLoad;
+            MainDom._dom = val._dom;
+            MainDom._domLoad = val._domLoad;
+
+            break;
         }
         case "archives": {
             MainDom.archives = val;
+
+            break;
         }
         default: {
             MainDom[prop] = val;
+
+            break;
         }
     }
 

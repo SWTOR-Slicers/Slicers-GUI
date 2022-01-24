@@ -152,10 +152,14 @@ class Dom {
                     this._domLoad = "100%";
                     this._dom = e.data.data;
 
+                    const ext = {
+                        "_dom": this._dom,
+                        "_domLoad": this._domLoad
+                    }
+
                     ipcRenderer.sendSync("domUpdate", {
                         "prop": "_dom",
-                        "value": this._dom,
-                        "_domLoad": this._domLoad
+                        "value": ext
                     });
 
                     this.#domUpdate('100%');
@@ -173,13 +177,13 @@ class Dom {
 
                     const ext = {
                         "nodes": e.data.data,
+                        "nodesLoad": this.nodesLoad,
+                        "loadedBuckets": this.gomTree.loadedBuckets,
                         "isBkt": true
                     };
                     ipcRenderer.sendSync("domUpdate", {
                         "prop": "nodes",
-                        "value": ext,
-                        "nodesLoad": this.nodesLoad,
-                        "loadedBuckets": this.gomTree.loadedBuckets
+                        "value": ext
                     });
 
                     this.#nodesUpdate(progress, ext);
@@ -195,10 +199,14 @@ class Dom {
                     const progress = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
                     this.protosLoad = progress;
 
+                    const ext = {
+                        ...e.data.data,
+                        "protosLoad": this.protosLoad
+                    }
+
                     ipcRenderer.sendSync("domUpdate", {
                         "prop": "protos",
-                        "value": e.data.data,
-                        "protosLoad": this.protosLoad
+                        "value": ext
                     });
 
                     this.#protosUpdate(progress, e.data.data);
@@ -434,19 +442,19 @@ ipcRenderer.on("mainUpdated", (event, data) => {
             }
             RenderDom.gomTree.loadedBuckets++;
             RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-            RenderDom[`update_nodesLoad`] = data.nodesLoad;
-            RenderDom.gomTree.loadedBuckets = data.loadedBuckets;
+            RenderDom[`update_nodesLoad`] = dat.nodesLoad;
+            RenderDom.gomTree.loadedBuckets = dat.loadedBuckets;
         } else {
             for (const n of dat.nodes) {
                 const testProto = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
                 RenderDom.gomTree.addNode(testProto);
             }
             RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-            RenderDom[`update_nodesLoad`] = data.nodesLoad;
+            RenderDom[`update_protosLoad`] = dat.protosLoad;
         }
     } else if (prop === "_dom") {
-        RenderDom[`update__dom`] = dat;
-        RenderDom[`update__domLoad`] = data._domLoad;
+        RenderDom[`update__dom`] = dat._dom;
+        RenderDom[`update__domLoad`] = dat._domLoad;
     } else {
         if (prop === "archives") {
             dat = JSON.parse(dat).map(arc => Archive.fromJSON(arc) );
@@ -455,6 +463,7 @@ ipcRenderer.on("mainUpdated", (event, data) => {
     }
 
     if (prop === "archives" || prop === "_dom" || prop === "nodes" || prop === "protos") {
+        console.log(domCounter++);
         const handler = RenderDom.detHandler(prop, dat);
         if (handler) handler();
     }

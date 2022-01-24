@@ -224,25 +224,30 @@ class Dom {
             switch (e.data.message) {
                 case "progress":
                     this.archivesLoad = `${e.data.data.numLoaded / e.data.data.totalTors * 100}%`;
+
                     ipcRenderer.sendSync("domUpdate", {
                         "prop": "archivesLoad",
                         "value": this.archivesLoad
                     });
+
                     this.#assetsProgress(`${e.data.data.numLoaded / e.data.data.totalTors * 100}%`);
                     break;
                 case "complete":
                     if (this.archivesLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
                         this.hasLoaded = true;
+
                         ipcRenderer.sendSync("domUpdate", {
                             "prop": "hasLoaded",
                             "value": this.hasLoaded
                         });
+
                         this.isLoading = false;
                         ipcRenderer.sendSync("domUpdate", {
                             "prop": "isLoading",
                             "value": this.isLoading
                         });
                     }
+
                     this.archives = e.data.data.archives;
                     ipcRenderer.sendSync("domUpdate", {
                         "prop": "archives",
@@ -377,7 +382,12 @@ const ignore = [
     "assetsComplete",
     "domUpdate",
     "nodesUpdate",
-    "protosUpdate"
+    "protosUpdate",
+
+    "archivesLoad",
+    "_domLoad",
+    "nodesLoad",
+    "protosLoad"
 ];
 const RenderDom = new Proxy(RenderDomFactory.getDom(), {
     get(target, prop, receiver) {

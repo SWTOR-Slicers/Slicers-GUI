@@ -187,7 +187,6 @@ function initSubs() {
                 document.getElementById('numBucketsLeft').innerHTML = "";
             }, 2000);
         }
-        globalThis.DOM.load(json);
     });
 }
 

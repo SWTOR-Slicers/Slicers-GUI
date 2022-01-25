@@ -284,9 +284,39 @@ function initSubs() {
                 globalThis.DOM.getLoadStatus(fields, [ progressBar__assets, progressBar__clientGOM, progressBar__baseNodes, progressBar__protoNodes ]);
 
                 if (globalThis.DOM.hasLoaded) {
-                    for (const field of fields) {
-                        const handler = globalThis.DOM.invokeHandlerPost(field);
-                        if (handler) handler();
+                    hashWorker.postMessage({
+                        "message": "archivesComplete",
+                        "data": globalThis.DOM.archives
+                    });
+
+                    hashWorker.postMessage({
+                        "message": "setDOM",
+                        "data": globalThis.DOM._dom
+                    });
+                    progressBar__clientGOM.style.width = globalThis.DOM._domLoad;
+
+                    hashWorker.postMessage({
+                        "message": "nodesProgress",
+                        "data": globalThis.DOM.nodesList
+                    });
+                    progressBar__baseNodes.style.width = globalThis.DOM.nodesLoad;
+
+                    hashWorker.postMessage({
+                        "message": "nodesProgress",
+                        "data": globalThis.DOM.protosList
+                    });
+                    progressBar__protoNodes.style.width = globalThis.DOM.protosLoad;
+
+                    if (progressBar__assets.style.width == '100%' &&
+                        progressBar__baseNodes.style.width == '100%' &&
+                        progressBar__clientGOM.style.width == '100%' &&
+                        progressBar__protoNodes.style.width == '100%') {
+
+                        document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+                        spinner.classList.toggle('hidden');
+                        generate.classList.toggle('hidden');
+                        genHashes.innerHTML = 'Generate';
+                        genHashes.classList.toggle('disabled');
                     }
                 }
             }

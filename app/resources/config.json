@@ -19,7 +19,7 @@
     "nodeViewer": {
         "output": "",
         "outputType": "raw",
-        "loadPrototypes": false
+        "loadPrototypes": true
     },
     "getPatch": {
         "devmode": false,

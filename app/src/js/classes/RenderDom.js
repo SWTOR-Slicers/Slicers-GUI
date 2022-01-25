@@ -47,6 +47,8 @@ class Dom {
         // GOM Tree
         this._dom = {};
         this.gomTree = new GomTree();
+        this.nodesList = [];
+        this.protosList = [];
 
         // status props
         this.archivesLoad = "0.0%";
@@ -298,7 +300,6 @@ class Dom {
         this.domUpdate = hooks.gomHooks.domUpdate;
         this.nodesUpdate = hooks.gomHooks.nodesUpdate;
         this.protosUpdate = hooks.gomHooks.protosUpdate;
-        this.gomCompleteCheck = hooks.gomHooks.gomCompleteCheck;
     }
 
     getLoadStatus(fields, progBars) {
@@ -385,6 +386,7 @@ class Dom {
             res._dom = json._dom;
             const itter = Object.values(json.nodesList);
             for (const n of itter) {
+                res.nodesList.push(n);
                 const node = new NodeEntr(n.node, n.torPath, res._dom, decompressZlib);
                 res.gomTree.addNode(node);
 

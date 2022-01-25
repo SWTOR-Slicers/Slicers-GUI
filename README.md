@@ -10,20 +10,21 @@ I do not recommend trying to build any non production versions, because odds are
 
 Listed below are the different sub tools of the GUI, and their current status:
  - Extraction
-    - Asset Extraction
-    - Locator
-    - Unzipper
-    - Has Generation
-    - Filename Finder
+    - Asset Extraction (Complete)
+    - Locator (Complete)
+    - Unzipper (Complete)
+    - Has Generation (In progress)
+    - Filename Finder (Not started)
  - Viewers
-    - GR2 Viewer
-    - Node Viewer
-    - Asset Viewer
+    - GR2 Viewer (In progress)
+    - Node Viewer (In progress)
+    - Asset Viewer (Not started)
  - Utilities
-    - File Changer
-    - Sound Converter
-    - Patch Getter
-    - Database Management Utilities (DBM Utils)
+    - File Changer (Unstable)
+    - Sound Converter (Complete)
+    - Patch Getter (Complete)
+    - DBM Utils (Not started)
+    - UI Editor (Complete)
 
 ### Supporting Repositories
 

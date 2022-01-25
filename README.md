@@ -27,4 +27,10 @@ Listed below are the different sub tools of the GUI, and their current status:
 
 ### Supporting Repositories
 
- - 
+ - [tor-reader](https://github.com/Tormak9970/tor-reader)
+ - [node-reader](https://github.com/Tormak9970/node-reader)
+ - [file-changer](https://github.com/Tormak9970/file-changer)
+ - [node-extract](https://github.com/Tormak9970/node-extract)
+ - [single-node-extraction](https://github.com/Tormak9970/single-node-extraction)
+ - [single-file-extraction](https://github.com/Tormak9970/single-file-extractor)
+ - [ssn](https://github.com/Tormak9970/ssn)

@@ -1,7 +1,6 @@
 const {app, BrowserWindow, dialog, ipcMain, screen, shell} = require('electron');
 
 require('./src/js/classes/MainDom.js'); // Dom Manager for main process
-
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 const fs = require('fs');
@@ -11,6 +10,7 @@ const child = require('child_process');
 const dateTime = require('node-datetime');
 const UUID = require('uuid');
 const edge = require('electron-edge-js');
+const { setOutputDir } = require('./src/js/classes/MainDom.js');
 const uuidV4 = UUID.v4;
 
 if (handleSquirrelEvent()) { return; }
@@ -263,6 +263,8 @@ function initMainListeners() {
 
     cache.assetsFolder = json.assetsFolder;
     cache.outputFolder = json.outputFolder;
+    setOutputDir(cache.outputFolder);
+
     cache.dataFolder = json.dataFolder;
     cache.extraction.extractionPreset = json.extraction.extractionPreset;
     cache.extraction.lang = json.extraction.lang;
@@ -291,6 +293,7 @@ function initMainListeners() {
           case "outputFolder":
             mainWindow.webContents.send("outputFolderReply", dir.filePaths);
             await updateJSON("outputFolder", dir.filePaths[0]);
+            setOutputDir(cache.outputFolder);
             break;
           case "dataFolder":
             mainWindow.webContents.send("dataFolderReply", dir.filePaths);
@@ -321,7 +324,8 @@ function initMainListeners() {
         break;
     }
     if (exists) {
-      await updateJSON(data[1], data[0]);
+      await updateJSON(data[0], data[1]);
+      if (data[0] === "outputFolder") setOutputDir(cache.outputFolder);
     }
   });
   ipcMain.on("runExec", async (event, data) => {
@@ -544,6 +548,7 @@ function initSetupListeners(window) {
 
     json.outputFolder = outVal;
     cache.outputFolder = outVal;
+    setOutputDir(cache.outputFolder);
 
     fs.writeFileSync(path.join(resourcePath, 'config.json'), JSON.stringify(json, null, '\t'), 'utf-8');
 

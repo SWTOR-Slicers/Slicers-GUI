@@ -48,7 +48,6 @@ class Dom {
         this._dom = {};
         this.gomTree = new GomTree();
         this.nodesList = [];
-        this.protosList = [];
 
         // status props
         this.archivesLoad = "0.0%";
@@ -384,8 +383,7 @@ class Dom {
             res.assets = json.assets;
 
             res._dom = json._dom;
-            const itter = Object.values(json.nodesList);
-            for (const n of itter) {
+            for (const n of json.nodesList) {
                 res.nodesList.push(n);
                 const node = new NodeEntr(n.node, n.torPath, res._dom, decompressZlib);
                 res.gomTree.addNode(node);
@@ -411,13 +409,17 @@ class Dom {
 }
 
 const { ipcRenderer } = require("electron");
+const fs = require("fs");
 const path = require("path");
 
 class RenderDomFactory {
     static DOM;
     static getDom() {
         ipcRenderer.sendSync("subscribeDom");
-        const jDom = JSON.parse(ipcRenderer.sendSync("getDom"), deserializeBigInt);
+        const domPath = ipcRenderer.sendSync("getDom");
+        const res = fs.readFileSync(domPath);
+        // fs.rmSync(domPath);
+        const jDom = JSON.parse(res, deserializeBigInt);
         this.DOM = Dom.fromJSON(jDom);
         return this.DOM;
     }
@@ -475,6 +477,7 @@ ipcRenderer.on("mainUpdated", (event, data) => {
     if (prop === "nodes" || prop === "protos") {
         if (dat.isBkt) {
             for (const n of dat.nodes) {
+                RenderDom.nodesList.push(n);
                 const node = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
                 RenderDom.gomTree.addNode(node);
             }
@@ -484,6 +487,7 @@ ipcRenderer.on("mainUpdated", (event, data) => {
             RenderDom.gomTree.loadedBuckets = dat.loadedBuckets;
         } else {
             for (const n of dat.nodes) {
+                RenderDom.nodesList.push(n);
                 const testProto = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
                 RenderDom.gomTree.addNode(testProto);
             }

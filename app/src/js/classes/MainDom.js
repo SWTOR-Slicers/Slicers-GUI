@@ -8,8 +8,7 @@ class Dom {
 
         // GOM Tree
         this._dom = {};
-        this.nodesList = {};
-        this.manSec = [];
+        this.nodesList = [];
 
         // status props
         this.archivesLoad = "0.0%";
@@ -31,7 +30,6 @@ class Dom {
             "_dom": this._dom,
             "nodesList": this.nodesList,
             "loadedBuckets": this.loadedBuckets,
-
 
             "archivesLoad": this.archivesLoad,
 
@@ -71,11 +69,16 @@ class Dom {
 }
 
 const { ipcMain } = require("electron");
+const fs = require("fs");
+const path = require("path");
+const UUID = require('uuid');
+const uuidV4 = UUID.v4;
 
 function serializeBigInt(key, value) { return typeof value === "bigint" ? `BIGINT::${value}` : value }
 
 const updateSubs = [];
 const MainDom = new Dom();
+let outputDir = "";
 
 // main listeners
 ipcMain.on("domUpdate", (event, data) => {
@@ -86,14 +89,9 @@ ipcMain.on("domUpdate", (event, data) => {
     switch (prop) {
         case "nodes":
         case "protos": {
-            let tempDict = {};
-            
             for (const n of val.nodes) {
-                const t = {};
-                t[n.fqn] = n
-                Object.assign(tempDict, t);
+                MainDom.nodesList.push(n);
             }
-            MainDom.nodesList = tempDict;
             if (val.isBkt) {
                 MainDom.nodesLoad = val.nodesLoad;
                 MainDom.loadedBuckets++;
@@ -106,17 +104,14 @@ ipcMain.on("domUpdate", (event, data) => {
         case "_dom": {
             MainDom._dom = val._dom;
             MainDom._domLoad = val._domLoad;
-
             break;
         }
         case "archives": {
             MainDom.archives = val;
-
             break;
         }
         default: {
             MainDom[prop] = val;
-
             break;
         }
     }
@@ -131,9 +126,21 @@ ipcMain.on("domUpdate", (event, data) => {
 
     event.returnValue = true;
 });
-ipcMain.on("getDom", (event) => { event.returnValue = JSON.stringify(MainDom, serializeBigInt) });
+ipcMain.on("getDom", (event) => {
+    const domJSON = JSON.stringify(MainDom, serializeBigInt);
+    const domPath = path.join(outputDir, 'tmp', `${uuidV4()}-DOM.json`);
+    fs.mkdirSync(path.dirname(domPath), { recursive: true });
+    fs.writeFileSync(domPath, domJSON);
+
+    event.returnValue = domPath;
+});
 ipcMain.on("subscribeDom", (event) => { updateSubs.push(event.sender); event.returnValue = true; });
 
+function setOutputDir(newPath) {
+    outputDir = newPath;
+}
+
 module.exports = {
-    "MainDom": MainDom
+    "MainDom": MainDom,
+    "setOutputDir": setOutputDir
 }

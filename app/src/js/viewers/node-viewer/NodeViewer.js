@@ -152,6 +152,7 @@ function initListeners() {
 function initSubs() {
     ipcRenderer.on('dataTorPaths', (event, data) => {
         const dat = fs.readFileSync(data[0]);
+        fs.rmSync(data[0]);
         const json = JSON.parse(dat);
         globalThis.DOM.hook({
             assetHooks: {

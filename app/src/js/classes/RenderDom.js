@@ -358,7 +358,6 @@ class Dom {
 }
 
 const { ipcRenderer } = require("electron");
-const fs = require("fs");
 const path = require("path");
 
 class RenderDomFactory {
@@ -420,7 +419,7 @@ const RenderDom = new Proxy(RenderDomFactory.getDom(), {
 // render listeners
 ipcRenderer.on("sentDomSec", (event, data) => {
     const prop = data.prop;
-    const value = data.val;
+    const value = data.value;
 
     switch (prop) {
         case "archives":
@@ -432,26 +431,24 @@ ipcRenderer.on("sentDomSec", (event, data) => {
             RenderDom[`update__domLoad`] = "100%";
             break;
         case "nodesSec":
-            for (const n of value.nodes) {
-                if (dat.isBkt) {
-                    for (const n of dat.nodes) {
-                        RenderDom.nodesList.push(n);
-                        const node = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
-                        RenderDom.gomTree.addNode(node);
-                    }
-                    
-                    RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-                    RenderDom[`update_nodesLoad`] = dat.nodesLoad;
-                    RenderDom.gomTree.loadedBuckets = dat.loadedBuckets;
-                } else {
-                    for (const n of dat.nodes) {
-                        RenderDom.nodesList.push(n);
-                        const testProto = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
-                        RenderDom.gomTree.addNode(testProto);
-                    }
-                    RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-                    RenderDom[`update_protosLoad`] = dat.protosLoad;
+            if (value.isBkt) {
+                for (const n of value.nodes) {
+                    RenderDom.nodesList.push(n);
+                    const node = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
+                    RenderDom.gomTree.addNode(node);
                 }
+                
+                RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+                RenderDom[`update_nodesLoad`] = value.nodesLoad;
+                RenderDom.gomTree.loadedBuckets = value.loadedBuckets;
+            } else {
+                for (const n of value.nodes) {
+                    RenderDom.nodesList.push(n);
+                    const testProto = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
+                    RenderDom.gomTree.addNode(testProto);
+                }
+                RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+                RenderDom[`update_protosLoad`] = value.protosLoad;
             }
             break;
     }

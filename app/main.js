@@ -10,7 +10,6 @@ const child = require('child_process');
 const dateTime = require('node-datetime');
 const UUID = require('uuid');
 const edge = require('electron-edge-js');
-const { setOutputDir } = require('./src/js/classes/MainDom.js');
 const uuidV4 = UUID.v4;
 
 if (handleSquirrelEvent()) { return; }
@@ -263,7 +262,6 @@ function initMainListeners() {
 
     cache.assetsFolder = json.assetsFolder;
     cache.outputFolder = json.outputFolder;
-    setOutputDir(cache.outputFolder);
 
     cache.dataFolder = json.dataFolder;
     cache.extraction.extractionPreset = json.extraction.extractionPreset;
@@ -293,7 +291,6 @@ function initMainListeners() {
           case "outputFolder":
             mainWindow.webContents.send("outputFolderReply", dir.filePaths);
             await updateJSON("outputFolder", dir.filePaths[0]);
-            setOutputDir(cache.outputFolder);
             break;
           case "dataFolder":
             mainWindow.webContents.send("dataFolderReply", dir.filePaths);
@@ -325,7 +322,6 @@ function initMainListeners() {
     }
     if (exists) {
       await updateJSON(data[0], data[1]);
-      if (data[0] === "outputFolder") setOutputDir(cache.outputFolder);
     }
   });
   ipcMain.on("runExec", async (event, data) => {
@@ -548,7 +544,6 @@ function initSetupListeners(window) {
 
     json.outputFolder = outVal;
     cache.outputFolder = outVal;
-    setOutputDir(cache.outputFolder);
 
     fs.writeFileSync(path.join(resourcePath, 'config.json'), JSON.stringify(json, null, '\t'), 'utf-8');
 
@@ -1062,7 +1057,6 @@ function initGR2Viewer() {
   gr2Window.once('ready-to-show', () => gr2Window.show());
 
   gr2Window.removeMenu();
-  gr2Window.webContents.openDevTools();
   gr2Window.loadURL(`${__dirname}/src/html/GR2Viewer.html`);
 
   gr2Window.on('close', (e) => {

@@ -185,15 +185,16 @@ function initListeners() {
 
 function initSubs() {
     ipcRenderer.on('dataTorPaths', async (event, data) => {
+        const dat = fs.readFileSync(data[0]);
+        fs.rmSync(data[0]);
+        const json = JSON.parse(dat);
+        
         await import("../../classes/RenderDom.js").then((module) => {
             globalThis.DOM = module.RenderDom;
     
             if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
                 globalThis.DOM.initWorkers(resourcePath, sourcePath);
             }
-            const dat = fs.readFileSync(data[0]);
-            fs.rmSync(data[0]);
-            const json = JSON.parse(dat);
             globalThis.DOM.hook({
                 assetHooks: {
                     assetsProgress: (progress) => {

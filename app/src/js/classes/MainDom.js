@@ -1,7 +1,7 @@
 class Dom {
     constructor() {
         // assets
-        this.archives = [];
+        this.archives = "";
         this.assets = {};
 
         this.loadedBuckets = 0;
@@ -22,17 +22,17 @@ class Dom {
     }
 }
 
-const { ipcMain, ipcRenderer } = require("electron");
-const fs = require("fs");
-const path = require("path");
-const UUID = require('uuid');
-const uuidV4 = UUID.v4;
+const { ipcMain } = require("electron");
+const { Worker } = require('worker_threads');
+const domWorker = new Worker("./src/js/classes/DomWorker.js");
+domWorker.on('message', (msg) => {
+    console.log(msg);
+});
 
 function serializeBigInt(key, value) { return typeof value === "bigint" ? `BIGINT::${value}` : value }
 
 const updateSubs = [];
 const MainDom = new Dom();
-let outputDir = "";
 
 // main listeners
 ipcMain.on("domUpdate", (event, data) => {
@@ -79,10 +79,10 @@ ipcMain.on("domUpdate", (event, data) => {
     event.returnValue = true;
 });
 ipcMain.on("getDom", (event) => {
-    if (hasLoaded) {
+    if (MainDom.hasLoaded) {
         initSendDom(event.sender);
-    } else if (isLoading) {
-        
+    } else if (MainDom.isLoading) {
+
     }
 
     event.returnValue = {

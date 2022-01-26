@@ -279,48 +279,49 @@ function initSubs() {
             });
             if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
                 globalThis.DOM.load(json);
-            } else {
-                const fields = [ "archives", "_dom", "nodes", "protos" ];
+            } 
+            // else {
+            //     const fields = [ "archives", "_dom", "nodes", "protos" ];
 
-                globalThis.DOM.getLoadStatus(fields, [ progressBar__assets, progressBar__clientGOM, progressBar__baseNodes, progressBar__protoNodes ]);
+            //     globalThis.DOM.getLoadStatus(fields, [ progressBar__assets, progressBar__clientGOM, progressBar__baseNodes, progressBar__protoNodes ]);
+                
+            //     if (globalThis.DOM.hasLoaded) {
+            //         hashWorker.postMessage({
+            //             "message": "archivesComplete",
+            //             "data": globalThis.DOM.archives
+            //         });
 
-                if (globalThis.DOM.hasLoaded) {
-                    hashWorker.postMessage({
-                        "message": "archivesComplete",
-                        "data": globalThis.DOM.archives
-                    });
+            //         hashWorker.postMessage({
+            //             "message": "setDOM",
+            //             "data": globalThis.DOM._dom
+            //         });
+            //         progressBar__clientGOM.style.width = globalThis.DOM._domLoad;
 
-                    hashWorker.postMessage({
-                        "message": "setDOM",
-                        "data": globalThis.DOM._dom
-                    });
-                    progressBar__clientGOM.style.width = globalThis.DOM._domLoad;
+            //         hashWorker.postMessage({
+            //             "message": "nodesProgress",
+            //             "data": globalThis.DOM.nodesList
+            //         });
+            //         progressBar__baseNodes.style.width = globalThis.DOM.nodesLoad;
 
-                    hashWorker.postMessage({
-                        "message": "nodesProgress",
-                        "data": globalThis.DOM.nodesList
-                    });
-                    progressBar__baseNodes.style.width = globalThis.DOM.nodesLoad;
+            //         hashWorker.postMessage({
+            //             "message": "nodesProgress",
+            //             "data": globalThis.DOM.protosList
+            //         });
+            //         progressBar__protoNodes.style.width = globalThis.DOM.protosLoad;
 
-                    hashWorker.postMessage({
-                        "message": "nodesProgress",
-                        "data": globalThis.DOM.protosList
-                    });
-                    progressBar__protoNodes.style.width = globalThis.DOM.protosLoad;
+            //         if (progressBar__assets.style.width == '100%' &&
+            //             progressBar__baseNodes.style.width == '100%' &&
+            //             progressBar__clientGOM.style.width == '100%' &&
+            //             progressBar__protoNodes.style.width == '100%') {
 
-                    if (progressBar__assets.style.width == '100%' &&
-                        progressBar__baseNodes.style.width == '100%' &&
-                        progressBar__clientGOM.style.width == '100%' &&
-                        progressBar__protoNodes.style.width == '100%') {
-
-                        document.querySelector('.header-container').innerHTML = 'Loading Complete!';
-                        spinner.classList.toggle('hidden');
-                        generate.classList.toggle('hidden');
-                        genHashes.innerHTML = 'Generate';
-                        genHashes.classList.toggle('disabled');
-                    }
-                }
-            }
+            //             document.querySelector('.header-container').innerHTML = 'Loading Complete!';
+            //             spinner.classList.toggle('hidden');
+            //             generate.classList.toggle('hidden');
+            //             genHashes.innerHTML = 'Generate';
+            //             genHashes.classList.toggle('disabled');
+            //         }
+            //     }
+            // }
         });
     });
 }

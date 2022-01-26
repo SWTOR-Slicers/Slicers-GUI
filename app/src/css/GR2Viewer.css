@@ -52,15 +52,18 @@
     justify-content: center;
 }
 .file-tree-body {
+    margin-left: 8px;
+    align-self: flex-start;
     height: calc(100% - 20px);
-    width: calc(100% - 20px);
+    width: calc(100% - 10px);
     border-radius: 6px;
     background-color: var(--medium-grey);
     overflow: hidden;
 }
 .tree-list-container {
+    position: relative;
     width: 100%;
-    height: calc(100% - 53px);
+    height: calc(100% - 57px);
     overflow: scroll;
 }
 .file-tree-elements {
@@ -112,6 +115,9 @@
     width: 100%;
     background-color: var(--medium-grey);
     border-radius: 6px;
+
+    overflow: auto;
+    position: relative;
 }
 .canvas-container {
 	height: 100%;
@@ -121,7 +127,6 @@
 	flex-direction: row;
 	align-items: center;
 	justify-content: center;
-	position: relative;
 	pointer-events: none;
 }
 .canvas-wrapper {
@@ -200,23 +205,33 @@
 }
 
 .data-view-body {
+    margin-right: 8px;
+    align-self: flex-end;
     height: calc(100% - 20px);
-    width: calc(100% - 20px);
+    width: calc(100% - 10px);
     border-radius: 6px;
     background-color: var(--medium-grey);
 }
 .data-options-main {
     width: 100%;
     height: 75%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(6, 1fr);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
 }
 .data-options-option {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
+    margin: 5px 0px;
+}
+
+.drag-spacer {
+    height: 100%;
+    width: 10px;
+    cursor: w-resize;
 }
 
 input[type="color"] {

@@ -8,7 +8,7 @@ class Dom {
 
         // GOM Tree
         this._dom = {};
-        this.nodesList = [];
+        this.nodeSecs = [];
 
         // status props
         this.archivesLoad = "0.0%";
@@ -20,55 +20,9 @@ class Dom {
         this.isLoading = false;
         this.hasLoaded = false;
     }
-
-    toJSON() {
-        return {
-            "_class": "DOM",
-            "archives": this.archives,
-            "assets": this.assets,
-
-            "_dom": this._dom,
-            "nodesList": this.nodesList,
-            "loadedBuckets": this.loadedBuckets,
-
-            "archivesLoad": this.archivesLoad,
-
-            "_domLoad": this._domLoad,
-            "nodesLoad": this.nodesLoad,
-            "protosLoad": this.protosLoad,
-
-            "isLoading": this.isLoading,
-            "hasLoaded": this.hasLoaded
-        }
-    }
-
-    static fromJSON(json) {
-        if (json._class === "DOM") {
-            const res = new Dom();
-            res.archives = json.archives;
-            res.assets = json.assets;
-
-            res._dom = json._dom;
-            res.nodesList = json.nodesList;
-            res.loadedBuckets = json.loadedBuckets;
-
-            res.archivesLoad = json.archivesLoad;
-
-            res._domLoad = json._domLoad;
-            res.nodesLoad = json.nodesLoad;
-            res.protosLoad = json.protosLoad;
-
-            res.isLoading = json.isLoading;
-            res.hasLoaded = json.hasLoaded;
-
-            return res;
-        } else {
-            throw `Unexpected JSON recieved. Object needs _class property with value of DOM`;
-        }
-    }
 }
 
-const { ipcMain } = require("electron");
+const { ipcMain, ipcRenderer } = require("electron");
 const fs = require("fs");
 const path = require("path");
 const UUID = require('uuid');
@@ -89,9 +43,7 @@ ipcMain.on("domUpdate", (event, data) => {
     switch (prop) {
         case "nodes":
         case "protos": {
-            for (const n of val.nodes) {
-                MainDom.nodesList.push(n);
-            }
+            MainDom.nodeSecs.push(val);
             if (val.isBkt) {
                 MainDom.nodesLoad = val.nodesLoad;
                 MainDom.loadedBuckets++;
@@ -127,13 +79,37 @@ ipcMain.on("domUpdate", (event, data) => {
     event.returnValue = true;
 });
 ipcMain.on("getDom", (event) => {
-    const domJSON = JSON.stringify(MainDom, serializeBigInt);
-    const domPath = path.join(outputDir, 'tmp', `${uuidV4()}-DOM.json`);
-    fs.mkdirSync(path.dirname(domPath), { recursive: true });
-    fs.writeFileSync(domPath, domJSON);
+    if (hasLoaded) {
+        initSendDom(event.sender);
+    } else if (isLoading) {
+        
+    }
 
-    event.returnValue = domPath;
+    event.returnValue = {
+        "isLoading": MainDom.isLoading,
+        "hasLoaded": MainDom.hasLoaded
+    }
 });
+
+async function initSendDom(sender) {
+    sender.send("sentDomSec", {
+        "prop": "archives",
+        "value": MainDom.archives
+    });
+
+    sender.send("sentDomSec", {
+        "prop": "_dom",
+        "value": MainDom._dom
+    });
+
+    for (const sec of MainDom.nodeSecs) {
+        sender.send("sentDomSec", {
+            "prop": "nodeSec",
+            "value": sec
+        });
+    }
+}
+
 ipcMain.on("subscribeDom", (event) => { updateSubs.push(event.sender); event.returnValue = true; });
 
 function setOutputDir(newPath) {

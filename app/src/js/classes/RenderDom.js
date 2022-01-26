@@ -355,57 +355,6 @@ class Dom {
     
         return null;
     }
-
-    toJSON() {
-        return {
-            "_class": "DOM",
-            "archives": this.archives,
-            "assets": this.assets,
-
-            "_dom": this._dom,
-            "nodesList": this.gomTree.nodesList,
-
-            "archivesLoad": this.archivesLoad,
-
-            "_domLoad": this._domLoad,
-            "nodesLoad": this.nodesLoad,
-            "protosLoad": this.protosLoad,
-
-            "isLoading": this.isLoading,
-            "hasLoaded": this.hasLoaded
-        }
-    }
-
-    static fromJSON(json) {
-        if (json._class === "DOM") {
-            const res = new Dom();
-            res.archives = (json.archives.length > 0) ? JSON.parse(json.archives, deserializeBigInt).map(arc => Archive.fromJSON(arc) ) : [];
-            res.assets = json.assets;
-
-            res._dom = json._dom;
-            for (const n of json.nodesList) {
-                res.nodesList.push(n);
-                const node = new NodeEntr(n.node, n.torPath, res._dom, decompressZlib);
-                res.gomTree.addNode(node);
-
-                res.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-            }
-            res.gomTree.loadedBuckets = json.loadedBuckets;
-
-            res.archivesLoad = json.archivesLoad;
-
-            res._domLoad = json._domLoad;
-            res.nodesLoad = json.nodesLoad;
-            res.protosLoad = json.protosLoad;
-
-            res.isLoading = json.isLoading;
-            res.hasLoaded = json.hasLoaded;
-
-            return res;
-        } else {
-            throw `Unexpected JSON recieved. Object needs _class property with value of DOM. Got ${json._class}`;
-        }
-    }
 }
 
 const { ipcRenderer } = require("electron");
@@ -416,11 +365,10 @@ class RenderDomFactory {
     static DOM;
     static getDom() {
         ipcRenderer.sendSync("subscribeDom");
-        const domPath = ipcRenderer.sendSync("getDom");
-        const res = fs.readFileSync(domPath);
-        // fs.rmSync(domPath);
-        const jDom = JSON.parse(res, deserializeBigInt);
-        this.DOM = Dom.fromJSON(jDom);
+        const res = ipcRenderer.sendSync("getDom");
+        this.DOM = new Dom();
+        this.DOM.isLoading = res.isLoading;
+        this.DOM.hasLoaded = res.hasLoaded;
         return this.DOM;
     }
 }
@@ -470,6 +418,47 @@ const RenderDom = new Proxy(RenderDomFactory.getDom(), {
 });
 
 // render listeners
+ipcRenderer.on("sentDomSec", (event, data) => {
+    const prop = data.prop;
+    const value = data.val;
+
+    switch (prop) {
+        case "archives":
+            RenderDom[`update_archives`] = JSON.parse(value, deserializeBigInt).map(arc => Archive.fromJSON(arc) );
+            RenderDom[`update_archivesLoad`] = "100%";
+            break;
+        case "_dom":
+            RenderDom[`update__dom`] = value;
+            RenderDom[`update__domLoad`] = "100%";
+            break;
+        case "nodesSec":
+            for (const n of value.nodes) {
+                if (dat.isBkt) {
+                    for (const n of dat.nodes) {
+                        RenderDom.nodesList.push(n);
+                        const node = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
+                        RenderDom.gomTree.addNode(node);
+                    }
+                    
+                    RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+                    RenderDom[`update_nodesLoad`] = dat.nodesLoad;
+                    RenderDom.gomTree.loadedBuckets = dat.loadedBuckets;
+                } else {
+                    for (const n of dat.nodes) {
+                        RenderDom.nodesList.push(n);
+                        const testProto = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
+                        RenderDom.gomTree.addNode(testProto);
+                    }
+                    RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+                    RenderDom[`update_protosLoad`] = dat.protosLoad;
+                }
+            }
+            break;
+    }
+
+    const handler = RenderDom.detHandler(prop, value);
+    if (handler) handler();
+});
 ipcRenderer.on("mainUpdated", (event, data) => {
     let dat = data.value
     const prop = data.prop;

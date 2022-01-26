@@ -23,15 +23,26 @@ const history = [desktop, null, null, null, null, null, null, null, null, null];
 let histIdx = 0;
 let oldValue = desktop;
 
-let treeList = document.getElementById("treeList");
-let pathField = document.getElementById("pathField");
-let browsePathsBtn = document.getElementById("browsePathsBtn");
-let quickNavCont = document.getElementsByClassName('quick-nav-contents')[0];
+const viewerWindow = document.getElementById('viewerWindow');
+const fileTreeContainer = document.getElementById('fileTreeContainer');
+const treeList = document.getElementById("treeList");
+const leftDrag = document.getElementById('leftDrag');
+let leftResize = false;
 
-let backArrowBtn = document.getElementById("backArrowBtn");
-let forwardArrowBtn = document.getElementById("forwardArrowBtn");
-let moveUpArrowBtn = document.getElementById("moveUpArrowBtn");
-let refreshBtn = document.getElementById("refreshBtn");
+const viewContainer = document.getElementById('viewContainer');
+
+let rightResize = false;
+const rightDrag = document.getElementById('rightDrag');
+const dataViewContainer = document.getElementById('dataViewContainer');
+
+const pathField = document.getElementById("pathField");
+const browsePathsBtn = document.getElementById("browsePathsBtn");
+const quickNavCont = document.getElementsByClassName('quick-nav-contents')[0];
+
+const backArrowBtn = document.getElementById("backArrowBtn");
+const forwardArrowBtn = document.getElementById("forwardArrowBtn");
+const moveUpArrowBtn = document.getElementById("moveUpArrowBtn");
+const refreshBtn = document.getElementById("refreshBtn");
 
 let fileTree;
 
@@ -133,13 +144,29 @@ function addNavElem(title, iClass, pathToSet, isDrive=false) {
     quickNavCont.appendChild(elem);
 }
 function initListeners() {
-    browsePathsBtn.onclick = (e) => {
-        ipcRenderer.send("showDialogGR2");
-    }
-    
-    refreshBtn.addEventListener("click", () => {
-        fileTree.render(treeList);
+    leftDrag.addEventListener('mousedown', (e) => { leftResize = true; });
+    rightDrag.addEventListener('mousedown', (e) => { rightResize = true; });
+    document.addEventListener('mouseup', (e) => {
+        if (leftResize) leftResize = false;
+        if (rightResize) rightResize = false;
     });
+    document.addEventListener('mousemove', (e) => {
+        if (leftResize) {
+            let changePercent = ((e.clientX) / viewerWindow.clientWidth) * 100;
+            let existingIncr = dataViewContainer.clientWidth / viewerWindow.clientWidth * 100;
+            fileTreeContainer.style.width = `${changePercent}%`;
+            viewContainer.style.width = `${100 - changePercent - existingIncr}%`;
+        } else if (rightResize) {
+            let changePercent = ((e.clientX) / viewerWindow.clientWidth) * 100;
+            let existingIncr = fileTreeContainer.clientWidth / viewerWindow.clientWidth * 100;
+            changePercent -= existingIncr;
+            viewContainer.style.width = `${changePercent}%`;
+            dataViewContainer.style.width = `${100 - changePercent - existingIncr}%`;
+        }
+    });
+    browsePathsBtn.onclick = (e) => { ipcRenderer.send("showDialogGR2"); }
+    
+    refreshBtn.addEventListener("click", () => { fileTree.render(treeList); });
     moveUpArrowBtn.addEventListener('click', (e) => {
         let newPath = path.join(pathField.value, "..");
     

@@ -15,8 +15,8 @@
 <body>
     <log-alert type="alert" visible="false"></log-alert>
     <window-title class="window-title"></window-title>
-    <div class="viewer-window unselectable">
-        <div class="file-tree-container">
+    <div id="viewerWindow" class="viewer-window unselectable">
+        <div id="fileTreeContainer" class="file-tree-container">
             <div class="file-tree-body element-border">
                 <div class="h2-container">
                     <h3 class="file-browser-header">File Browser</h3>
@@ -53,7 +53,8 @@
                 </div>
             </div>
         </div>
-        <div class="view-container">
+        <div id="leftDrag" class="drag-spacer"></div>
+        <div id="viewContainer" class="view-container">
             <div class="view-body element-border">
                 <div id="modelCanvasContainer" class="canvas-container"> <!-- style="display: none;" -->
                     <div class="canvas-wrapper">
@@ -83,7 +84,8 @@
                 </div>
             </div>
         </div>
-        <div class="data-view-container">
+        <div id="rightDrag" class="drag-spacer"></div>
+        <div id="dataViewContainer" class="data-view-container">
             <div class="data-view-body element-border">
                 <div class="data-view-container__data">
                     <h3 class="h2">Model Data</h3>

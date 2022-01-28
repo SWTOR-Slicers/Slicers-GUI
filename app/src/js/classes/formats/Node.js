@@ -1,6 +1,6 @@
-import { GOM } from "../util/Gom.js";
 import { RawDeflate } from "../../externals/Inflate.js";
 import { readVarInt, uint64_add, uint64C, assert, cleanString, readString, serializeMap } from "../../Util.js";
+import { GOM } from "../util/Gom.js";
 
 const fs = require('fs');
 const path = require('path');

@@ -1,6 +1,8 @@
-import { hashlittle2, uint32ToUint64 } from "../../Util.js";
-import { GOM } from "../../classes/util/Gom.js";
-import { DomLoader } from "../../classes/dataObjectModel/DomLoaders.js";
+const esmRequire = require("esm")(module/*, options*/);
+const { hashlittle2, uint32ToUint64 } = esmRequire("../../Util.js");
+const { parentPort } = require("worker_threads");
+const { GOM } = esmRequire("../../classes/util/Gom.js");
+const { DomLoader } = require("../../classes/dataObjectModel/DomLoaders.js");
 
 const path = require('path');
 const zlib = require('zlib');
@@ -20,16 +22,16 @@ let decompressZlib = function(data){
     return decompr
 };
 
-onmessage = (e) => {
-    switch (e.data.message) {
+parentPort.on("message", (data) => {
+    switch (data.message) {
         case "init":
-            cache['configPath'] = path.join(e.data.data, 'config.json');
+            cache['configPath'] = path.join(data.data, 'config.json');
             break;
         case "loadNodes":
-            loadNodes(e.data.data);
+            loadNodes(data.data);
             break;
     }
-}
+})
 
 async function loadNodes(torPath) {
     cache['tmpPath'] = cache['tmpPath'] == "" ? await getTmpFilePath() : cache['tmpPath'];
@@ -169,7 +171,7 @@ function loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr) {
         pos = iniPos + defLength + padding;
     }
 
-    postMessage({
+    parentPort.postMessage({
         "message": 'DomElements',
         "data": DomElements
     })

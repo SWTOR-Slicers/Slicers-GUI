@@ -1,4 +1,7 @@
-import { Archive } from "../../classes/formats/Archive.js";
+const { parentPort } = require("worker_threads");
+
+const esmRequire = require("esm")(module/*, options*/);
+const { Archive } = esmRequire("../../classes/formats/Archive.js");
 
 const path = require('path');
 
@@ -7,18 +10,17 @@ const cache = {
     "tmpPath": "",
     "store": {}
 }
-let decompressZlib = function(){};
 
-onmessage = (e) => {
-    switch (e.data.message) {
+parentPort.on("message", async (data) => {
+    switch (data.message) {
         case "init":
-            cache['configPath'] = path.normalize(path.join(e.data.data, "config.json"));
+            cache['configPath'] = path.normalize(path.join(data.data, "config.json"));
             break;
         case "loadAssets":
-            loadArchives(e.data.data.torFiles);
+            loadArchives(data.data.torFiles);
             break;
     }
-}
+});
 
 async function loadArchives(torFiles) {
     let numLoaded = 0;
@@ -26,7 +28,7 @@ async function loadArchives(torFiles) {
         numLoaded++;
         return loadArchive(tf, numLoaded, torFiles.length, idx);
     }));
-    postMessage({
+    parentPort.postMessage({
         "message": "complete",
         "data": {
             "archives": loadedArchives
@@ -37,7 +39,7 @@ async function loadArchives(torFiles) {
 async function loadArchive(torPath, numLoaded, totalTors, idx) {
     const archive = new Archive(torPath, idx, true);
 
-    postMessage({
+    parentPort.postMessage({
         "message": "progress",
         "data": {
             "numLoaded": numLoaded,
@@ -47,5 +49,3 @@ async function loadArchive(torPath, numLoaded, totalTors, idx) {
 
     return archive;
 }
-
-// Utility functions

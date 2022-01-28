@@ -1,47 +1,39 @@
-const path = require('path');
-
-const cache = {
-    "srcPath": ""
-}
+const { Worker, parentPort } = require("worker_threads");
 
 let domWorker;
 let nodeWorker;
 let protoWorker;
 
-let loadPrototypes = true;
-
-onmessage = (e) => {
-    switch (e.data.message) {
+parentPort.on("message", (data) => {
+    switch (data.message) {
         case "init":
-            cache['srcPath'] = e.data.data[1];
-            initSubWorkers(e.data.data[0]);
+            initSubWorkers(data.data);
             break;
         case "loadNodes":
-            if (!e.data.prots) {
-                loadPrototypes = false;
-            }
-            loadNodes(e.data.data);
+            loadNodes(data.data);
             break;
     }
-}
+});
 
 function initSubWorkers(resourcePath) {
-    nodeWorker = new Worker(path.join(cache['srcPath'], "js", "viewers", "node-viewer", "NodeWorker.js"), {
-        type: "module"
-    });
+    nodeWorker = new Worker(`./src/js/viewers/node-viewer/NodeWorker.js`);
 
-    nodeWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    nodeWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    nodeWorker.onmessage = (e) => {
-        switch (e.data.message) {
+    nodeWorker.on("error", (e) => {
+        console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
+    });
+    nodeWorker.on("messageerror", (e) => {
+        console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
+    });
+    nodeWorker.on("message", (data) => {
+        switch (data.message) {
             case "NODES":
-                postMessage({
+                parentPort.postMessage({
                     "message": "NODES",
-                    "data": e.data.data
+                    "data": data.data
                 });
                 break;
         }
-    }
+    })
 
     nodeWorker.postMessage({
         "message": "init",
@@ -49,22 +41,24 @@ function initSubWorkers(resourcePath) {
     });
 
 
-    domWorker = new Worker(path.join(cache['srcPath'], "js", "viewers", "node-viewer", "DomWorker.js"), {
-        type: "module"
-    });
+    domWorker = new Worker(`./src/js/viewers/node-viewer/DomWorker.js`);
 
-    domWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    domWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    domWorker.onmessage = (e) => {
-        switch (e.data.message) {
+    domWorker.on("error", (e) => {
+        console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
+    });
+    domWorker.on("messageerror", (e) => {
+        console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
+    });
+    domWorker.on("message", (data) => {
+        switch (data.message) {
             case "DomElements":
-                postMessage({
+                parentPort.postMessage({
                     "message": "DomElements",
-                    "data": e.data.data
+                    "data": data.data
                 });
                 break;
         }
-    }
+    });
 
     domWorker.postMessage({
         "message": "init",
@@ -72,22 +66,24 @@ function initSubWorkers(resourcePath) {
     });
 
 
-    protoWorker = new Worker(path.join(cache['srcPath'], "js", "viewers", "node-viewer", "PrototypeWorker.js"), {
-        type: "module"
-    });
+    protoWorker = new Worker(`./src/js/viewers/node-viewer/PrototypeWorker.js`);
 
-    protoWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    protoWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-    protoWorker.onmessage = (e) => {
-        switch (e.data.message) {
+    protoWorker.on("error", (e) => {
+        console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
+    });
+    protoWorker.on("messageerror", (e) => {
+        console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
+    });
+    protoWorker.on("message", (data) => {
+        switch (data.message) {
             case "PROTO":
-                postMessage({
+                parentPort.postMessage({
                     "message": "PROTO",
-                    "data": e.data.data
+                    "data": data.data
                 });
                 break;
         }
-    }
+    });
 
     protoWorker.postMessage({
         "message": "init",
@@ -104,10 +100,8 @@ function loadNodes(torFiles) {
         "message": 'loadNodes',
         "data": torFiles[0]
     });
-    if (loadPrototypes) {
-        protoWorker.postMessage({
-            "message": 'loadNodes',
-            "data": torFiles[0]
-        });
-    }
+    protoWorker.postMessage({
+        "message": 'loadNodes',
+        "data": torFiles[0]
+    });
 }

@@ -11,6 +11,7 @@ const dateTime = require('node-datetime');
 const UUID = require('uuid');
 const edge = require('electron-edge-js');
 const uuidV4 = UUID.v4;
+const { setResourcePath } = require('./src/js/classes/MainDom.js');
 
 if (handleSquirrelEvent()) { return; }
 
@@ -240,17 +241,29 @@ function initMain () {
 function initApp() {
   initMainListeners();
 
-  //grab resources
-  let res = fs.readFileSync(path.join(resourcePath, "extractionPresets.json"));
-  let json = JSON.parse(res);
+  let res1 = fs.readFileSync(path.join(resourcePath, "config.json"));
+  let json1 = JSON.parse(res1);
 
-  for (const langKVP of Object.entries(json)) {
+  cache.assetsFolder = json1.assetsFolder;
+  cache.outputFolder = json1.outputFolder;
+
+  cache.dataFolder = json1.dataFolder;
+  cache.extraction.extractionPreset = json1.extraction.extractionPreset;
+  cache.extraction.lang = json1.extraction.lang;
+  cache.extraction.version = json1.extraction.version;
+
+  //grab resources
+  let res2 = fs.readFileSync(path.join(resourcePath, "extractionPresets.json"));
+  let json2 = JSON.parse(res2);
+
+  for (const langKVP of Object.entries(json2)) {
     for (const envKVP of Object.entries(langKVP[1])) {
       for (const presetKVP of Object.entries(envKVP[1])) {
         extractionPresetConsts[langKVP[0]][envKVP[0]][presetKVP[0]] = presetKVP[1];
       }
     }
   }
+  setResourcePath(resourcePath, createTorJson());
 }
 function initMainListeners() {
   ipcMain.on('getWindowStatus', (event, data) => {
@@ -1380,30 +1393,36 @@ function calcDrop() {
   return isEnabled;
 }
 
+function createTorJson() {
+  let torFile = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_global_1.tor' : 'swtor_test_main_global_1.tor');
+  let torFile2 = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_systemgenerated_gom_1.tor' : 'swtor_test_main_systemgenerated_gom_1.tor');
+
+  let values = [];
+  const lastPath = path.normalize(path.join(cache.assetsFolder, `../${cache.extraction.version == 'Live' ? 'swtor' : 'publictest'}/retailclient/main_gfx_1.tor`));
+  const tors = extractionPresetConsts[cache.extraction.lang][cache.extraction.version]["names"];
+  for (const tor of tors) {
+    values.push(path.join(cache.assetsFolder, tor));
+  }
+  if (fs.existsSync(lastPath)) {
+    values.push(lastPath);
+  }
+
+  const torsName = path.join(cache['outputFolder'], 'tmp', `${uuidV4()}-dataPrep.json`);
+  fs.mkdirSync(path.dirname(torsName), { recursive: true });
+  fs.writeFileSync(torsName, JSON.stringify({
+    "nodeTors": [
+      torFile,
+      torFile2
+    ],
+    "torFiles": values
+  }));
+
+  return torsName;
+}
+
 async function readAllDataPrep(webCont) {
   try {
-    let torFile = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_global_1.tor' : 'swtor_test_main_global_1.tor');
-    let torFile2 = path.join(cache.assetsFolder, cache.extraction.version == 'Live' ? 'swtor_main_systemgenerated_gom_1.tor' : 'swtor_test_main_systemgenerated_gom_1.tor');
-
-    let values = [];
-    const lastPath = path.normalize(path.join(cache.assetsFolder, `../${cache.extraction.version == 'Live' ? 'swtor' : 'publictest'}/retailclient/main_gfx_1.tor`));
-    const tors = extractionPresetConsts[cache.extraction.lang][cache.extraction.version]["names"];
-    for (const tor of tors) {
-      values.push(path.join(cache.assetsFolder, tor));
-    }
-    if (fs.existsSync(lastPath)) {
-      values.push(lastPath);
-    }
-
-    const torsName = path.join(cache['outputFolder'], 'tmp', `${uuidV4()}-dataPrep.json`);
-    fs.mkdirSync(path.dirname(torsName), { recursive: true });
-    fs.writeFileSync(torsName, JSON.stringify({
-      "nodeTors": [
-        torFile,
-        torFile2
-      ],
-      "torFiles": values
-    }));
+    const torsName = createTorJson();
 
     webCont.send('dataTorPaths', [torsName]);
   } catch (err) {

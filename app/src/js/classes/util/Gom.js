@@ -15630,4 +15630,4 @@ GOM.fields["4611686306717004001"]="crdCreditsScreenData";
 GOM.fields["4611686299207604004"]="mntNpcRef";
 GOM.fields["4611686304141854000"]="soloRankedRequiredExpertise";
 
-export {GOM};
+export { GOM }

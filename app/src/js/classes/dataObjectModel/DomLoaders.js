@@ -1,4 +1,22 @@
-import { readVarInt, uint64_add, uint64C, assert, readString } from "../../Util.js";
+function readString(buffer, posIn, length = undefined) {
+    let pos = posIn;
+    let outString = '';
+    if (length === undefined) {
+        let curChar = new Uint8Array(buffer, pos++, 1)[0];
+        while (curChar !== 0) {
+            outString += String.fromCharCode(curChar);
+            curChar = new Uint8Array(buffer, pos++, 1)[0];
+        }
+    } else {
+        for (let i = 0; i < length; i++) {
+            const curChar = new Uint8Array(buffer, pos++, 1)[0];
+            if (curChar === 0)
+                break;
+            outString += String.fromCharCode(curChar)
+        }
+    }
+    return outString
+}
 
 const DomTypes = {
     "1": "Instance",
@@ -277,4 +295,7 @@ function readNullString(buffer, posIn, length = undefined) {
     return [outString, pos];
 }
 
-export { DomTypes, DomLoader }
+module.exports = {
+    "DomTypes": DomTypes,
+    "DomLoader": DomLoader
+}

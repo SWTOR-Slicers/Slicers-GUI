@@ -108,187 +108,6 @@ class Dom {
         }
     }
 
-    load(json) {
-        this.isLoading = true;
-        ipcRenderer.sendSync("domUpdate", {
-            "prop": "isLoading",
-            "value": this.isLoading
-        });
-
-        gomWorker.postMessage({
-            "message": 'loadNodes',
-            "data": json.nodeTors,
-            "prots": true
-        });
-
-        assetWorker.postMessage({
-            "message": 'loadAssets',
-            "data": {
-                "torFiles": json.torFiles
-            }
-        });
-    }
-
-    initWorkers(resourcePath, sourcePath) {
-        if (!this.isLoading) {
-            decompressZlib = (params) => {
-                const ret = inflateZlib(path.dirname(path.join(resourcePath, "config.json")), params);
-                return ret;
-            }
-            this.initAssetWorker(resourcePath, sourcePath);
-            this.initGomWorker(resourcePath, sourcePath);
-        }
-    }
-
-    initGomWorker(resourcePath, sourcePath) {
-        gomWorker = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "GomWorker.js"), {
-            type: "module"
-        });
-
-        gomWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-        gomWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-        gomWorker.onmessage = (e) => {
-            switch (e.data.message) {
-                case "DomElements":
-                    this._domLoad = "100%";
-                    this._dom = e.data.data;
-
-                    const ext = {
-                        "_dom": this._dom,
-                        "_domLoad": this._domLoad
-                    }
-
-                    ipcRenderer.sendSync("domUpdate", {
-                        "prop": "_dom",
-                        "value": ext
-                    });
-
-                    this.#domUpdate('100%');
-                    break;
-                case "NODES": {
-                    for (const n of e.data.data) {
-                        const node = new NodeEntr(n.node, n.torPath, this._dom, decompressZlib);
-                        this.gomTree.addNode(node);
-                    }
-                    this.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-
-                    this.gomTree.loadedBuckets++;
-                    const progress = `${this.gomTree.loadedBuckets / 500 * 100}%`;
-                    this.nodesLoad = progress;
-
-                    const ext = {
-                        "nodes": e.data.data,
-                        "nodesLoad": this.nodesLoad,
-                        "loadedBuckets": this.gomTree.loadedBuckets,
-                        "isBkt": true
-                    };
-                    ipcRenderer.sendSync("domUpdate", {
-                        "prop": "nodes",
-                        "value": ext
-                    });
-
-                    this.#nodesUpdate(progress, ext);
-                    break;
-                }
-                case "PROTO": {
-                    for (const n of e.data.data.nodes) {
-                        const testProto = new NodeEntr(n.node, n.torPath,this._dom, decompressZlib);
-                        this.gomTree.addNode(testProto);
-                    }
-                    this.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-
-                    const progress = `${e.data.data.numLoaded / e.data.data.total * 100}%`;
-                    this.protosLoad = progress;
-
-                    const ext = {
-                        ...e.data.data,
-                        "protosLoad": this.protosLoad
-                    }
-
-                    ipcRenderer.sendSync("domUpdate", {
-                        "prop": "protos",
-                        "value": ext
-                    });
-
-                    this.#protosUpdate(progress, e.data.data);
-                    break;
-                }
-            }
-
-            if (this.archivesLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
-                this.hasLoaded = true;
-
-                ipcRenderer.sendSync("domUpdate", {
-                    "prop": "hasLoaded",
-                    "value": this.hasLoaded
-                });
-
-                this.isLoading = false;
-                ipcRenderer.sendSync("domUpdate", {
-                    "prop": "isLoading",
-                    "value": this.isLoading
-                });
-            }
-        }
-
-        gomWorker.postMessage({
-            "message": "init",
-            "data": [ resourcePath, sourcePath ]
-        });
-    }
-
-    initAssetWorker(resourcePath, sourcePath) {
-        assetWorker = new Worker(path.join(sourcePath, "js", "viewers", "asset-viewer", "AssetWorker.js"), {
-            type: "module"
-        });
-    
-        assetWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-        assetWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
-        assetWorker.onmessage = (e) => {
-            switch (e.data.message) {
-                case "progress":
-                    this.archivesLoad = `${e.data.data.numLoaded / e.data.data.totalTors * 100}%`;
-
-                    ipcRenderer.sendSync("domUpdate", {
-                        "prop": "archivesLoad",
-                        "value": this.archivesLoad
-                    });
-
-                    this.#assetsProgress(`${e.data.data.numLoaded / e.data.data.totalTors * 100}%`);
-                    break;
-                case "complete":
-                    if (this.archivesLoad === "100%" && this._domLoad === "100%" && this.nodesLoad === "100%" && this.protosLoad === "100%") {
-                        this.hasLoaded = true;
-
-                        ipcRenderer.sendSync("domUpdate", {
-                            "prop": "hasLoaded",
-                            "value": this.hasLoaded
-                        });
-
-                        this.isLoading = false;
-                        ipcRenderer.sendSync("domUpdate", {
-                            "prop": "isLoading",
-                            "value": this.isLoading
-                        });
-                    }
-
-                    this.archives = e.data.data.archives;
-                    ipcRenderer.sendSync("domUpdate", {
-                        "prop": "archives",
-                        "value": JSON.stringify(this.archives, serializeBigInt)
-                    });
-                        
-                    this.#assetsComplete();
-                    break;
-            }
-        }
-    
-        assetWorker.postMessage({
-            "message": "init",
-            "data": resourcePath
-        });
-    }
-
     /**
      * @param  {UpdateHooks} hooks
      */
@@ -358,142 +177,111 @@ class Dom {
 }
 
 const { ipcRenderer } = require("electron");
-const path = require("path");
 
 class RenderDomFactory {
     static DOM;
-    static getDom() {
-        ipcRenderer.sendSync("subscribeDom");
-        const res = ipcRenderer.sendSync("getDom");
+    /**
+     * @returns {Dom}
+     */
+    static getDom(fields) {
+        const data = fields ? fields : ["archives", "_dom", "nodes"];
+        ipcRenderer.sendSync("subscribeDom", data);
+        const res = ipcRenderer.sendSync("getDom", data);
         this.DOM = new Dom();
         this.DOM.isLoading = res.isLoading;
         this.DOM.hasLoaded = res.hasLoaded;
         return this.DOM;
     }
 }
-const ignore = [
-    "assetsProgress",
-    "assetsComplete",
-    "domUpdate",
-    "nodesUpdate",
-    "protosUpdate",
-
-    "archivesLoad",
-    "_domLoad",
-    "nodesLoad",
-    "protosLoad"
-];
-
-const RenderDom = new Proxy(RenderDomFactory.getDom(), {
-    get(target, prop, receiver) {
-        let value = Reflect.get(...arguments);
-        return typeof value == 'function' ? value.bind(target) : value;
-    },
-    set: (target, prop, val) => {
-        if (ignore.includes(prop)) {
-            Reflect.set(target, prop, val);
-        } else if (prop.includes("update_")) {
-            const trueProp = prop.substring(7);
-
-            Reflect.set(target, trueProp, val);
-        } else {
-            if (prop === "archives") {
-                ipcRenderer.sendSync("domUpdate", {
-                    "prop": prop,
-                    "value": JSON.stringify(val, serializeBigInt)
-                });
-            } else {
-                ipcRenderer.sendSync("domUpdate", {
-                    "prop": prop,
-                    "value": val
-                });
-            }
-
-            Reflect.set(target, prop, val);
-        }
-
-        return true;
-    }
-});
 
 // render listeners
 ipcRenderer.on("sentDomSec", (event, data) => {
-    const prop = data.prop;
-    const value = data.value;
+    if (RenderDomFactory.DOM) {
+        const prop = data.prop;
+        const value = data.value;
 
-    switch (prop) {
-        case "archives":
-            RenderDom[`update_archives`] = JSON.parse(value, deserializeBigInt).map(arc => Archive.fromJSON(arc) );
-            RenderDom[`update_archivesLoad`] = "100%";
-            break;
-        case "_dom":
-            RenderDom[`update__dom`] = value;
-            RenderDom[`update__domLoad`] = "100%";
-            break;
-        case "nodesSec":
-            if (value.isBkt) {
-                for (const n of value.nodes) {
-                    RenderDom.nodesList.push(n);
-                    const node = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
-                    RenderDom.gomTree.addNode(node);
+        switch (prop) {
+            case "archives":
+                RenderDomFactory.DOM[`update_archives`] = JSON.parse(value, deserializeBigInt).map(arc => Archive.fromJSON(arc) );
+                RenderDomFactory.DOM[`update_archivesLoad`] = "100%";
+                break;
+            case "_dom":
+                RenderDomFactory.DOM[`update__dom`] = value;
+                RenderDomFactory.DOM[`update__domLoad`] = "100%";
+                break;
+            case "nodesSec":
+                if (value.isBkt) {
+                    for (const n of value.nodes) {
+                        RenderDomFactory.DOM.nodesList.push(n);
+                        const node = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom, decompressZlib);
+                        RenderDomFactory.DOM.gomTree.addNode(node);
+                    }
+                    
+                    RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+                    RenderDomFactory.DOM[`update_nodesLoad`] = value.nodesLoad;
+                    RenderDomFactory.DOM.gomTree.loadedBuckets = value.loadedBuckets;
+                } else {
+                    for (const n of value.nodes) {
+                        RenderDomFactory.DOM.nodesList.push(n);
+                        const testProto = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom, decompressZlib);
+                        RenderDomFactory.DOM.gomTree.addNode(testProto);
+                    }
+                    RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+                    RenderDomFactory.DOM[`update_protosLoad`] = value.protosLoad;
                 }
-                
-                RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-                RenderDom[`update_nodesLoad`] = value.nodesLoad;
-                RenderDom.gomTree.loadedBuckets = value.loadedBuckets;
-            } else {
-                for (const n of value.nodes) {
-                    RenderDom.nodesList.push(n);
-                    const testProto = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
-                    RenderDom.gomTree.addNode(testProto);
-                }
-                RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-                RenderDom[`update_protosLoad`] = value.protosLoad;
-            }
-            break;
-    }
-
-    const handler = RenderDom.detHandler(prop, value);
-    if (handler) handler();
-});
-ipcRenderer.on("mainUpdated", (event, data) => {
-    let dat = data.value
-    const prop = data.prop;
-    
-    if (prop === "nodes" || prop === "protos") {
-        if (dat.isBkt) {
-            for (const n of dat.nodes) {
-                RenderDom.nodesList.push(n);
-                const node = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
-                RenderDom.gomTree.addNode(node);
-            }
-            
-            RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-            RenderDom[`update_nodesLoad`] = dat.nodesLoad;
-            RenderDom.gomTree.loadedBuckets = dat.loadedBuckets;
-        } else {
-            for (const n of dat.nodes) {
-                RenderDom.nodesList.push(n);
-                const testProto = new NodeEntr(n.node, n.torPath, RenderDom._dom, decompressZlib);
-                RenderDom.gomTree.addNode(testProto);
-            }
-            RenderDom.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-            RenderDom[`update_protosLoad`] = dat.protosLoad;
+                break;
         }
-    } else if (prop === "_dom") {
-        RenderDom[`update__dom`] = dat._dom;
-        RenderDom[`update__domLoad`] = dat._domLoad;
-    } else {
-        if (prop === "archives") {
-            dat = JSON.parse(dat, deserializeBigInt).map(arc => Archive.fromJSON(arc) );
-        }
-        RenderDom[`update_${data.prop}`] = dat;
-    }
 
-    if (prop === "archives" || prop === "_dom" || prop === "nodes" || prop === "protos") {
-        const handler = RenderDom.detHandler(prop, dat);
+        const handler = RenderDomFactory.DOM.detHandler(prop, value);
         if (handler) handler();
     }
 });
+ipcRenderer.on("domUpdate", (event, data) => {
+    if (RenderDomFactory.DOM) {
+        let dat = data.value
+        const prop = data.prop;
 
-export { RenderDom };
+        switch (prop) {
+            case "nodes":
+            case "protos": {
+                if (dat.isBkt) {
+                    for (const n of dat.nodes) {
+                        RenderDomFactory.DOM.nodesList.push(n);
+                        const node = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom, decompressZlib);
+                        RenderDomFactory.DOM.gomTree.addNode(node);
+                    }
+                    
+                    RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+                    RenderDomFactory.DOM.nodesLoad = dat.nodesLoad;
+                    RenderDomFactory.DOM.gomTree.loadedBuckets = dat.loadedBuckets;
+                } else {
+                    for (const n of dat.nodes) {
+                        RenderDomFactory.DOM.nodesList.push(n);
+                        const testProto = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom, decompressZlib);
+                        RenderDomFactory.DOM.gomTree.addNode(testProto);
+                    }
+                    RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+                    RenderDomFactory.DOM.protosLoad = dat.protosLoad;
+                }
+                break;
+            }
+            case "archives":
+                RenderDomFactory.DOM[prop] = JSON.parse(dat, deserializeBigInt).map(arc => Archive.fromJSON(arc) );
+                break;
+            case "_dom":
+                RenderDomFactory.DOM._dom = dat._dom;
+                RenderDomFactory.DOM._domLoad = dat._domLoad;
+                break;
+            default:
+                RenderDomFactory.DOM[prop] = dat;
+                break;
+        }
+
+        if (prop === "archives" || prop === "_dom" || prop === "nodes" || prop === "protos") {
+            const handler = RenderDomFactory.DOM.detHandler(prop, dat);
+            if (handler) handler();
+        }
+    }
+});
+
+export { RenderDomFactory };

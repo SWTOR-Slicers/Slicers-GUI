@@ -38,6 +38,7 @@
     "electron-edge-js": "^14.16.1",
     "electron-node-config": "^1.1.0",
     "electron-squirrel-startup": "^1.0.0",
+    "esm": "^3.2.25",
     "event-stream": "^4.0.1",
     "jszip": "^3.7.1",
     "node-datetime": "^2.1.2",

@@ -24,9 +24,92 @@ class Dom {
 
 const { ipcMain } = require("electron");
 const { Worker } = require('worker_threads');
-const domWorker = new Worker("./src/js/classes/DomWorker.js");
-domWorker.on('message', (msg) => {
-    console.log(msg);
+const domWorker = new Worker("./src/js/classes/DomThread.js");
+domWorker.on('message', async (data) => {
+    switch (data.message) {
+        case "progress":
+            MainDom.archivesLoad = `${data.data.numLoaded / data.data.totalTors * 100}%`;
+
+            sendToSubs("domUpdate", {
+                "prop": "archivesLoad",
+                "value": MainDom.archivesLoad
+            });
+            break;
+        case "complete":
+            MainDom.archives = data.data.archives;
+            sendToSubs("domUpdate", {
+                "prop": "archives",
+                "value": JSON.stringify(MainDom.archives, serializeBigInt)
+            });
+            break;
+        case "DomElements":
+            MainDom._domLoad = "100%";
+            MainDom._dom = data.data;
+
+            const ext = {
+                "_dom": MainDom._dom,
+                "_domLoad": MainDom._domLoad
+            }
+
+            sendToSubs("domUpdate", {
+                "prop": "_dom",
+                "value": ext
+            });
+            break;
+        case "NODES": {
+            MainDom.loadedBuckets++;
+            const progress = `${MainDom.loadedBuckets / 500 * 100}%`;
+            MainDom.nodesLoad = progress;
+
+            const ext = {
+                "nodes": data.data,
+                "nodesLoad": MainDom.nodesLoad,
+                "loadedBuckets": MainDom.loadedBuckets,
+                "isBkt": true
+            };
+
+            MainDom.nodeSecs.push(ext);
+
+            sendToSubs("domUpdate", {
+                "prop": "nodes",
+                "value": ext
+            });
+            break;
+        }
+        case "PROTO": {
+            const progress = `${data.data.numLoaded / data.data.total * 100}%`;
+            MainDom.protosLoad = progress;
+            
+            const ext = {
+                ...data.data,
+                "protosLoad": MainDom.protosLoad
+            }
+
+            MainDom.nodeSecs.push(ext);
+
+            sendToSubs("domUpdate", {
+                "prop": "protos",
+                "value": ext
+            });
+            break;
+        }
+    }
+
+    if (MainDom.archivesLoad === "100%" && MainDom._domLoad === "100%" && MainDom.nodesLoad === "100%" && MainDom.protosLoad === "100%") {
+        console.log("done loading");
+        MainDom.hasLoaded = true;
+
+        sendToSubs("domUpdate", {
+            "prop": "hasLoaded",
+            "value": MainDom.hasLoaded
+        });
+
+        MainDom.isLoading = false;
+        sendToSubs("domUpdate", {
+            "prop": "isLoading",
+            "value": MainDom.isLoading
+        });
+    }
 });
 
 function serializeBigInt(key, value) { return typeof value === "bigint" ? `BIGINT::${value}` : value }
@@ -34,53 +117,57 @@ function serializeBigInt(key, value) { return typeof value === "bigint" ? `BIGIN
 const updateSubs = [];
 const MainDom = new Dom();
 
-// main listeners
-ipcMain.on("domUpdate", (event, data) => {
-    // update self
-    const prop = data.prop;
-    const val = data.value;
+async function initSendDom(sender, fields) {
+    if (fields.includes("archives")) {
+        sender.send("sentDomSec", {
+            "prop": "archives",
+            "value": JSON.stringify(MainDom.archives, serializeBigInt)
+        });
+    }
 
-    switch (prop) {
-        case "nodes":
-        case "protos": {
-            MainDom.nodeSecs.push(val);
-            if (val.isBkt) {
-                MainDom.nodesLoad = val.nodesLoad;
-                MainDom.loadedBuckets++;
-            } else {
-                MainDom.protosLoad = val.protosLoad;
+    if (fields.includes("_dom")) {
+        sender.send("sentDomSec", {
+            "prop": "_dom",
+            "value": MainDom._dom
+        });
+    }
+
+    if (fields.includes("nodes")) {
+        for (const sec of MainDom.nodeSecs) {
+            sender.send("sentDomSec", {
+                "prop": "nodeSec",
+                "value": sec
+            });
+        }
+    }
+}
+
+function sendToSubs(event, data) {
+    for (const entr of updateSubs) {
+        const webCont = entr.id;
+        if (data.prop == "archives" || data.prop == "_dom") {
+            if (entr.subs.includes(data.prop)) {
+                if (webCont.id !== event.sender.id) {
+                    webCont.send(event, data);
+                }
             }
-
-            break;
-        }
-        case "_dom": {
-            MainDom._dom = val._dom;
-            MainDom._domLoad = val._domLoad;
-            break;
-        }
-        case "archives": {
-            MainDom.archives = val;
-            break;
-        }
-        default: {
-            MainDom[prop] = val;
-            break;
+        } else if (data.prop == "nodes" || data.prop == "protos") {
+            if (entr.subs.includes("nodes")) {
+                if (webCont.id !== event.sender.id) {
+                    webCont.send(event, data);
+                }
+            }
+        } else {
+            if (webCont.id !== event.sender.id) {
+                webCont.send(event, data);
+            }
         }
     }
+}
 
-    // push updates
-    for (const webCont of updateSubs) {
-        if (webCont.id !== event.sender.id) {
-            webCont.send("mainUpdated", data);
-        }
-    }
-    // console.log('triggered dom update');
-
-    event.returnValue = true;
-});
-ipcMain.on("getDom", (event) => {
+ipcMain.on("getDom", (event, data) => {
     if (MainDom.hasLoaded) {
-        initSendDom(event.sender);
+        initSendDom(event.sender, data);
     } else if (MainDom.isLoading) {
 
     }
@@ -90,33 +177,26 @@ ipcMain.on("getDom", (event) => {
         "hasLoaded": MainDom.hasLoaded
     }
 });
+ipcMain.on("subscribeDom", (event, data) => { updateSubs.push({ "id": event.sender, "subs": data}); event.returnValue = true; });
 
-async function initSendDom(sender) {
-    sender.send("sentDomSec", {
-        "prop": "archives",
-        "value": MainDom.archives
+function setResourcePath(resPath, torsPath) {
+    domWorker.postMessage({
+        "message": "init",
+        "data": resPath
+    });
+    domWorker.postMessage({
+        "message": "load",
+        "data": torsPath
     });
 
-    sender.send("sentDomSec", {
-        "prop": "_dom",
-        "value": MainDom._dom
+    MainDom.isLoading = true;
+    sendToSubs("domUpdate", {
+        "prop": "isLoading",
+        "value": MainDom.isLoading
     });
-
-    for (const sec of MainDom.nodeSecs) {
-        sender.send("sentDomSec", {
-            "prop": "nodeSec",
-            "value": sec
-        });
-    }
-}
-
-ipcMain.on("subscribeDom", (event) => { updateSubs.push(event.sender); event.returnValue = true; });
-
-function setOutputDir(newPath) {
-    outputDir = newPath;
 }
 
 module.exports = {
     "MainDom": MainDom,
-    "setOutputDir": setOutputDir
+    "setResourcePath": setResourcePath
 }

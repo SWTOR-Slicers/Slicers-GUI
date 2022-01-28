@@ -2,9 +2,7 @@ import { currentNode } from "./GomTree.js";
 import { log } from "../../universal/Logger.js";
 import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
-import { RenderDom } from "../../classes/RenderDom.js";
-
-globalThis.DOM = RenderDom;
+import { RenderDomFactory } from "../../classes/RenderDom.js";
 
 // Node.js imports
 const { ipcRenderer } = require("electron");
@@ -33,13 +31,46 @@ const extrFormat = document.getElementById('extrFormat');
 const loadPrototypeNodes = document.getElementById('loadPrototypeNodes');
 
 // Constants
-const GTree = globalThis.DOM.gomTree;
-GTree.initRenderer(treeList, viewDisplay, dataContainer);
+let GTree;
 const configPath = path.normalize(path.join(resourcePath, "config.json"));
 const cache = {
     "output": "",
     "loadPrototypes": false,
     "outputType": "raw"
+}
+
+async function loadDOM() {
+    RenderDomFactory.getDom(["_dom", "nodes"])
+    globalThis.DOM = RenderDomFactory.DOM;
+    GTree = globalThis.DOM.gomTree;
+    GTree.initRenderer(treeList, viewDisplay, dataContainer);
+    
+    globalThis.DOM.hook({
+        assetHooks: {
+            assetsProgress: (progress) => {},
+            assetsComplete: () => {}
+        },
+        gomHooks: {
+            domUpdate: (progress) => {},
+            nodesUpdate: (progress, data) => {
+                globalThis.DOM.gomTree.nodeTree.resizefull();
+                globalThis.DOM.gomTree.nodeTree.redraw();
+                document.getElementById('numBucketsLeft').innerHTML = 500 - globalThis.DOM.gomTree.loadedBuckets;
+                if (globalThis.DOM.gomTree.loadedBuckets === 500) {
+                    document.getElementById('numBucketsLeft').innerHTML = "Done";
+                    setTimeout(() => {
+                        document.getElementById('numBucketsLeft').innerHTML = "";
+                    }, 2000);
+                }
+            },
+            protosUpdate: (progress, data) => {
+                if (loadPrototypeNodes.checked) {
+                    globalThis.DOM.gomTree.nodeTree.resizefull();
+                    globalThis.DOM.gomTree.nodeTree.redraw();
+                }
+            }
+        }
+    });
 }
 
 async function init() {
@@ -52,13 +83,7 @@ async function init() {
     extrFormat.nextElementSibling.nextElementSibling.querySelector(`#${extrFormat.options[0].innerHTML}`).classList.toggle('same-as-selected');
     
     initListeners();
-    initSubs();
-
-    if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
-        globalThis.DOM.initWorkers(resourcePath, sourcePath);
-    }
-
-    ipcRenderer.send('readAllDataPrep');
+    loadDOM();
 }
 
 async function loadCache() {
@@ -147,48 +172,6 @@ function initListeners() {
     extrFormat.clickCallback = (e) => { updateCache('outputType', e.currentTarget.innerHTML); }
     loadPrototypeNodes.addEventListener('click', (e) => { updateCache('loadPrototypes', loadPrototypeNodes.checked); });
     outputField.addEventListener('change', (e) => { updateCache('output', outputField.value); });
-}
-
-function initSubs() {
-    ipcRenderer.on('dataTorPaths', (event, data) => {
-        const dat = fs.readFileSync(data[0]);
-        fs.rmSync(data[0]);
-        const json = JSON.parse(dat);
-        globalThis.DOM.hook({
-            assetHooks: {
-                assetsProgress: (progress) => {},
-                assetsComplete: () => {}
-            },
-            gomHooks: {
-                domUpdate: (progress) => {},
-                nodesUpdate: (progress, data) => {
-                    globalThis.DOM.gomTree.nodeTree.resizefull();
-                    globalThis.DOM.gomTree.nodeTree.redraw();
-                    document.getElementById('numBucketsLeft').innerHTML = 500 - globalThis.DOM.gomTree.loadedBuckets;
-                    if (globalThis.DOM.gomTree.loadedBuckets === 500) {
-                        document.getElementById('numBucketsLeft').innerHTML = "Done";
-                        setTimeout(() => {
-                            document.getElementById('numBucketsLeft').innerHTML = "";
-                        }, 2000);
-                    }
-                },
-                protosUpdate: (progress, data) => {
-                    if (loadPrototypeNodes.checked) {
-                        globalThis.DOM.gomTree.nodeTree.resizefull();
-                        globalThis.DOM.gomTree.nodeTree.redraw();
-                    }
-                }
-            }
-        });
-        if (!globalThis.DOM.hasLoaded && !globalThis.DOM.isLoading) {
-            globalThis.DOM.load(json);
-        } else if (globalThis.DOM.nodesLoad === "100%") {
-            document.getElementById('numBucketsLeft').innerHTML = "Done";
-            setTimeout(() => {
-                document.getElementById('numBucketsLeft').innerHTML = "";
-            }, 2000);
-        }
-    });
 }
 
 init();

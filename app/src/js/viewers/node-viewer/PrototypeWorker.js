@@ -1,8 +1,11 @@
-import { hashlittle2, readString as readStr, readVarInt, uint64C, uint32ToUint64 } from "../../Util.js";
+const { parentPort } = require("worker_threads");
 
 const path = require('path');
 const zlib = require('zlib');
 const { promises: { readFile }, readFileSync, existsSync, mkdirSync } = require('fs');
+
+const esmRequire = require("esm")(module/*, options*/);
+const { hashlittle2, uint64C, readString, readVarInt, uint32ToUint64 } = esmRequire("../../Util.js");
 
 const cache = {
     "configPath": "",
@@ -18,16 +21,16 @@ let decompressZlib = function(data){
     return decompr
 };
 
-onmessage = (e) => {
-    switch (e.data.message) {
+parentPort.on("message", (data) => {
+    switch (data.message) {
         case "init":
-            cache['configPath'] = path.join(e.data.data, 'config.json');
+            cache['configPath'] = path.join(data.data, 'config.json');
             break;
         case "loadNodes":
-            loadNodes(e.data.data);
+            loadNodes(data.data);
             break;
     }
-}
+});
 
 async function loadNodes(torPath) {
     cache['tmpPath'] = cache['tmpPath'] == "" ? await getTmpFilePath() : cache['tmpPath'];
@@ -162,7 +165,7 @@ async function loadPrototypes(gomArchive, data, torPath, dv) {
 
                 // This batches together prototype nodes so that we dont lag out the app by batching 16 thousand at once
                 if (protoLoaded % 500 == 0 || protoLoaded == 16650) {
-                    postMessage({
+                    parentPort.postMessage({
                         "message": 'PROTO',
                         "data": {
                             "nodes": prototypes,
@@ -195,7 +198,7 @@ function loadPrototype(id, dv, prototype) {
     pos += 8;
     const nameLen = dv.getInt32(pos, true);
     pos += 4;
-    node.fqn = readStr(dv.buffer, pos, nameLen-1); //readString(dv, pos)
+    node.fqn = readString(dv.buffer, pos, nameLen-1); //readString(dv, pos)
     pos += nameLen-1;
     pos++;
 

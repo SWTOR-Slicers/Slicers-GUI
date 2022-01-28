@@ -1,8 +1,10 @@
-import { hashlittle2, uint64, readString as readStr, readVarInt, uint32ToUint64 } from "../../Util.js";
-
+const { parentPort } = require("worker_threads");
 const path = require('path');
 const zlib = require('zlib');
 const { promises: { readFile }, readFileSync, existsSync, mkdirSync } = require('fs');
+
+const esmRequire = require("esm")(module/*, options*/);
+const { hashlittle2, uint64, readString, readVarInt, uint32ToUint64 } = esmRequire("../../Util.js");
 
 const cache = {
     "configPath": "",
@@ -18,16 +20,16 @@ let decompressZlib = function(data){
     return decompr
 };
 
-onmessage = (e) => {
-    switch (e.data.message) {
+parentPort.on("message", (data) => {
+    switch (data.message) {
         case "init":
-            cache['configPath'] = path.join(e.data.data, 'config.json');
+            cache['configPath'] = path.join(data.data, 'config.json');
             break;
         case "loadNodes":
-            loadNodes(e.data.data);
+            loadNodes(data.data);
             break;
     }
-}
+});
 
 async function loadNodes(torPath) {
     cache['tmpPath'] = cache['tmpPath'] == "" ? await getTmpFilePath() : cache['tmpPath'];
@@ -151,10 +153,16 @@ function loadBuckets(gomArchive, data, torPath, infoDV) {
 }
 function loadBucket(bktIdx, dv, torPath, bktFile) {
     const magic = dv.getUint32(0, !0);
-    if (magic !== 0x4B554250) return postMessage({ "message": 'NODES', "data": [] });
+    if (magic !== 0x4B554250) {
+        parentPort.postMessage({ "message": 'NODES', "data": [] });
+        return;
+    }
     const versionMajor = dv.getUint16(4, !0);
     const versionMinor = dv.getUint16(6, !0);
-    if (versionMajor !== 2 || versionMinor !== 5) return postMessage({ "message": 'NODES', "data": [] });
+    if (versionMajor !== 2 || versionMinor !== 5) {
+        parentPort.postMessage({ "message": 'NODES', "data": [] });
+        return;
+    }
     let pos = 8;
     const length = dv.byteLength - 12;
     readAllItems(dv, pos, length, torPath, bktIdx, bktFile, true);
@@ -201,7 +209,7 @@ function readAllItems(dv, pos, length, torPath, bktIdx, bktFile, isBucket) {
             pos += 2;
             pos += 2;
             const streamStyle = dv.getUint8(pos++);
-            const name = readString(dv, startOffset + nameOffset);
+            const name = readStr(dv, startOffset + nameOffset);
             const dataLength = tmpLength - dataOffset;
             const node = {};
             node.id = id;
@@ -225,14 +233,14 @@ function readAllItems(dv, pos, length, torPath, bktIdx, bktFile, isBucket) {
             pos = dblbStartOffset + ((startOffset - dblbStartOffset + tmpLength + 7) & -8)
         }
     }
-    postMessage({
+    parentPort.postMessage({
         "message": 'NODES',
         "data": nodes
     })
 }
 
 // Utility functions
-function readString(dv, pos) {
+function readStr(dv, pos) {
     let curChar = 0;
     let outName = '';
     while ((curChar = dv.getUint8(pos++)) !== 0) {
@@ -242,7 +250,7 @@ function readString(dv, pos) {
 }
 function readLengthPrefixString(dv, pos) {
     const strLength = readVarInt(dv, pos);
-    return [readStr(dv.buffer, pos + strLength.len, strLength.intLo), strLength.len + strLength.intLo];
+    return [readString(dv.buffer, pos + strLength.len, strLength.intLo), strLength.len + strLength.intLo];
 }
 async function getTmpFilePath() {
     let res = readFileSync(cache['configPath']);

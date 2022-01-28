@@ -52,6 +52,10 @@
     "xml-js": "^1.6.11",
     "xml2js": "^0.4.23"
   },
+  "resolutions": {
+    "node-fetch": "^2.6.7",
+    "trim-newlines": "^3.0.1"
+  },
   "config": {
     "forge": "./config.js"
   }

@@ -1,3 +1,7 @@
+const esmRequire = require("esm")(module/*, options*/);
+
+const { DelayableLoop } = esmRequire("./util/DelayableLoop.js");
+
 class Dom {
     constructor() {
         // assets
@@ -25,6 +29,9 @@ class Dom {
 const { ipcMain } = require("electron");
 const { Worker } = require('worker_threads');
 const domWorker = new Worker("./src/js/classes/DomThread.js");
+
+let timeI = 0;
+let timeF = 0;
 domWorker.on('message', async (data) => {
     switch (data.message) {
         case "progress":
@@ -57,6 +64,10 @@ domWorker.on('message', async (data) => {
             });
             break;
         case "NODES": {
+            // timeI = timeF;
+            // timeF = Date.now();
+            // console.log(timeF - timeI);
+
             MainDom.loadedBuckets++;
             const progress = `${MainDom.loadedBuckets / 500 * 100}%`;
             MainDom.nodesLoad = progress;
@@ -125,31 +136,39 @@ async function initSendDom(sender, fields) {
         });
     }
 
-    if (fields.includes("_dom")) {
+    if (fields.includes("nodes")) {
         sender.send("sentDomSec", {
             "prop": "_dom",
             "value": MainDom._dom
         });
-    }
 
-    if (fields.includes("nodes")) {
-        for (const sec of MainDom.nodeSecs) {
-            sender.send("sentDomSec", {
-                "prop": "nodeSec",
-                "value": sec
-            });
-        }
+        const tmp = new DelayableLoop({
+            delay: 100,
+            min: 0,
+            max: MainDom.nodeSecs.length,
+            logic: (i) => {
+                const sec = MainDom.nodeSecs[i];
+                sender.send("sentDomSec", {
+                    "prop": "nodeSec",
+                    "value": sec
+                });
+            }
+        }).loop();
+
+        // for (const sec of MainDom.nodeSecs) {
+            
+        // }
     }
 }
 
 function sendToSubs(event, data) {
     for (const entr of updateSubs) {
         const webCont = entr.sender;
-        if (data.prop == "archives" || data.prop == "_dom") {
-            if (entr.subs.includes(data.prop)) {
+        if (data.prop == "archives") {
+            if (entr.subs.includes("archives")) {
                 webCont.send(event, data);
             }
-        } else if (data.prop == "nodes" || data.prop == "protos") {
+        } else if (data.prop == "_dom" || data.prop == "nodes" || data.prop == "protos") {
             if (entr.subs.includes("nodes")) {
                 webCont.send(event, data);
             }
@@ -161,11 +180,6 @@ function sendToSubs(event, data) {
 
 ipcMain.on("getDom", (event, data) => {
     initSendDom(event.sender, data);
-    // if (MainDom.hasLoaded) {
-    //     initSendDom(event.sender, data);
-    // } else if (MainDom.isLoading) {
-
-    // }
 
     event.returnValue = {
         "isLoading": MainDom.isLoading,

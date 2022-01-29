@@ -16,31 +16,6 @@ parentPort.on("message", (data) => {
 });
 
 function initSubWorkers(resourcePath) {
-    nodeWorker = new Worker(`./src/js/viewers/node-viewer/NodeWorker.js`);
-
-    nodeWorker.on("error", (e) => {
-        console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
-    });
-    nodeWorker.on("messageerror", (e) => {
-        console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
-    });
-    nodeWorker.on("message", (data) => {
-        switch (data.message) {
-            case "NODES":
-                parentPort.postMessage({
-                    "message": "NODES",
-                    "data": data.data
-                });
-                break;
-        }
-    })
-
-    nodeWorker.postMessage({
-        "message": "init",
-        "data": resourcePath
-    });
-
-
     domWorker = new Worker(`./src/js/viewers/node-viewer/DomWorker.js`);
 
     domWorker.on("error", (e) => {
@@ -61,6 +36,31 @@ function initSubWorkers(resourcePath) {
     });
 
     domWorker.postMessage({
+        "message": "init",
+        "data": resourcePath
+    });
+
+
+    nodeWorker = new Worker(`./src/js/viewers/node-viewer/NodeWorker.js`);
+
+    nodeWorker.on("error", (e) => {
+        console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
+    });
+    nodeWorker.on("messageerror", (e) => {
+        console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
+    });
+    nodeWorker.on("message", (data) => {
+        switch (data.message) {
+            case "NODES":
+                parentPort.postMessage({
+                    "message": "NODES",
+                    "data": data.data
+                });
+                break;
+        }
+    })
+
+    nodeWorker.postMessage({
         "message": "init",
         "data": resourcePath
     });
@@ -96,12 +96,15 @@ function loadNodes(torFiles) {
         "message": 'loadNodes',
         "data": torFiles[1]
     });
-    nodeWorker.postMessage({
-        "message": 'loadNodes',
-        "data": torFiles[0]
-    });
-    protoWorker.postMessage({
-        "message": 'loadNodes',
-        "data": torFiles[0]
-    });
+    
+    setTimeout(() => {
+        nodeWorker.postMessage({
+            "message": 'loadNodes',
+            "data": torFiles[0]
+        });
+        protoWorker.postMessage({
+            "message": 'loadNodes',
+            "data": torFiles[0]
+        });
+    }, 1100);
 }

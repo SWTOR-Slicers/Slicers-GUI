@@ -1,11 +1,10 @@
 import { currentNode } from "./GomTree.js";
 import { log } from "../../universal/Logger.js";
-import { sourcePath, resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
+import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { RenderDomFactory } from "../../classes/RenderDom.js";
 
 // Node.js imports
-const { ipcRenderer } = require("electron");
 const fs = require("fs");
 const path = require("path");
 
@@ -40,7 +39,7 @@ const cache = {
 }
 
 async function loadDOM() {
-    RenderDomFactory.getDom(["_dom", "nodes"])
+    RenderDomFactory.getDom(["nodes"], resourcePath);
     globalThis.DOM = RenderDomFactory.DOM;
     GTree = globalThis.DOM.gomTree;
     GTree.initRenderer(treeList, viewDisplay, dataContainer);

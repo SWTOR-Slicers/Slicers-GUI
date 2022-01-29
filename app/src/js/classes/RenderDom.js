@@ -1,7 +1,7 @@
 import { GomTree, nodeFolderSort } from "../viewers/node-viewer/GomTree.js";
 import { NodeEntr } from "./formats/Node.js";
 
-import { inflateZlib, serializeBigInt } from "../Util.js";
+import { inflateZlib } from "../Util.js";
 import { Archive } from "./formats/Archive.js";
 import { deserializeBigInt } from "../Util.js";
 
@@ -28,7 +28,6 @@ import { deserializeBigInt } from "../Util.js";
  * @property {GomUpdateHooks} gomHooks
  */
 
-let gomWorker, assetWorker;
 
 let decompressZlib = (params) => {}
 
@@ -133,26 +132,6 @@ class Dom {
         }
     }
 
-    invokeHandlerPost(prop) {
-        switch (prop) {
-            case "archives":
-                if (this.archivesLoad === "100%") {
-                    return (this.#assetsComplete) ? () => { this.#assetsComplete() } : null;
-                } else {
-                    return (this.#assetsProgress) ? () => { this.#assetsProgress(this.archivesLoad) } : null;
-                }
-            case "_dom": {
-                return (this.#domUpdate) ? () => { this.#domUpdate(this._domLoad) } : null;
-            }
-            case "nodes": 
-            case "protos": {
-                return (this.#nodesUpdate) ? () => { this.#nodesUpdate(this.nodesLoad, this.gomTree.nodesList) } : null;
-            }
-        }
-    
-        return null;
-    }
-
     detHandler(prop, data) {
         switch (prop) {
             case "archives":
@@ -170,6 +149,13 @@ class Dom {
             case "protos": {
                 return (this.#protosUpdate) ? () => { this.#protosUpdate(this.protosLoad, data) } : null;
             }
+            case "nodeSec": {
+                if (data.isBkt) {
+                    return (this.#nodesUpdate) ? () => { this.#nodesUpdate(this.nodesLoad, data) } : null;
+                } else {
+                    return (this.#protosUpdate) ? () => { this.#protosUpdate(this.protosLoad, data) } : null;
+                }
+            }
         }
     
         return null;
@@ -183,8 +169,12 @@ class RenderDomFactory {
     /**
      * @returns {Dom}
      */
-    static getDom(fields) {
-        const data = fields ? fields : ["archives", "_dom", "nodes"];
+    static getDom(fields, resourcePath) {
+        decompressZlib = (params) => {
+            const ret = inflateZlib(resourcePath, params);
+            return ret;
+        }
+        const data = fields ? fields : ["archives", "nodes"];
         ipcRenderer.sendSync("subscribeDom", data);
         const res = ipcRenderer.sendSync("getDom", data);
         this.DOM = new Dom();
@@ -202,14 +192,15 @@ ipcRenderer.on("sentDomSec", (event, data) => {
 
         switch (prop) {
             case "archives":
-                RenderDomFactory.DOM[`update_archives`] = JSON.parse(value, deserializeBigInt).map(arc => Archive.fromJSON(arc) );
-                RenderDomFactory.DOM[`update_archivesLoad`] = "100%";
+                RenderDomFactory.DOM.archives = JSON.parse(value, deserializeBigInt).map(arc => Archive.fromJSON(arc) );
+                RenderDomFactory.DOM.archivesLoad = "100%";
                 break;
             case "_dom":
-                RenderDomFactory.DOM[`update__dom`] = value;
-                RenderDomFactory.DOM[`update__domLoad`] = "100%";
+                RenderDomFactory.DOM._dom = value;
+                RenderDomFactory.DOM._domLoad = "100%";
                 break;
-            case "nodesSec":
+            case "nodeSec":
+                console.log("nodeSec");
                 if (value.isBkt) {
                     for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);
@@ -218,7 +209,7 @@ ipcRenderer.on("sentDomSec", (event, data) => {
                     }
                     
                     RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-                    RenderDomFactory.DOM[`update_nodesLoad`] = value.nodesLoad;
+                    RenderDomFactory.DOM.nodesLoad = value.nodesLoad;
                     RenderDomFactory.DOM.gomTree.loadedBuckets = value.loadedBuckets;
                 } else {
                     for (const n of value.nodes) {
@@ -227,7 +218,7 @@ ipcRenderer.on("sentDomSec", (event, data) => {
                         RenderDomFactory.DOM.gomTree.addNode(testProto);
                     }
                     RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-                    RenderDomFactory.DOM[`update_protosLoad`] = value.protosLoad;
+                    RenderDomFactory.DOM.protosLoad = value.protosLoad;
                 }
                 break;
         }
@@ -238,47 +229,47 @@ ipcRenderer.on("sentDomSec", (event, data) => {
 });
 ipcRenderer.on("domUpdate", (event, data) => {
     if (RenderDomFactory.DOM) {
-        let dat = data.value
+        let value = data.value
         const prop = data.prop;
 
         switch (prop) {
             case "nodes":
             case "protos": {
-                if (dat.isBkt) {
-                    for (const n of dat.nodes) {
+                if (value.isBkt) {
+                    for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);
                         const node = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom, decompressZlib);
                         RenderDomFactory.DOM.gomTree.addNode(node);
                     }
                     
                     RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-                    RenderDomFactory.DOM.nodesLoad = dat.nodesLoad;
-                    RenderDomFactory.DOM.gomTree.loadedBuckets = dat.loadedBuckets;
+                    RenderDomFactory.DOM.nodesLoad = value.nodesLoad;
+                    RenderDomFactory.DOM.gomTree.loadedBuckets = value.loadedBuckets;
                 } else {
-                    for (const n of dat.nodes) {
+                    for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);
                         const testProto = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom, decompressZlib);
                         RenderDomFactory.DOM.gomTree.addNode(testProto);
                     }
                     RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-                    RenderDomFactory.DOM.protosLoad = dat.protosLoad;
+                    RenderDomFactory.DOM.protosLoad = value.protosLoad;
                 }
                 break;
             }
             case "archives":
-                RenderDomFactory.DOM[prop] = JSON.parse(dat, deserializeBigInt).map(arc => Archive.fromJSON(arc) );
+                RenderDomFactory.DOM.archives = JSON.parse(value, deserializeBigInt).map(arc => Archive.fromJSON(arc) );
                 break;
             case "_dom":
-                RenderDomFactory.DOM._dom = dat._dom;
-                RenderDomFactory.DOM._domLoad = dat._domLoad;
+                RenderDomFactory.DOM._dom = value._dom;
+                RenderDomFactory.DOM._domLoad = value._domLoad;
                 break;
             default:
-                RenderDomFactory.DOM[prop] = dat;
+                RenderDomFactory.DOM[prop] = value;
                 break;
         }
 
         if (prop === "archives" || prop === "_dom" || prop === "nodes" || prop === "protos") {
-            const handler = RenderDomFactory.DOM.detHandler(prop, dat);
+            const handler = RenderDomFactory.DOM.detHandler(prop, value);
             if (handler) handler();
         }
     }

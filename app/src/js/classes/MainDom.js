@@ -30,8 +30,6 @@ const { ipcMain } = require("electron");
 const { Worker } = require('worker_threads');
 const domWorker = new Worker("./src/js/classes/DomThread.js");
 
-let timeI = 0;
-let timeF = 0;
 domWorker.on('message', async (data) => {
     switch (data.message) {
         case "progress":
@@ -64,18 +62,12 @@ domWorker.on('message', async (data) => {
             });
             break;
         case "NODES": {
-            // timeI = timeF;
-            // timeF = Date.now();
-            // console.log(timeF - timeI);
-
             MainDom.loadedBuckets++;
             const progress = `${MainDom.loadedBuckets / 500 * 100}%`;
             MainDom.nodesLoad = progress;
 
             const ext = {
                 "nodes": data.data,
-                "nodesLoad": MainDom.nodesLoad,
-                "loadedBuckets": MainDom.loadedBuckets,
                 "isBkt": true
             };
 
@@ -92,8 +84,7 @@ domWorker.on('message', async (data) => {
             MainDom.protosLoad = progress;
             
             const ext = {
-                ...data.data,
-                "protosLoad": MainDom.protosLoad
+                ...data.data
             }
 
             MainDom.nodeSecs.push(ext);
@@ -154,10 +145,6 @@ async function initSendDom(sender, fields) {
                 });
             }
         }).loop();
-
-        // for (const sec of MainDom.nodeSecs) {
-            
-        // }
     }
 }
 

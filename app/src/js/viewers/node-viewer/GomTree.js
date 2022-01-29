@@ -312,6 +312,7 @@ class GomTree {
         this.nodesByFqn = new NodesByFqn();
         this.nodesList = {};
         this.loadedBuckets = 0;
+        this.loadedPrototypes = 0;
     }
 
     initRenderer(treeList, viewContainer, dataContainer) {

@@ -200,7 +200,6 @@ ipcRenderer.on("sentDomSec", (event, data) => {
                 RenderDomFactory.DOM._domLoad = "100%";
                 break;
             case "nodeSec":
-                console.log("nodeSec");
                 if (value.isBkt) {
                     for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);
@@ -209,16 +208,17 @@ ipcRenderer.on("sentDomSec", (event, data) => {
                     }
                     
                     RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
+                    RenderDomFactory.DOM.gomTree.loadedBuckets++;
                     RenderDomFactory.DOM.nodesLoad = `${RenderDomFactory.DOM.gomTree.loadedBuckets / 500 * 100}%`;
-                    // RenderDomFactory.DOM.gomTree.loadedBuckets = value.loadedBuckets;
                 } else {
                     for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);
                         const testProto = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom, decompressZlib);
                         RenderDomFactory.DOM.gomTree.addNode(testProto);
+                        RenderDomFactory.DOM.gomTree.loadedPrototypes++;
                     }
                     RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-                    RenderDomFactory.DOM.protosLoad = value.protosLoad;
+                    RenderDomFactory.DOM.protosLoad = `${RenderDomFactory.DOM.gomTree.loadedPrototypes / value.total * 100}%`;
                 }
                 break;
         }
@@ -243,16 +243,17 @@ ipcRenderer.on("domUpdate", (event, data) => {
                     }
                     
                     RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-                    RenderDomFactory.DOM.nodesLoad = value.nodesLoad;
-                    RenderDomFactory.DOM.gomTree.loadedBuckets = value.loadedBuckets;
+                    RenderDomFactory.DOM.gomTree.loadedBuckets++;
+                    RenderDomFactory.DOM.nodesLoad = `${RenderDomFactory.DOM.gomTree.loadedBuckets / 500 * 100}%`;
                 } else {
                     for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);
                         const testProto = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom, decompressZlib);
                         RenderDomFactory.DOM.gomTree.addNode(testProto);
+                        RenderDomFactory.DOM.gomTree.loadedPrototypes++;
                     }
                     RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-                    RenderDomFactory.DOM.protosLoad = value.protosLoad;
+                    RenderDomFactory.DOM.protosLoad = `${RenderDomFactory.DOM.gomTree.loadedPrototypes / value.total * 100}%`;
                 }
                 break;
             }

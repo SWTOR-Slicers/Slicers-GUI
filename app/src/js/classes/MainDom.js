@@ -144,23 +144,17 @@ async function initSendDom(sender, fields) {
 
 function sendToSubs(event, data) {
     for (const entr of updateSubs) {
-        const webCont = entr.id;
+        const webCont = entr.sender;
         if (data.prop == "archives" || data.prop == "_dom") {
             if (entr.subs.includes(data.prop)) {
-                if (webCont.id !== event.sender.id) {
-                    webCont.send(event, data);
-                }
+                webCont.send(event, data);
             }
         } else if (data.prop == "nodes" || data.prop == "protos") {
             if (entr.subs.includes("nodes")) {
-                if (webCont.id !== event.sender.id) {
-                    webCont.send(event, data);
-                }
-            }
-        } else {
-            if (webCont.id !== event.sender.id) {
                 webCont.send(event, data);
             }
+        } else {
+            webCont.send(event, data);
         }
     }
 }
@@ -177,7 +171,7 @@ ipcMain.on("getDom", (event, data) => {
         "hasLoaded": MainDom.hasLoaded
     }
 });
-ipcMain.on("subscribeDom", (event, data) => { updateSubs.push({ "id": event.sender, "subs": data}); event.returnValue = true; });
+ipcMain.on("subscribeDom", (event, data) => { updateSubs.push({ "sender": event.sender, "subs": data}); event.returnValue = true; });
 
 function setResourcePath(resPath, torsPath) {
     domWorker.postMessage({

@@ -5,7 +5,7 @@ const { DelayableLoop } = esmRequire("./util/DelayableLoop.js");
 class Dom {
     constructor() {
         // assets
-        this.archives = "";
+        this.archives = [];
         this.assets = {};
 
         this.loadedBuckets = 0;
@@ -32,19 +32,13 @@ const domWorker = new Worker("./src/js/classes/DomThread.js");
 
 domWorker.on('message', async (data) => {
     switch (data.message) {
-        case "progress":
+        case "archives":
             MainDom.archivesLoad = `${data.data.numLoaded / data.data.totalTors * 100}%`;
+            MainDom.archives.push(data.data);
 
             sendToSubs("domUpdate", {
-                "prop": "archivesLoad",
-                "value": MainDom.archivesLoad
-            });
-            break;
-        case "complete":
-            MainDom.archives = data.data.archives;
-            sendToSubs("domUpdate", {
                 "prop": "archives",
-                "value": JSON.stringify(MainDom.archives, serializeBigInt)
+                "value": data.data
             });
             break;
         case "DomElements":
@@ -121,10 +115,18 @@ const MainDom = new Dom();
 
 async function initSendDom(sender, fields) {
     if (fields.includes("archives")) {
-        sender.send("sentDomSec", {
-            "prop": "archives",
-            "value": JSON.stringify(MainDom.archives, serializeBigInt)
-        });
+        const tmp = new DelayableLoop({
+            delay: 100,
+            min: 0,
+            max: MainDom.archives.length,
+            logic: (i) => {
+                const sec = MainDom.archives[i];
+                sender.send("sentDomSec", {
+                    "prop": "archives",
+                    "value": sec
+                });
+            }
+        }).loop();
     }
 
     if (fields.includes("nodes")) {

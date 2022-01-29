@@ -33,14 +33,13 @@ let decompressZlib = (params) => {}
 
 class Dom {
     #assetsProgress;
-    #assetsComplete;
     #domUpdate;
     #nodesUpdate;
     #protosUpdate;
 
     constructor() {
         // assets
-        this.archives = {};
+        this.archives = [];
         this.assets = {};
 
         // GOM Tree
@@ -60,7 +59,6 @@ class Dom {
 
         // private hooks
         this.#assetsProgress = null;
-        this.#assetsComplete = null;
         this.#domUpdate = null;
         this.#nodesUpdate = null;
         this.#protosUpdate = null;
@@ -72,14 +70,6 @@ class Dom {
     set assetsProgress(newHook) {
         this.#assetsProgress = (progress) => {
             newHook(progress);
-        }
-    }
-    /**
-     * @param {Function} newHook
-     */
-    set assetsComplete(newHook) {
-        this.#assetsComplete = () => {
-            newHook();
         }
     }
     /**
@@ -112,7 +102,6 @@ class Dom {
      */
     hook(hooks) {
         this.assetsProgress = hooks.assetHooks.assetsProgress;
-        this.assetsComplete = hooks.assetHooks.assetsComplete;
         
         this.domUpdate = hooks.gomHooks.domUpdate;
         this.nodesUpdate = hooks.gomHooks.nodesUpdate;
@@ -135,11 +124,7 @@ class Dom {
     detHandler(prop, data) {
         switch (prop) {
             case "archives":
-                if (this.archivesLoad === "100%") {
-                    return (this.#assetsComplete) ? () => { this.#assetsComplete() } : null;
-                } else {
-                    return (this.#assetsProgress) ? () => { this.#assetsProgress(this.archivesLoad) } : null;
-                }
+                return (this.#assetsProgress) ? () => { this.#assetsProgress(this.archivesLoad, data) } : null;
             case "_dom": {
                 return (this.#domUpdate) ? () => { this.#domUpdate(this._domLoad) } : null;
             }
@@ -188,12 +173,13 @@ class RenderDomFactory {
 ipcRenderer.on("sentDomSec", (event, data) => {
     if (RenderDomFactory.DOM) {
         const prop = data.prop;
-        const value = data.value;
+        let value = data.value;
 
         switch (prop) {
             case "archives":
-                RenderDomFactory.DOM.archives = JSON.parse(value, deserializeBigInt).map(arc => Archive.fromJSON(arc) );
-                RenderDomFactory.DOM.archivesLoad = "100%";
+                value.archive = Archive.fromJSON(JSON.parse(value.archive, deserializeBigInt));
+                RenderDomFactory.DOM.archives.push(value.archive);
+                RenderDomFactory.DOM.archivesLoad = `${RenderDomFactory.DOM.archives.length / value.totalTors * 100}%`;
                 break;
             case "_dom":
                 RenderDomFactory.DOM._dom = value;
@@ -258,7 +244,9 @@ ipcRenderer.on("domUpdate", (event, data) => {
                 break;
             }
             case "archives":
-                RenderDomFactory.DOM.archives = JSON.parse(value, deserializeBigInt).map(arc => Archive.fromJSON(arc) );
+                value.archive = Archive.fromJSON(JSON.parse(value.archive, deserializeBigInt));
+                RenderDomFactory.DOM.archives.push(value.archive);
+                RenderDomFactory.DOM.archivesLoad = `${RenderDomFactory.DOM.archives.length / value.totalTors * 100}%`;
                 break;
             case "_dom":
                 RenderDomFactory.DOM._dom = value._dom;
@@ -269,7 +257,7 @@ ipcRenderer.on("domUpdate", (event, data) => {
                 break;
         }
 
-        if (prop === "archives" || prop === "_dom" || prop === "nodes" || prop === "protos") {
+        if (prop === "archives" || prop === "archivesLoad" || prop === "_dom" || prop === "nodes" || prop === "protos") {
             const handler = RenderDomFactory.DOM.detHandler(prop, value);
             if (handler) handler();
         }

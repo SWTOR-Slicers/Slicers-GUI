@@ -189,14 +189,13 @@ async function loadDOM() {
     
     globalThis.DOM.hook({
         assetHooks: {
-            assetsProgress: (progress) => {
-                progressBar__assets.style.width = progress;
-            },
-            assetsComplete: () => {
+            assetsProgress: (progress, data) => {
                 hashWorker.postMessage({
-                    "message": "archivesComplete",
-                    "data": globalThis.DOM.archives
+                    "message": "archivesProgress",
+                    "data": data
                 });
+                progressBar__assets.style.width = progress;
+                
                 if (progressBar__assets.style.width == '100%' &&
                     progressBar__baseNodes.style.width == '100%' &&
                     progressBar__clientGOM.style.width == '100%' &&

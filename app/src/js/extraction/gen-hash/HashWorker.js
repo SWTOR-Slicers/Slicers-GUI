@@ -42,7 +42,7 @@ let totalActualFound;
 let hash;
 let GTree;
 let _dom = null;
-let archives;
+let archives = [];
 
 let decompressZlib = (params) => {
     const ret = inflateZlib(path.dirname(cache['configPath']), params);
@@ -90,8 +90,8 @@ onmessage = (e) => {
                 GTree.nodesByFqn.$F.sort(nodeFolderSort);
             }
             break;
-        case "archivesComplete":
-            archives = e.data.data;
+        case "archivesProgress":
+            archives.push(e.data.data);
             break;
         default:
             console.log(`Unexpected message with value ${e.data.message}`);

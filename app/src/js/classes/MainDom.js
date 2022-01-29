@@ -160,11 +160,12 @@ function sendToSubs(event, data) {
 }
 
 ipcMain.on("getDom", (event, data) => {
-    if (MainDom.hasLoaded) {
-        initSendDom(event.sender, data);
-    } else if (MainDom.isLoading) {
+    initSendDom(event.sender, data);
+    // if (MainDom.hasLoaded) {
+    //     initSendDom(event.sender, data);
+    // } else if (MainDom.isLoading) {
 
-    }
+    // }
 
     event.returnValue = {
         "isLoading": MainDom.isLoading,

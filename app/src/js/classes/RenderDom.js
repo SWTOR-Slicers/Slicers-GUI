@@ -209,8 +209,8 @@ ipcRenderer.on("sentDomSec", (event, data) => {
                     }
                     
                     RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
-                    RenderDomFactory.DOM.nodesLoad = value.nodesLoad;
-                    RenderDomFactory.DOM.gomTree.loadedBuckets = value.loadedBuckets;
+                    RenderDomFactory.DOM.nodesLoad = `${RenderDomFactory.DOM.gomTree.loadedBuckets / 500 * 100}%`;
+                    // RenderDomFactory.DOM.gomTree.loadedBuckets = value.loadedBuckets;
                 } else {
                     for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);

@@ -66,7 +66,7 @@ module.exports = {
             "name": "@electron-forge/maker-squirrel",
             "config": {
                 "loadingGif": "src/gif/LoadingAnimation.gif",
-                "iconUrl": "https://cdn.jsdelivr.net/gh/SWTOR-Slicers/Slicers-GUI/SlicersLogo.ico",
+                "iconUrl": "https://cdn.jsdelivr.net/gh/tormak9970/Slicers-GUI/app/src/img/SlicersLogo.ico",
                 "setupIcon": "src/img/SlicersLogo.ico"
             }
         },

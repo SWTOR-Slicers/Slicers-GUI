@@ -48,7 +48,7 @@ module.exports = {
             if (!fs.existsSync(resourceJsonPath)) {
                 let res = fs.readFileSync(path.join(__dirname, 'resources/default_resources.json'));
                 let json = JSON.parse(res);
-                fs.writeFileSync(resourceJsonPath, json);
+                fs.writeFileSync(resourceJsonPath, JSON.stringify(json, null, '\t'), 'utf-8');
             }
         },
         prePackage: async (forgeConfig) => {

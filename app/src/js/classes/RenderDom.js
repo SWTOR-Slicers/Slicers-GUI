@@ -26,8 +26,8 @@ import { deserializeBigInt } from "../Util.js";
  * @typedef {Object} UpdateHooks
  * @property {AssetsUpdateHooks} assetHooks
  * @property {GomUpdateHooks} gomHooks
+ * @property {Function} flushHook
  */
-
 
 let decompressZlib = (params) => {}
 
@@ -36,6 +36,7 @@ class Dom {
     #domUpdate;
     #nodesUpdate;
     #protosUpdate;
+    #flushHook;
 
     constructor() {
         // assets
@@ -62,6 +63,7 @@ class Dom {
         this.#domUpdate = null;
         this.#nodesUpdate = null;
         this.#protosUpdate = null;
+        this.#flushHook = null;
     }
 
     /**
@@ -106,6 +108,7 @@ class Dom {
         this.domUpdate = hooks.gomHooks.domUpdate;
         this.nodesUpdate = hooks.gomHooks.nodesUpdate;
         this.protosUpdate = hooks.gomHooks.protosUpdate;
+        this.#flushHook = hooks.flushHook;
     }
 
     getLoadStatus(fields, progBars) {
@@ -144,6 +147,31 @@ class Dom {
         }
     
         return null;
+    }
+
+    flush() {
+        // Reset all values except hooks
+
+        // assets
+        this.archives = [];
+        this.assets = {};
+
+        // GOM Tree
+        this._dom = {};
+        this.gomTree = new GomTree();
+        this.nodesList = [];
+
+        // status props
+        this.archivesLoad = "0.0%";
+        this._domLoad = "0.0%";
+        this.nodesLoad = "0.0%";
+        this.protosLoad = "0.0%";
+
+        // DOM status
+        this.isLoading = false;
+        this.hasLoaded = false;
+
+        this.#flushHook();
     }
 }
 
@@ -262,6 +290,9 @@ ipcRenderer.on("domUpdate", (event, data) => {
             if (handler) handler();
         }
     }
+});
+ipcRenderer.on("flushDom", () => {
+    if (RenderDomFactory.DOM) RenderDomFactory.DOM.flush();
 });
 
 export { RenderDomFactory };

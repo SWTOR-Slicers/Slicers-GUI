@@ -24,6 +24,34 @@ class Dom {
         this.isLoading = false;
         this.hasLoaded = false;
     }
+
+    flush(resPath, torsPath) {
+        // Reset all values
+
+        // assets
+        this.archives = [];
+        this.assets = {};
+
+        this.loadedBuckets = 0;
+
+        // GOM Tree
+        this._dom = {};
+        this.nodeSecs = [];
+
+        // status props
+        this.archivesLoad = "0.0%";
+        this._domLoad = "0.0%";
+        this.nodesLoad = "0.0%";
+        this.protosLoad = "0.0%";
+
+        // DOM status
+        this.isLoading = false;
+        this.hasLoaded = false;
+
+        sendToSubs("flushDom", {});
+
+        setResourcePath(resPath, torsPath);
+    }
 }
 
 const { ipcMain } = require("electron");
@@ -107,8 +135,6 @@ domWorker.on('message', async (data) => {
         });
     }
 });
-
-function serializeBigInt(key, value) { return typeof value === "bigint" ? `BIGINT::${value}` : value }
 
 const updateSubs = [];
 const MainDom = new Dom();

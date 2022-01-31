@@ -267,6 +267,10 @@ async function loadDOM() {
                     genHashes.classList.toggle('disabled');
                 }
             }
+        },
+        flushHook: () => {
+            hashWorker.terminate();
+            initHashWorker();
         }
     });
 }

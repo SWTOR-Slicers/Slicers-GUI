@@ -1,6 +1,6 @@
 const {app, BrowserWindow, dialog, ipcMain, screen, shell} = require('electron');
 
-require('./src/js/classes/MainDom.js'); // Dom Manager for main process
+const { MainDom, setResourcePath } = require('./src/js/classes/MainDom.js'); // Dom Manager for main process
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 const fs = require('fs');
@@ -11,7 +11,6 @@ const dateTime = require('node-datetime');
 const UUID = require('uuid');
 const edge = require('electron-edge-js');
 const uuidV4 = UUID.v4;
-const { setResourcePath } = require('./src/js/classes/MainDom.js');
 
 if (handleSquirrelEvent()) { return; }
 
@@ -297,6 +296,7 @@ function initMainListeners() {
               dropIsEnabled = extractionPresetConsts[cache.extraction.lang][cache.extraction.version].names.every((elem) => {
                 return contents.includes(elem);
               });
+              MainDom.flush(resourcePath, createTorJson());
             }
             mainWindow.webContents.send("assetsFolderReply", [dir.filePaths, dropIsEnabled]);
             await updateJSON("assetsFolder", dir.filePaths[0]);
@@ -323,6 +323,7 @@ function initMainListeners() {
           dropIsEnabled = extractionPresetConsts[cache.extraction.lang][cache.extraction.version].names.every((elem) => {
             return contents.includes(elem);
           });
+          MainDom.flush(resourcePath, createTorJson());
         }
         mainWindow.webContents.send("isDirAsset", [exists, dropIsEnabled]);
         break;
@@ -1116,7 +1117,6 @@ function initNodeViewer () {
   nodeViewerWin.once('ready-to-show', () => nodeViewerWin.show());
   
   nodeViewerWin.removeMenu();
-  nodeViewerWin.webContents.openDevTools();
   nodeViewerWin.loadFile(`${__dirname}/src/html/NodeViewer.html`);
   
   
@@ -1401,7 +1401,10 @@ function createTorJson() {
   const lastPath = path.normalize(path.join(cache.assetsFolder, `../${cache.extraction.version == 'Live' ? 'swtor' : 'publictest'}/retailclient/main_gfx_1.tor`));
   const tors = extractionPresetConsts[cache.extraction.lang][cache.extraction.version]["names"];
   for (const tor of tors) {
-    values.push(path.join(cache.assetsFolder, tor));
+    const tPath = path.join(cache.assetsFolder, tor)
+    if (fs.existsSync(tPath)) {
+      values.push(tPath);
+    }
   }
   if (fs.existsSync(lastPath)) {
     values.push(lastPath);

@@ -68,6 +68,14 @@ async function loadDOM() {
                     globalThis.DOM.gomTree.nodeTree.redraw();
                 }
             }
+        },
+        flushHook: () => {
+            treeList.innerHTML = "";
+            viewDisplay.innerHTML = "";
+            dataContainer.innerHTML = "";
+
+            GTree = globalThis.DOM.gomTree;
+            GTree.initRenderer(treeList, viewDisplay, dataContainer);
         }
     });
 }

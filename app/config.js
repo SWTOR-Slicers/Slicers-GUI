@@ -43,6 +43,14 @@ module.exports = {
         ]
     },
     "hooks": {
+        generateAssets: async (forgeConfig, platform, arch) => {
+            const resourceJsonPath = path.join(__dirname, 'resources/resources.json');
+            if (!fs.existsSync(resourceJsonPath)) {
+                let res = fs.readFileSync(path.join(__dirname, 'resources/default_resources.json'));
+                let json = JSON.parse(res);
+                fs.writeFileSync(resourceJsonPath, json);
+            }
+        },
         prePackage: async (forgeConfig) => {
             await setDefaultValues();
         },

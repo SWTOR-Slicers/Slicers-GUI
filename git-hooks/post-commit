@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+# A hook to mirror commits in this repo to other repositories.
+#
+
+exec git push slicers_slicersGui__mirror -f --mirror

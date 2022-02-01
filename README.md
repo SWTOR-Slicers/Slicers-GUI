@@ -9,6 +9,12 @@ The Slicers GUI is a datamining tool built on [ElectronJS](https://www.electronj
 For directions on its installation, please check our [**wiki**](https://github.com/SWTOR-Slicers/WikiPedia/wiki/). Also, if your intention is to use the tool to extract SWTOR Player Characters and NPCs, please check this specific guide that will show you how to install and use this tool for that purpose: [**Locating and assembling characters' assets automatically: a step by step guide**](https://github.com/SWTOR-Slicers/WikiPedia/wiki/locating-swtor-characters-assets-automatically).
 
 
+### Contents
+
+This repository has a few different components:
+ - **git-hooks** - These are the git hooks used by this repo. Copy them into your `.git/hooks/` directory.
+ - **version control bat files** - These are .bat files that should be used to commit, push and pull changes.
+ - **app source** - The actual source code for the application itself.
 
 ### Building yourself
 

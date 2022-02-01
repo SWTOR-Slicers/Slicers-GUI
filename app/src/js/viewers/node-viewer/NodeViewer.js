@@ -1,7 +1,7 @@
 import { currentNode } from "./GomTree.js";
 import { log } from "../../universal/Logger.js";
 import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
-import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { RenderDomFactory } from "../../classes/RenderDom.js";
 
 // Node.js imports

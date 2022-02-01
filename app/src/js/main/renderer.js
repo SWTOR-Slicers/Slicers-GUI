@@ -1,4 +1,4 @@
-import { addTooltip, updateTooltipEvent, removeTooltip } from "../universal/Tooltips.js";
+import { addTooltip, updateTooltipEvent } from "../universal/Tooltips.js";
 import { getSetting } from "../../api/config/settings/Settings.js";
 import { updateAlertType } from "../universal/Logger.js";
 import { changeSource, playAudio, pauseAudio } from "./BackgroundTheme.js";
@@ -98,25 +98,20 @@ function initialize() {
     log("Boot up complete");
 }
 function initSettings() {
-    if (settingsJSON.usePathTooltips) {
-        addTooltip('top', assetTextField, true, (element) => { return element.value; });
-        addTooltip('top', outputTextField, true, (element) => { return element.value; });
-        addTooltip('top', dataTextField, true, (element) => { return element.value; });
-    }
+    addTooltip('top', assetTextField, true, (element) => { return element.value; });
+    addTooltip('top', outputTextField, true, (element) => { return element.value; });
+    addTooltip('top', dataTextField, true, (element) => { return element.value; });
+    addTooltip('top', assetsFolderLabel, false, (element) => { return 'Game assets (.tor)'; });
+    addTooltip('top', outputFolderLabel, false, (element) => { return 'GUI output folder'; });
+    addTooltip('top', dataFolderLabel, false, (element) => { return 'Data data folder for use w/ locator'; });
 
-    if (settingsJSON.useLabelTooltips) {
-        addTooltip('top', assetsFolderLabel, false, (element) => { return 'Game assets (.tor)'; });
-        addTooltip('top', outputFolderLabel, false, (element) => { return 'GUI output folder'; });
-        addTooltip('top', dataFolderLabel, false, (element) => { return 'Data data folder for use w/ locator'; });
-    
-        addTooltip('top', clearLogBtn, false, (element) => { return 'Clear Log'; });
-        addTooltip('top', saveLogToFile, false, (element) => { return 'Log to File'; });
-        addTooltip('top', expComprLogBtn, true, (element) => { return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log'); });
-    
-        addTooltip('top', settingsBtn, false, (element) => { return 'Settings'; });
-        addTooltip('top', creditWindowBtn, false, (element) => { return 'Credits'; });
-        addTooltip('top', layoutEditorWindowBtn, false, (element) => { return 'App Layout Editor'; });
-    }
+    addTooltip('top', clearLogBtn, false, (element) => { return 'Clear Log'; });
+    addTooltip('top', saveLogToFile, false, (element) => { return 'Log to File'; });
+    addTooltip('top', expComprLogBtn, true, (element) => { return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log'); });
+
+    addTooltip('top', settingsBtn, false, (element) => { return 'Settings'; });
+    addTooltip('top', creditWindowBtn, false, (element) => { return 'Credits'; });
+    addTooltip('top', layoutEditorWindowBtn, false, (element) => { return 'App Layout Editor'; });
 }
 
 function updateCache(field, value) {
@@ -374,44 +369,6 @@ function initSubs() {
                         alertType = settingsJSON.alerts;
                         updateAlertType(settingsJSON.alerts);
                         break;
-                    case "usePathTooltips":
-                        if (settingsJSON.usePathTooltips) {
-                            addTooltip('top', assetTextField, true, (element) => { return element.value; });
-                            addTooltip('top', outputTextField, true, (element) => { return element.value; });
-                            addTooltip('top', dataTextField, true, (element) => { return element.value; });
-                        } else {
-                            removeTooltip(assetTextField, true, (element) => { return element.value; });
-                            removeTooltip(outputTextField, true, (element) => { return element.value; });
-                            removeTooltip(dataTextField, true, (element) => { return element.value; });
-                        }
-                        break;
-                    case "useLabelTooltips":
-                        if (settingsJSON.useLabelTooltips) {
-                            addTooltip('top', assetsFolderLabel, false, (element) => { return 'Game assets (.tor)'; });
-                            addTooltip('top', outputFolderLabel, false, (element) => { return 'GUI output folder'; });
-                            addTooltip('top', dataFolderLabel, false, (element) => { return 'Data data folder for use w/ locator'; });
-                        
-                            addTooltip('top', clearLogBtn, false, (element) => { return 'Clear Log'; });
-                            addTooltip('top', saveLogToFile, false, (element) => { return 'Log to File'; });
-                            addTooltip('top', expComprLogBtn, true, (element) => { return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log'); });
-                        
-                            addTooltip('top', settingsBtn, false, (element) => { return 'Settings'; });
-                            addTooltip('top', creditWindowBtn, false, (element) => { return 'Credits'; });
-                            addTooltip('top', layoutEditorWindowBtn, false, (element) => { return 'App Layout Editor'; });
-                        } else {
-                            removeTooltip(assetsFolderLabel, false, (element) => { return 'Game assets (.tor)'; });
-                            removeTooltip(outputFolderLabel, false, (element) => { return 'GUI output folder'; });
-                            removeTooltip(dataFolderLabel, false, (element) => { return 'Data data folder for use w/ locator'; });
-                        
-                            removeTooltip(clearLogBtn, false, (element) => { return 'Clear Log'; });
-                            removeTooltip(saveLogToFile, false, (element) => { return 'Log to File'; });
-                            removeTooltip(expComprLogBtn, true, (element) => { return (element.classList.contains('popped') ? 'Compress Log' : 'Expand Log'); });
-                        
-                            removeTooltip(settingsBtn, false, (element) => { return 'Settings'; });
-                            removeTooltip(creditWindowBtn, false, (element) => { return 'Credits'; });
-                            removeTooltip(layoutEditorWindowBtn, false, (element) => { return 'App Layout Editor'; });
-                        }
-                        break;
                 }
             }
         }
@@ -518,7 +475,6 @@ function initSubs() {
         const extractProgBar = document.getElementById('extractProgBar');
         const parent = extractProgBar.parentElement;
         parent.classList.add('prog-bar-complete');
-        removeTooltip(parent, false, (element) => { return 'Extraction progress...'});
         extractProgBar.id = "";
         
         extrBtn.classList.remove('disabled');
@@ -598,8 +554,6 @@ function initSubs() {
     });
     ipcRenderer.on('nodeExtractionStarted', (event, data) => {
         log(`<div class="prog-bar-container"><div id="extractProgBar" class="prog-bar__bar"></div></div>`);
-
-        addTooltip('top', document.getElementById('extractProgBar').parentElement, false, (element) => { return 'Extraction progress...'});
     });
     ipcRenderer.on('extrCanceled', (event, data) => {
         extrBtn.classList.remove('disabled');

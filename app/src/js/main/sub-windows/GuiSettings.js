@@ -15,8 +15,6 @@ const langDrop = document.getElementById("langDrop");
 
 //Accessibility settings
 const alertNotif = document.getElementById('alertNotif');
-const useLabelTooltips = document.getElementById('useLabelTooltips');
-const usePathTooltips = document.getElementById('usePathTooltips');
 
 //Sound Settings
 const ambientMusicEnabled = document.getElementById('ambientMusicEnabled');
@@ -60,8 +58,6 @@ async function loadCache() {
     cache["lang"] = jsonObj["extraction"]["lang"];
 
     cache.alerts = settingsJSON.alerts;
-    cache.useLabelTooltips = settingsJSON.useLabelTooltips;
-    cache.usePathTooltips = settingsJSON.usePathTooltips;
     cache.ambientMusic = settingsJSON.ambientMusic;
 
     //set lang setting
@@ -77,10 +73,6 @@ async function loadCache() {
     alertNotif.nextElementSibling.innerHTML = alertNotif.options[0].innerHTML;
     alertNotif.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
     alertNotif.nextElementSibling.nextElementSibling.querySelector(`#${alertNotif.options[0].innerHTML}`).classList.toggle('same-as-selected');
-
-    //set tooltip settings
-    useLabelTooltips.checked = cache.useLabelTooltips;
-    usePathTooltips.checked = cache.usePathTooltips;
 
     //set audio settings
     ambientMusicEnabled.checked = cache.ambientMusic.enabled;
@@ -170,10 +162,6 @@ function initListeners() {
 
     //alerts
     alertNotif.clickCallback = (e) => { updateCache('alerts', e.currentTarget.innerHTML); }
-
-    //tooltips
-    useLabelTooltips.addEventListener('click', (e) => { updateCache('useLabelTooltips', useLabelTooltips.checked); });
-    usePathTooltips.addEventListener('click', (e) => { updateCache('usePathTooltips', usePathTooltips.checked); });
 
     //Sound Settings
     ambientMusicEnabled.addEventListener('click', (e) => {

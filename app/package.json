@@ -9,7 +9,6 @@
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    
     "pushvc": "cd ../ && git-push.bat main",
     "pullvc": "cd ../ && git-pull.bat main",
     "stagevc": "cd ../ && git-stage.bat -A",

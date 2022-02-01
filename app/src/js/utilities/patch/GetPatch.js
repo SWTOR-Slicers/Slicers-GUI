@@ -1,7 +1,7 @@
 import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { getSetting } from "../../../api/config/settings/Settings.js";
 import { log, updateAlertType } from "../../universal/Logger.js";
-import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 
 let settingsJSON = getSetting();
 
@@ -78,18 +78,13 @@ async function initialize() {
 
     versionInput.value = cache["version"];
     output.value = cache["output"];
-
-    if (settingsJSON.usePathTooltips) {
-        addTooltip('top', output, true, (element) => { return element.value; });
-    }
-
-    if (settingsJSON.useLabelTooltips) {
-        addTooltip('top', envTypeLabel, false, (element) => { return 'Patch enviroment type'; });
-        addTooltip('top', prodTypeLabel, false, (element) => { return 'Patch product type'; });
-        addTooltip('top', varientLabel, false, (element) => { return 'Patch varient type'; });
-        addTooltip('top', versionYLabel, false, (element) => { return 'Version Y value'; });
-        addTooltip('top', outputFolderLabel, false, (element) => { return 'Patch output folder'; });
-    }
+    
+    addTooltip('top', output, true, (element) => { return element.value; });
+    addTooltip('top', envTypeLabel, false, (element) => { return 'Patch enviroment type'; });
+    addTooltip('top', prodTypeLabel, false, (element) => { return 'Patch product type'; });
+    addTooltip('top', varientLabel, false, (element) => { return 'Patch varient type'; });
+    addTooltip('top', versionYLabel, false, (element) => { return 'Version Y value'; });
+    addTooltip('top', outputFolderLabel, false, (element) => { return 'Patch output folder'; });
     
     initListeners();
     initSubs();
@@ -213,28 +208,6 @@ function initSubs() {
                     case "alerts":
                         alertType = settingsJSON.alerts;
                         updateAlertType(settingsJSON.alerts);
-                        break;
-                    case "usePathTooltips":
-                        if (settingsJSON.usePathTooltips) {
-                            addTooltip('top', output, true, (element) => { return element.value; });
-                        } else {
-                            removeTooltip(output, true, (element) => { return element.value; });
-                        }
-                        break;
-                    case "useLabelTooltips":
-                        if (settingsJSON.useLabelTooltips) {
-                            addTooltip('top', envTypeLabel, false, (element) => { return 'Patch enviroment type'; });
-                            addTooltip('top', prodTypeLabel, false, (element) => { return 'Patch product type'; });
-                            addTooltip('top', varientLabel, false, (element) => { return 'Patch varient type'; });
-                            addTooltip('top', versionYLabel, false, (element) => { return 'Version Y value'; });
-                            addTooltip('top', outputFolderLabel, false, (element) => { return 'Patch output folder'; });
-                        } else {
-                            removeTooltip(envTypeLabel, false, (element) => { return 'Patch enviroment type'; });
-                            removeTooltip(prodTypeLabel, false, (element) => { return 'Patch product type'; });
-                            removeTooltip(varientLabel, false, (element) => { return 'Patch varient type'; });
-                            removeTooltip(versionYLabel, false, (element) => { return 'Version Y value'; });
-                            removeTooltip(outputFolderLabel, false, (element) => { return 'Patch output folder'; });
-                        }
                         break;
                 }
             }

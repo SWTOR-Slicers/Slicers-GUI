@@ -1,7 +1,7 @@
 import {resourcePath} from "../../../api/config/resource-path/ResourcePath.js";
 import { getSetting } from "../../../api/config/settings/Settings.js";
 import { log, updateAlertType } from "../../universal/Logger.js";
-import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 
 let settingsJSON = getSetting();
 
@@ -49,16 +49,11 @@ async function initialize() {
     filePathInput.value = cache["unpackPath"];
     outputInput.value = cache["output"];
 
-    if (settingsJSON.usePathTooltips) {
-        addTooltip('top', filePathInput, true, (element) => { return element.value; });
-        addTooltip('top', outputInput, true, (element) => { return element.value; });
-    }
-
-    if (settingsJSON.useLabelTooltips) {
-        addTooltip('top', progressBar, false, (element) => { return 'Progress Bar'; });
-        addTooltip('top', unpackPathLabel, false, (element) => { return 'Unpack file or folder'; });
-        addTooltip('top', outputPathLabel, false, (element) => { return 'Output folder'; });
-    }
+    addTooltip('top', filePathInput, true, (element) => { return element.value; });
+    addTooltip('top', outputInput, true, (element) => { return element.value; });
+    addTooltip('top', progressBar, false, (element) => { return 'Progress Bar'; });
+    addTooltip('top', unpackPathLabel, false, (element) => { return 'Unpack file or folder'; });
+    addTooltip('top', outputPathLabel, false, (element) => { return 'Output folder'; });
     
     initListeners();
     initSubs();
@@ -146,26 +141,6 @@ function initSubs() {
                     case "alerts":
                         alertType = settingsJSON.alerts;
                         updateAlertType(settingsJSON.alerts);
-                        break;
-                    case "usePathTooltips":
-                        if (settingsJSON.usePathTooltips) {
-                            addTooltip('top', filePathInput, true, (element) => { return element.value; });
-                            addTooltip('top', outputInput, true, (element) => { return element.value; });
-                        } else {
-                            removeTooltip(filePathInput, true, (element) => { return element.value; });
-                            removeTooltip(outputInput, true, (element) => { return element.value; });
-                        }
-                        break;
-                    case "useLabelTooltips":
-                        if (settingsJSON.useLabelTooltips) {
-                            addTooltip('top', progressBar, false, (element) => { return 'Progress Bar'; });
-                            addTooltip('top', unpackPathLabel, false, (element) => { return 'Unpack file or folder'; });
-                            addTooltip('top', outputPathLabel, false, (element) => { return 'Output folder'; });
-                        } else {
-                            removeTooltip(progressBar, false, (element) => { return 'Progress Bar'; });
-                            removeTooltip(unpackPathLabel, false, (element) => { return 'Unpack file or folder'; });
-                            removeTooltip(outputPathLabel, false, (element) => { return 'Output folder'; }); 
-                        }
                         break;
                 }
             }

@@ -1,5 +1,5 @@
 import {FolderTree} from "./FolderTree.js";
-import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { log, updateAlertType } from "../../universal/Logger.js";
 import { getSetting } from "../../../api/config/settings/Settings.js";
 
@@ -195,13 +195,6 @@ function initSubs() {
                     case "alerts":
                         alertType = settingsJSON.alerts;
                         updateAlertType(settingsJSON.alerts);
-                        break;
-                    case "usePathTooltips":
-                        if (settingsJSON.usePathTooltips) {
-                            addTooltip('top', pathField, true, (element) => { return element.value; });
-                        } else {
-                            removeTooltip(pathField, true, (element) => { return element.value; });
-                        }
                         break;
                 }
             }

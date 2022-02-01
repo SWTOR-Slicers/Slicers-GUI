@@ -1,7 +1,7 @@
 import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { getSetting } from "../../../api/config/settings/Settings.js";
 import { log, updateAlertType } from "../../universal/Logger.js";
-import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { FileEntry } from "./FileEntry.js";
 import * as MOD from "./Mod.js";
 import { hashlittle2 } from "../../Util.js";
@@ -162,19 +162,15 @@ function setupFolders() {
 function initTooltips() {
     addTooltip('top', nameInput, false, (element) => { return 'Name of your mod'; });
     addTooltip('top', extrInput, true, (element) => { return element.getAttribute('data-tooltip'); });
-
-    if (settingsJSON.usePathTooltips) {
-        addTooltip('top', assetsFolderInput, true, (element) => { return element.value; });
-        assetsFolderInput.parentElement.style.flexGrow = 1;
-        assetsFolderInput.style.width = `calc(100% - 14px)`;
-        addTooltip('top', outputFolderInput, true, (element) => { return element.value; });
-        outputFolderInput.parentElement.style.flexGrow = 1;
-        outputFolderInput.style.width = `calc(100% - 73px)`;
-    }
-
-    if (settingsJSON.useLabelTooltips) {
-        addTooltip('top', outputFolderLabel, false, (element) => { return 'FileChanger output folder'; });
-    }
+    
+    addTooltip('top', assetsFolderInput, true, (element) => { return element.value; });
+    assetsFolderInput.parentElement.style.flexGrow = 1;
+    assetsFolderInput.style.width = `calc(100% - 14px)`;
+    addTooltip('top', outputFolderInput, true, (element) => { return element.value; });
+    outputFolderInput.parentElement.style.flexGrow = 1;
+    outputFolderInput.style.width = `calc(100% - 73px)`;
+    
+    addTooltip('top', outputFolderLabel, false, (element) => { return 'FileChanger output folder'; });
 }
 
 async function init() {
@@ -377,28 +373,6 @@ function initSubs() {
                     case "alerts":
                         alertType = settingsJSON.alerts;
                         updateAlertType(settingsJSON.alerts);
-                        break;
-                    case "usePathTooltips":
-                        if (settingsJSON.usePathTooltips) {
-                            addTooltip('top', assetsFolderInput, true, (element) => { return element.value; });
-                            assetsFolderInput.parentElement.style.flexGrow = 1;
-                            assetsFolderInput.style.width = `calc(100% - 14px)`;
-                            addTooltip('top', outputFolderInput, true, (element) => { return element.value; });
-                            outputFolderInput.parentElement.style.flexGrow = 1;
-                            outputFolderInput.style.width = `calc(100% - 73px)`;
-                        } else {
-                            removeTooltip(assetsFolderInput, true, (element) => { return element.value; });
-                            assetsFolderInput.style.width = ``;
-                            removeTooltip(outputFolderInput, true, (element) => { return element.value; });
-                            outputFolderInput.style.width = ``;
-                        }
-                        break;
-                    case "useLabelTooltips":
-                        if (settingsJSON.useLabelTooltips) {
-                            addTooltip('top', outputFolderLabel, false, (element) => { return 'FileChanger output folder'; });
-                        } else {
-                            removeTooltip(outputFolderLabel, false, (element) => { return 'FileChanger output folder'; });
-                        }
                         break;
                 }
             }

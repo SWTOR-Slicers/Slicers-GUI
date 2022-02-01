@@ -2,7 +2,7 @@ import { WEM } from '../../classes/formats/WEM.js';
 import { BNK } from '../../classes/formats/BNK.js';
 import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { log, updateAlertType } from "../../universal/Logger.js";
-import { addTooltip, removeTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
+import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { setSounds } from './MusicPlayer.js';
 import { ww2ogg } from '../../Util.js';
 import { getSetting } from '../../../api/config/settings/Settings.js';
@@ -43,16 +43,11 @@ async function initialize() {
     soundPathInput.value = cache["soundPath"];
     outputFolder.value = cache["output"];
 
-    if (settingsJSON.usePathTooltips) {
-        addTooltip('top', soundPathInput, true, (element) => { return element.value; });
-        addTooltip('top', outputFolder, true, (element) => { return element.value; });
-    }
-
-    if (settingsJSON.useLabelTooltips) {
-        addTooltip('top', soundPathLabel, false, (element) => { return 'Path to sound files or folder'; });
-        addTooltip('top', outputPathLabel, false, (element) => { return 'Converter output folder'; });
-        addTooltip('top', progressBar, false, (element) => { return 'Progress Bar'; });
-    }
+    addTooltip('top', soundPathInput, true, (element) => { return element.value; });
+    addTooltip('top', outputFolder, true, (element) => { return element.value; });
+    addTooltip('top', soundPathLabel, false, (element) => { return 'Path to sound files or folder'; });
+    addTooltip('top', outputPathLabel, false, (element) => { return 'Converter output folder'; });
+    addTooltip('top', progressBar, false, (element) => { return 'Progress Bar'; });
     
     initListeners();
     initSubs();
@@ -146,26 +141,6 @@ function initSubs() {
                 switch (dEnt) {
                     case "alerts":
                         updateAlertType(settingsJSON.alerts);
-                        break;
-                    case "usePathTooltips":
-                        if (settingsJSON.usePathTooltips) {
-                            addTooltip('top', soundPathInput, true, (element) => { return element.value; });
-                            addTooltip('top', outputFolder, true, (element) => { return element.value; });
-                        } else {
-                            removeTooltip(soundPathInput, true, (element) => { return element.value; });
-                            removeTooltip(outputFolder, true, (element) => { return element.value; });
-                        }
-                        break;
-                    case "useLabelTooltips":
-                        if (settingsJSON.useLabelTooltips) {
-                            addTooltip('top', soundPathLabel, false, (element) => { return 'Path to sound files or folder'; });
-                            addTooltip('top', outputPathLabel, false, (element) => { return 'Converter output folder'; });
-                            addTooltip('top', progressBar, false, (element) => { return 'Progress Bar'; });
-                        } else {
-                            removeTooltip(soundPathLabel, false, (element) => { return 'Path to sound files or folder'; });
-                            removeTooltip(outputPathLabel, false, (element) => { return 'Converter output folder'; });
-                            removeTooltip(progressBar, false, (element) => { return 'Progress Bar'; });
-                        }
                         break;
                 }
             }

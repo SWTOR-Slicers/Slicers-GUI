@@ -29,23 +29,3 @@ export function addTooltip(orientation, element, multiCheck, callback, eventType
     tooltipText.innerText = callback(e);
     tooltipContainer.appendChild(tooltipText);
 }
-
-/**
- * Removes the tooltip from the specified element
- * @param  {Node} element Element to remove tooltip from
- * @param  {Boolean} multiCheck Whether or no tthe tooltip was multicheck
- * @param  {Function} callback Callback function used to get the tooltip value
- * @param  {String} [eventType='updateTooltip'] Event to update tooltip on. updateTooltip event is used by default
- */
-export function removeTooltip(element, multiCheck, callback, eventType='updateTooltip') {
-    
-    const parent = element.parentNode;
-    const e = parent.removeChild(element);
-
-    if (multiCheck) {
-        e.removeEventListener(eventType, function() {
-            this.nextElementSibling.innerText = callback(this);
-        });
-    }
-    parent.parentNode.replaceChild(e, parent);
-}

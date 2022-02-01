@@ -1,7 +1,5 @@
 # Slicers-GUI
 
-**TESTING**
-
 The Slicers GUI is a datamining tool built on [ElectronJS](https://www.electronjs.org/) for Star Wars: The Old Republic (SWTOR). This tool is a part of the [SWTOR Slicers](https://github.com/SWTOR-Slicers), and contains many Quality of Life improvements over existing tools, and adds new functions to expidite the extraction, modding, and datamining processes.
 
 **NOTE**: Windows only for the time being

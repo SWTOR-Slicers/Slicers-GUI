@@ -9,7 +9,7 @@
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "push": "../git-push.sh main"
+    "pushvc": "cd ../ && git-push.bat main"
   },
   "repository": "https://github.com/Tormak9970/Slicers-GUI",
   "keywords": [

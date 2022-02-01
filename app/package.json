@@ -2,13 +2,14 @@
   "name": "slicers-gui",
   "productName": "Slicers GUI",
   "appId": "com.swtor-slicers.tormak",
-  "version": "1.8.3",
+  "version": "1.8.9",
   "description": "A GUI for SWTOR Slicers",
   "main": "main.js",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "push": "../git-push.sh main"
   },
   "repository": "https://github.com/Tormak9970/Slicers-GUI",
   "keywords": [

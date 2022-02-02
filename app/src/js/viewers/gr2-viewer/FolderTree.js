@@ -34,16 +34,15 @@ export class FolderTree {
         };
     }
   
-    build() {
+    async build() {
         this.contents = {
             directories: [],
             files: []
         };
   
         let files = fs.readdirSync(this.path);
-  
-        for (let i = 0; i < files.length; i++) {
-            let file = files[i];
+
+        await Promise.all(files.map((file) => {
             let contentPath = path.resolve(this.path, file);
             try {
                 let stat = fs.statSync(contentPath);
@@ -64,11 +63,11 @@ export class FolderTree {
             } catch (e) {
                 console.log(e);
             }
-        }
+        }));
     }
   
     async render(parent) {
-        this.build();
+        await this.build();
         
         parent.innerHTML = "";
   

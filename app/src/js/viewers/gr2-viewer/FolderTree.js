@@ -67,9 +67,9 @@ export class FolderTree {
         }
     }
   
-    render(parent) {
+    async render(parent) {
         this.build();
-  
+        
         parent.innerHTML = "";
   
         this.contents.directories.forEach((file) => {

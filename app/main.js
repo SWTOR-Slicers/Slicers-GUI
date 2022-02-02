@@ -1071,6 +1071,7 @@ function initGR2Viewer() {
   gr2Window.once('ready-to-show', () => gr2Window.show());
 
   gr2Window.removeMenu();
+  gr2Window.webContents.openDevTools();
   gr2Window.loadURL(`${__dirname}/src/html/GR2Viewer.html`);
 
   gr2Window.on('close', (e) => {

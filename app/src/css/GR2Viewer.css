@@ -212,6 +212,9 @@
     border-radius: 6px;
     background-color: var(--medium-grey);
 }
+.data-body {
+    overflow: auto;
+}
 .data-options-main {
     width: 100%;
     height: 75%;

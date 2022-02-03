@@ -292,10 +292,12 @@ class Archive {
         if (json._class = "Archive") {
             const res = new Archive(json.file, json.idx, false);
             res.tables = json.tables;
-            res.entries = Object.keys(json.entries).forEach((key) => {
+            Object.keys(json.entries).forEach((key) => {
                 const entr = json.entries[key];
-                json.entries[key] = ArchiveEntry.fromJSON(entr);
+                res.entries[key] = ArchiveEntry.fromJSON(entr);
             });
+
+            return res;
         } else {
             throw `Unexpected JSON recieved. Object needs _class property with value of Archive. Got ${json._class}`;
         }

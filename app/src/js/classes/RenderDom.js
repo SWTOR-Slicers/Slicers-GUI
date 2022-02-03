@@ -70,8 +70,8 @@ class Dom {
      * @param {Function} newHook
      */
     set assetsProgress(newHook) {
-        this.#assetsProgress = (progress) => {
-            newHook(progress);
+        this.#assetsProgress = (progress, data) => {
+            newHook(progress, data);
         }
     }
     /**

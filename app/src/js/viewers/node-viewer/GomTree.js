@@ -368,7 +368,6 @@ class GomTree {
 
     renderNodeByFQN(fqn) {
         let hasFound = false;
-        console.log(this.nodesByFqn);
         const tree = fqn.split(".");
         if (tree.length > 0) {
             let parent = this.nodesByFqn;

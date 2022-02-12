@@ -56,7 +56,8 @@ class Dom {
 
 const { ipcMain } = require("electron");
 const { Worker } = require('worker_threads');
-const domWorker = new Worker("./src/js/classes/DomThread.js");
+const devBuild = require("../../api/devFlag.js").isDev;
+const domWorker = new Worker(`${devBuild ? "./src/js/classes/DomThread.js" : "./resources/app/src/js/classes/DomThread.js"}`);
 
 domWorker.on('message', async (data) => {
     switch (data.message) {

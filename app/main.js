@@ -1,6 +1,5 @@
 const {app, BrowserWindow, dialog, ipcMain, screen, shell} = require('electron');
 
-const { MainDom, setResourcePath } = require('./src/js/classes/MainDom.js'); // Dom Manager for main process
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 const fs = require('fs');
@@ -14,7 +13,8 @@ const uuidV4 = UUID.v4;
 
 if (handleSquirrelEvent()) { return; }
 
-const devBuild = true;
+const devBuild = require("./src/api/devFlag.js").isDev;
+const { MainDom, setResourcePath } = require(`./src/js/classes/MainDom.js`); // Dom Manager for main process
 process.env.ELECTRON_ENABLE_LOGGING = devBuild;
 
 const sourceResourceDir = (devBuild) ? path.join(__dirname, "resources") : process.resourcesPath;

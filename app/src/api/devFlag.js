@@ -1,3 +1,3 @@
 module.exports = {
-    "isDev": false
+    "isDev": true
 }

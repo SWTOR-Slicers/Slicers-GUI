@@ -14,7 +14,7 @@ const uuidV4 = UUID.v4;
 if (handleSquirrelEvent()) { return; }
 
 const devBuild = true;
-const { MainDom, setResourcePath } = require(`./src/js/classes/MainDom.js`); // Dom Manager for main process
+const { MainDom, setResourcePath } = require(path.join((devBuild) ? __dirname : path.join(process.resourcesPath, 'app'), `src/js/classes/MainDom.js`)); // Dom Manager for main process
 process.env.ELECTRON_ENABLE_LOGGING = devBuild;
 
 const sourceResourceDir = (devBuild) ? path.join(__dirname, "resources") : process.resourcesPath;

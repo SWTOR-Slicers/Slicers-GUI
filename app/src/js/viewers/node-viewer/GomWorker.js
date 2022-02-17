@@ -3,10 +3,12 @@ const { Worker, parentPort } = require("worker_threads");
 let domWorker;
 let nodeWorker;
 let protoWorker;
+let devBuild;
 
 parentPort.on("message", (data) => {
     switch (data.message) {
         case "init":
+            devBuild = data.devBuild;
             initSubWorkers(data.data);
             break;
         case "loadNodes":
@@ -16,7 +18,7 @@ parentPort.on("message", (data) => {
 });
 
 function initSubWorkers(resourcePath) {
-    domWorker = new Worker(`./src/js/viewers/node-viewer/DomWorker.js`);
+    domWorker = new Worker(`${devBuild ? "./src/js/viewers/node-viewer/DomWorker.js" : "./resources/app/src/js/viewers/node-viewer/DomWorker.js"}`);
 
     domWorker.on("error", (e) => {
         console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
@@ -41,7 +43,7 @@ function initSubWorkers(resourcePath) {
     });
 
 
-    nodeWorker = new Worker(`./src/js/viewers/node-viewer/NodeWorker.js`);
+    nodeWorker = new Worker(`${devBuild ? "./src/js/viewers/node-viewer/NodeWorker.js" : "./resources/app/src/js/viewers/node-viewer/NodeWorker.js"}`);
 
     nodeWorker.on("error", (e) => {
         console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
@@ -66,7 +68,7 @@ function initSubWorkers(resourcePath) {
     });
 
 
-    protoWorker = new Worker(`./src/js/viewers/node-viewer/PrototypeWorker.js`);
+    protoWorker = new Worker(`${devBuild ? "./src/js/viewers/node-viewer/PrototypeWorker.js" : "./resources/app/src/js/viewers/node-viewer/PrototypeWorker.js"}`);
 
     protoWorker.on("error", (e) => {
         console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);

@@ -1,9 +1,10 @@
 const { Worker, parentPort } = require("worker_threads");
 const fs = require("fs");
 let gomWorker, assetWorker;
+const devBuild = true;
 
 function initSubWorkers(resourcePath) {
-    gomWorker = new Worker(`./src/js/viewers/node-viewer/GomWorker.js`);
+    gomWorker = new Worker(`${devBuild ? "./src/js/viewers/node-viewer/GomWorker.js" : "./resources/app/src/js/viewers/node-viewer/GomWorker.js"}`);
 
     gomWorker.on("error", (e) => {
         console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);
@@ -17,11 +18,11 @@ function initSubWorkers(resourcePath) {
 
     gomWorker.postMessage({
         "message": "init",
-        "data": resourcePath
+        "data": resourcePath,
+        "devBuild": devBuild
     });
 
-
-    assetWorker = new Worker(`./src/js/viewers/asset-viewer/AssetWorker.js`);
+    assetWorker = new Worker(`${devBuild ? "./src/js/viewers/asset-viewer/AssetWorker.js" : "./resources/app/src/js/viewers/asset-viewer/AssetWorker.js"}`);
 
     assetWorker.on("error", (e) => {
         console.log(e); throw new Error(`${e.message} on line ${e.lineno}`);

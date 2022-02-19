@@ -94,7 +94,11 @@ function fileNodeReadfield(dv, pos, id, type, _dom, field) {
         break;
     case DOM_TYPES.ENUM: {
         const val = readVarInt(dv, pos);
-        out.val = field ? _dom[2][_dom[3][field.id].data].values[uint64C(val)-1] : uint64C(val);
+        try {
+            out.val = field ? _dom[2][_dom[3][field.id].data].values[uint64C(val)-1] : uint64C(val);
+        } catch (e) {
+            out.val = uint64C(val);
+        }
         out.len = val.len;
         break;
     }

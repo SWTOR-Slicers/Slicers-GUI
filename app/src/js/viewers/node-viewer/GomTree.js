@@ -120,18 +120,41 @@ class ContextMenu {
         this.x = 0;
         this.y = 0;
         this.bounds = {
-            x: 40,
-            y: 20
+            x: 80,
+            y: 40
         }
 
         this.clickedFolder = null;
         this.tarDir = null;
     }
 
-    cursorInMenu(pos) { return (pos.x > this.x && pos.x < this.x+this.bounds.x) && (pos.y > this.y && pos.y < this.y+this.bounds.y); }
+    pointInMenu(pos) { return (pos.x > this.x && pos.x < this.x+this.bounds.x) && (pos.y > this.y && pos.y < this.y+this.bounds.y); }
 
-    render(ctx) {
+    render(ctx, pos) {
+        const oldStroke = ctx.strokeStyle;
+        const oldFill = ctx.fillStyle;
+        const oldFont = ctx.font;
 
+        ctx.strokeStyle = "#000";
+        ctx.fillStyle = "#292929";
+        ctx.font = 'normal 10pt arial'; //'normal normal 200 10pt Eurofont';
+        ctx.fillRect(this.x, this.y, this.bounds.x, this.bounds.y);
+        ctx.strokeRect(this.x, this.y, this.bounds.x, this.bounds.y);
+
+        ctx.fillStyle = "rgb(97, 97, 97)";
+        if (pos.y < this.y+this.bounds.y / 2) {
+            ctx.fillRect(this.x, this.y, this.bounds.x, this.bounds.y / 2);
+        } else {
+            ctx.fillRect(this.x, this.y + this.bounds.y / 2, this.bounds.x, this.bounds.y / 2);
+        }
+
+        ctx.fillStyle = "rgb(255, 255, 255)";
+        ctx.fillText("Bulk Extract", this.x + this.bounds.x / 16, this.y + this.bounds.y / 8 + 10);
+        ctx.fillText("Collapse All", this.x + this.bounds.x / 16, this.y + this.bounds.y - this.bounds.y / 8);
+
+        ctx.strokeStyle = oldStroke;
+        ctx.fillStyle = oldFill;
+        ctx.font = oldFont;
     }
 
     bulkExtract() {
@@ -143,9 +166,18 @@ class ContextMenu {
         }
     }
 
-    collapseAll() {
-
+    #checkIfOpen(folder) {
+        const dirs = Object.keys(folder).sort();
+        for (let i = NUM_META_FOLDERS, l = dirs.length; i < l; i++) {
+            const curDir = folder[dirs[i]];
+            if (curDir.$O === 2) {
+                this.#checkIfOpen(curDir);
+                curDir.$O = 1;
+            }
+        }
     }
+
+    collapseAll() { this.#checkIfOpen(this.nodeTree.nodesByFqn); }
 }
 
 class NodeTree {
@@ -157,6 +189,7 @@ class NodeTree {
         this.menuInstance = new ContextMenu(this);
 
         this.hoverEle = -1;
+        this.cursorPos = {x: -1, y: -1};
 
         this.scroller = document.getElementById('nav_nodes_scroller');
         this.scrollercon = document.getElementById('nav_nodes_scrollercon');
@@ -187,7 +220,8 @@ class NodeTree {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         if (e) {
             this.hoverEle = 15 - this.scroller.scrollTop + (e.offsetY & 0xFFFFF0);
-            if (!this.menuInstance.cursorInMenu(getMousePos(this.canvas, e))) {
+            this.cursorPos = getMousePos(this.canvas, e);
+            if (this.menuInstance.open && !this.menuInstance.pointInMenu(getMousePos(this.canvas, e))) {
                 this.menuInstance.open = false;
                 this.menuInstance.clickedFolder = null;
                 this.menuInstance.tarDir = null;
@@ -200,7 +234,7 @@ class NodeTree {
             this.drawFolder(this.nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, this.scrollersize.offsetHeight)
         }
         if (this.menuInstance.open) {
-            this.menuInstance.render(this.ctx);
+            this.menuInstance.render(this.ctx, this.cursorPos);
         }
         this.ctx.translate(-0.5, -0.5);
     }
@@ -211,7 +245,7 @@ class NodeTree {
         const fl = folder.$F.length;
         for (let i = NUM_META_FOLDERS, l = dirs.length; i < l; i++) {
             if (height > 0 && height - FILETREE_HEIGHT < maxHeight) {
-                if (height === this.hoverEle) {
+                if (height === this.hoverEle && !this.menuInstance.open) {
                     this.ctx.fillStyle = 'rgb(71, 71, 71)';
                     this.ctx.fillRect(level + 5, height - 12, 500, FILETREE_HEIGHT)
                 }
@@ -260,7 +294,7 @@ class NodeTree {
         }
         for (let i = 0; i < fl; i++) {
             if (height > 0 && height - FILETREE_HEIGHT < maxHeight) {
-                if (height === this.hoverEle) {
+                if (height === this.hoverEle && !this.menuInstance.open) {
                     this.ctx.fillStyle = 'rgb(71, 71, 71)';
                     this.ctx.fillRect(level, height - 12, 500, FILETREE_HEIGHT)
                 }
@@ -288,8 +322,22 @@ class NodeTree {
     }
     
     click = (e) => {
-        const clickEle = 15 - this.scroller.scrollTop + (e.offsetY & 0xFFFFF0);
-        this.clickFolder(this.nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, clickEle, true);
+        if (this.menuInstance.open) {
+            if (getMousePos(this.canvas, e).y < this.menuInstance.y+this.menuInstance.bounds.y / 2) {
+                this.menuInstance.bulkExtract();
+            } else {
+                this.menuInstance.collapseAll();
+            }
+            this.menuInstance.open = false;
+            this.menuInstance.clickedFolder = null;
+            this.menuInstance.tarDir = null;
+
+            this.resizeFull();
+            this.redraw();
+        } else {
+            const clickEle = 15 - this.scroller.scrollTop + (e.offsetY & 0xFFFFF0);
+            this.clickFolder(this.nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, clickEle, true);
+        }
     }
 
     contextMenu = (e) => {
@@ -299,11 +347,10 @@ class NodeTree {
         this.menuInstance.tarDir = null;
 
         const pos = getMousePos(this.canvas, e);
-        console.log(pos);
 
         this.menuInstance.open = true;
-        this.menuInstance.x = pos.x;
-        this.menuInstance.y = pos.y;
+        this.menuInstance.x = pos.x - 5;
+        this.menuInstance.y = pos.y - 5;
 
         this.menuInstance.clickedFolder = 15 - this.scroller.scrollTop + (e.offsetY & 0xFFFFF0);
 

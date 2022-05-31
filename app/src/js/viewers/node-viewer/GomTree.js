@@ -1,8 +1,14 @@
 import { fixDpi } from "../../Util.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
+import { sourcePath } from "../../../api/config/resource-path/ResourcePath.js";
+
+const path = require("path");
+const fs = require("fs");
 
 const FILETREE_HEIGHT = 16;
 const NUM_META_FOLDERS = 2;
+
+let bulkExtrWorker;
 
 class NodesByFqn {
     constructor(json, deserializer) {
@@ -115,6 +121,10 @@ let currentNode;
 
 class ContextMenu {
     constructor(nodeTree) {
+        bulkExtrWorker  = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "BulkExtractWorker.js"), {
+            type: "module"
+        });
+
         this.nodeTree = nodeTree;
         this.open = false;
         this.x = 0;
@@ -163,6 +173,15 @@ class ContextMenu {
 
         if (this.tarDir) {
             console.log(this.tarDir);
+            console.log(this.nodeTree.nodesByFqn.toJSON());
+            bulkExtrWorker.postMessage({
+                "message": "extractSubtree",
+                "data": {
+                    "outputDir": this.nodeTree.parent.outputDir,
+                    "outputType": this.nodeTree.parent.outputType,
+                    "nodesByFqn": this.nodeTree.nodesByFqn.toJSON()
+                }
+            })
         }
     }
 
@@ -423,6 +442,8 @@ class GomTree {
         this.nodesList = {};
         this.loadedBuckets = 0;
         this.loadedPrototypes = 0;
+        this.outputType = "json";
+        this.outputDir = null;
     }
 
     initRenderer(treeList, viewContainer, dataContainer) {

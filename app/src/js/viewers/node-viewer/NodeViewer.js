@@ -42,6 +42,8 @@ async function loadDOM() {
     RenderDomFactory.getDom(["nodes"], resourcePath);
     globalThis.DOM = RenderDomFactory.DOM;
     GTree = globalThis.DOM.gomTree;
+    GTree.outputDir = cache['output'];
+    GTree.outputType = cache['outputType'];
     GTree.initRenderer(treeList, viewDisplay, dataContainer);
     
     globalThis.DOM.hook({
@@ -84,7 +86,7 @@ async function init() {
     await loadCache();
     outputField.value = cache['output'];
     loadPrototypeNodes.checked = cache['loadPrototypes'];
-    extrFormat.options[0].innerHTML = cache['outputType']
+    extrFormat.options[0].innerHTML = cache['outputType'];
     extrFormat.nextElementSibling.innerHTML = extrFormat.options[0].innerHTML;
     extrFormat.nextElementSibling.nextElementSibling.querySelector('.same-as-selected').classList.toggle('same-as-selected');
     extrFormat.nextElementSibling.nextElementSibling.querySelector(`#${extrFormat.options[0].innerHTML}`).classList.toggle('same-as-selected');
@@ -176,9 +178,15 @@ function initListeners() {
             }
         }
     });
-    extrFormat.clickCallback = (e) => { updateCache('outputType', e.currentTarget.innerHTML); }
-    loadPrototypeNodes.addEventListener('click', (e) => { updateCache('loadPrototypes', loadPrototypeNodes.checked); });
-    outputField.addEventListener('change', (e) => { updateCache('output', outputField.value); });
+    extrFormat.clickCallback = (e) => {
+        updateCache('outputType', e.currentTarget.innerHTML);
+        GTree.outputType = cache['outputType'];
+    }
+    loadPrototypeNodes.addEventListener('click', (e) => {updateCache('loadPrototypes', loadPrototypeNodes.checked); });
+    outputField.addEventListener('change', (e) => {
+        updateCache('output', outputField.value);
+        GTree.outputDir = cache['output'];
+    });
 }
 
 init();

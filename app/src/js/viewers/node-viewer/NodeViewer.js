@@ -52,7 +52,7 @@ async function loadDOM() {
         gomHooks: {
             domUpdate: (progress) => {},
             nodesUpdate: (progress, data) => {
-                globalThis.DOM.gomTree.nodeTree.resizefull();
+                globalThis.DOM.gomTree.nodeTree.resizeFull();
                 globalThis.DOM.gomTree.nodeTree.redraw();
                 document.getElementById('numBucketsLeft').innerHTML = 500 - globalThis.DOM.gomTree.loadedBuckets;
                 if (globalThis.DOM.gomTree.loadedBuckets === 500) {
@@ -64,7 +64,7 @@ async function loadDOM() {
             },
             protosUpdate: (progress, data) => {
                 if (loadPrototypeNodes.checked) {
-                    globalThis.DOM.gomTree.nodeTree.resizefull();
+                    globalThis.DOM.gomTree.nodeTree.resizeFull();
                     globalThis.DOM.gomTree.nodeTree.redraw();
                 }
             }

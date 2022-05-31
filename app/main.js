@@ -1118,6 +1118,7 @@ function initNodeViewer () {
   
   nodeViewerWin.removeMenu();
   nodeViewerWin.loadFile(`${__dirname}/src/html/NodeViewer.html`);
+  nodeViewerWin.webContents.openDevTools();
   
   
   nodeViewerWin.on('close', (e) => {

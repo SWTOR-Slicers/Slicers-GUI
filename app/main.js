@@ -1018,6 +1018,7 @@ function initSoundConvGUI() {
 
   soundConverterWindow.removeMenu();
   soundConverterWindow.loadURL(`${__dirname}/src/html/SoundConverter.html`);
+  // soundConverterWindow.webContents.openDevTools();
 
   soundConverterWindow.on('close', (e) => {
     if (!appQuiting) {
@@ -1118,7 +1119,6 @@ function initNodeViewer () {
   
   nodeViewerWin.removeMenu();
   nodeViewerWin.loadFile(`${__dirname}/src/html/NodeViewer.html`);
-  nodeViewerWin.webContents.openDevTools();
   
   
   nodeViewerWin.on('close', (e) => {

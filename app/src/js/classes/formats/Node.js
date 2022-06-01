@@ -648,7 +648,7 @@ class Node {
         `;
     }
 
-    extract(dest, type) {
+    extract(dest, type, fileName = null) {
         let data;
         switch (type) {
             case "raw":
@@ -665,7 +665,11 @@ class Node {
 
         if (fs.existsSync(dest)) {
             if (data) {
-                fs.writeFileSync(path.join(dest, `${this.fqn}.${type == "raw" ? "node" : type}`), data);
+                if (!fileName) {
+                    fs.writeFileSync(path.join(dest, `${this.fqn}.${type == "raw" ? "node" : type}`), data);
+                } else {
+                    fs.writeFileSync(path.join(dest, fileName), data);
+                }
                 return 0;
             } else {
                 return 1;

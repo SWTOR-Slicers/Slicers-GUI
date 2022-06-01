@@ -1,14 +1,8 @@
 import { fixDpi } from "../../Util.js";
 import { NodeEntr } from "../../classes/formats/Node.js";
-import { sourcePath } from "../../../api/config/resource-path/ResourcePath.js";
-
-const path = require("path");
-const fs = require("fs");
 
 const FILETREE_HEIGHT = 16;
 const NUM_META_FOLDERS = 2;
-
-let bulkExtrWorker;
 
 class NodesByFqn {
     constructor(json, deserializer) {
@@ -120,11 +114,10 @@ class NodesByFqn {
 let currentNode;
 
 class ContextMenu {
+    /**
+     * @param  {NodeTree} nodeTree
+     */
     constructor(nodeTree) {
-        bulkExtrWorker  = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "BulkExtractWorker.js"), {
-            type: "module"
-        });
-
         this.nodeTree = nodeTree;
         this.open = false;
         this.x = 0;
@@ -135,7 +128,6 @@ class ContextMenu {
         }
 
         this.clickedFolder = null;
-        this.tarDir = null;
     }
 
     pointInMenu(pos) { return (pos.x > this.x && pos.x < this.x+this.bounds.x) && (pos.y > this.y && pos.y < this.y+this.bounds.y); }
@@ -165,24 +157,6 @@ class ContextMenu {
         ctx.strokeStyle = oldStroke;
         ctx.fillStyle = oldFill;
         ctx.font = oldFont;
-    }
-
-    bulkExtract() {
-        // This has been tested and works correctly
-        this.nodeTree.clickFolder(this.nodeTree.nodesByFqn, 15 - this.nodeTree.scroller.scrollTop, FILETREE_HEIGHT - this.nodeTree.scroller.scrollLeft, this.clickedFolder, false);
-
-        if (this.tarDir) {
-            console.log(this.tarDir);
-            console.log(this.nodeTree.nodesByFqn.toJSON());
-            bulkExtrWorker.postMessage({
-                "message": "extractSubtree",
-                "data": {
-                    "outputDir": this.nodeTree.parent.outputDir,
-                    "outputType": this.nodeTree.parent.outputType,
-                    "nodesByFqn": this.nodeTree.nodesByFqn.toJSON()
-                }
-            })
-        }
     }
 
     #checkIfOpen(folder) {
@@ -217,7 +191,9 @@ class NodeTree {
         this.scroller.onmousemove = this.redraw;
         this.scroller.onmouseout = this.redraw;
         this.scrollercon.oncontextmenu = this.contextMenu;
-        this.scrollercon.onmousedown = this.click;
+        this.scrollercon.onmousedown = (e) => {
+            if (e.button == 0) this.click(e);
+        };
         this.canvas = treeList;
         this.ctx = this.canvas.getContext('2d', {
             alpha: false
@@ -243,7 +219,6 @@ class NodeTree {
             if (this.menuInstance.open && !this.menuInstance.pointInMenu(getMousePos(this.canvas, e))) {
                 this.menuInstance.open = false;
                 this.menuInstance.clickedFolder = null;
-                this.menuInstance.tarDir = null;
             }
         }
         if (this.parent.loadedBuckets === 0) {
@@ -343,27 +318,28 @@ class NodeTree {
     click = (e) => {
         if (this.menuInstance.open) {
             if (getMousePos(this.canvas, e).y < this.menuInstance.y+this.menuInstance.bounds.y / 2) {
-                this.menuInstance.bulkExtract();
+                const tarNodeFam = this.getDirFqn(this.nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, this.menuInstance.clickedFolder, "");
+
+                if (tarNodeFam) {
+                    this.parent.bulkCallback(tarNodeFam);
+                }
             } else {
                 this.menuInstance.collapseAll();
             }
             this.menuInstance.open = false;
             this.menuInstance.clickedFolder = null;
-            this.menuInstance.tarDir = null;
 
             this.resizeFull();
             this.redraw();
         } else {
             const clickEle = 15 - this.scroller.scrollTop + (e.offsetY & 0xFFFFF0);
-            this.clickFolder(this.nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, clickEle, true);
+            this.clickFolder(this.nodesByFqn, 15 - this.scroller.scrollTop, FILETREE_HEIGHT - this.scroller.scrollLeft, clickEle);
         }
     }
 
     contextMenu = (e) => {
         e.preventDefault();
         e.stopImmediatePropagation();
-
-        this.menuInstance.tarDir = null;
 
         const pos = getMousePos(this.canvas, e);
 
@@ -376,27 +352,45 @@ class NodeTree {
         this.resizeFull();
         this.redraw(e);
     }
+
+    getDirFqn = (folder,heightIn,level,target, parentFqn) => {
+        let height = heightIn;
+        const dirs = Object.keys(folder).sort();
+        const fl = folder.$F.length;
+        for (let i = NUM_META_FOLDERS, l = dirs.length; i < l; i++) {
+            const curDir = folder[dirs[i]];
+            const tFqn = parentFqn !== "" ? `${parentFqn}.${dirs[i]}` : dirs[i];
+            if (height === target) {
+                return tFqn;
+            }
+            if (curDir.$O === 2) {
+                height = this.getDirFqn(curDir, height + FILETREE_HEIGHT, level + FILETREE_HEIGHT, target, tFqn);
+                if (typeof height === "string") {
+                    return height;
+                }
+            } else {
+                height += FILETREE_HEIGHT
+            }
+        }
+        return height;
+    }
     
-    clickFolder = (folder,heightIn,level,target,renderAllowed) => {
+    clickFolder = (folder,heightIn,level,target) => {
         let height = heightIn;
         const dirs = Object.keys(folder).sort();
         const fl = folder.$F.length;
         for (let i = NUM_META_FOLDERS, l = dirs.length; i < l; i++) {
             const curDir = folder[dirs[i]];
             if (height === target) {
-                if (renderAllowed) {
-                    if (curDir.$O === 0)
-                        curDir.$F.sort(nodeFolderSort);
-                    curDir.$O = (curDir.$O === 2) ? 1 : 2;
-                    this.resizeFull();
-                    this.redraw();
-                } else {
-                    this.menuInstance.tarDir = curDir;
-                }
+                if (curDir.$O === 0)
+                    curDir.$F.sort(nodeFolderSort);
+                curDir.$O = (curDir.$O === 2) ? 1 : 2;
+                this.resizeFull();
+                this.redraw();
                 return 0
             }
             if (curDir.$O === 2) {
-                height = this.clickFolder(curDir, height + FILETREE_HEIGHT, level + FILETREE_HEIGHT, target, renderAllowed);
+                height = this.clickFolder(curDir, height + FILETREE_HEIGHT, level + FILETREE_HEIGHT, target);
                 if (height === 0)
                     return 0
             } else {
@@ -405,11 +399,9 @@ class NodeTree {
         }
         for (let i = 0; i < fl; i++) {
             if (height === target) {
-                if (renderAllowed) {
-                    folder.$F[i].render(this.renderTarg, this.dataContainer, (val) => {
-                        currentNode = val;
-                    });
-                }
+                folder.$F[i].render(this.renderTarg, this.dataContainer, (val) => {
+                    currentNode = val;
+                });
                 return 0
             }
             height += FILETREE_HEIGHT
@@ -442,8 +434,7 @@ class GomTree {
         this.nodesList = {};
         this.loadedBuckets = 0;
         this.loadedPrototypes = 0;
-        this.outputType = "json";
-        this.outputDir = null;
+        this.bulkCallback = null;
     }
 
     initRenderer(treeList, viewContainer, dataContainer) {

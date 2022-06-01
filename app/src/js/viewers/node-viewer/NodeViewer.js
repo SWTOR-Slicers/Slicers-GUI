@@ -1,6 +1,6 @@
 import { currentNode } from "./GomTree.js";
 import { log } from "../../universal/Logger.js";
-import { resourcePath } from "../../../api/config/resource-path/ResourcePath.js";
+import { resourcePath, sourcePath } from "../../../api/config/resource-path/ResourcePath.js";
 import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { RenderDomFactory } from "../../classes/RenderDom.js";
 
@@ -29,8 +29,11 @@ const outputField = document.getElementById('outputField');
 const extrFormat = document.getElementById('extrFormat');
 const loadPrototypeNodes = document.getElementById('loadPrototypeNodes');
 
+const bulkExtrProg = document.getElementById('progressBar__bulkExtr');
+
 // Constants
 let GTree;
+let bulkExtrWorker;
 const configPath = path.normalize(path.join(resourcePath, "config.json"));
 const cache = {
     "output": "",
@@ -38,13 +41,54 @@ const cache = {
     "outputType": "raw"
 }
 
+function bulkCallback(targetFqn) {
+    bulkExtrWorker.postMessage({
+        "message": "extractSubtree",
+        "data": {
+            "outputDir": cache['output'],
+            "outputType": cache['outputType'],
+            "targetFqn": targetFqn
+        }
+    })
+}
+
+function initBulkWorker() {
+    bulkExtrWorker  = new Worker(path.join(sourcePath, "js", "viewers", "node-viewer", "BulkExtractWorker.js"), {
+        type: "module"
+    });
+
+    bulkExtrWorker.onerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    bulkExtrWorker.onmessageerror = (e) => { console.log(e); throw new Error(`${e.message} on line ${e.lineno}`); }
+    bulkExtrWorker.onmessage = (e) => {
+        switch (e.data.message) {
+            case "complete":
+                // make progress bar green
+                bulkExtrProg.classList.add('complete');
+                log("Node bulk extraction complete", 'info');
+                setTimeout(() => {
+                    bulkExtrProg.classList.remove('complete');
+                    bulkExtrProg.style.width = undefined;
+                }, 5000)
+                break;
+            case "progress":
+                // update progress bar
+                bulkExtrProg.style.width = `${e.data.data.loaded / e.data.data.total * 100}%`;
+                break;
+        }
+    }
+
+    bulkExtrWorker.postMessage({
+        "message": "init",
+        "data": resourcePath
+    });
+}
+
 async function loadDOM() {
     RenderDomFactory.getDom(["nodes"], resourcePath);
     globalThis.DOM = RenderDomFactory.DOM;
     GTree = globalThis.DOM.gomTree;
-    GTree.outputDir = cache['output'];
-    GTree.outputType = cache['outputType'];
     GTree.initRenderer(treeList, viewDisplay, dataContainer);
+    GTree.bulkCallback = bulkCallback;
     
     globalThis.DOM.hook({
         assetHooks: {
@@ -52,8 +96,17 @@ async function loadDOM() {
             assetsComplete: () => {}
         },
         gomHooks: {
-            domUpdate: (progress) => {},
+            domUpdate: (progress) => {
+                bulkExtrWorker.postMessage({
+                    "message": "setDOM",
+                    "data": globalThis.DOM._dom
+                });
+            },
             nodesUpdate: (progress, data) => {
+                bulkExtrWorker.postMessage({
+                    "message": "nodesProgress",
+                    "data": data
+                });
                 globalThis.DOM.gomTree.nodeTree.resizeFull();
                 globalThis.DOM.gomTree.nodeTree.redraw();
                 document.getElementById('numBucketsLeft').innerHTML = 500 - globalThis.DOM.gomTree.loadedBuckets;
@@ -65,6 +118,10 @@ async function loadDOM() {
                 }
             },
             protosUpdate: (progress, data) => {
+                bulkExtrWorker.postMessage({
+                    "message": "nodesProgress",
+                    "data": data
+                });
                 if (loadPrototypeNodes.checked) {
                     globalThis.DOM.gomTree.nodeTree.resizeFull();
                     globalThis.DOM.gomTree.nodeTree.redraw();
@@ -92,6 +149,7 @@ async function init() {
     extrFormat.nextElementSibling.nextElementSibling.querySelector(`#${extrFormat.options[0].innerHTML}`).classList.toggle('same-as-selected');
     
     initListeners();
+    initBulkWorker();
     loadDOM();
 }
 
@@ -166,7 +224,7 @@ function initListeners() {
             }
         }
     });
-    exportNode.addEventListener('click', (e) => {
+    exportNode.addEventListener('click', async (e) => {
         if (currentNode) {
             const res = currentNode.node.extract(cache['output'], cache['outputType']);
             if (res == 0) {

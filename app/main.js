@@ -13,11 +13,12 @@ const uuidV4 = UUID.v4;
 
 if (handleSquirrelEvent()) { return; }
 
-const devBuild = true;
-const { MainDom, setResourcePath } = require(path.join((devBuild) ? __dirname : path.join(process.resourcesPath, 'app'), `src/js/classes/MainDom.js`)); // Dom Manager for main process
-process.env.ELECTRON_ENABLE_LOGGING = devBuild;
+require('dotenv').config();
 
-const sourceResourceDir = (devBuild) ? path.join(__dirname, "resources") : process.resourcesPath;
+const { MainDom, setResourcePath } = require(path.join((process.env.DEV === "true") ? __dirname : path.join(process.resourcesPath, 'app'), `src/js/classes/MainDom.js`)); // Dom Manager for main process
+process.env.ELECTRON_ENABLE_LOGGING = process.env.DEV === "true";
+
+const sourceResourceDir = (process.env.DEV === "true") ? path.join(__dirname, "resources") : process.resourcesPath;
 
 const ogResPath = path.join(sourceResourceDir, 'resources.json');
 const resourceResp = fs.readFileSync(ogResPath);
@@ -1018,7 +1019,7 @@ function initSoundConvGUI() {
 
   soundConverterWindow.removeMenu();
   soundConverterWindow.loadURL(`${__dirname}/src/html/SoundConverter.html`);
-  // soundConverterWindow.webContents.openDevTools();
+  soundConverterWindow.webContents.openDevTools();
 
   soundConverterWindow.on('close', (e) => {
     if (!appQuiting) {

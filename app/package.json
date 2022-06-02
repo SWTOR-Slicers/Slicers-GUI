@@ -39,6 +39,7 @@
     "@codemirror/view": "^0.18.19",
     "@fortawesome/fontawesome-free": "^5.15.3",
     "@petamoriken/float16": "^2.0.0",
+    "dotenv": "^16.0.1",
     "electron-edge-js": "^14.16.1",
     "electron-node-config": "^1.1.0",
     "electron-squirrel-startup": "^1.0.0",

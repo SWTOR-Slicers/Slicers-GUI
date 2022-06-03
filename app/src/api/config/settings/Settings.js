@@ -1,7 +1,8 @@
+const {app} = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-const settingsJsonPath = path.normalize((process.env.DEV === "true") ? path.join(__dirname, '../../resources/', 'appSettings.json') : path.join(process.resourcesPath, 'appSettings.json'));
+const settingsJsonPath = path.normalize((!app.isPackaged) ? path.join(__dirname, '../../resources/', 'appSettings.json') : path.join(process.resourcesPath, 'appSettings.json'));
 const res = fs.readFileSync(settingsJsonPath);
 const resJson = JSON.parse(res);
 

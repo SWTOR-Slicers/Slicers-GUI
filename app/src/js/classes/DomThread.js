@@ -1,7 +1,6 @@
 const { Worker, parentPort } = require("worker_threads");
 const fs = require("fs");
-let gomWorker, assetWorker;
-const devBuild = true;
+let gomWorker, assetWorker, devBuild;
 
 function initSubWorkers(resourcePath) {
     gomWorker = new Worker(`${devBuild ? "./src/js/viewers/node-viewer/GomWorker.js" : "./resources/app/src/js/viewers/node-viewer/GomWorker.js"}`);
@@ -43,6 +42,7 @@ function initSubWorkers(resourcePath) {
 parentPort.on("message", (data) => {
     switch (data.message) {
         case "init":
+            devBuild = data.devBuild;
             initSubWorkers(data.data);
             break;
         case "load":

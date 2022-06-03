@@ -54,11 +54,9 @@ class Dom {
     }
 }
 
-const { ipcMain } = require("electron");
+const { ipcMain, app } = require("electron");
 const { Worker } = require('worker_threads');
-const devBuild = true;
-// require("../../api/devFlag.js").isDev
-const domWorker = new Worker(`${devBuild ? "./src/js/classes/DomThread.js" : "./resources/app/src/js/classes/DomThread.js"}`);
+const domWorker = new Worker(`${!app.isPackaged ? "./src/js/classes/DomThread.js" : "./resources/app/src/js/classes/DomThread.js"}`);
 
 domWorker.on('message', async (data) => {
     switch (data.message) {
@@ -208,7 +206,8 @@ ipcMain.on("subscribeDom", (event, data) => { updateSubs.push({ "sender": event.
 function setResourcePath(resPath, torsPath) {
     domWorker.postMessage({
         "message": "init",
-        "data": resPath
+        "data": resPath,
+        "devBuild": !app.isPackaged
     });
     domWorker.postMessage({
         "message": "load",

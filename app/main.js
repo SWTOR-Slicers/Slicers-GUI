@@ -196,6 +196,7 @@ app.on('window-all-closed', function () {
 function handleBootUp() {
   const res = fs.readFileSync(path.join(sourceResourceDir, 'resources.json'));
   const resJson = JSON.parse(res);
+  initMainListeners();
 
   if (resJson['resourceDirPath'] !== "") {
     if (fs.existsSync(resJson['resourceDirPath'])) {
@@ -237,8 +238,6 @@ function initMain () {
   mainWindow.on('close', () => {  appQuiting = true; app.quit(); });
 }
 function initApp() {
-  initMainListeners();
-
   let res1 = fs.readFileSync(path.join(resourcePath, "config.json"));
   let json1 = JSON.parse(res1);
 
@@ -495,6 +494,9 @@ function initMainListeners() {
   ipcMain.on('openLink', (event, data) => { shell.openExternal(data[0]); });
   ipcMain.on('decompressZlib', async (event, data) => {
     event.returnValue = await decompressZlib(data[0]);
+  });
+  ipcMain.on('isPackaged', (event) => {
+    event.returnValue = app.isPackaged
   });
 }
 //boot config

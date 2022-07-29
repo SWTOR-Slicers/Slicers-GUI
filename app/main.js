@@ -9,6 +9,7 @@ const child = require('child_process');
 const dateTime = require('node-datetime');
 const UUID = require('uuid');
 const edge = require('electron-edge-js');
+const TorModelLocator = require('@tormak/tor-model-locator');
 const uuidV4 = UUID.v4;
 
 if (handleSquirrelEvent()) { return; }
@@ -1363,15 +1364,9 @@ async function extractNodes(progBarId, nodeFamilies) {
   }
 }
 async function locate() {
-  try {
-    const temp = cache.dataFolder;
-    const params = [temp, path.join(cache.outputFolder, "resources")];
-    child.execFileSync(path.join(resourcePath, "scripts", "SlicersLocator.exe"), params);
-  } catch (err) {
-    console.log(err);
-  } finally {
-    mainWindow.webContents.send("locCompl", "");
-  }
+  const temp = cache.dataFolder;
+  const success = TorModelLocator.locate(temp, path.join(cache.outputFolder, "resources"));
+  if (success) mainWindow.webContents.send("locCompl", "");
 }
 async function updateJSON(param, val) {
   let res = fs.readFileSync(path.join(resourcePath, "config.json"));

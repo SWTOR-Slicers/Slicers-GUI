@@ -533,6 +533,8 @@ function initSetupListeners(window) {
 
     //copy resources to new location
     await copyResourcesRecursive(sourceResourceDir, data[0]);
+    
+    // fetch hash
 
     //set resource paths
     resourcePath = data[0];

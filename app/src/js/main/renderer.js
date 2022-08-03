@@ -37,7 +37,6 @@ let oldDataValue;
 //extraction
 let extrBtn = document.getElementById("extractionBtn");
 let lctBtn = document.getElementById("locateBtn");
-let genHashBtn = document.getElementById("genHashBtn");
 let unpack = document.getElementById("unpack");
 
 //viewers
@@ -177,14 +176,6 @@ function setupListeners() {
     unpack.addEventListener("click", (e) => {
         ipcRenderer.send('runExec', 'unpack');
         log(`Extraction: Unpack started.`, 'info');
-    });
-    genHashBtn.addEventListener("click", (e) => {
-        const nodesAvailable = ipcRenderer.sendSync('checkValidity', ['node']);
-        if (nodesAvailable) {
-            ipcRenderer.send('runExec', 'genHash');
-        } else {
-            log("Unable to open hash generator because one or more GOM archives are missing. Please change the assets directory and try again.", "alert");
-        }
     });
 
     //viewers
@@ -485,15 +476,6 @@ function initSubs() {
     });
     ipcRenderer.on('unpkCompl', (event, data) => {
         log(`Extraction: Unpack finished.`, 'info');
-    });
-    ipcRenderer.on('genHashCompl', (event, data) => {
-        log(`Extraction: Generate Hash finished.`, 'info');
-    });
-    ipcRenderer.on('genHashClosed', (event, data) => {
-        log(`Extraction: Generate Hash closed.`, 'info');
-    });
-    ipcRenderer.on('genHashStarted', (event, data) => {
-        log(`Extraction: Generate Hash started, please stand by.`, 'info');
     });
     ipcRenderer.on('gr2ViewClosed', (event, data) => {
         log(`Viewer: GR2 closed.`, 'info');

@@ -37,8 +37,7 @@ let creditsWindow;
 let editorWindow;
 let nodeSelectWin;
 let nodeViewerWin;
-let genHashWin;
-const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin, creditsWindow, editorWindow, nodeSelectWin, nodeViewerWin, genHashWin];
+const windows = [mainWindow, setupWindow, unpackerWindow, soundConverterWindow, getPatchWindow, gr2Window, fileChangerWin, creditsWindow, editorWindow, nodeSelectWin, nodeViewerWin];
 
 let appQuiting = false;
 const cache = {
@@ -172,9 +171,6 @@ function getWindowFromArg(arg) {
       break;
     case "Node Viewer":
       win = nodeViewerWin;
-      break;
-    case "Generate Hash":
-      win = genHashWin;
       break;
   }
   return win;
@@ -352,13 +348,6 @@ function initMainListeners() {
       switch (data) {
         case "locate":
           locate();
-          break;
-        case "genHash":
-          if (!genHashWin) {
-            initGenHash();
-          } else {
-            genHashWin.show();
-          }
           break;
         case "unpack":
           if (unpackerWindow) {
@@ -1139,53 +1128,6 @@ function initNodeViewer () {
   initNodeViewerListeners(nodeViewerWin);
 }
 function initNodeViewerListeners(window) {}
-//Gen Hash
-function initGenHash () {
-  genHashWin = new BrowserWindow({
-    width: 300,
-    height: 500,
-    frame: false,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      nodeIntegrationInWorker: true
-    },
-    icon: 'src/img/SlicersLogo.ico',
-    show: false
-  });
-  genHashWin.once('ready-to-show', () => genHashWin.show());
-  
-  genHashWin.removeMenu();
-  genHashWin.webContents.openDevTools();
-  genHashWin.loadFile(`${__dirname}/src/html/GenHash.html`);
-  
-  
-  genHashWin.on('close', (e) => {
-    if (!appQuiting) {
-      e.preventDefault();
-      genHashWin.hide();
-    }
-    if (mainWindow) {
-      if (mainWindow.webContents) {
-        mainWindow.webContents.send('genHashClosed', '');
-      }
-    }
-  });
-  
-  initGenHashListeners(genHashWin);
-}
-function initGenHashListeners(window) {
-  ipcMain.on('genHash', (event, data) => {
-    mainWindow.webContents.send('genHashStarted');
-  });
-  ipcMain.on('hashComplete', (event, data) => {
-    const numFound = data[0].numFound;
-    const numSearched = data[0].numSearched;
-    window.close();
-    mainWindow.webContents.send("genHashCompl", "");
-  });
-  ipcMain.on('cancelHashGen', (event, data) => { window.close(); });
-}
 
 
 //utility methods

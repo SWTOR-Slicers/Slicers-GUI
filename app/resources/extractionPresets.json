@@ -158,6 +158,7 @@
                 "swtor_main_zed_1.tor"
             ],
             "dynamic": [
+                "swtor_main_areadat_epsilon_1.tor",
                 "swtor_main_art_creature_a_1.tor",
                 "swtor_main_art_creature_body_type_1.tor",
                 "swtor_main_art_creature_b_1.tor",
@@ -482,6 +483,7 @@
                 "swtor_test_main_zed_1.tor"
             ],
             "dynamic": [
+                "swtor_test_main_areadat_epsilon_1.tor",
                 "swtor_test_main_art_creature_a_1.tor",
                 "swtor_test_main_art_creature_body_type_1.tor",
                 "swtor_test_main_art_creature_b_1.tor",
@@ -808,6 +810,7 @@
                 "swtor_main_zed_1.tor"
             ],
             "dynamic": [
+                "swtor_main_areadat_epsilon_1.tor",
                 "swtor_main_art_creature_a_1.tor",
                 "swtor_main_art_creature_body_type_1.tor",
                 "swtor_main_art_creature_b_1.tor",
@@ -1132,6 +1135,7 @@
                 "swtor_test_main_zed_1.tor"
             ],
             "dynamic": [
+                "swtor_test_main_areadat_epsilon_1.tor",
                 "swtor_test_main_art_creature_a_1.tor",
                 "swtor_test_main_art_creature_body_type_1.tor",
                 "swtor_test_main_art_creature_b_1.tor",
@@ -1458,6 +1462,7 @@
                 "swtor_main_zed_1.tor"
             ],
             "dynamic": [
+                "swtor_main_areadat_epsilon_1.tor",
                 "swtor_main_art_creature_a_1.tor",
                 "swtor_main_art_creature_body_type_1.tor",
                 "swtor_main_art_creature_b_1.tor",
@@ -1782,6 +1787,7 @@
                 "swtor_test_main_zed_1.tor"
             ],
             "dynamic": [
+                "swtor_test_main_areadat_epsilon_1.tor",
                 "swtor_test_main_art_creature_a_1.tor",
                 "swtor_test_main_art_creature_body_type_1.tor",
                 "swtor_test_main_art_creature_b_1.tor",

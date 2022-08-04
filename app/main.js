@@ -190,10 +190,12 @@ app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
 });
 
+let initdMain = false;
+
 function handleBootUp() {
   const res = fs.readFileSync(path.join(sourceResourceDir, 'resources.json'));
   const resJson = JSON.parse(res);
-  initMainListeners();
+  if (!initdMain) initMainListeners();
 
   if (resJson['resourceDirPath'] !== "") {
     if (fs.existsSync(resJson['resourceDirPath'])) {
@@ -226,6 +228,7 @@ function initMain () {
 
   mainWindow.removeMenu();
   mainWindow.loadFile('./src/html/Index.html');
+  // mainWindow.webContents.openDevTools();
   
   let wasMinimized = false;
   mainWindow.on('minimize', () => { mainWindow.webContents.send('minimizedMain'); wasMinimized = true; });
@@ -260,6 +263,7 @@ function initApp() {
   setResourcePath(resourcePath, createTorJson());
 }
 function initMainListeners() {
+  initdMain = true;
   ipcMain.on('getWindowStatus', (event, data) => {
     event.reply('sendWindowStatus', [mainWindow.isMinimized()]);
   });
@@ -533,8 +537,6 @@ function initSetupListeners(window) {
 
     //copy resources to new location
     await copyResourcesRecursive(sourceResourceDir, data[0]);
-    
-    // fetch hash
 
     //set resource paths
     resourcePath = data[0];
@@ -1310,7 +1312,11 @@ async function extractNodes(progBarId, nodeFamilies) {
 async function locate() {
   const temp = cache.dataFolder;
   const success = TorModelLocator.locate(temp, path.join(cache.outputFolder, "resources"));
-  if (success) mainWindow.webContents.send("locCompl", "");
+  if (success) {
+    mainWindow.webContents.send("locCompl", "")
+  } else {
+    mainWindow.webContents.send("displayLog", "Locator failed. Likely an issue with missing assets or bad paths");
+  };
 }
 async function updateJSON(param, val) {
   let res = fs.readFileSync(path.join(resourcePath, "config.json"));

@@ -27,7 +27,6 @@ Listed below are the different sub tools of the GUI, and their current status:
     - Asset Extraction (Complete)
     - Locator (Complete)
     - Unzipper (Complete)
-    - Has Generation (In progress)
     - Filename Finder (Not started)
  - Viewers
     - GR2 Viewer (In progress)

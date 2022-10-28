@@ -468,14 +468,7 @@ function initMainListeners() {
 
     fs.writeFileSync(path.join(resourcePath, 'config.json'), JSON.stringify(json, null, '\t'), 'utf-8');
 
-    let dropIsEnabled = false;
-    if (fs.statSync(cache.assetsFolder).isDirectory()) {
-      const contents = fs.readdirSync(cache.assetsFolder);
-      dropIsEnabled = extractionPresetConsts[cache.extraction.lang][cache.extraction.version].names.every((elem) => {
-        return contents.includes(elem);;
-      });
-    }
-    mainWindow.webContents.send('updateExtractionPresetStatus', [dropIsEnabled]);
+    mainWindow.webContents.send('updateExtractionPresetStatus', [true]);
   });
   ipcMain.on('updateExtractionPreset', (event, data) => {
     let res = fs.readFileSync(path.join(resourcePath, 'config.json'));
@@ -1241,26 +1234,38 @@ async function extract(progBarId) {
     let values;
 
     const lastPath = path.normalize(path.join(temp, `../${cache.extraction.version == 'Live' ? 'swtor' : 'publictest'}/retailclient/main_gfx_1.tor`));
-    if (cache.extraction.extractionPreset != 'All' && cache.extraction.extractionPreset != 'Unnamed') {
-      values = [];
-      const tors = extractionPresetConsts[cache.extraction.lang][cache.extraction.version][cache.extraction.extractionPreset.toLowerCase()];
-      for (const tor of tors) {
-        values.push(path.join(temp, tor));
-      }
-      if (cache.extraction.extractionPreset == "gui" && fs.existsSync(lastPath)) {
-        values.push(lastPath);
-      }
-    } else {
-      values = [];
-      const tors = extractionPresetConsts[cache.extraction.lang][cache.extraction.version]["names"];
-      for (const tor of tors) {
-        if (fs.existsSync(path.join(cache['assetsFolder'], tor))) {
-          values.push(path.join(temp, tor));
+
+    let filter = (filepath) => { return true; }
+
+    switch (cache.extraction.extractionPreset.toLowerCase()) {
+      case "all":
+        filter = (filepath) => { return true; }
+        break;
+      case "dynamic":
+        filter = (filepath) => { return filepath.includes("dynamic") || filepath.includes("creature") || filepath.includes("epilson") || filepath.includes("humanoid") || filepath.includes("misc") || filepath.includes("fx") || filepath.includes("vehicle") || filepath.includes("weapon") || filepath.includes("zed") || filepath.includes("gamedata"); }
+        break;
+      case "static":
+        filter = (filepath) => { return filepath.includes("area") || filepath.includes("decoration") || filepath.includes("harvesting") || filepath.includes("spvp") || filepath.includes("vehicle") || filepath.includes("misc") || filepath.includes("fx") || filepath.includes("zed") || filepath.includes("gamedata"); }
+        break;
+      case "sound":
+        filter = (filepath) => { return filepath.includes("bnk") || filepath.includes("cnv"); }
+        break;
+      case "gui":
+        filter = (filepath) => { return filepath.includes("gfx") || filepath.includes("tutorials") || filepath.includes("gamedata"); }
+        break;
+    }
+
+    values = [];
+    for (const file of fs.readdirSync(cache['assetsFolder'])) {
+      if (path.extname(file) == ".tor") {
+        if (filter(file) && ((file.includes("_main") && cache.extraction.version == "Live") || (file.includes("_test") && cache.extraction.version == "pts"))) {
+          values.push(path.join(cache['assetsFolder'], file))
         }
       }
-      if (fs.existsSync(lastPath)) {
-        values.push(lastPath);
-      }
+    }
+    
+    if (cache.extraction.extractionPreset == "gui" && fs.existsSync(lastPath)) {
+      values.push(lastPath);
     }
 
     const torsName = path.join(cache['outputFolder'], 'tmp', `${uuidV4()}-tors.json`);

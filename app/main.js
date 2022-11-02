@@ -1258,8 +1258,9 @@ async function extract(progBarId) {
     values = [];
     for (const file of fs.readdirSync(cache['assetsFolder'])) {
       if (path.extname(file) == ".tor") {
-        if (filter(file) && ((file.includes("_main") && cache.extraction.version == "Live") || (file.includes("_test") && cache.extraction.version == "pts"))) {
-          values.push(path.join(cache['assetsFolder'], file))
+        if (filter(file)) {
+          if (((file.includes("_main") && cache.extraction.version != "Live") || (file.includes("_test") && cache.extraction.version != "pts"))) continue;
+          values.push(path.join(cache['assetsFolder'], file));
         }
       }
     }

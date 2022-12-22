@@ -5,6 +5,8 @@ import { inflateZlib } from "../Util.js";
 import { Archive } from "./formats/Archive.js";
 import { deserializeBigInt } from "../Util.js";
 
+const NUM_BUCKETS = 997;
+
 /**
  * AssetsUpdateHooks type definition
  * @typedef {Object} AssetsUpdateHooks
@@ -223,7 +225,7 @@ ipcRenderer.on("sentDomSec", (event, data) => {
                     
                     RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
                     RenderDomFactory.DOM.gomTree.loadedBuckets++;
-                    RenderDomFactory.DOM.nodesLoad = `${RenderDomFactory.DOM.gomTree.loadedBuckets / 500 * 100}%`;
+                    RenderDomFactory.DOM.nodesLoad = `${RenderDomFactory.DOM.gomTree.loadedBuckets / NUM_BUCKETS * 100}%`;
                 } else {
                     for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);
@@ -258,7 +260,7 @@ ipcRenderer.on("domUpdate", (event, data) => {
                     
                     RenderDomFactory.DOM.gomTree.nodesByFqn.$F.sort(nodeFolderSort);
                     RenderDomFactory.DOM.gomTree.loadedBuckets++;
-                    RenderDomFactory.DOM.nodesLoad = `${RenderDomFactory.DOM.gomTree.loadedBuckets / 500 * 100}%`;
+                    RenderDomFactory.DOM.nodesLoad = `${RenderDomFactory.DOM.gomTree.loadedBuckets / NUM_BUCKETS * 100}%`;
                 } else {
                     for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);

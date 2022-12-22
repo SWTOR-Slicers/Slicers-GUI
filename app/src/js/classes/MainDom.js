@@ -2,6 +2,8 @@ const esmRequire = require("esm")(module/*, options*/);
 
 const { DelayableLoop } = esmRequire("./util/DelayableLoop.js");
 
+const NUM_BUCKETS = 997;
+
 class Dom {
     constructor() {
         // assets
@@ -85,7 +87,7 @@ domWorker.on('message', async (data) => {
             break;
         case "NODES": {
             MainDom.loadedBuckets++;
-            const progress = `${MainDom.loadedBuckets / 500 * 100}%`;
+            const progress = `${MainDom.loadedBuckets / NUM_BUCKETS * 100}%`;
             MainDom.nodesLoad = progress;
 
             const ext = {

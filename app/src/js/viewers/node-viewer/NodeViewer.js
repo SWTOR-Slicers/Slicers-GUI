@@ -4,6 +4,8 @@ import { resourcePath, sourcePath } from "../../../api/config/resource-path/Reso
 import { addTooltip, updateTooltipEvent } from "../../universal/Tooltips.js";
 import { RenderDomFactory } from "../../classes/RenderDom.js";
 
+const NUM_BUCKETS = 997;
+
 // Node.js imports
 const fs = require("fs");
 const path = require("path");
@@ -108,9 +110,9 @@ async function loadDOM() {
                     "data": data
                 });
                 globalThis.DOM.gomTree.nodeTree.resizeFull();
-                globalThis.DOM.gomTree.nodeTree.redraw();
-                document.getElementById('numBucketsLeft').innerHTML = 500 - globalThis.DOM.gomTree.loadedBuckets;
-                if (globalThis.DOM.gomTree.loadedBuckets === 500) {
+                globalThis.DOM.gomTree.nodeTree.redraw();0
+                document.getElementById('numBucketsLeft').innerHTML = NUM_BUCKETS - globalThis.DOM.gomTree.loadedBuckets;
+                if (globalThis.DOM.gomTree.loadedBuckets === NUM_BUCKETS) {
                     document.getElementById('numBucketsLeft').innerHTML = "Done";
                     setTimeout(() => {
                         document.getElementById('numBucketsLeft').innerHTML = "";

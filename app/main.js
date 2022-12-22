@@ -877,21 +877,7 @@ function initFileChangerListeners(window) {
     restoreBackups(progId, params);
   });
   ipcMain.on("changerChangeFiles", (event, data) => {
-    const progBarId = data[0];
-    const assetFiles = data[1];
-    const backupObj = data[2];
-    const fChanges = data[3];
-    const hashPath = path.join(resourcePath, 'hash', 'hashes_filename.txt');
-    const ionicComprExe = path.join(resourcePath, 'scripts', 'IonicCompress.exe');
-    const zipPath = data[4];
-
-    const changesName = path.join(cache['outputFolder'], 'tmp', `${uuidV4()}-changer.json`);
-    fs.mkdirSync(path.dirname(changesName), { recursive: true });
-    fs.writeFileSync(changesName, JSON.stringify(fChanges))
-
-    const params = [JSON.stringify(assetFiles), hashPath, JSON.stringify(backupObj), changesName, ionicComprExe, zipPath];
-
-    changeFiles(progBarId, params);
+    
   });
 }
 //unpacker

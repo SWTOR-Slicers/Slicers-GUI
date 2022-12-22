@@ -3,6 +3,7 @@ import { readVarInt, uint64_add, uint64C, assert, cleanString, readString, seria
 import { GOM } from "../util/Gom.js";
 
 const fs = require('fs');
+const zlib = require('zlib');
 const path = require('path');
 const xmlJS = require('xml-js');
 
@@ -827,7 +828,7 @@ function confirmType(dv, pos, exType) {
 
 class NodeEntr {
     #nodeJson;
-    constructor(nodeJson, torPath, _dom, decomprFunc) {
+    constructor(nodeJson, torPath, _dom) {
         this.id = nodeJson.id;
         this.fqn = nodeJson.fqn;
         this.baseClass = nodeJson.baseClass;
@@ -840,9 +841,6 @@ class NodeEntr {
         this.streamStyle = nodeJson.streamStyle;
         this.torPath = torPath;
         this._dom = _dom;
-        if (decomprFunc) {
-            this.decomprFunc = decomprFunc;
-        }
         this.#nodeJson = nodeJson;
     }
 
@@ -867,10 +865,11 @@ class NodeEntr {
                 const data = fs.readFileSync(this.torPath);
                 let torData = null;
                 if (this.proto.data.isCompressed) {
+                  console.log("is compressed")
                     const blob = data.slice(this.proto.data.offset, this.proto.data.offset + this.proto.data.comprSize);
-                    const decompressed = this.decomprFunc({
-                        buffer: Buffer.from(blob),
-                        dataLength: this.proto.data.size
+                    const decompressed = zlib.inflateSync(Buffer.from(blob), {
+                        level: zlib.constants.Z_BEST_COMPRESSION,
+                        maxOutputLength: this.proto.data.size
                     });
                     torData = decompressed.buffer;
                 } else {
@@ -888,8 +887,7 @@ class NodeEntr {
     toJSON() {
         return {
             ...this.#nodeJson,
-            "_class": 'NodeEntr',
-            "_decompr": this.decomprFunc != undefined
+            "_class": 'NodeEntr'
         }
     }
 }

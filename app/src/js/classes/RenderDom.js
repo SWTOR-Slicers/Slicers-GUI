@@ -1,7 +1,6 @@
 import { GomTree, nodeFolderSort } from "../viewers/node-viewer/GomTree.js";
 import { NodeEntr } from "./formats/Node.js";
 
-import { inflateZlib } from "../Util.js";
 import { Archive } from "./formats/Archive.js";
 import { deserializeBigInt } from "../Util.js";
 
@@ -31,7 +30,6 @@ const NUM_BUCKETS = 997;
  * @property {Function} flushHook
  */
 
-let decompressZlib = (params) => {}
 
 class Dom {
     #assetsProgress;
@@ -185,10 +183,6 @@ class RenderDomFactory {
      * @returns {Dom}
      */
     static getDom(fields, resourcePath) {
-        decompressZlib = (params) => {
-            const ret = inflateZlib(resourcePath, params);
-            return ret;
-        }
         const data = fields ? fields : ["archives", "nodes"];
         ipcRenderer.sendSync("subscribeDom", data);
         const res = ipcRenderer.sendSync("getDom", data);
@@ -219,7 +213,7 @@ ipcRenderer.on("sentDomSec", (event, data) => {
                 if (value.isBkt) {
                     for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);
-                        const node = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom, decompressZlib);
+                        const node = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom);
                         RenderDomFactory.DOM.gomTree.addNode(node);
                     }
                     
@@ -229,7 +223,7 @@ ipcRenderer.on("sentDomSec", (event, data) => {
                 } else {
                     for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);
-                        const testProto = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom, decompressZlib);
+                        const testProto = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom);
                         RenderDomFactory.DOM.gomTree.addNode(testProto);
                         RenderDomFactory.DOM.gomTree.loadedPrototypes++;
                     }
@@ -254,7 +248,7 @@ ipcRenderer.on("domUpdate", (event, data) => {
                 if (value.isBkt) {
                     for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);
-                        const node = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom, decompressZlib);
+                        const node = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom);
                         RenderDomFactory.DOM.gomTree.addNode(node);
                     }
                     
@@ -264,7 +258,7 @@ ipcRenderer.on("domUpdate", (event, data) => {
                 } else {
                     for (const n of value.nodes) {
                         RenderDomFactory.DOM.nodesList.push(n);
-                        const testProto = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom, decompressZlib);
+                        const testProto = new NodeEntr(n.node, n.torPath, RenderDomFactory.DOM._dom);
                         RenderDomFactory.DOM.gomTree.addNode(testProto);
                         RenderDomFactory.DOM.gomTree.loadedPrototypes++;
                     }

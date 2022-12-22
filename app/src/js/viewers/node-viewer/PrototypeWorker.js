@@ -1,11 +1,14 @@
 const { parentPort } = require("worker_threads");
-
 const path = require('path');
 const zlib = require('zlib');
+const fzstd = require('fzstd');
 const { promises: { readFile }, readFileSync, existsSync, mkdirSync } = require('fs');
 
 const esmRequire = require("esm")(module/*, options*/);
 const { hashlittle2, uint64C, readString, readVarInt, uint32ToUint64 } = esmRequire("../../Util.js");
+
+const SEND_INCR = 500;
+const TOTAL_PROTS = 16650;
 
 const cache = {
     "configPath": "",
@@ -110,6 +113,7 @@ async function findPrototypes(gomArchive, data, torPath) {
             buffer: Buffer.from(dat),
             dataLength: protInfoEntr.size
         });
+        
         const infoDV = new DataView(decompressed.buffer);
         loadPrototypes(gomArchive, data, torPath, infoDV);
     }
@@ -164,13 +168,13 @@ async function loadPrototypes(gomArchive, data, torPath, dv) {
                 protoLoaded++;
 
                 // This batches together prototype nodes so that we dont lag out the app by batching 16 thousand at once
-                if (protoLoaded % 500 == 0 || protoLoaded == 16650) {
+                if (protoLoaded % SEND_INCR == 0 || protoLoaded == TOTAL_PROTS) {
                     parentPort.postMessage({
                         "message": 'PROTO',
                         "data": {
                             "nodes": prototypes,
                             "numLoaded": protoLoaded,
-                            "total": 16650
+                            "total": TOTAL_PROTS
                         }
                     });
                     prototypes = [];

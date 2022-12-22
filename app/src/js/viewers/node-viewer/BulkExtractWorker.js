@@ -1,5 +1,4 @@
 import { NodeEntr } from "../../classes/formats/Node.js";
-import { inflateZlib } from "../../Util.js";
 import { GomTree, nodeFolderSort } from "./GomTree.js";
 
 const path = require('path');
@@ -13,11 +12,6 @@ const cache = {
 let GTree;
 let _dom = null;
 
-let decompressZlib = (params) => {
-    const ret = inflateZlib(path.dirname(cache['configPath']), params);
-    return ret;
-}
-
 onmessage = (e) => {
     switch (e.data.message) {
         case "init":
@@ -30,14 +24,14 @@ onmessage = (e) => {
         case "nodesProgress":
             if (e.data.data.isBkt) {
                 for (const n of e.data.data.nodes) {
-                    const node = new NodeEntr(n.node, n.torPath, _dom, decompressZlib);
+                    const node = new NodeEntr(n.node, n.torPath, _dom);
                     GTree.addNode(node);
                 }
                 GTree.loadedBuckets++;
                 GTree.nodesByFqn.$F.sort(nodeFolderSort);
             } else {
                 for (const n of e.data.data.nodes) {
-                    const testProto = new NodeEntr(n.node, n.torPath, _dom, decompressZlib);
+                    const testProto = new NodeEntr(n.node, n.torPath, _dom);
                     GTree.addNode(testProto);
                 }
                 GTree.nodesByFqn.$F.sort(nodeFolderSort);

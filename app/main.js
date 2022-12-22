@@ -479,9 +479,9 @@ function initMainListeners() {
     fs.writeFileSync(path.join(resourcePath, 'config.json'), JSON.stringify(json, null, '\t'), 'utf-8');
   });
   ipcMain.on('openLink', (event, data) => { shell.openExternal(data[0]); });
-  ipcMain.on('decompressZlib', async (event, data) => {
-    event.returnValue = await decompressZlib(data[0]);
-  });
+  // ipcMain.on('decompressZlib', async (event, data) => {
+  //   event.returnValue = await decompressZlib(data[0]);
+  // });
   ipcMain.on('isPackaged', (event) => {
     event.returnValue = app.isPackaged
   });
@@ -1092,6 +1092,7 @@ function initNodeViewer () {
   nodeViewerWin.once('ready-to-show', () => nodeViewerWin.show());
   
   nodeViewerWin.removeMenu();
+  nodeViewerWin.webContents.openDevTools();
   nodeViewerWin.loadFile(`${__dirname}/src/html/NodeViewer.html`);
   
   
@@ -1451,28 +1452,28 @@ async function copyFileViaStream(progBarId, tPath, dPath, cSize, tSize) {
     });
   });
 }
-async function decompressZlib(params) {
-  const decomprFunc = edge.func({
-      source: function() {/*
-          using System.IO;
-          using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+// async function decompressZlib(params) {
+//   const decomprFunc = edge.func({
+//       source: function() {/*
+//           using System.IO;
+//           using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
       
-          async (dynamic input) => {
-              byte[] buffer = (byte[])input.buffer;
-              MemoryStream stream = new MemoryStream(buffer);
-              InflaterInputStream inflaterStream = new InflaterInputStream(stream);
+//           async (dynamic input) => {
+//               byte[] buffer = (byte[])input.buffer;
+//               MemoryStream stream = new MemoryStream(buffer);
+//               InflaterInputStream inflaterStream = new InflaterInputStream(stream);
 
-              byte[] decompressed = new byte[(int)input.dataLength];
-              inflaterStream.Read(decompressed, 0, (int)input.dataLength);
-              inflaterStream.Dispose();
-              stream.Close();
+//               byte[] decompressed = new byte[(int)input.dataLength];
+//               inflaterStream.Read(decompressed, 0, (int)input.dataLength);
+//               inflaterStream.Dispose();
+//               stream.Close();
 
-              return decompressed;
-          }
-      */},
-      references: [ `${path.join(resourcePath, 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
-  });
-  const data = decomprFunc(params, true);
+//               return decompressed;
+//           }
+//       */},
+//       references: [ `${path.join(resourcePath, 'scripts', 'ICSharpCode.SharpZipLib.dll')}` ]
+//   });
+//   const data = decomprFunc(params, true);
   
-  return data;
-}
+//   return data;
+// }

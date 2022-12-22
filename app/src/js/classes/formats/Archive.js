@@ -3,6 +3,7 @@ import { FileWrapper, Reader } from '../util/FileWrapper.js';
 
 const path = require('path');
 const zlib = require('zlib');
+const fzstd = require('fzstd');
 
 class ArchiveEntryTable {
     constructor(capacity, offset) {
@@ -137,52 +138,59 @@ class FileExtension {
 }
 
 class ArchiveEntry {
-    constructor(offset, metaDataSize, comprSize, uncomprSize, crc, isCompr, ph, sh, fileId, fileTableNum, fileTableFileIdx, torPath) {
-        this.offset = offset;
+    constructor(offset, version, metaDataSize, comprSize, uncomprSize, crc, isCompr, ph, sh, fileId, fileTableNum, fileTableFileIdx, torPath) {
+      this.offset = offset;
+      this.version = version;
 
-        this.metaDataSize = metaDataSize;
-        this.crc = crc;
+      this.metaDataSize = metaDataSize;
+      this.crc = crc;
 
-        this.comprSize = comprSize;
-        this.uncomprSize = uncomprSize;
-        this.isCompr = isCompr;
+      this.comprSize = comprSize;
+      this.uncomprSize = uncomprSize;
+      this.isCompr = isCompr;
 
-        this.fileId = fileId;
-        this.ph = ph;
-        this.sh = sh;
+      this.fileId = fileId;
+      this.ph = ph;
+      this.sh = sh;
 
-        this.fileTableNum = fileTableNum;
-        this.fileTableFileIdx = fileTableFileIdx;
+      this.fileTableNum = fileTableNum;
+      this.fileTableFileIdx = fileTableFileIdx;
 
-        this.torPath = torPath;
-        this.tor = path.basename(this.torPath);
+      this.torPath = torPath;
+      this.tor = path.basename(this.torPath);
 
-        this.isNamed = null;
-        this.hash = null;
+      this.isNamed = null;
+      this.hash = null;
     }
 
     getReadStream() {
-        const wrapper = new FileWrapper(this.torPath);
+      const wrapper = new FileWrapper(this.torPath);
 
-        wrapper.seek(this.offset+BigInt(this.metaDataSize), 0);
-        const data = wrapper.read(this.isCompr ? this.comprSize : this.uncomprSize).data;
-        wrapper.close();
-        
-        let decompr;
-        if (this.isCompr) {
-            decompr = zlib.inflateSync(data, {
-                level: zlib.constants.Z_BEST_COMPRESSION,
-                maxOutputLength: this.uncomprSize
-            });
+      wrapper.seek(this.offset+BigInt(this.metaDataSize), 0);
+      const data = wrapper.read(this.isCompr ? this.comprSize : this.uncomprSize).data;
+      wrapper.close();
+      
+      let decompr;
+      if (this.isCompr) {
+        if (this.version == 6) {
+          decompr = new Uint8Array(this.uncomprSize);
+          fzstd.decompress(data, decompr);
         } else {
-            decompr = data;
+          // ! pre 7.3 zlib was used
+          decompr = zlib.inflateSync(data, {
+              level: zlib.constants.Z_BEST_COMPRESSION,
+              maxOutputLength: this.uncomprSize
+          });
         }
+      } else {
+        decompr = data;
+      }
 
-        return new Reader(decompr);
+      return new Reader(decompr);
     }
 
     static fromJSON(json) {
-        return new ArchiveEntry(json.offset, json.metaDataSize, json.comprSize, json.uncomprSize, json.crc, json.isCompr, json.ph, json.sh, json.fileId, json.fileTableNum, json.fileTableFileIdx, json.torPath);
+      return new ArchiveEntry(json.offset, json.metaDataSize, json.comprSize, json.uncomprSize, json.crc, json.isCompr, json.ph, json.sh, json.fileId, json.fileTableNum, json.fileTableFileIdx, json.torPath);
     }
 }
 
@@ -208,7 +216,7 @@ class Archive {
         if (magic !== 0x50594D) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Not a .tor file (Wrong file header)`);
         
         this.version = mypHeader.readUint32();
-        if (this.version !== 5) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Only version 5 is supported, file has ${this.version}`);
+        if (this.version !== 5 && this.version !== 6) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Only versions 5 and 6 are supported, file has ${this.version}`);
         
         this.bom = mypHeader.readUint32()
         if (this.bom !== 0xFD23EC43) throw new Error(`ARCHIVEERROR at indexidx: ${this.idx}. Unexpected byte order`);
@@ -260,6 +268,7 @@ class Archive {
                 const compression = fileTable.readUint16();
                 const fileObj = new ArchiveEntry(
                     offset,
+                    this.version,
                     headerSize,
                     (compression !== 0) ? comprSize : 0,
                     uncomprSize,

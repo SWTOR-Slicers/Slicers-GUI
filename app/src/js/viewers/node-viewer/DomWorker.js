@@ -37,116 +37,24 @@ parentPort.on("message", (data) => {
 
 async function loadNodes(torPath) {
     cache['tmpPath'] = cache['tmpPath'] == "" ? await getTmpFilePath() : cache['tmpPath'];
-    let ftOffset = 0;
-    let firstLoop = true;
-    const ftCapacity = 1000;
     const fileName = path.basename(torPath);
-    const gomArchive = {
-        "files": {}
-    };
     
     const archive = new Archive(torPath, 0, true);
-    // console.log(archive);
 
     const gomFileHash = hashlittle2("/resources/systemgenerated/client.gom");
     const gomFileEntr = archive.entries[uint32ToUint64(gomFileHash[0], gomFileHash[1])];
-    console.log(gomFileEntr);
 
-    // const dat = data.slice(gomFileEntr.offset, gomFileEntr.offset + (gomFileEntr.isCompressed ? gomFileEntr.comprSize : gomFileEntr.size));
     if (gomFileEntr.isCompr) {
-        const reader = gomFileEntr.getReadStream();
-        console.log(reader.data)
-        // const decompressed = decompressZlib({
-        //     buffer: Buffer.from(dat),
-        //     dataLength: gomFileEntr.size
-        // });
-      // const decompressed = new Uint8Array(gomFileEntr.size);
-      // fzstd.decompress(dat, decompressed);
-      // console.log(decompressed);
-      // const infoDV = new DataView(decompressed.buffer);
-      // loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr);
-    }
-
-
-    // readFile(torPath).then(async (buff) => {
-    //     const data = buff.buffer;
-    //     const datView = new DataView(data);
-
+      const reader = gomFileEntr.getReadStream();
         
-    //     ftOffset = datView.getUint32(12, !0);
-
-    //     while (ftOffset != 0 || firstLoop) {
-    //         if (firstLoop) firstLoop = false;
-    //         const blob = data.slice(ftOffset, ftOffset + 12 + ftCapacity * 34);
-    //         const dv = new DataView(blob);
-
-    //         const newCapacity = dv.getUint32(0, !0);
-    //         if (newCapacity !== ftCapacity) {
-    //             console.error('Expected capacity of' + ftCapacity + 'but saw capacity' + newCapacity + 'in' + fileName);
-    //             ftCapacity = newCapacity;
-    //             break;
-    //         }
-
-    //         ftOffset = dv.getUint32(4, !0);
-
-    //         for (let i = 12, c = 12 + ftCapacity * 34; i < c; i += 34) {
-    //             let offset = dv.getUint32(i, !0);
-    //             if (offset === 0)
-    //                 continue;
-    //             offset += dv.getUint32(i + 8, !0);
-    //             const comprSize = dv.getUint32(i + 12, !0);
-    //             const uncomprSize = dv.getUint32(i + 16, !0);
-    //             const sh = dv.getUint32(i + 20, !0);
-    //             const ph = dv.getUint32(i + 24, !0);
-    //             const fileId = dv.getBigUint64(i+20, true);
-
-    //             if (sh === 0xC75A71E6 && ph === 0xE4B96113) continue;
-    //             if (sh === 0xCB34F836 && ph === 0x8478D2E1) continue;
-    //             if (sh === 0x02C9CF77 && ph === 0xF077E262) continue;
-                
-    //             const compression = dv.getUint8(i + 32);
-    //             const fileObj = {};
-    //             fileObj.sh = sh;
-    //             fileObj.ph = ph;
-    //             fileObj.offset = offset;
-    //             fileObj.size = uncomprSize;
-    //             fileObj.fileId = fileId;
-    //             fileObj.comprSize = (compression !== 0) ? comprSize : 0;
-    //             fileObj.isCompressed = compression !== 0;
-    //             fileObj.name = undefined;
-                
-    //             gomArchive.files[fileObj.fileId] = fileObj
-    //         }
-    //     }
-
-    //     if (Object.keys(gomArchive.files).length > 0) {
-    //         if (path.basename(torPath).indexOf('systemgenerated_gom_1') > -1) {
-    //             findClientGOM(gomArchive, data, torPath);
-    //         } else {
-    //             throw new Error("invalid file name");
-    //         }
-    //     }
-    // }).catch(err => {
-    //     throw err;
-    // });
-}
-
-async function findClientGOM(gomArchive, data, torPath) {
-    const gomFileHash = hashlittle2("/resources/systemgenerated/client.gom");
-    const gomFileEntr = gomArchive.files[uint32ToUint64(gomFileHash[0], gomFileHash[1])];
-
-    const dat = data.slice(gomFileEntr.offset, gomFileEntr.offset + (gomFileEntr.isCompressed ? gomFileEntr.comprSize : gomFileEntr.size));
-    if (gomFileEntr.isCompressed) {
-      const decompressed = decompressZlib({
-          buffer: Buffer.from(dat),
-          dataLength: gomFileEntr.size
-      });
-      
-      const infoDV = new DataView(decompressed.buffer);
-      loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr);
+      const infoDV = new DataView(reader.data);
+      loadClientGOM(torPath, infoDV, gomFileEntr);
+    } else {
+        throw new Error("Expected GOM file to be compressed!");
     }
 }
-function loadClientGOM(gomArchive, data, torPath, infoDV, gomFileEntr) {
+
+function loadClientGOM(torPath, infoDV, gomFileEntr) {
     const DomElements = {};
 
     let pos = 0

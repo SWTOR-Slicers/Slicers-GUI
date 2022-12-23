@@ -4,6 +4,7 @@ import { GOM } from "../util/Gom.js";
 
 const fs = require('fs');
 const zlib = require('zlib');
+const fzstd = require('fzstd');
 const path = require('path');
 const xmlJS = require('xml-js');
 
@@ -654,7 +655,7 @@ class Node {
         switch (type) {
             case "raw":
                 const dat = fs.readFileSync(this.node.torPath);
-                data = dat.buffer.slice(this.node.bkt.offset + this.node.dataOffset + 2, this.node.bkt.offset + this.node.dataOffset + this.node.dataLength - 4);
+                data = dat.buffer.slice(Number(this.node.bkt.offset) + this.node.dataOffset + 2, Number(this.node.bkt.offset) + this.node.dataOffset + this.node.dataLength - 4);
                 break;
             case "xml":
                 data = convertToXML(this.fields, this.node, this._dom);
@@ -856,7 +857,7 @@ class NodeEntr {
             if (!this.node) {
                 const data = fs.readFileSync(this.torPath);
 
-                const blob = data.buffer.slice(this.bkt.offset + this.dataOffset + 2, this.bkt.offset + this.dataOffset + this.dataLength - 4);
+                const blob = data.buffer.slice(Number(this.bkt.offset) + this.dataOffset + 2, Number(this.bkt.offset) + this.dataOffset + this.dataLength - 4);
                 const node = new Node(this, blob, this._dom);
                 this.node = node;
             }
@@ -864,16 +865,18 @@ class NodeEntr {
             if (!this.node) {
                 const data = fs.readFileSync(this.torPath);
                 let torData = null;
-                if (this.proto.data.isCompressed) {
+                if (this.proto.data.isCompr) {
                   console.log("is compressed")
-                    const blob = data.slice(this.proto.data.offset, this.proto.data.offset + this.proto.data.comprSize);
+                    const blob = data.slice(Number(this.proto.data.offset), Number(this.proto.data.offset) + this.proto.data.comprSize);
+                    // const decompressed = new Uint8Array(this.proto.data.uncomprSize);
+                    // fzstd.decompress(new Uint8Array(blob), decompressed);
                     const decompressed = zlib.inflateSync(Buffer.from(blob), {
                         level: zlib.constants.Z_BEST_COMPRESSION,
-                        maxOutputLength: this.proto.data.size
+                        maxOutputLength: this.proto.data.uncomprSize
                     });
                     torData = decompressed.buffer;
                 } else {
-                    const blob = data.slice(this.proto.data.offset, this.proto.data.offset + this.proto.data.size);
+                    const blob = data.slice(Number(this.proto.data.offset), Number(this.proto.data.offset) + this.proto.data.uncomprSize);
                     torData = blob;
                 }
 

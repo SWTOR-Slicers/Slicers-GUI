@@ -6,6 +6,7 @@ const { promises: { readFile }, readFileSync, existsSync, mkdirSync } = require(
 
 const esmRequire = require("esm")(module/*, options*/);
 const { hashlittle2, uint64C, readString, readVarInt, uint32ToUint64 } = esmRequire("../../Util.js");
+const { Archive } = esmRequire("../../classes/formats/Archive");
 
 const SEND_INCR = 500;
 const TOTAL_PROTS = 16650;
@@ -37,87 +38,23 @@ parentPort.on("message", (data) => {
 
 async function loadNodes(torPath) {
     cache['tmpPath'] = cache['tmpPath'] == "" ? await getTmpFilePath() : cache['tmpPath'];
-    let ftOffset = 0;
-    let firstLoop = true;
-    const ftCapacity = 1000;
     const fileName = path.basename(torPath);
-    const gomArchive = {
-        "files": {}
-    };
     
-    readFile(torPath).then(async (buff) => {
-        const data = buff.buffer;
-        const datView = new DataView(data);
-        ftOffset = datView.getUint32(12, !0);
+    const archive = new Archive(torPath, 0, true);
 
-        while (ftOffset != 0 || firstLoop) {
-            if (firstLoop) firstLoop = false;
-            const blob = data.slice(ftOffset, ftOffset + 12 + ftCapacity * 34);
-            const dv = new DataView(blob);
+    const protInfoHash = hashlittle2("/resources/systemgenerated/prototypes.info");
+    const protInfoEntr = archive.entries[uint32ToUint64(protInfoHash[0], protInfoHash[1])];
 
-            const newCapacity = dv.getUint32(0, !0);
-            if (newCapacity !== ftCapacity) {
-                console.error('Expected capacity of' + ftCapacity + 'but saw capacity' + newCapacity + 'in' + fileName);
-                ftCapacity = newCapacity;
-                break;
-            }
-
-            ftOffset = dv.getUint32(4, !0);
-
-            for (let i = 12, c = 12 + ftCapacity * 34; i < c; i += 34) {
-                let offset = dv.getUint32(i, !0);
-                if (offset === 0)
-                    continue;
-                offset += dv.getUint32(i + 8, !0);
-                const comprSize = dv.getUint32(i + 12, !0);
-                const uncomprSize = dv.getUint32(i + 16, !0);
-                const sh = dv.getUint32(i + 20, !0);
-                const ph = dv.getUint32(i + 24, !0);
-                const fileId = dv.getBigUint64(i+20, true);
-                if (sh === 0xC75A71E6 && ph === 0xE4B96113)
-                    continue;
-                if (sh === 0xCB34F836 && ph === 0x8478D2E1)
-                    continue;
-                if (sh === 0x02C9CF77 && ph === 0xF077E262)
-                    continue;
-                const compression = dv.getUint8(i + 32);
-                const fileObj = {};
-                fileObj.sh = sh;
-                fileObj.ph = ph;
-                fileObj.fileId = fileId;
-                fileObj.offset = offset;
-                fileObj.size = uncomprSize;
-                fileObj.comprSize = (compression !== 0) ? comprSize : 0;
-                fileObj.isCompressed = compression !== 0;
-                fileObj.name = undefined;
-                
-                gomArchive.files[fileObj.fileId] = fileObj
-            }
-        }
-
-        if (Object.keys(gomArchive.files).length > 0) {
-            findPrototypes(gomArchive, data, torPath);
-        }
-    }).catch(err => {
-        throw err;
-    });
-}
-
-async function findPrototypes(gomArchive, data, torPath) {
-    const protInfoHash = hashlittle2(`/resources/systemgenerated/prototypes.info`);
-    const protInfoEntr = gomArchive.files[uint32ToUint64(protInfoHash[0], protInfoHash[1])];
-
-    const dat = data.slice(protInfoEntr.offset, protInfoEntr.offset + (protInfoEntr.isCompressed ? protInfoEntr.comprSize : protInfoEntr.size));
-    if (protInfoEntr.isCompressed) {
-        const decompressed = decompressZlib({
-            buffer: Buffer.from(dat),
-            dataLength: protInfoEntr.size
-        });
-        
-        const infoDV = new DataView(decompressed.buffer);
-        loadPrototypes(gomArchive, data, torPath, infoDV);
+    if (protInfoEntr.isCompr) {
+        const reader = protInfoEntr.getReadStream();
+      
+      const infoDV = new DataView(reader.data);
+      loadPrototypes(archive, reader.data, torPath, infoDV);
+    } else {
+        throw new Error("Expected PrototypesInfo file to be compressed!");
     }
 }
+
 async function loadPrototypes(gomArchive, data, torPath, dv) {
     let pos = 0;
 
@@ -145,19 +82,19 @@ async function loadPrototypes(gomArchive, data, torPath, dv) {
 
         if (flag == 1) {
             const hashArr = hashlittle2(`/resources/systemgenerated/prototypes/${protId}.node`);
-            const file = gomArchive.files[uint32ToUint64(hashArr[0], hashArr[1])];
+            const file = gomArchive.entries[uint32ToUint64(hashArr[0], hashArr[1])];
 
             if (file) {
                 let fData = null;
                 if (file.isCompressed) {
-                    const blob = data.slice(file.offset, file.offset + file.comprSize);
+                    const blob = file.getReadStream().data;
                     const decompressed = decompressZlib({
                         buffer: Buffer.from(blob),
                         dataLength: file.size
                     });
                     fData = decompressed.buffer;
                 } else {
-                    const blob = data.slice(file.offset, file.offset + file.size);
+                    const blob = file.getReadStream().data;
                     fData = blob;
                 }
                 const node = loadPrototype(protId, new DataView(fData), file);

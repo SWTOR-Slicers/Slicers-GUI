@@ -174,7 +174,7 @@ class ArchiveEntry {
       if (this.isCompr) {
         if (this.version == 6) {
           decompr = new Uint8Array(this.uncomprSize);
-          fzstd.decompress(data, decompr);
+          fzstd.decompress(new Uint8Array(data), decompr);
         } else {
           // ! pre 7.3 zlib was used
           decompr = zlib.inflateSync(data, {

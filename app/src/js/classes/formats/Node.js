@@ -303,8 +303,9 @@ function nodeFieldToHtml(type, value, tr, level, _dom) {
     case DOM_TYPES.TIMEINTERVAL:
     case DOM_TYPES.ENUM:
       return value;
-    case DOM_TYPES.BOOLEAN:
     case DOM_TYPES.FLOAT:
+      return parseFloat(value.toFixed(4)).toString();
+    case DOM_TYPES.BOOLEAN:
     case DOM_TYPES.STRING:
       return cleanString(value);
     case DOM_TYPES.DATE: {
@@ -585,12 +586,7 @@ class Node {
     node.uncomprBuffLength = 5242880;
     const uncomprBuffer = new ArrayBuffer(node.uncomprBuffLength);
     globalThis.RawDeflate.inflate(comprArray, uncomprBuffer);
-    // const uncomprBuffer = new Uint8Array(this.uncompressedSize);
-    // fzstd.decompress(comprArray, uncomprBuffer);
-    // const uncomprBuffer = zlib.inflateSync(Buffer.from(comprArray.buffer), {
-    //   level: zlib.constants.Z_BEST_COMPRESSION,
-    //   maxOutputLength: this.compressedSize
-    // });
+    
     const dv = new DataView(uncomprBuffer);
     let pos = node.contentOffset;
     if (node.uncomprBuffLength > 0) {

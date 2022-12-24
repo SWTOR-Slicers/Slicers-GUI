@@ -860,6 +860,7 @@ class NodeEntr {
         const data = fs.readFileSync(this.torPath);
         console.log(this);
         const blob = data.slice(Number(this.bkt.offset) + this.bkt.metaDataSize + this.dataOffset + 2, Number(this.bkt.offset) + this.bkt.metaDataSize + this.dataOffset + this.dataLength - 4);
+        console.log(new Uint8Array(blob));
         const node = new Node(this, blob, this._dom);
         this.node = node;
       }

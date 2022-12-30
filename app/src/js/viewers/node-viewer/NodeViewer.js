@@ -232,7 +232,7 @@ function initListeners() {
     if (currentNode) {
       const res = currentNode.node.extract(cache['output'], cache['outputType']);
       if (res == 0) {
-        log(`Sucessfully extracted node to a .${type == "raw" ? "node" : type} file`, 'info');
+        log(`Sucessfully extracted node to a .${cache['outputType'] == "raw" ? "node" : cache['outputType']} file`, 'info');
       } else if (res == 1) {
         log("Error reading the node data: data is null.", "error");
       } else {

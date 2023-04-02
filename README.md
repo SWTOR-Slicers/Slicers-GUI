@@ -1,3 +1,5 @@
+## WARNING: Slicers-GUI, when used on the files in SWTOR's latest Game Update 7.2.1, produces results that aren't compatible with our Blender importer add-on. Until our whole set of tools is updated, we recommend that you work with a backup of a SWTOR installation previous to this recent update (specifically, its .tor files located in its "Assets" folder), using the **[1.11.1 release](https://github.com/Tormak9970/Slicers-GUI/releases/tag/v1.11.1)** of this app.
+
 # Slicers-GUI
 
 The Slicers GUI is a datamining tool built on [ElectronJS](https://www.electronjs.org/) for Star Wars: The Old Republic (SWTOR). This tool is a part of the [SWTOR Slicers](https://github.com/SWTOR-Slicers), and contains many Quality of Life improvements over existing tools, and adds new functions to expidite the extraction, modding, and datamining processes.

@@ -1,4 +1,4 @@
-## WARNING: Slicers-GUI, when used on the files in SWTOR's latest Game Update 7.2.1, produces results that aren't compatible with our Blender importer add-on. Until our whole set of tools is updated, we recommend that you work with a backup of a SWTOR installation previous to this recent update (specifically, its .tor files located in its "Assets" folder), using the **[1.11.1 release](https://github.com/Tormak9970/Slicers-GUI/releases/tag/v1.11.1)** of this app.
+## WARNING: Slicers-GUI, when used on the files in SWTOR's latest Game Update 7.2.1, produces results that aren't compatible with our Blender importer add-on. Until our whole set of tools is updated, we recommend that you work with a backup of a SWTOR installation previous to this recent update (specifically, its .tor files located in its "Assets" folder, which can be downloaded from **[here](https://drive.google.com/drive/folders/1ZkBNz1cK_IXBxBd4OIYL1jRImnnfHXKW?usp=sharing)**), using the **[1.11.1 release](https://github.com/Tormak9970/Slicers-GUI/releases/tag/v1.11.1)** of this app.
 
 # Slicers-GUI
 

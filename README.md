@@ -1,7 +1,7 @@
-## Slicers-GUI is already compatible with Game Update 7.2.1.
-### (Our Blender importer add-on is partially so: it imports objects and characters, but the importing of skeletons and animations are yet to be reworked.
+## Slicers-GUI is partially compatible with Game Update 7.2.1 (Extract and Locate tools).
+### Our Blender importer add-on is so, too: it imports objects and characters, but the importing of skeletons and animations are yet to be reworked.
 
-**If you need those, there's the option of working with a backup of a SWTOR installation previous to this recent update (specifically, its .tor files located in its "Assets" folder, which can be downloaded from **[here](https://drive.google.com/drive/folders/1ZkBNz1cK_IXBxBd4OIYL1jRImnnfHXKW?usp=sharing)**), and process them using the **[1.11.1 release](https://github.com/Tormak9970/Slicers-GUI/releases/tag/v1.11.1)** of this app)**
+**If you need those, there's the option of getting compatible ones by doing an assets extraction from an older SWTOR installation (whose .tor files can be downloaded from **[here](https://drive.google.com/drive/folders/1ZkBNz1cK_IXBxBd4OIYL1jRImnnfHXKW?usp=sharing)**), and placing them where they would belong so that other tools can automate their use.**
 
 ___
 

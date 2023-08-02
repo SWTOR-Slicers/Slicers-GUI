@@ -1,7 +1,7 @@
-## Slicers-GUI is partially compatible with Game Update 7.2.1 (Extract and Locate tools).
-### Our Blender importer add-on is so, too: it imports objects and characters, but the importing of skeletons and animations are yet to be reworked.
+### Status Update:
+**Slicers-GUI is partially compatible with SWTOR 64 bit (Game Update 7.2.1 or higher):** Its Extract and Locate tools work (we recommend to disregard the Locate tool, though, as our new [Character Assembler Blender add-on](https://github.com/SWTOR-Slicers/SWTOR-Character-Assembler) does that step by itself).
 
-**If you need those, there's the option of getting compatible ones by doing an assets extraction from an older SWTOR installation (whose .tor files can be downloaded from **[here](https://drive.google.com/drive/folders/1ZkBNz1cK_IXBxBd4OIYL1jRImnnfHXKW?usp=sharing)**), and placing them where they would belong so that other tools can automate their use.**
+**Our Blender importer add-on is so, too: it imports objects and characters, but the importing of skeletons and animations are yet to be reworked:** If you need those, there's the option of getting compatible ones by doing an assets extraction from an older SWTOR installation (whose .tor files can be downloaded from **[here](https://drive.google.com/drive/folders/1ZkBNz1cK_IXBxBd4OIYL1jRImnnfHXKW?usp=sharing)**), and placing them where they would belong so that other tools can automate their use.
 
 ___
 
@@ -11,7 +11,9 @@ The Slicers GUI is a datamining tool built on [ElectronJS](https://www.electronj
 
 **NOTE**: Windows only for the time being
 
-**Download: [Grab the newest release!](https://github.com/Tormak9970/Slicers-GUI/releases). WARNING: the 1.12.0 release is meant to be used with SWTOR Game Update 7.2.1 (march 2023) onwards. If you are still using older assets, get 1.11.1 instead**.
+**IMPORTANT: to process SWTOR 64 bit files (march 2023's Game Update 7.2.1 and beyond) make sure to download the 1.12.0 release or higher.**
+
+## Download: [Grab the newest release!](https://github.com/Tormak9970/Slicers-GUI/releases)
 
 For directions on its installation, please check our [**wiki**](https://github.com/SWTOR-Slicers/WikiPedia/wiki/). Also, if your intention is to use the tool to extract SWTOR Player Characters and NPCs, please check this specific guide that will show you how to install and use this tool for that purpose: [**Locating and assembling characters' assets automatically: a step by step guide**](https://github.com/SWTOR-Slicers/WikiPedia/wiki/locating-swtor-characters-assets-automatically).
 

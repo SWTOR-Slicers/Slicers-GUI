@@ -1,7 +1,7 @@
 ### Status Update:
 **Slicers-GUI is partially compatible with SWTOR 64 bit (Game Update 7.2.1 or higher):** Its Extract and Locate tools work (we recommend to disregard the Locate tool, though, as our new [Character Assembler Blender add-on](https://github.com/SWTOR-Slicers/SWTOR-Character-Assembler) does that step by itself).
 
-**Our Blender importer add-on is so, too: it imports objects and characters, but the importing of skeletons and animations are yet to be reworked:** If you need those, there's the option of getting compatible ones by doing an assets extraction from an older SWTOR installation (whose .tor files can be downloaded from **[here](https://drive.google.com/drive/folders/1ZkBNz1cK_IXBxBd4OIYL1jRImnnfHXKW?usp=sharing)**), and placing them where they would belong so that other tools can automate their use.
+**Our Blender importer add-on is so, too: it imports objects, characters, and skeletons, but animations import is yet to be reworked:** If you need those, there's the option of getting compatible ones by doing an assets extraction from an older SWTOR installation (whose .tor files can be downloaded from **[here](https://drive.google.com/drive/folders/1ZkBNz1cK_IXBxBd4OIYL1jRImnnfHXKW?usp=sharing)**), and placing them where they would belong so that other tools can automate their use.
 
 ___
 

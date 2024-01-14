@@ -11,7 +11,7 @@ The Slicers GUI is a datamining tool built on [ElectronJS](https://www.electronj
 
 **NOTE**: Windows only for the time being
 
-**IMPORTANT: to process older SWTOR 32 bits files (Game Update 7.2 or older), use the [1.11.0 version](https://github.com/Tormak9970/Slicers-GUI/releases/tag/v1.11.1), instead.**
+**IMPORTANT: to process older SWTOR 32 bits files (Game Update 7.2 or older), use the [1.11.0 version](https://github.com/Tormak9970/Slicers-GUI/releases/tag/v1.11.1), instead of the latest one.**
 
 ## Download: [Grab the latest release!](https://github.com/Tormak9970/Slicers-GUI/releases)
 

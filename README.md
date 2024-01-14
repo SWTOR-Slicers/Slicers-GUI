@@ -11,9 +11,9 @@ The Slicers GUI is a datamining tool built on [ElectronJS](https://www.electronj
 
 **NOTE**: Windows only for the time being
 
-**IMPORTANT: to process SWTOR 64 bits files (march 2023's Game Update 7.2.1 and beyond) make sure to download the [1.12.0 release or higher](https://github.com/Tormak9970/Slicers-GUI/releases). For processing older SWTOR 32 bits files (Game Update 7.2 or older), use the [1.11.0 version](https://github.com/Tormak9970/Slicers-GUI/releases/tag/v1.11.1), instead.**
+**IMPORTANT: to process older SWTOR 32 bits files (Game Update 7.2 or older), use the [1.11.0 version](https://github.com/Tormak9970/Slicers-GUI/releases/tag/v1.11.1), instead.**
 
-## Download: [Grab the newest release!](https://github.com/Tormak9970/Slicers-GUI/releases)
+## Download: [Grab the latest release!](https://github.com/Tormak9970/Slicers-GUI/releases)
 
 For directions on its installation, please check our [**wiki**](https://github.com/SWTOR-Slicers/WikiPedia/wiki/). Also, if your intention is to use the tool to extract SWTOR Player Characters and NPCs, please check this specific guide that will show you how to install and use this tool for that purpose: [**Locating and assembling characters' assets automatically: a step by step guide**](https://github.com/SWTOR-Slicers/WikiPedia/wiki/locating-swtor-characters-assets-automatically).
 
